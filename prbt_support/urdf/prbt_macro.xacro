@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!--
+Copyright (c) 2018 Pilz GmbH & Co. KG
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Height of Foot -->
+  <xacro:property name="L0" value="0.2604" />
+
+  <!-- Length of the first connector -->
+  <xacro:property name="L1" value="0.3500" />
+
+  <!-- Length of the second connector -->
+  <xacro:property name="L2" value="0.3070" />
+
+  <!-- Distance last joint to flange -->
+  <xacro:property name="L3" value="0.0840" />
+
+  <xacro:macro name="prbt" params="prefix">
+
+    <!-- robot foot link -->
+    <link name="${prefix}base_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://prbt_support/meshes/foot.dae" />
+        </geometry>
+      </visual>
+
+      <collision>
+        <origin rpy="${pi} 0 0" xyz="0 0 0.065"/>
+        <geometry>
+          <cylinder length="0.13" radius="0.09275"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- arm 1 joint -->
+    <joint name="${prefix}joint_1" type="revolute">
+      <origin xyz="0 0 ${L0}" rpy="0 0 -${pi}"/>
+      <parent link="${prefix}base_link"/>
+      <child link="${prefix}link_1"/>
+      <axis xyz="0 0 1"/>
+      <limit effort="370" velocity="1.57" lower="-2.967" upper="2.967"/>
+      <dynamics damping="15.0" friction="11" />
+    </joint>
+
+
+    <!-- arm 1 link -->
+    <link name="${prefix}link_1">
+      <inertial>
+        <origin xyz="-0.00014 0.02783 0.05093" rpy="0 0 0"/>
+        <mass value="7.1"/>
+        <inertia ixx="0"  ixy="0"  ixz="0" iyy="0" iyz="0" izz="0" />
+      </inertial>
+
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://prbt_support/meshes/link_1.dae" />
+        </geometry>
+      </visual>
+
+      <collision>
+        <origin rpy="0 0 0" xyz="0 0 -0.08"/>
+        <geometry>
+          <cylinder length="0.10" radius="0.07"/>
+        </geometry>
+      </collision>
+      <collision>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <sphere radius="0.09"/>
+        </geometry>
+      </collision>
+      <collision>
+        <origin rpy="0 ${pi/2} ${pi/2}" xyz="0 -0.10 0"/>
+        <geometry>
+          <cylinder length="0.10" radius="0.065"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- joint between arm_1_link and arm_2_link -->
+    <joint name="${prefix}joint_2" type="revolute">
+      <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+      <parent link="${prefix}link_1"/>
+      <child link="${prefix}link_2"/>
+      <axis xyz="0 0 1"/>
+      <limit effort="370" velocity="1.57" lower="-2.531" upper="2.531"/>
+      <dynamics damping="12.0" friction="10.0" />
+    </joint>
+
+    <link name="${prefix}link_2">
+      <inertial>
+        <origin xyz="0.00001 0.16907 0.02464" rpy="0 0 0"/>
+        <mass value="2.4"/>
+        <inertia ixx="0"  ixy="0"  ixz="0" iyy="0" iyz="0" izz="0" />
+      </inertial>
+
+      <visual name="first">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://prbt_support/meshes/link_2.dae" />
+        </geometry>
+      </visual>
+
+      <collision>
+        <origin rpy="${pi/18} 0 0" xyz="0 0.15 0.145"/>
+        <geometry>
+          <box size="0.121 0.27 0.065"/>
+        </geometry>
+      </collision>
+      <collision>
+        <origin rpy="-${pi/7} 0 0" xyz="0 0.3 0.145"/>
+        <geometry>
+          <box size="0.11 0.1 0.075"/>
+        </geometry>
+      </collision>
+
+    </link>
+
+    <!-- joint between arm_2_link and arm_3_link -->
+    <joint name="${prefix}joint_3" type="revolute">
+      <origin xyz="0 ${L1} 0" rpy="0 ${pi} 0"/>
+      <parent link="${prefix}link_2"/>
+      <child link="${prefix}link_3"/>
+      <axis xyz="0 0 1"/>
+      <limit effort="176" velocity="1.57" lower="-2.356" upper="2.356"/>
+      <dynamics damping="4.5" friction="4.5" />
+    </joint>
+
+    <link name="${prefix}link_3">
+      <inertial>
+        <origin xyz="-0.0001 0.04395 -0.02798" rpy="0 0 0"/>
+        <mass value="5.0"/>
+        <inertia ixx="0"  ixy="0"  ixz="0" iyy="0" iyz="0" izz="0" />
+      </inertial>
+
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://prbt_support/meshes/link_3.dae" />
+        </geometry>
+      </visual>
+
+      <collision>
+        <origin rpy="0 0 0" xyz="0 0 -0.11"/>
+        <geometry>
+          <cylinder length="0.10" radius="0.06"/>
+        </geometry>
+      </collision>
+      <collision>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <sphere radius="0.085"/>
+        </geometry>
+      </collision>
+      <collision>
+        <origin rpy="0 ${pi/2} ${pi/2}" xyz="0 0.10 0"/>
+        <geometry>
+          <cylinder length="0.10" radius="0.065"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- joint between arm_3_link and arm_4_link -->
+    <joint name="${prefix}joint_4" type="revolute">
+      <origin xyz="0 0 0" rpy="-${pi/2} ${pi} 0" />
+      <parent link="${prefix}link_3"/>
+      <child link="${prefix}link_4"/>
+      <axis xyz="0 0 1" />
+      <limit effort="176" velocity="1.57" lower="-2.967" upper="2.967"/>
+      <dynamics damping="4.2" friction="3.8" />
+    </joint>
+
+    <link name="${prefix}link_4">
+      <inertial>
+        <origin xyz="-0.00008 0.06528 0.06149" rpy="0 0 0"/>
+        <mass value="0.7"/>
+        <inertia ixx="0"  ixy="0"  ixz="0" iyy="0" iyz="0" izz="0" />
+      </inertial>
+
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://prbt_support/meshes/link_4.dae" />
+        </geometry>
+      </visual>
+
+      <collision>
+        <origin rpy="${pi/3.25} 0 0" xyz="0 -0.04 0.162"/>
+        <geometry>
+          <box size="0.121 0.08 0.17"/>
+        </geometry>
+      </collision>
+      <collision>
+        <origin rpy="-${pi/30} 0 0" xyz="0 -0.115 0.25"/>
+        <geometry>
+          <box size="0.09 0.06 0.12"/>
+        </geometry>
+      </collision>
+
+    </link>
+
+    <!-- joint between arm_4_link and arm_5_link -->
+    <joint name="${prefix}joint_5" type="revolute">
+      <origin xyz="0 0 ${L2}" rpy="${pi/2} 0 ${pi}" />
+      <parent link="${prefix}link_4"/>
+      <child link="${prefix}link_5"/>
+      <axis xyz="0 0 1" />
+      <limit effort="41.6" velocity="1.57" lower="-2.967" upper="2.967" />
+      <dynamics damping="1.5" friction="3.5" />
+    </joint>
+
+    <link name="${prefix}link_5">
+      <inertial>
+        <origin xyz="-0.00026 0.01873 -0.03434" rpy="0 0 0"/>
+        <mass value="2"/>
+        <inertia ixx="0"  ixy="0"  ixz="0" iyy="0" iyz="0" izz="0" />
+      </inertial>
+
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://prbt_support/meshes/link_5.dae"/>
+        </geometry>
+      </visual>
+
+      <collision>
+        <origin rpy="0 0 0" xyz="0 0 -0.095"/>
+        <geometry>
+          <cylinder length="0.08" radius="0.045"/>
+        </geometry>
+      </collision>
+      <collision>
+        <origin rpy="0 0 0" xyz="0 0 -0.06"/>
+        <geometry>
+          <cylinder length="0.04" radius="0.0545"/>
+        </geometry>
+      </collision>
+      <collision>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <sphere radius="0.07"/>
+        </geometry>
+      </collision>
+      <collision>
+        <origin rpy="0 ${pi/2} ${pi/2}" xyz="0 0.05 0"/>
+        <geometry>
+          <cylinder length="0.03" radius="0.05"/>
+        </geometry>
+      </collision>
+      <collision>
+        <origin rpy="0 ${pi/2} ${pi/2}" xyz="0 0.05 0"/>
+        <geometry>
+          <cylinder length="0.049" radius="0.0435"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- joint between arm_5_link and flange -->
+    <joint name="${prefix}joint_6" type="revolute">
+      <origin xyz="0 ${L3} 0" rpy="-${pi/2} 0 0" />
+      <parent link="${prefix}link_5"/>
+      <child link="${prefix}flange"/>
+      <axis xyz="0 0 1" />
+      <limit effort="20.1" velocity="1.57" lower="-3.124" upper="3.124" />
+      <dynamics damping="4.5" friction="7.0" />
+    </joint>
+
+    <!-- Flange -->
+    <link name="${prefix}flange">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://prbt_support/meshes/flange.dae"/>
+        </geometry>
+      </visual>
+
+      <collision>
+        <origin rpy="0 0 0" xyz="0 0 -0.0035"/>
+        <geometry>
+          <cylinder length="0.02" radius="0.0331"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- ROS-Industrial 'base' frame: base_link to robot world coordinate sytem transform -->
+    <link name="${prefix}base" />
+    <joint name="${prefix}base_link-base" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <parent link="${prefix}base_link"/>
+      <child link="${prefix}base"/>
+    </joint>
+
+    <!-- ROS-Industrial 'tool0' frame: all-zeros tool frame -->
+    <link name="${prefix}tool0" />
+    <joint name="${prefix}flange-tool0" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <parent link="${prefix}flange" />
+      <child link="${prefix}tool0" />
+    </joint>
+
+  </xacro:macro>
+
+</robot>

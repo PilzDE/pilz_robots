@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<launch>	
+
+  <arg name="has_gripper" default="false" />
+  <arg name="load_robot_description" default="true" />
+
+  <!-- send urdf to param server -->
+  <param name="robot_description" if="$(arg load_robot_description)"
+    command="$(find xacro)/xacro --inorder '$(find prbt_support)/urdf/prbt.xacro' has_gripper:=$(arg has_gripper)" />
+
+  <!-- robot state publisher -->
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" />
+
+  <!-- relay to /joint_states -->
+  <node ns="prbt" name="joint_state_relay" pkg="topic_tools" type="relay" args="/prbt/joint_states /joint_states"/>
+
+  <!-- start the driver -->
+  <node ns="prbt" name="driver" pkg="canopen_motor_node" type="canopen_motor_node" output="screen" clear_params="true">
+    <rosparam command="load" file="$(find prbt_support)/config/can0.yaml" />
+    <rosparam command="load" file="$(find prbt_support)/config/manipulator_driver.yaml" />
+    <rosparam if="$(arg has_gripper)" command="load" file="$(find prbt_support)/config/gripper_driver.yaml" />
+  </node>
+
+  <!-- loand controller configuration -->
+  <rosparam ns="prbt" command="load" file="$(find prbt_support)/config/manipulator_controller.yaml" />
+  <rosparam if="$(arg has_gripper)" ns="prbt" command="load" file="$(find prbt_support)/config/gripper_controller.yaml" />
+
+  <!-- spawn controllers -->
+  <node unless="$(arg has_gripper)" ns="prbt" name="controller_spawner" pkg="controller_manager" type="spawner"
+        args="manipulator_joint_trajectory_controller manipulator_joint_state_controller" />
+  <node if="$(arg has_gripper)" ns="prbt" name="controller_spawner" pkg="controller_manager" type="spawner"
+        args="manipulator_joint_trajectory_controller manipulator_joint_state_controller gripper_joint_trajectory_controller" />
+
+  <!-- Initialize controllers -->
+  <node pkg="rosservice" type="rosservice" name="robot_init" args="call --wait /prbt/driver/init"/>
+
+  <!-- Start auto recover node -->
+  <node ns="prbt" pkg="prbt_hardware_support" type="auto_recover_node.py" name="auto_recover_node" />
+
+</launch>
+
+
