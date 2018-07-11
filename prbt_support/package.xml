@@ -1,0 +1,29 @@
+<package format="2">
+  <name>prbt_support</name>
+  <version>0.1.0</version>
+  <description> Mechanical, kinematic and visual description
+  of the Pilz light weight arm PRBT. </description>
+
+  <maintainer email="ros@pilz.de">Pilz GmbH and Co. KG</maintainer>
+
+  <license>Apache 2.0</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>canopen_motor_node</exec_depend>
+  <exec_depend>joint_trajectory_controller</exec_depend>
+  <exec_depend>joint_state_publisher</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>schunk_description</exec_depend>
+  <exec_depend>urdf</exec_depend>
+  <exec_depend>xacro</exec_depend>
+  <exec_depend>rviz</exec_depend>
+  
+  <test_depend>rostest</test_depend>
+  <test_depend>moveit_core</test_depend>
+  <test_depend>moveit_kinematics</test_depend>
+  <test_depend>cmake_modules</test_depend>
+  <test_depend>eigen</test_depend>
+
+</package>

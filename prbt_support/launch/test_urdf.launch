@@ -1,0 +1,23 @@
+<launch>
+
+  <arg name="has_gripper" default="false" />
+
+  <arg name="command_args" value="-d $(find prbt_support)/launch/robotmodel.rviz" />
+
+  <!-- load urdf -->
+  <param name="robot_description"
+         command="$(find xacro)/xacro --inorder '$(find prbt_support)/urdf/prbt.xacro' has_gripper:=$(arg has_gripper)" />
+
+  <!-- source that publishes the joint positions as a sensor_msgs/JointState -->
+  <param name="use_gui" value="true"/>
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+ 
+  <!-- robot visualization -->
+  <node name="rviz" pkg="rviz" type="rviz" args="$(arg command_args)" required="true" />
+ 
+  <!-- publish all the frames to TF -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher">
+    <param name="publish_frequency" value="50"/> <!-- Hz -->
+  </node>
+
+</launch>
