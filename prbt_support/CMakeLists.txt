@@ -47,5 +47,8 @@ if(CATKIN_ENABLE_TESTING)
     ${moveit_ros_planning_LIBRARIES}
     ${Eigen3_LIBRARIES})
 
+  find_package(roslaunch REQUIRED)
+  roslaunch_add_file_check(launch)
+
 endif()
 

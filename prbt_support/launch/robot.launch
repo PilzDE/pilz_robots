@@ -34,9 +34,6 @@
   <!-- Initialize controllers -->
   <node pkg="rosservice" type="rosservice" name="robot_init" args="call --wait /prbt/driver/init"/>
 
-  <!-- Start auto recover node -->
-  <node ns="prbt" pkg="prbt_hardware_support" type="auto_recover_node.py" name="auto_recover_node" />
-
 </launch>
 
 
