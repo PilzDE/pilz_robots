@@ -2,6 +2,10 @@
 Changelog for package pilz_robots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* update readme
+
 0.2.0 (2018-07-12)
 ------------------
 * metapackage for pilz_robots
