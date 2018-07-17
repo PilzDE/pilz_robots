@@ -9,6 +9,10 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <url type="website">https://wiki.ros.org/prbt_ikfast_manipulator_plugin</url>
+  <url type="bugtracker">https://github.com/PilzDE/pilz_robots/issues</url>
+  <url type="repository">https://github.com/PilzDE/pilz_robots</url>
+
   <export>
     <moveit_core plugin="${prefix}/prbt_manipulator_moveit_ikfast_plugin_description.xml"/>
   </export>
