@@ -12,6 +12,6 @@ env:
     - ROS_DISTRO="kinetic" ROS_REPO=ros
     - ROS_DISTRO="kinetic" ROS_REPO=ros-shadow-fixed
 install:
-  - git clone https://github.com/ros-industrial/industrial_ci.git .industrial_ci
+  - git clone https://github.com/PilzDE/industrial_ci.git .industrial_ci
 script:
   - .industrial_ci/travis.sh
