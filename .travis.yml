@@ -1,0 +1,17 @@
+sudo: required
+dist: xenial
+language: generic
+
+notifications:
+  email:
+    on_failure: always
+    recipients:
+      - ros@pilz.de
+env:
+  matrix:
+    - ROS_DISTRO="kinetic" ROS_REPO=ros VERBOSE_OUTPUT=true
+    - ROS_DISTRO="kinetic" ROS_REPO=ros-shadow-fixed VERBOSE_OUTPUT=true
+install:
+  - git clone https://github.com/ros-industrial/industrial_ci.git .industrial_ci
+script:
+  - travis_wait 45 .industrial_ci/travis.sh
