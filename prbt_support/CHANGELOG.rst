@@ -2,6 +2,9 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.2.0 (2018-07-12)
 ------------------
 * initial robot model for prbt with and without pg+70 gripper
