@@ -1,5 +1,12 @@
 # ROS_PRBT
 
+
+### Build Status
+
+| Kinetic |
+| ------ |
+| [![Build Status](https://travis-ci.org/PilzDE/pilz_robots.svg?branch=kinetic-devel)](https://travis-ci.org/PilzDE/pilz_robots) |
+
 ## Package: pilz_robots
 The meta package for the PILZ robot manipulator PRBT.
 
