@@ -60,8 +60,6 @@
 
     <!-- load these non-default MoveGroup capabilities -->
     <param name="capabilities" value="
-                  pilz_trajectory_generation/MoveGroupBlendAction
-                  pilz_trajectory_generation/MoveGroupBlendService
                   " />
 
     <!-- inhibit these default MoveGroup capabilities -->

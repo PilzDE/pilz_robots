@@ -20,14 +20,16 @@
   <exec_depend>joint_state_publisher</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>schunk_description</exec_depend>
-  <exec_depend>urdf</exec_depend>
+  <exec_depend>topic_tools</exec_depend>
+  <exec_depend>rosservice</exec_depend>
   <exec_depend>xacro</exec_depend>
   <exec_depend>rviz</exec_depend>
-  
+  <exec_depend>controller_manager</exec_depend>
+
   <test_depend>rostest</test_depend>
   <test_depend>moveit_core</test_depend>
   <test_depend>moveit_kinematics</test_depend>
   <test_depend>cmake_modules</test_depend>
   <test_depend>eigen</test_depend>
-
+  <test_depend>roslaunch</test_depend>
 </package>

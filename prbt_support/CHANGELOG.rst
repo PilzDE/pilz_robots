@@ -5,6 +5,7 @@ Changelog for package prbt_support
 Forthcoming
 -----------
 * Add <url> tag to all package.xml files
+* test launch files and add missing dependencies
 
 0.2.0 (2018-07-12)
 ------------------
