@@ -5,6 +5,12 @@ The meta package for the PILZ robot manipulator PRBT.
 
 ![PRBT manipulator](prbt_support/img/prbt.jpg)
 
+### Build Status
+
+| Kinetic |
+| ------ |
+| [![Build Status](https://travis-ci.org/PilzDE/pilz_robots.svg?branch=kinetic-devel)](https://travis-ci.org/PilzDE/pilz_robots) |
+
 ## Package: prbt_support
 The package contains the robot description of the PRBT manipulator.
 - `urdf/` contains the xacros for generating the urdf descriptions of the PILZ robot PRBT.
