@@ -2,8 +2,8 @@
 Changelog for package pilz_robots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.1 (2018-07-19)
+------------------
 * Add <url> tag to all package.xml files
 * update readme
 
