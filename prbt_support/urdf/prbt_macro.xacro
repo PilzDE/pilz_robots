@@ -17,20 +17,19 @@ limitations under the License.
 -->
 
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-
-  <!-- Height of Foot -->
-  <xacro:property name="L0" value="0.2604" />
-
-  <!-- Length of the first connector -->
-  <xacro:property name="L1" value="0.3500" />
-
-  <!-- Length of the second connector -->
-  <xacro:property name="L2" value="0.3070" />
-
-  <!-- Distance last joint to flange -->
-  <xacro:property name="L3" value="0.0840" />
-
   <xacro:macro name="prbt" params="prefix">
+
+    <!-- Height of Foot -->
+    <xacro:property name="L0" value="0.2604" />
+
+    <!-- Length of the first connector -->
+    <xacro:property name="L1" value="0.3500" />
+
+    <!-- Length of the second connector -->
+    <xacro:property name="L2" value="0.3070" />
+
+    <!-- Distance last joint to flange -->
+    <xacro:property name="L3" value="0.0840" />
 
     <!-- robot foot link -->
     <link name="${prefix}base_link">
