@@ -2,6 +2,10 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Move constants inside prbt_macro.xacro into local namespace.
+
 0.2.1 (2018-07-19)
 ------------------
 * Add <url> tag to all package.xml files
