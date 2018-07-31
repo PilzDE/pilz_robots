@@ -19,7 +19,6 @@
   <exec_depend>joint_trajectory_controller</exec_depend>
   <exec_depend>joint_state_publisher</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
-  <exec_depend>schunk_description</exec_depend>
   <exec_depend>topic_tools</exec_depend>
   <exec_depend>rosservice</exec_depend>
   <exec_depend>xacro</exec_depend>

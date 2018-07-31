@@ -25,11 +25,11 @@
   <arg name="disable_capabilities" default=""/> <!-- inhibit capabilites (space seperated) -->
 
   <!-- Enable/Disable gripper -->
-  <arg name="has_gripper" default="false" />
+  <arg name="gripper" default="" />
 
   <!-- load robot models -->
   <include file="$(find prbt_moveit_config)/launch/planning_context.launch" >
-    <arg name="has_gripper" value="$(arg has_gripper)" />
+    <arg name="gripper" value="$(arg gripper)" />
     <arg name="load_robot_description" value="$(arg load_robot_description)" />
   </include>
 
@@ -43,7 +43,7 @@
     <arg name="moveit_manage_controllers" value="$(arg moveit_manage_controllers)" />
     <arg name="moveit_controller_manager" value="prbt" unless="$(arg fake_execution)"/>
     <arg name="moveit_controller_manager" value="fake" if="$(arg fake_execution)"/>
-    <arg name="has_gripper" value="$(arg has_gripper)" />
+    <arg name="gripper" value="$(arg gripper)" />
   </include>
 
   <!-- Sensors Functionality -->

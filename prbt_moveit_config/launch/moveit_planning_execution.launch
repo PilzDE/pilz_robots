@@ -35,8 +35,8 @@ limitations under the License.
   <!-- Choose planning pipeline -->
   <arg name="pipeline" default="ompl" />
 
-  <!-- Enable/Disable gripper -->
-  <arg name="has_gripper" default="false" />
+  <!-- Set gripper -->
+  <arg name="gripper" default="" />
  
 
   <!-- Load robot description to parameter server. Can be set to false to let someone else load the model -->
@@ -45,7 +45,7 @@ limitations under the License.
   <!-- load the robot_description parameter before launching ROS-I nodes -->
   <include file="$(find prbt_moveit_config)/launch/planning_context.launch" >
     <arg name="load_robot_description" value="$(arg load_robot_description)" />
-    <arg name="has_gripper" value="$(arg has_gripper)" />
+    <arg name="gripper" value="$(arg gripper)" />
   </include>
 
   <!-- run the robot simulator and action interface nodes -->
@@ -65,7 +65,7 @@ limitations under the License.
   <!--   - replace these calls with appropriate robot-specific calls or launch files -->
   <group unless="$(arg sim)">
     <include file="$(find prbt_support)/launch/robot.launch" >
-      <arg name="has_gripper" value="$(arg has_gripper)" />
+      <arg name="gripper" value="$(arg gripper)" />
       <arg name="load_robot_description" value="false" />
     </include>
   </group>
@@ -74,7 +74,7 @@ limitations under the License.
     <arg name="publish_monitored_planning_scene" value="true" />
     <arg name="fake_execution" value="$(arg sim)"/>
     <arg name="pipeline" value="$(arg pipeline)" />
-    <arg name="has_gripper" value="$(arg has_gripper)" />
+    <arg name="gripper" value="$(arg gripper)" />
     <arg name="load_robot_description" value="$(arg load_robot_description)" />
   </include>
 

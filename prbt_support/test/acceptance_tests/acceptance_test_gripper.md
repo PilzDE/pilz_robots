@@ -19,14 +19,14 @@ limitations under the License.
 ## Prerequisites
 
 ## Test Sequence:
-  1. Open the model in rviz `roslaunch prbt_support test_urdf.launch has_gripper:=true`.
+  1. Open the model in rviz `roslaunch prbt_support test_urdf.launch gripper:=pg70`.
   2. In Rviz display the robot model (Add->rviz->RobotModel).
   3. Move the sliders of the "joint_state_publisher" window. 
   4. Close everything.
-  5. Open the model in rviz `roslaunch prbt_support test_urdf.launch has_gripper:=false`.
+  5. Open the model in rviz `roslaunch prbt_support test_urdf.launch`.
   6. In Rviz display the robot model (Add->rviz->RobotModel).
   7. Close everything.
-  8. Open the model in rviz `roslaunch prbt_support test_urdf.launch has_gripper:=false`.
+  8. Open the model in rviz `roslaunch prbt_support test_urdf.launch`.
   9. In Rviz display the robot model (Add->rviz->RobotModel).
 
 ## Expected Results:

@@ -1,12 +1,12 @@
 <launch>
 
-  <arg name="has_gripper" default="false" />
+  <arg name="gripper" default="" />
 
   <arg name="command_args" value="-d $(find prbt_support)/launch/robotmodel.rviz" />
 
   <!-- load urdf -->
   <param name="robot_description"
-         command="$(find xacro)/xacro --inorder '$(find prbt_support)/urdf/prbt.xacro' has_gripper:=$(arg has_gripper)" />
+         command="$(find xacro)/xacro --inorder '$(find prbt_support)/urdf/prbt.xacro' gripper:=$(arg gripper)" />
 
   <!-- source that publishes the joint positions as a sensor_msgs/JointState -->
   <param name="use_gui" value="true"/>

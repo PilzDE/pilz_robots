@@ -24,17 +24,17 @@ limitations under the License.
   <xacro:include filename="$(find prbt_support)/urdf/prbt_macro.xacro" />
 
   <!-- gripper -->
-  <xacro:arg name="has_gripper" default="false"/>
+  <xacro:arg name="gripper" default=""/>
+  <xacro:property name="gripper" value="$(arg gripper)"/>
 
   <!-- TCP Offset -->
-  <xacro:unless value="$(arg has_gripper)">
+  <xacro:if value="${not gripper}">
     <xacro:arg name="tcp_offset_xyz" default="0 0 0"/>
     <xacro:arg name="tcp_offset_rpy" default="0 0 0"/>
-  </xacro:unless>
+  </xacro:if>
 
-  <xacro:if value="$(arg has_gripper)">
-    <xacro:arg name="tcp_offset_xyz" default="0 0 0.1"/>
-    <xacro:arg name="tcp_offset_rpy" default="0 0 ${-pi*3/4.}"/>
+  <xacro:if value="${gripper != ''}">
+    <xacro:include filename="$(find prbt_${gripper}_support)/config/${gripper}_tcp_offset.xacro" />
   </xacro:if>
 
   <!-- instantiate the robot -->
@@ -48,27 +48,9 @@ limitations under the License.
   </joint>
   <link name="$(arg robot_prefix)tcp" />
 
-
-  <xacro:if value="$(arg has_gripper)">
-
-    <!-- Load pg70 gripper macro -->
-    <xacro:include filename="$(find schunk_description)/urdf/pg70/pg70.urdf.xacro" />
-
-    <!-- name of the gripper -->
-    <xacro:arg name="gripper_name" default="$(arg robot_prefix)gripper"/>
-
-    <!-- instantiate the gripper -->
-    <xacro:schunk_pg70 parent="$(arg robot_prefix)flange" name="$(arg gripper_name)" has_podest="false">
-      <origin xyz="0 0 0.0171" rpy="0 0 ${-pi*3/4.}" />
-    </xacro:schunk_pg70>
-
-    <!-- Add gripper brackets -->
-    <xacro:include filename="$(find prbt_support)/urdf/simple_gripper_brackets.urdf.xacro" />
-    <xacro:simple_gripper_brackets
-        gripper_name="$(arg gripper_name)"
-        parent_left="$(arg gripper_name)_finger_left_link"
-        parent_right="$(arg gripper_name)_finger_right_link"/>
-
+  <!-- If gripper given then... -->
+  <xacro:if value="${gripper != ''}">
+    <xacro:include filename="$(find prbt_${gripper}_support)/urdf/${gripper}.urdf.xacro" />
   </xacro:if>
 
 </robot>
