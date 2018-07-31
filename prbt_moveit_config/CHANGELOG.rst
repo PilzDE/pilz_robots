@@ -2,6 +2,10 @@
 Changelog for package prbt_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.2.3 (forthcoming)
+-------------------
+* remove dependency on gripper
+
 0.2.2 (2018-07-26)
 ------------------
 * Add capabilities argument to move_group.launch

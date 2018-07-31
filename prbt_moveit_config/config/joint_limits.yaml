@@ -47,9 +47,3 @@ joint_limits:
     max_velocity: 1.57
     has_acceleration_limits: true
     max_acceleration: 3.49
-  # prismatic joint
-  prbt_gripper_finger_left_joint:
-    has_velocity_limits: true
-    max_velocity: 0.082 # m/s
-    has_acceleration_limits: true
-    max_acceleration: 0.328 # m/s^2

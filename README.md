@@ -33,7 +33,7 @@ You can easily adjust the tool center point frame with an offset and rotation in
 2. Edit the lines to your desired offset
 
 ```
-  <xacro:unless value="$(arg has_gripper)">
+  <xacro:unless value="$(arg gripper)">
     <xacro:arg name="tcp_offset_xyz" default="0 0 0"/>
     <xacro:arg name="tcp_offset_rpy" default="0 0 0"/>
   </xacro:unless>
@@ -56,11 +56,11 @@ The launch file allows to set optional parameters
     false: connect to real robot using `ros_canopen`
 * `pipeline` (default: ompl) <br>
     Planning pipeline to use with moveit
-* `has_gripper` (default: False) <br>
-    if true a PG+70 gripper is attached to the robot flange
+* `gripper` (default: None) <br>
+    See [Running the prbt with a gripper](#running-the-prbt-with-a-gripper)
 
 ### Running the simulation
-1. Run `roslaunch prbt_moveit_config moveit_planning_execution.launch sim:=true pipeline:=ompl has_gripper:=true`
+1. Run `roslaunch prbt_moveit_config moveit_planning_execution.launch sim:=true pipeline:=ompl`
 2. Use the moveit Motion Planning rviz plugin to plan and execute
    (see e.g. [ROS-I training exercise 3.4](http://ros-industrial.github.io/industrial_training/_source/session3/Motion-Planning-RVIZ.html))
 
@@ -74,8 +74,14 @@ iface can0 can static
         bitrate 1000000
 ```
 
-2. Run `roslaunch prbt_moveit_config moveit_planning_execution.launch sim:=false pipeline:=ompl has_gripper:=true`
+2. Run `roslaunch prbt_moveit_config moveit_planning_execution.launch sim:=false pipeline:=ompl`
 3. Use the moveit Motion Planning rviz plugin to plan and execute (see simulation section; set `Velocity Scaling` to 0.1 first)
+
+### Running the prbt with a gripper
+Currently only the Schunk pg70 is supported. To run it, first install the package:
+* `sudo apt-get install ros-kinetic-prbt-pg70-support`
+
+then start the robot like before but with the `gripper:=pg70` set. Both simulation and real robot work.
 
 ## Package: prbt_ikfast_manipulator_plugin
 The package contains a moveit plugin for inverse kinematics of the manipulator, which is a

@@ -2,6 +2,10 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.2.3 (forthcoming)
+-------------------
+* remove dependency on gripper
+
 0.2.2 (2018-07-26)
 ------------------
 * Move constants inside prbt_macro.xacro into local namespace.

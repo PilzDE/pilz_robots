@@ -34,8 +34,7 @@ static constexpr double L2 {0.3070}; // Height of second connector
 static constexpr double L3 {0.0840}; // Distance last joint to flange
 static constexpr double delta {1.0e-10};
 
-const std::string PARAM_MODEL_NO_GRIPPER_NAME {"robot_description"};
-const std::string PARAM_MODEL_WITH_GRIPPER_NAME {"robot_description_with_gripper"};
+const std::string PARAM_MODEL {"robot_description"};
 
 typedef std::tuple<std::string, std::vector<double>, Eigen::Vector3d> TestDataPoint;
 
@@ -96,10 +95,7 @@ void URDFKinematicsTest::SetUp()
   testDataSet_.push_back(TestDataPoint("TestPos10", {      0,       0,       0,  0,       0,  M_PI_2}, Eigen::Vector3d(0,    0, L0+L1+L2+L3)));
 }
 
-INSTANTIATE_TEST_CASE_P(InstantiationName, URDFKinematicsTest, ::testing::Values(
-                        PARAM_MODEL_NO_GRIPPER_NAME,
-                        PARAM_MODEL_WITH_GRIPPER_NAME
-                          ));
+INSTANTIATE_TEST_CASE_P(InstantiationName, URDFKinematicsTest, ::testing::Values(PARAM_MODEL));
 /**
  * \brief test the kinematics of urdf model
  *
