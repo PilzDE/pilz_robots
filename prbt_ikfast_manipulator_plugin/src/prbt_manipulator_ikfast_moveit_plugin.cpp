@@ -787,11 +787,11 @@ bool IKFastKinematicsPlugin::searchPositionIK(const geometry_msgs::Pose& ik_pose
 }
 
 bool IKFastKinematicsPlugin::searchPositionIK(const geometry_msgs::Pose& ik_pose,
-                                              const std::vector<double>& ik_seed_state, double timeout,
+                                              const std::vector<double>& ik_seed_state, double /*timeout*/,
                                               const std::vector<double>& consistency_limits,
                                               std::vector<double>& solution, const IKCallbackFn& solution_callback,
                                               moveit_msgs::MoveItErrorCodes& error_code,
-                                              const kinematics::KinematicsQueryOptions& options) const
+                                              const kinematics::KinematicsQueryOptions& /*options*/) const
 {
   ROS_DEBUG_STREAM_NAMED("ikfast", "searchPositionIK");
 
@@ -865,7 +865,6 @@ bool IKFastKinematicsPlugin::searchPositionIK(const geometry_msgs::Pose& ik_pose
 
   std::vector<double> vfree(free_params_.size());
 
-  ros::Time maxTime = ros::Time::now() + ros::Duration(timeout);
   int counter = 0;
 
   double initial_guess = ik_seed_state[free_params_[0]];
@@ -1002,7 +1001,7 @@ bool IKFastKinematicsPlugin::searchPositionIK(const geometry_msgs::Pose& ik_pose
 // Used when there are no redundant joints - aka no free params
 bool IKFastKinematicsPlugin::getPositionIK(const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state,
                                            std::vector<double>& solution, moveit_msgs::MoveItErrorCodes& error_code,
-                                           const kinematics::KinematicsQueryOptions& options) const
+                                           const kinematics::KinematicsQueryOptions& /*options*/) const
 {
   ROS_DEBUG_STREAM_NAMED("ikfast", "getPositionIK");
 
