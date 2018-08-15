@@ -19,7 +19,7 @@ static const std::string JOINT_NAMES_PARAM {"joint_names"};
 static const std::string ROBOT_DESCRIPTION_PARAM {"robot_description"};
 
 static constexpr double DEFAULT_SEARCH_DISCRETIZATION {0.01};
-static constexpr int NUM_JOINTS {6};
+static constexpr unsigned int NUM_JOINTS {6};
 static constexpr double IKFAST_TOLERANCE {0.001};
 
 static constexpr double L1 {0.3500}; // Height of first connector
@@ -177,7 +177,7 @@ TEST_F(PrbtIKFastPluginTest, testSingularities)
     std::vector<geometry_msgs::Pose> poses;
     ASSERT_TRUE( solver_->getPositionFK(link_names, joints, poses) )
         << "Failed to compute forward kinematics.";
-    EXPECT_EQ(1, poses.size());
+    EXPECT_EQ(1u, poses.size());
     ROS_INFO_STREAM("Obtain pose: " << poses.at(0));
 
     // ++++++++++
@@ -196,7 +196,7 @@ TEST_F(PrbtIKFastPluginTest, testSingularities)
 
 
     ROS_INFO_STREAM("Received " << solutions.size() << " solutions to IK problem.");
-    EXPECT_GT(solutions.size(), 0);
+    EXPECT_GT(solutions.size(), 0u);
 
     // ++++++++++
     // + Step 4 +
@@ -208,7 +208,7 @@ TEST_F(PrbtIKFastPluginTest, testSingularities)
       EXPECT_EQ(sol.size(), NUM_JOINTS);
 
       double diff {0.0};
-      for (int j = 0; j < NUM_JOINTS; j++)
+      for (unsigned int j = 0; j < NUM_JOINTS; j++)
       {
         diff += pow(sol[j] - joints[j], 2);
       }
