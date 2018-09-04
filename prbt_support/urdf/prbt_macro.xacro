@@ -33,6 +33,11 @@ limitations under the License.
 
     <!-- robot foot link -->
     <link name="${prefix}base_link">
+      <inertial>
+        <mass value="5"/>
+        <inertia ixx="0"  ixy="0"  ixz="0" iyy="0" iyz="0" izz="0" />
+      </inertial>
+        
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0" />
         <geometry>
