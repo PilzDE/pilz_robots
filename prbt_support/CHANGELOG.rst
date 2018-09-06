@@ -2,6 +2,12 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add missing inertial tag for base_link and flange link
+* Add improved values for mass and inertia for all links
+* Attach model to world frame for proper use with Gazebo
+
 0.3.0 (2018-08-15)
 ------------------
 * remove dependency on gripper

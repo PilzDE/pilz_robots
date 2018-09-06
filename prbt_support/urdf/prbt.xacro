@@ -40,6 +40,12 @@ limitations under the License.
   <!-- instantiate the robot -->
   <xacro:prbt prefix="$(arg robot_prefix)" />
 
+  <link name="world"/>
+  <joint name="fixed" type="fixed">
+    <parent link="world"/>
+    <child link="$(arg robot_prefix)base_link"/>
+  </joint>
+
   <!-- TCP -->
   <joint name="$(arg robot_prefix)fixed_joint_tcp" type="fixed">
     <origin xyz="$(arg tcp_offset_xyz)" rpy="$(arg tcp_offset_rpy)" />  <!-- tcp offset from last link -->
