@@ -96,6 +96,9 @@ A controlled stop using a hold trajectory is performed thus stopping the manipul
 ## Package: prbt_hardware_support
 This package provides support for the Pilz hardware PNOZmulti and realizes the Stop1 functionality. A configurable modbus connection is set up via `roslaunch prbt_hardware_support modbus_read_client.launch`.
 
+## Package: prbt_gazebo
+Provides a launch file to run the prbt manipulator inside gazebo.
+
 ## You need further information?
 Our international hotline staff will support you individually about our ROS packages at
 ros@pilz.de
