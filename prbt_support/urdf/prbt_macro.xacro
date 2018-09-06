@@ -33,6 +33,10 @@ limitations under the License.
 
     <!-- robot foot link -->
     <link name="${prefix}base_link">
+        <inertial>
+          <mass value="2.4"/>
+          <inertia ixx="0"  ixy="0"  ixz="0" iyy="0" iyz="0" izz="0" />
+        </inertial>
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0" />
         <geometry>
@@ -62,9 +66,8 @@ limitations under the License.
     <!-- arm 1 link -->
     <link name="${prefix}link_1">
       <inertial>
-        <origin xyz="-0.00014 0.02783 0.05093" rpy="0 0 0"/>
         <mass value="7.1"/>
-        <inertia ixx="0"  ixy="0"  ixz="0" iyy="0" iyz="0" izz="0" />
+        <inertia ixx="5.84e-2"  ixy="-1.1e-5"  ixz="6.5e-5" iyy="4.84e-2" iyz="-2.8e-4" izz="2.34e-2" />
       </inertial>
 
       <visual>
@@ -106,9 +109,8 @@ limitations under the License.
 
     <link name="${prefix}link_2">
       <inertial>
-        <origin xyz="0.00001 0.16907 0.02464" rpy="0 0 0"/>
-        <mass value="2.4"/>
-        <inertia ixx="0"  ixy="0"  ixz="0" iyy="0" iyz="0" izz="0" />
+        <mass value="1.7"/>
+        <inertia ixx="1.12e-1"  ixy="-1.7e-6"  ixz="-8e-7" iyy="3.40e-2" iyz="-3.87e-2" izz="8.17e-2" />
       </inertial>
 
       <visual name="first">
@@ -145,9 +147,8 @@ limitations under the License.
 
     <link name="${prefix}link_3">
       <inertial>
-        <origin xyz="-0.0001 0.04395 -0.02798" rpy="0 0 0"/>
-        <mass value="5.0"/>
-        <inertia ixx="0"  ixy="0"  ixz="0" iyy="0" iyz="0" izz="0" />
+        <mass value="4.8"/>
+        <inertia ixx="3.32e-2"  ixy="2.7e-6"  ixz="-3.3e-6" iyy="1.43e-2" iyz="2.3e-4" izz="2.54e-2" />
       </inertial>
 
       <visual>
@@ -189,9 +190,8 @@ limitations under the License.
 
     <link name="${prefix}link_4">
       <inertial>
-        <origin xyz="-0.00008 0.06528 0.06149" rpy="0 0 0"/>
-        <mass value="0.7"/>
-        <inertia ixx="0"  ixy="0"  ixz="0" iyy="0" iyz="0" izz="0" />
+        <mass value="0.9"/>
+        <inertia ixx="4.7e-2"  ixy="-1.1e-6"  ixz="-9.8e-6" iyy="4.15e-2" iyz="1.35e-2" izz="6.63e-3" />
       </inertial>
 
       <visual>
@@ -228,9 +228,8 @@ limitations under the License.
 
     <link name="${prefix}link_5">
       <inertial>
-        <origin xyz="-0.00026 0.01873 -0.03434" rpy="0 0 0"/>
-        <mass value="2"/>
-        <inertia ixx="0"  ixy="0"  ixz="0" iyy="0" iyz="0" izz="0" />
+        <mass value="2.6"/>
+        <inertia ixx="1.13e-2"  ixy="6.0e-5"  ixz="-2.7e-5" iyy="8.68e-3" iyz="7.9e-5" izz="5.10e-3" />
       </inertial>
 
       <visual>
@@ -284,6 +283,11 @@ limitations under the License.
 
     <!-- Flange -->
     <link name="${prefix}flange">
+      <inertial>
+        <mass value="0.1" />
+        <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+      </inertial>
+
       <visual>
         <origin xyz="0 0 0" rpy="0 0 0" />
         <geometry>
@@ -314,6 +318,56 @@ limitations under the License.
       <parent link="${prefix}flange" />
       <child link="${prefix}tool0" />
     </joint>
+
+    <!-- transmissions for gazebo -->
+    <transmission name="${prefix}joint_1_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${prefix}joint_1">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="${prefix}joint_1_motor"/>
+    </transmission>
+    <transmission name="${prefix}joint_2_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${prefix}joint_2">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="${prefix}joint_2_motor"/>
+    </transmission>
+    <transmission name="${prefix}joint_3_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${prefix}joint_3">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="${prefix}joint_3_motor"/>
+    </transmission>
+    <transmission name="${prefix}joint_4_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${prefix}joint_4">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="${prefix}joint_4_motor"/>
+    </transmission>
+    <transmission name="${prefix}joint_5_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${prefix}joint_5">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="${prefix}joint_5_motor"/>
+    </transmission>
+    <transmission name="${prefix}joint_6_trans">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${prefix}joint_6">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="${prefix}joint_6_motor"/>
+    </transmission>
+
+    <gazebo>
+      <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so" >
+        <robotNamespace>prbt</robotNamespace>
+      </plugin>
+    </gazebo>
 
   </xacro:macro>
 
