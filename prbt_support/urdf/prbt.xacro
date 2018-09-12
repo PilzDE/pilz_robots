@@ -41,7 +41,7 @@ limitations under the License.
   <xacro:prbt prefix="$(arg robot_prefix)" />
 
   <link name="world"/>
-  <joint name="fixed" type="fixed">
+  <joint name="world-base_link-fixed" type="fixed">
     <parent link="world"/>
     <child link="$(arg robot_prefix)base_link"/>
   </joint>
