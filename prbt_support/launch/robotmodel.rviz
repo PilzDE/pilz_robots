@@ -39,32 +39,16 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        prbt_base:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        prbt_base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         prbt_flange:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        prbt_gripper_finger_left_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        prbt_gripper_finger_left_link_bracket:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        prbt_gripper_finger_right_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        prbt_gripper_finger_right_link_bracket:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        prbt_gripper_palm_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -94,16 +78,15 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        prbt_link_foot:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         prbt_tcp:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        robot_base:
+        prbt_tool0:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        world-base_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -117,7 +100,7 @@ Visualization Manager:
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: robot_base
+    Fixed Frame: prbt_base_link
     Frame Rate: 30
   Name: root
   Tools:
