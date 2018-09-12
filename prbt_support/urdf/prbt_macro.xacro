@@ -67,7 +67,8 @@ limitations under the License.
     <link name="${prefix}link_1">
       <inertial>
         <mass value="7.1"/>
-        <inertia ixx="5.84e-2"  ixy="-1.1e-5"  ixz="6.5e-5" iyy="4.84e-2" iyz="-2.8e-4" izz="2.34e-2" />
+        <origin xyz="0 -0.026 -0.051" />
+        <inertia ixx="3.53e-2" ixy="0" ixz="0" iyy="3.01e-2" iyz="9.04e-3" izz="1.87e-2" />
       </inertial>
 
       <visual>
@@ -110,7 +111,8 @@ limitations under the License.
     <link name="${prefix}link_2">
       <inertial>
         <mass value="1.7"/>
-        <inertia ixx="1.12e-1"  ixy="-1.7e-6"  ixz="-8e-7" iyy="3.40e-2" iyz="-3.87e-2" izz="8.17e-2" />
+        <origin xyz="0 0.162 0.134" />
+        <inertia ixx="3.58e-2"  ixy="0"  ixz="0" iyy="3.22e-3" iyz="-1.45e-3" izz="3.66e-2" />
       </inertial>
 
       <visual name="first">
@@ -148,7 +150,8 @@ limitations under the License.
     <link name="${prefix}link_3">
       <inertial>
         <mass value="4.8"/>
-        <inertia ixx="3.32e-2"  ixy="2.7e-6"  ixz="-3.3e-6" iyy="1.43e-2" iyz="2.3e-4" izz="2.54e-2" />
+        <origin xyz="0 0.043 -0.027" />
+        <inertia ixx="2.06e-2" ixy="0" ixz="0" iyy="1.08e-2" iyz="-5.36e-3" izz="1.63e-2" />
       </inertial>
 
       <visual>
@@ -191,7 +194,8 @@ limitations under the License.
     <link name="${prefix}link_4">
       <inertial>
         <mass value="0.9"/>
-        <inertia ixx="4.7e-2"  ixy="-1.1e-6"  ixz="-9.8e-6" iyy="4.15e-2" iyz="1.35e-2" izz="6.63e-3" />
+        <origin xyz="0 -0.061 0.204" />
+        <inertia ixx="6.79e-3" ixy="0" ixz="0" iyy="4.91e-3" iyz="2.67e-3" izz="3.40e-3" />
       </inertial>
 
       <visual>
@@ -229,7 +233,8 @@ limitations under the License.
     <link name="${prefix}link_5">
       <inertial>
         <mass value="2.6"/>
-        <inertia ixx="1.13e-2"  ixy="6.0e-5"  ixz="-2.7e-5" iyy="8.68e-3" iyz="7.9e-5" izz="5.10e-3" />
+        <origin xyz="-0.001 0.021 -0.032" />
+        <inertia ixx="7.37e-3" ixy="4.78e-6" ixz="6.00e-5" iyy="5.87e-3" iyz="-1.71e-3" izz="3.96e-3" />
       </inertial>
 
       <visual>
@@ -284,7 +289,8 @@ limitations under the License.
     <!-- Flange -->
     <link name="${prefix}flange">
       <inertial>
-        <mass value="0.1" />
+        <mass value="0.02" />
+        <origin xyz="0 0 0" />
         <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
       </inertial>
 
