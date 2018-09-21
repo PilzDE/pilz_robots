@@ -2,6 +2,11 @@
 Changelog for package prbt_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add capabilities argument to moveit_planning_execution.launch
+* Contributors: Pilz GmbH and Co. KG
+
 0.3.0 (2018-08-15)
 ------------------
 * remove dependency on gripper
