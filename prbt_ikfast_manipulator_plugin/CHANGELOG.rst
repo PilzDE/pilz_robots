@@ -2,6 +2,11 @@
 Changelog for package prbt_ikfast_manipulator_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add code coverage make target
+* Contributors: Pilz GmbH and Co. KG
+
 0.3.0 (2018-08-15)
 ------------------
 
@@ -12,4 +17,5 @@ Changelog for package prbt_ikfast_manipulator_plugin
 0.2.0 (2018-07-12)
 ------------------
 * generate IKfast solver and plugin
-* Contributors: Alexander Gutenkunst, Fahri Demirci, Hagen Slusarek, Immanuel Martini, Joachim Schleicher, Kai Hu
+* Contributors: Pilz GmbH and Co. KG
+
