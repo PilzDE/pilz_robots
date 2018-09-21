@@ -4,9 +4,9 @@ Changelog for package prbt_support
 
 Forthcoming
 -----------
-* Add missing inertial tag for base_link and flange link
+* Enable prbt model to be used in combination with Gazebo
 * Add improved values for mass and inertia for all links
-* Attach model to world frame for proper use with Gazebo
+* Contributors: Pilz GmbH and Co. KG
 
 0.3.0 (2018-08-15)
 ------------------
@@ -24,4 +24,4 @@ Forthcoming
 0.2.0 (2018-07-12)
 ------------------
 * initial robot model for prbt with and without pg+70 gripper
-* Contributors: Alexander Gutenkunst, Fahri Demirci, Hagen Slusarek, Immanuel Martini, Joachim Schleicher, Kai Hu
+* Contributors: Pilz GmbH and Co. KG
