@@ -91,3 +91,6 @@ wrapper of `ikfast.cpp` to the kinematics base interface of moveit.
 ## Package: pilz_control
 Contains a specialized version of `ros_controllers::JointTrajectoryController` which can be put into a holding mode.
 A controlled stop using a hold trajectory is performed thus stopping the manipulator without the mechanical stress of a hard brake.
+
+## Package: prbt_hardware_support
+This package provides support for the Pilz hardware PNOZmulti and realizes the Stop1 functionality. A configurable modbus connection is set up via `roslaunch prbt_hardware_support modbus_read_client.launch`.

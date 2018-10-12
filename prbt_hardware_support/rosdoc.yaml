@@ -1,0 +1,6 @@
+- builder: doxygen
+  name: Documentation of prbt_hardware_support package
+  output_dir: prbt_hardware_support
+  file_patterns: '*.c *.cpp *.h *.cc *.hh *.dox *.md'
+  exclude_patterns: 'test'
+  use_mdfile_as_mainpage: 'README.md'

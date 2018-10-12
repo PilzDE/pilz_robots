@@ -25,6 +25,7 @@
   <exec_depend>rviz</exec_depend>
   <exec_depend>controller_manager</exec_depend>
   <exec_depend>pilz_control</exec_depend>
+  <exec_depend>prbt_hardware_support</exec_depend>
 
   <test_depend>rostest</test_depend>
   <test_depend>moveit_core</test_depend>
