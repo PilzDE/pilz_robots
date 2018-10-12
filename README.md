@@ -18,6 +18,7 @@ The package contains the robot description of the PRBT manipulator.
 - `test/` contains test files for urdf
   - build tests: `catkin_make tests`
   - build and run tests: `catkin_make run_tests`
+- `config/` defines the controllers and drivers. Loads the specialized `PilzTrajectoryController`.
 
 ### Pilz Coordinate Frames
 To see the robot in rviz you can use
@@ -86,3 +87,7 @@ then start the robot like before but with the `gripper:=pg70` set. Both simulati
 ## Package: prbt_ikfast_manipulator_plugin
 The package contains a moveit plugin for inverse kinematics of the manipulator, which is a
 wrapper of `ikfast.cpp` to the kinematics base interface of moveit.
+
+## Package: pilz_control
+Contains a specialized version of `ros_controllers::JointTrajectoryController` which can be put into a holding mode.
+A controlled stop using a hold trajectory is performed thus stopping the manipulator without the mechanical stress of a hard brake.
