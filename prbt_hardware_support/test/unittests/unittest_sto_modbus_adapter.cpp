@@ -42,10 +42,10 @@ namespace prbt_hardware_support
 static const std::string STO_TOPIC {"/stop1"};
 static const std::string STO_ADAPTER_NODE_NAME {"/sto_modbus_adapter_node"};
 
-static constexpr bool STO_CLEAR {false};
-static constexpr bool STO_ACTIVE {true};
+static constexpr bool STO_CLEAR {true};
+static constexpr bool STO_ACTIVE {false};
 
-static constexpr int MODBUS_API_VERSION_FOR_TESTING {1};
+static constexpr int MODBUS_API_VERSION_FOR_TESTING {2};
 
 using namespace prbt_hardware_support;
 
@@ -106,11 +106,11 @@ void PilzStoModbusAdapterTest::SetUp()
   EXPECT_EQ(0, pub_.getNumSubscribers());
 }
 
-ModbusMsgInStampedPtr PilzStoModbusAdapterTest::createDefaultStoModbusMsg(bool sto_clear)
+ModbusMsgInStampedPtr PilzStoModbusAdapterTest::createDefaultStoModbusMsg(bool sto)
 {
   static int msg_time_counter {1};
   std::vector<uint16_t> tab_reg(num_registers_to_read_);
-  tab_reg[0] = sto_clear;
+  tab_reg[0] = sto;
   tab_reg[1] = MODBUS_API_VERSION_FOR_TESTING;
   ModbusMsgInStampedPtr msg {createDefaultModbusMsgIn(index_of_first_register_to_read_, tab_reg)};
   msg->header.stamp = ros::Time(msg_time_counter++);
@@ -351,6 +351,29 @@ TEST_F(PilzStoModbusAdapterTest, testWrongVersion)
 
   BARRIER_STEP(1);
 }
+
+
+/**
+ * @brief Tests that a stop happens if a version 1 is received
+ *
+ * @note Version 1 had mistake in specification on the hardware therefore not supported at all
+ */
+TEST_F(PilzStoModbusAdapterTest, testVersion1)
+{
+  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
+
+  PilzStoModbusAdapterNode adapter_node(nh_);
+
+  EXPECT_STOP1
+
+  ModbusMsgInStampedPtr msg = createDefaultStoModbusMsg(STO_ACTIVE);
+  msg->holding_registers.data[1] = 1;
+
+  pub_.publish(msg);
+
+  BARRIER_STEP(1);
+}
+
 
 /**
  * @brief Test that stop happends if no Sto is defined
