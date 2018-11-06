@@ -2,8 +2,8 @@
 Changelog for package prbt_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.0 (2018-11-06)
+------------------
 * add capabilities argument to moveit_planning_execution.launch
 * Contributors: Pilz GmbH and Co. KG
 
