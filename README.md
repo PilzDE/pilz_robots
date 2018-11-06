@@ -7,11 +7,9 @@ The meta package for the PILZ robot manipulator PRBT.
 
 ### Build Status
 
-| Kinetic + Melodic |
-| ----------------- |
-| [![Build Status](https://travis-ci.org/PilzDE/pilz_robots.svg?branch=kinetic-devel)](https://travis-ci.org/PilzDE/pilz_robots) |
-
-We use the same source branch `kinetic-devel` for binary releases to ROS Kinetic and to ROS Melodic.
+| Kinetic | Melodic |
+| --------|-------- |
+| [![Build Status](https://travis-ci.org/PilzDE/pilz_robots.svg?branch=kinetic-devel)](https://travis-ci.org/PilzDE/pilz_robots) | [![Build Status](https://travis-ci.org/PilzDE/pilz_robots.svg?branch=melodic-devel)](https://travis-ci.org/PilzDE/pilz_robots) |
 
 ## Package: prbt_support
 The package contains the robot description of the PRBT manipulator.
