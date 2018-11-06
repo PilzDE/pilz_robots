@@ -1,0 +1,57 @@
+<!--
+Copyright (c) 2018 Pilz GmbH & Co. KG
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<launch>
+
+<!-- Services -->
+<arg name="recover_service_name" default="driver/recover"/>
+<arg name="halt_service_name" default="driver/halt"/>
+<arg name="hold_service_name" default="manipulator_joint_trajectory_controller/hold"/>
+<arg name="unhold_service_name" default="manipulator_joint_trajectory_controller/unhold"/>
+
+<!-- Modbus config -->
+<arg name="modbus_server_ip" default="127.0.0.1"/>
+<arg name="modbus_server_port" default="20702"/>
+<arg name="index_of_first_register_to_read" default="512" />
+<arg name="modbus_register_size" default="514" />
+<arg name="num_registers_to_read" default="2" />
+
+<node name="pilz_modbus_read_client_node" pkg="prbt_hardware_support" type="pilz_modbus_read_client_node">
+  <param name="index_of_first_register_to_read" value="$(arg index_of_first_register_to_read)"/>
+  <param name="modbus_server_ip" value="$(arg modbus_server_ip)"/>
+  <param name="modbus_server_port" value="$(arg modbus_server_port)"/>
+  <param name="index_of_first_register_to_read" value="$(arg index_of_first_register_to_read)"/>
+  <param name="num_registers_to_read" value="$(arg num_registers_to_read)"/>
+</node>
+
+<node name="sto_modbus_adapter_node" pkg="prbt_hardware_support" type="sto_modbus_adapter_node">
+  <param name="index_of_first_register_to_read" value="$(arg index_of_first_register_to_read)"/>
+</node>
+
+<test test-name="integrationtest_stop1" pkg="prbt_hardware_support" type="integrationtest_stop1">
+  <param name="modbus_server_ip" value="$(arg modbus_server_ip)"/>
+  <param name="modbus_server_port" value="$(arg modbus_server_port)"/>
+  <param name="modbus_register_size" value="$(arg modbus_register_size)"/>
+  <param name="num_registers_to_read" value="$(arg num_registers_to_read)"/>
+  <param name="index_of_first_register_to_read" value="$(arg index_of_first_register_to_read)"/>
+  <param name="recover_service_name" value="$(arg recover_service_name)"/>
+  <param name="halt_service_name" value="$(arg halt_service_name)"/>
+  <param name="hold_service_name" value="$(arg hold_service_name)"/>
+  <param name="unhold_service_name" value="$(arg unhold_service_name)"/>
+</test>
+
+</launch>

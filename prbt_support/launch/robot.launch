@@ -3,6 +3,7 @@
 
   <arg name="gripper" default="" />
   <arg name="load_robot_description" default="true" />
+  <arg name="sto" default="pnoz"/>
 
   <!-- send urdf to param server -->
   <param name="robot_description" if="$(arg load_robot_description)"
@@ -36,7 +37,19 @@
         args="manipulator_joint_trajectory_controller manipulator_joint_state_controller gripper_joint_trajectory_controller" />
 
   <!-- Initialize controllers -->
-  <node pkg="rosservice" type="rosservice" name="robot_init" args="call --wait /prbt/driver/init"/>
+
+
+
+  <!-- Initialize controllers -->
+  <group if="$(eval sto == 'pnoz')" >
+    <node pkg="rosservice" type="rosservice" name="robot_init" args="call --wait /prbt/driver/init"/>
+    <include file="$(find prbt_hardware_support)/launch/modbus_read_client.launch" />
+    <include file="$(find prbt_hardware_support)/launch/sto_modbus_adapter_node.launch" />
+  </group>
+
+  <group if="$(eval sto == 'none')" >
+    <node pkg="rosservice" type="rosservice" name="robot_init" args="call --wait /prbt/driver/init"/>
+  </group>
 
 </launch>
 
