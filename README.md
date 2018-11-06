@@ -1,7 +1,7 @@
 # ROS_PRBT
 
 ## Package: pilz_robots
-The meta package for the PILZ robot manipulator PRBT.
+The meta package for the PILZ robot manipulator PRBT. Here you can find documentation of the individual packages. For a general overview and link collection we refer to the [wiki page](http://wiki.ros.org/pilz_robots).
 
 ![PRBT manipulator](prbt_support/img/prbt.jpg)
 
