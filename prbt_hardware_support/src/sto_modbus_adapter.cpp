@@ -131,7 +131,7 @@ void PilzStoModbusAdapterNode::internalMsgCallback(const ModbusMsgStoWrapper& ms
     return;
   }
 
-  if(msg.getSTO())
+  if(!msg.getSTO())
   {
     performStop();
   }

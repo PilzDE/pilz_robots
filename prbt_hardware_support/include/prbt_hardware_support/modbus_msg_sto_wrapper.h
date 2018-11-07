@@ -127,12 +127,12 @@ inline unsigned int ModbusMsgStoWrapper::getVersion() const
 
 inline bool ModbusMsgStoWrapper::hasSTO(const ModbusMsgInStampedConstPtr& modbus_msg_raw) const
 {
-  return hasRegister(modbus_msg_raw, modbus_api::v1::MODBUS_REGISTER_STO);
+  return hasRegister(modbus_msg_raw, modbus_api::v2::MODBUS_REGISTER_STO);
 }
 
 inline bool ModbusMsgStoWrapper::getSTO() const
 {
-  return getRegister(msg_, modbus_api::v1::MODBUS_REGISTER_STO);
+  return getRegister(msg_, modbus_api::v2::MODBUS_REGISTER_STO);
 }
 
 inline bool ModbusMsgStoWrapper::isDisconnect() const
