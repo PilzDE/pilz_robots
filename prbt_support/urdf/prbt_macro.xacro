@@ -368,13 +368,12 @@ limitations under the License.
       </joint>
       <actuator name="${prefix}joint_6_motor"/>
     </transmission>
-
-    <gazebo>
-      <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so" >
-        <robotNamespace>prbt</robotNamespace>
-      </plugin>
-    </gazebo>
-
   </xacro:macro>
+
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so" >
+      <robotNamespace>prbt</robotNamespace>
+    </plugin>
+  </gazebo>
 
 </robot>
