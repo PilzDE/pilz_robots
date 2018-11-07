@@ -1,6 +1,6 @@
 <package format="2">
   <name>prbt_support</name>
-  <version>0.3.0</version>
+  <version>0.4.0</version>
   <description> Mechanical, kinematic and visual description
   of the Pilz light weight arm PRBT. </description>
 
@@ -24,6 +24,8 @@
   <exec_depend>xacro</exec_depend>
   <exec_depend>rviz</exec_depend>
   <exec_depend>controller_manager</exec_depend>
+  <exec_depend>pilz_control</exec_depend>
+  <exec_depend>prbt_hardware_support</exec_depend>
 
   <test_depend>rostest</test_depend>
   <test_depend>moveit_core</test_depend>

@@ -1,0 +1,6 @@
+- builder: doxygen
+  name: Documentation of pilz_control package
+  output_dir: pilz_control
+  file_patterns: '*.c *.cpp *.h *.cc *.hh *.dox *.md'
+  exclude_patterns: 'test'
+  use_mdfile_as_mainpage: 'README.md'

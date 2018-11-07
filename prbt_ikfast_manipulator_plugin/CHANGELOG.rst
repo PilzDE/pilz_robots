@@ -2,8 +2,8 @@
 Changelog for package prbt_ikfast_manipulator_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.0 (2018-11-06)
+------------------
 * add code coverage make target
 * Contributors: Pilz GmbH and Co. KG
 

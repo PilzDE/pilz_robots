@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>pilz_control</name>
+  <version>0.4.0</version>
+  <description>
+  This package provides a specialized joint_trajectory_controller that can be moved into holding state via service call.
+  No further trajectories will be accepted/followed in this state.
+  </description>
+
+  <url type="website">http://ros.org/wiki/pilz_control</url>
+  <url type="bugtracker">https://github.com/PilzDE/pilz_robots/issues</url>
+  <url type="repository">https://github.com/PilzDE/pilz_robots</url>
+
+  <maintainer email="ros@pilz.de">Pilz GmbH and Co. KG</maintainer>
+
+  <license>Apache 2.0</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>cmake_modules</build_depend>
+  <build_depend>roslint</build_depend>
+
+  <depend>roscpp</depend>
+  <depend>joint_trajectory_controller</depend>
+  <depend>std_srvs</depend>
+  <depend>controller_manager</depend>
+  <depend>controller_interface</depend> <!-- Needed for the plugin export -->
+
+  <test_depend>rostest</test_depend>
+  <test_depend>code_coverage</test_depend>
+
+  <export>
+    <controller_interface plugin="${prefix}/pilz_control_plugins.xml"/>
+  </export>
+</package>

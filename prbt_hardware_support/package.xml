@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package>
+  <name>prbt_hardware_support</name>
+  <version>0.4.0</version>
+  <description>Control hardware functions of the PRBT manipulator like STO for Stop1 functionality.</description>
+
+  <maintainer email="ros@pilz.de">Pilz GmbH and Co. KG</maintainer>
+
+  <license>LGPLv3</license>
+
+  <url type="website">https://wiki.ros.org/prbt_hardware_support</url>
+  <url type="bugtracker">https://github.com/PilzDE/pilz_robots/issues</url>
+  <url type="repository">https://github.com/PilzDE/pilz_robots</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>libmodbus-dev</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>message_filters</build_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>std_msgs</run_depend>
+
+  <!-- Test dependencies -->
+  <test_depend>rostest</test_depend>
+  <test_depend>rosunit</test_depend>
+  <test_depend>cmake_modules</test_depend>
+  <test_depend>code_coverage</test_depend>
+
+</package>
