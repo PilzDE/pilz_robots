@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>prbt_hardware_support</name>
-  <version>0.4.0</version>
+  <version>0.4.1</version>
   <description>Control hardware functions of the PRBT manipulator like STO for Stop1 functionality.</description>
 
   <maintainer email="ros@pilz.de">Pilz GmbH and Co. KG</maintainer>
