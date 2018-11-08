@@ -10,6 +10,7 @@ add_definitions(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
+  std_srvs
   message_generation
   message_filters
 )
