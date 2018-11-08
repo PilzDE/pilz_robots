@@ -2,6 +2,10 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix missing include on std_srvs
+
 0.4.1 (2018-11-07)
 ------------------
 * Use Modbus API v2 due to wrongly specified version 1
