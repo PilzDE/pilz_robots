@@ -2,6 +2,10 @@
 Changelog for package prbt_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* adjust rviz config
+
 0.4.2 (2018-11-08)
 ------------------
 
