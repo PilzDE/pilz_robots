@@ -4,6 +4,7 @@ Changelog for package prbt_moveit_config
 
 Forthcoming
 -----------
+* load pilz capabilities for command_planner by default
 * adjust rviz config
 
 0.4.2 (2018-11-08)

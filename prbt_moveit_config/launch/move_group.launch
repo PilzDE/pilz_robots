@@ -27,6 +27,12 @@
   <!-- Enable/Disable gripper -->
   <arg name="gripper" default="" />
 
+  <!-- add sequence capabilities for command_planner pipeline -->
+  <arg name="_capabilities" value="$(arg capabilities)" unless="$(eval arg('pipeline')=='command_planner')" />
+  <arg name="_capabilities"
+       value="$(arg capabilities) pilz_trajectory_generation/MoveGroupSequenceAction pilz_trajectory_generation/MoveGroupSequenceService"
+       if="$(eval arg('pipeline')=='command_planner')" />
+
   <!-- load robot models -->
   <include file="$(find prbt_moveit_config)/launch/planning_context.launch" >
     <arg name="gripper" value="$(arg gripper)" />
@@ -59,7 +65,7 @@
     <param name="allow_trajectory_execution" value="$(arg allow_trajectory_execution)"/>
     <param name="max_safe_path_cost" value="$(arg max_safe_path_cost)"/>
     <param name="jiggle_fraction" value="$(arg jiggle_fraction)" />
-    <param name="capabilities" value="$(arg capabilities)"/>
+    <param name="capabilities" value="$(arg _capabilities)"/>
     <param name="disable_capabilities" value="$(arg disable_capabilities)"/>
 
     <!-- Publish the planning scene of the physical robot so that rviz plugin can know actual robot -->
