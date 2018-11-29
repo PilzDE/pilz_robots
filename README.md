@@ -1,7 +1,8 @@
-# ROS_PRBT
+[![PILZ](prbt_support/img/pilz-logo.png)](https://www.pilz.com)
+# PILZ robot manipulator module PRBT 6 in ROS
 
 ## Package: pilz_robots
-The meta package for the PILZ robot manipulator PRBT. Here you can find documentation of the individual packages. For a general overview and link collection we refer to the [wiki page](http://wiki.ros.org/pilz_robots).
+The meta package for the PILZ manipulator PRBT 6. Here you can find documentation of the individual packages. For a general overview and link collection we refer to the [wiki page](http://wiki.ros.org/pilz_robots).
 
 ![PRBT manipulator](prbt_support/img/prbt.jpg)
 
@@ -94,3 +95,28 @@ A controlled stop using a hold trajectory is performed thus stopping the manipul
 
 ## Package: prbt_hardware_support
 This package provides support for the Pilz hardware PNOZmulti and realizes the Stop1 functionality. A configurable modbus connection is set up via `roslaunch prbt_hardware_support modbus_read_client.launch`.
+
+## You need further information?
+Our international hotline staff will support you individually about our ROS packages at
+ros@pilz.de
+
+Find more information about the Pilz manipulator module on the [product website](https://www.pilz.com/en-INT/eshop/00108002327111/PRBT-manipulator-modules).
+
+## Visit us at [pilz.com](https://www.pilz.com)
+Pilz is an international-scale, innovative automation technology company.
+Pilz uses its solutions to create safety for man, machine and the environment.
+In addition to head office in Ostfildern near Stuttgart,
+the family business is represented over 2,400
+employees at 42 subsidiaries and branches on all
+continents.
+
+The company’s products include sensor technology, electronic monitoring relays, safety
+relays, configurable and programmable control systems, automation solutions with motion
+control, systems for industrial communication as well as visualization solutions and
+operator terminals.
+
+Pilz solutions can be used in all areas of mechanical engineering, including the packaging
+and automotive sector, plus the railway technology, press and wind energy sectors.
+These solutions ensure that baggage handling systems run safely at airports and
+funiculars or roller coasters travel safely; they also guarantee fire protection and energy
+supply in buildings.

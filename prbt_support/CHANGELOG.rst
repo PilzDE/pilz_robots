@@ -4,6 +4,7 @@ Changelog for package prbt_support
 
 Forthcoming
 -----------
+* Update readme
 
 0.4.2 (2018-11-08)
 ------------------
