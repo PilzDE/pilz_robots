@@ -5,6 +5,17 @@ Changelog for package prbt_moveit_config
 0.5.0 (2018-11-07)
 ------------------
 
+0.4.3 (2018-11-30)
+------------------
+* load pilz capabilities for command_planner by default
+* adjust rviz config
+
+0.4.2 (2018-11-08)
+------------------
+
+0.4.1 (2018-11-07)
+------------------
+
 0.4.0 (2018-11-06)
 ------------------
 * add capabilities argument to moveit_planning_execution.launch

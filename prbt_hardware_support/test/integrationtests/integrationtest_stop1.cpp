@@ -51,7 +51,7 @@ using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 
-static constexpr uint16_t MODBUS_API_VERSION_VALUE {1};
+static constexpr uint16_t MODBUS_API_VERSION_VALUE {2};
 
 /**
  * @brief Stop1IntegrationTest checks if the chain
@@ -180,7 +180,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
   }
 
   // This should trigger the expected reaction
-  std::vector<uint16_t> initial_holding_register{modbus_api::v1::MODBUS_STO_CLEAR_VALUE, MODBUS_API_VERSION_VALUE};
+  std::vector<uint16_t> initial_holding_register{modbus_api::v2::MODBUS_STO_CLEAR_VALUE, MODBUS_API_VERSION_VALUE};
   modbus_server.setHoldingRegister(initial_holding_register, index_of_first_register_to_read);
 
   /**********
@@ -198,7 +198,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
     EXPECT_CALL(manipulator, haltCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER(2));
   }
 
-  std::vector<uint16_t> stop_holding_register{modbus_api::v1::MODBUS_STO_ACTIVE_VALUE, MODBUS_API_VERSION_VALUE};
+  std::vector<uint16_t> stop_holding_register{modbus_api::v2::MODBUS_STO_ACTIVE_VALUE, MODBUS_API_VERSION_VALUE};
   modbus_server.setHoldingRegister(stop_holding_register, index_of_first_register_to_read);
 
   /**********
@@ -217,7 +217,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
 
   }
 
-  std::vector<uint16_t> clear_holding_register{modbus_api::v1::MODBUS_STO_CLEAR_VALUE, MODBUS_API_VERSION_VALUE};
+  std::vector<uint16_t> clear_holding_register{modbus_api::v2::MODBUS_STO_CLEAR_VALUE, MODBUS_API_VERSION_VALUE};
   modbus_server.setHoldingRegister(clear_holding_register, index_of_first_register_to_read);
 
   /**********

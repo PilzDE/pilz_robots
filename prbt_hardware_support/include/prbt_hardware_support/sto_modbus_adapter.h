@@ -83,7 +83,7 @@ private:
 
   const uint32_t NUM_REGISTERS_TO_READ {2};
 
-  static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {1};
+  static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {2};
 
   static constexpr int WAIT_FOR_SERVICE_TIMEOUT_S {5};
 

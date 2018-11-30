@@ -41,7 +41,7 @@ A Modbus client (for usage with the PNOZmulti) can be started with `roslaunch pr
 
 ## StoModbusAdapterNode
 The ``PilzStoModbusAdapterNode`` is noticed via the topic `/modbus_read` if the STO is true or false and reacts as follows calling the corresponding services of the controllers and drivers:
-- **STO false:**
-enable drives, unhold controllers
 - **STO true:**
+enable drives, unhold controllers
+- **STO false:**
 hold controllers, disable drives
