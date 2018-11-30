@@ -2,6 +2,11 @@
 Changelog for package pilz_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* melodic release based on kinetic version 0.4.3
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.0 (2018-11-07)
 ------------------
 * fix joint trajectory controller due to new interface

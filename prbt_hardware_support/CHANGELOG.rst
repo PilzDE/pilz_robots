@@ -2,6 +2,11 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* melodic release based on kinetic version 0.4.3
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.0 (2018-11-07)
 ------------------
 
