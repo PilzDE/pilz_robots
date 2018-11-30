@@ -1,6 +1,6 @@
 <package>
   <name>prbt_ikfast_manipulator_plugin</name>
-  <version>0.5.0</version>
+  <version>0.5.1</version>
   <description>The prbt_ikfast_manipulator_plugin package</description>
 
   <maintainer email="ros@pilz.de">Pilz GmbH and Co. KG</maintainer>
