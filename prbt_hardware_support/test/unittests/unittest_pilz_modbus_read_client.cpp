@@ -32,10 +32,10 @@
 #include <prbt_hardware_support/pilz_modbus_read_client.h>
 #include <prbt_hardware_support/pilz_modbus_exceptions.h>
 #include <prbt_hardware_support/pilz_modbus_read_client_exception.h>
-#include <prbt_hardware_support/async_test.h>
 
 #include <prbt_hardware_support/client_tests_common.h>
-#include <prbt_hardware_support/async_test.h>
+
+#include <pilz_testutils/async_test.h>
 
 namespace pilz_modbus_read_client_test
 {

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>pilz_testutils</name>
+  <version>0.0.0</version>
+  <description>This package contains testing utilities used by Pilz packages.</description>
+
+  <maintainer email="ros@pilz.de">Pilz GmbH and Co. KG</maintainer>
+
+  <license>Apache 2.0</license>
+
+  <url type="website">https://wiki.ros.org/pilz_testutils</url>
+  <url type="bugtracker">https://github.com/PilzDE/pilz_robots/issues</url>
+  <url type="repository">https://github.com/PilzDE/pilz_robots</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+</package>

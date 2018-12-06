@@ -34,7 +34,8 @@
 #include <prbt_hardware_support/modbus_msg_in_utils.h>
 #include <prbt_hardware_support/sto_modbus_adapter.h>
 #include <prbt_hardware_support/pilz_manipulator_mock.h>
-#include <prbt_hardware_support/async_test.h>
+
+#include <pilz_testutils/async_test.h>
 
 namespace prbt_hardware_support
 {
