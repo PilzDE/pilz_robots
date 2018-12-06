@@ -39,9 +39,10 @@
 #include <prbt_hardware_support/pilz_modbus_server_mock.h>
 #include <prbt_hardware_support/pilz_modbus_read_client.h>
 #include <prbt_hardware_support/pilz_manipulator_mock.h>
-#include <prbt_hardware_support/async_test.h>
 
 #include <prbt_hardware_support/ros_test_helper.h>
+
+#include <pilz_testutils/async_test.h>
 
 namespace prbt_hardware_support
 {

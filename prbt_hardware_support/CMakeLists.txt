@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_srvs
   message_generation
   message_filters
+  pilz_testutils
 )
 
 # message generation
