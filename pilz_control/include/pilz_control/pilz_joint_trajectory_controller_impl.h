@@ -98,7 +98,8 @@ template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 updateStrategyWhileHolding(const JointTrajectoryConstPtr&, RealtimeGoalHandlePtr)
 {
-  ROS_INFO_THROTTLE_NAMED(10, this->name_, "Can't accept new commands. Controller is holding.");
+  ROS_WARN_THROTTLE_NAMED(10, this->name_,
+                          "Controller received new commands but won't react because it is currently in holding mode.");
   return false;
 }
 
