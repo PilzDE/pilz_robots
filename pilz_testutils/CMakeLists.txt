@@ -8,13 +8,16 @@ add_definitions(-Wextra)
 add_definitions(-Wno-unused-parameter)
 add_definitions(-Werror)
 
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+)
 
 ###################################
 ## catkin specific configuration ##
 ###################################
 catkin_package(
  INCLUDE_DIRS include
+ LIBRARIES ${PROJECT_NAME}
 )
 
 ###########
@@ -28,6 +31,16 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+## Declare a C++ library
+add_library(${PROJECT_NAME}
+  src/async_test.cpp
+)
+
+## Specify libraries to link a library or executable target against
+ target_link_libraries(${PROJECT_NAME}
+   ${catkin_LIBRARIES}
+)
+
 #############
 ## Install ##
 #############
@@ -36,4 +49,9 @@ install(DIRECTORY include/${PROJECT_NAME}/
 DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 FILES_MATCHING PATTERN "*.h"
 PATTERN ".svn" EXCLUDE
+)
+
+## Mark executables and/or libraries for installation
+install(TARGETS ${PROJECT_NAME}
+   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
