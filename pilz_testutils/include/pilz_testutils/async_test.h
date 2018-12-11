@@ -28,58 +28,84 @@
 namespace testing
 {
 
-#define ACTION_OPEN_BARRIER(num) ::testing::InvokeWithoutArgs([this](void){this->enableTestStep(num); return true;})
-#define ACTION_OPEN_BARRIER_VOID(num) ::testing::InvokeWithoutArgs([this](void){this->enableTestStep(num);})
+#define ACTION_OPEN_BARRIER(str) ::testing::InvokeWithoutArgs([this](void){this->triggerClearEvent(str); return true;})
+#define ACTION_OPEN_BARRIER_VOID(str) ::testing::InvokeWithoutArgs([this](void){this->triggerClearEvent(str);})
 
 /**
  * @brief Test class that allows the handling of asynchronous test objects
  *
- * The class provides two basic function. AsyncTest::barricadeTestStep and AsyncTest::setTestStep
- * during the test setup gates between the steps and trigger a setTestStep to allow passing on after a test.
+ * The class provides two basic function. AsyncTest::barricade and AsyncTest::triggerClearEvent
+ * During the test setup gates between the steps with one or more clear events. Allow passing on by calling
+ * triggerClearEvent after a test.
  */
 class AsyncTest
 {
   public:
     /**
-     * @brief Allows the test step @param step to pass. If a call to barricadeTestStep with the requested
-     * step is currently pending it will now unblock.
+     * @brief Triggeres a clear event. If a call to barricade is currently pending it will unblock as soon as all clear
+     * events are triggered. Else the event is put on the waitlist. This waitlist is emptied upon a call to barricade.
      *
-     * @param step The test step to enable
+     * @param event The event that is triggered
      */
-    void enableTestStep(int step);
+    void triggerClearEvent(std::string event);
 
     /**
-     * @brief If no call to setTestStep with the requested step was set before it will block until a enableTestStep
-     * with the required step is called
+     * @brief Will block until the event given by clear_event is triggered. Unblocks immediately, if the event was
+     * triggered in advance.
      *
-     * @param step The test step that is gated
+     * @param clear_event Event that allows the test to pass on
      */
-    void barricadeTestStep(int step);
+    void barricade(std::string clear_event);
+
+    /**
+     * @brief Will block until all events given by clear_events are triggered. Events triggered in advance take effect,
+     * too.
+     *
+     * @param clear_events List of events that allow the test to pass on
+     */
+    void barricade(std::initializer_list<std::string> clear_events);
 
   protected:
     std::mutex m_;
     std::condition_variable cv_;
-    std::atomic_int test_step_{-1};
+    std::set<std::string> clear_events_ {};
+    std::set<std::string> waitlist_ {};
 };
 
-void AsyncTest::enableTestStep(int step)
+void AsyncTest::triggerClearEvent(std::string event)
 {
   std::lock_guard<std::mutex> lk(m_);
-  test_step_ = step;
+  if (clear_events_.empty())
+  {
+    waitlist_.insert(event);
+  }
+  else if (clear_events_.erase(event) < 1)
+  {
+    ROS_WARN_STREAM("Triggered event " << event << " despite not waiting for it.");
+  }
   cv_.notify_one();
 }
 
-void AsyncTest::barricadeTestStep(int step)
+void AsyncTest::barricade(std::string clear_event)
 {
-  while(test_step_ != step)
+  barricade({clear_event});
+}
+
+void AsyncTest::barricade(std::initializer_list<std::string> clear_events)
+{
+  std::unique_lock<std::mutex> lk(m_);
+  std::copy_if(clear_events.begin(), clear_events.end(), std::inserter(clear_events_, clear_events_.end()),
+               [this](std::string event){ return this->waitlist_.count(event) == 0; });
+  waitlist_.clear();
+  while(!clear_events_.empty())
   {
-    std::unique_lock<std::mutex> lk(m_);
     cv_.wait(lk);
   }
 }
 
 // for better readability in tests
-#define BARRIER_STEP(i) barricadeTestStep(i)
+#define BARRIER(str) barricade(str)
+#define BARRIER2(str1, str2) barricade(str1, str2)
 }
 
 #endif // ASYNC_TEST_H
