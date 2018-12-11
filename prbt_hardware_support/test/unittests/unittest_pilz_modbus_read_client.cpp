@@ -193,14 +193,14 @@ TEST_F(PilzModbusReadClientTests, properReadingAndDisconnect)
 
     EXPECT_CALL(*this, modbus_read_cb(IsDisconnect()))
         .Times(1)
-        .WillOnce(ACTION_OPEN_BARRIER_VOID(1));
+        .WillOnce(ACTION_OPEN_BARRIER_VOID("disconnected"));
   }
 
   PilzModbusReadClient client(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock));
 
   EXPECT_TRUE(client.init(LOCALHOST, DEFAULT_MODBUS_PORT_TEST));
   EXPECT_NO_THROW(client.run());
-  BARRIER_STEP(1);
+  BARRIER("disconnected");
 }
 
 /**
@@ -231,7 +231,7 @@ TEST_F(PilzModbusReadClientTests, terminateRunningClient)
     .WillOnce(Return(true));
   EXPECT_CALL(*mock, readHoldingRegister(_,_)).WillRepeatedly(Return(std::vector<uint16_t>{3, 4}));
   EXPECT_CALL(*this, modbus_read_cb(IsSuccessfullRead(std::vector<uint16_t>{3,4})))
-    .WillOnce(ACTION_OPEN_BARRIER_VOID(1))
+    .WillOnce(ACTION_OPEN_BARRIER_VOID("reading_successful"))
     .WillRepeatedly(Return());
   EXPECT_CALL(*this, modbus_read_cb(IsDisconnect())).Times(0);
 
@@ -246,7 +246,7 @@ TEST_F(PilzModbusReadClientTests, terminateRunningClient)
   });
 
   client->run();
-  BARRIER_STEP(1);
+  BARRIER("reading_successful");
   terminate_thread.join();
   EXPECT_FALSE(client->isRunning());
 }
