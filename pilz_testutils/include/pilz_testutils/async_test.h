@@ -28,9 +28,38 @@ namespace testing
 /**
  * @brief Test class that allows the handling of asynchronous test objects
  *
- * The class provides two basic function. AsyncTest::barricade and AsyncTest::triggerClearEvent
+ * The class provides the two basic functions AsyncTest::barricade and AsyncTest::triggerClearEvent.
  * During the test setup gates between the steps with one or more clear events. Allow passing on by calling
  * triggerClearEvent after a test.
+ *
+ * \e Usage:<br>
+ * Suppose you want to test a function that calls another function asynchronously, like the following example:
+ *
+ * \code
+ * void asyncCall(std::function<void()> fun)
+ * {
+ *     std::thread t(fun);
+ *     t.detach();
+ * }
+ * \endcode
+ *
+ * You expect that fun gets called, so your test thread has to wait for the completion, else it would fail. This can be
+ * achieved via:
+ *
+ * \code
+ * class MyTest : public testing::Test, public testing::AsyncTest
+ * {
+ * public:
+ *     MOCK_METHOD0(myMethod, void());
+ * };
+ *
+ * TEST_F(MyTest, testCase)
+ * {
+ *     EXPECT_CALL(*this, myMethod()).Times(1).WillOnce(ACTION_OPEN_BARRIER_VOID("myMethod"));
+ *     asyncCall(std::bind(&MyTest::myMethod, this));
+ *     BARRIER("myMethod");
+ * }
+ * \endcode
  */
 class AsyncTest
 {
