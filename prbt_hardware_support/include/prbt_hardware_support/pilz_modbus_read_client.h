@@ -76,8 +76,6 @@ public:
    * In order for clients to differentiate between messages notifying about
    * changes in the register the timestamp of the message is only changed
    * if a register value changed.
-   *
-   * @return Immediatly returns false if it could not run. Otherwise blocks and returns true if stopped.
    */
   void run();
 
