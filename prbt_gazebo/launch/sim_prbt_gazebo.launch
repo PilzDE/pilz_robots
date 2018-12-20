@@ -22,7 +22,7 @@ limitations under the License.
   <arg name="gui" default="true"/>
   <arg name="headless" default="false"/>
   <arg name="debug" default="false"/>
-  <arg name="pipeline" default="command_planner" />
+  <arg name="pipeline" default="ompl" />
 
   <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
