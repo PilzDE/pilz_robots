@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="pipeline" default="command_planner" />
+  <arg name="pipeline" default="ompl" />
   <arg name="load_robot_description" default="true" />
 
   <!-- GDB Debug Option -->
