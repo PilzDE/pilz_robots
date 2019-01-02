@@ -51,6 +51,10 @@ static constexpr unsigned int DEFAULT_MODBUS_PORT_TEST {502};
 static constexpr unsigned int REGISTER_FIRST_IDX_TEST {512};
 static constexpr unsigned int REGISTER_SIZE_TEST {2};
 
+static constexpr double WAIT_FOR_START_TIMEOUT_S {3.0};
+static constexpr double WAIT_SLEEPTIME_S {0.1};
+static constexpr double WAIT_FOR_STOP_TIMEOUT_S {3.0};
+
 /**
  * @brief Test if PilzModbusReadClient correctly publishes ROS-Modbus messages.
  *
@@ -239,16 +243,35 @@ TEST_F(PilzModbusReadClientTests, terminateRunningClient)
 
   EXPECT_TRUE(client->init(LOCALHOST, DEFAULT_MODBUS_PORT_TEST));
 
-  auto terminate_thread = std::thread([client]
+  auto running_thread = std::thread([client]
   {
-    EXPECT_TRUE(client->isRunning());
-    client->terminate();
+    client->run();
   });
 
-  client->run();
-  BARRIER("reading_successful");
-  terminate_thread.join();
+  ros::Time start_waiting = ros::Time::now();
+  while (!client->isRunning())
+  {
+    ros::Duration(WAIT_SLEEPTIME_S).sleep();
+    if (ros::Time::now() > start_waiting + ros::Duration(WAIT_FOR_START_TIMEOUT_S))
+    {
+      break;
+    }
+  }
+  EXPECT_TRUE(client->isRunning());
+
+  client->terminate();
+
+  start_waiting = ros::Time::now();
+  while (client->isRunning())
+  {
+    ros::Duration(WAIT_SLEEPTIME_S).sleep();
+    if (ros::Time::now() > start_waiting + ros::Duration(WAIT_FOR_STOP_TIMEOUT_S))
+    {
+      break;
+    }
+  }
   EXPECT_FALSE(client->isRunning());
+  running_thread.join();
 }
 
 }  // namespace pilz_modbus_read_client_test
