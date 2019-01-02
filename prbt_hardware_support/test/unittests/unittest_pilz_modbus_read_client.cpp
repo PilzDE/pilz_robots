@@ -233,11 +233,9 @@ TEST_F(PilzModbusReadClientTests, terminateRunningClient)
   EXPECT_CALL(*mock, init(_,_))
     .Times(1)
     .WillOnce(Return(true));
-  EXPECT_CALL(*mock, readHoldingRegister(_,_)).WillRepeatedly(Return(std::vector<uint16_t>{3, 4}));
-  EXPECT_CALL(*this, modbus_read_cb(IsSuccessfullRead(std::vector<uint16_t>{3,4})))
-    .WillOnce(ACTION_OPEN_BARRIER_VOID("reading_successful"))
-    .WillRepeatedly(Return());
-  EXPECT_CALL(*this, modbus_read_cb(IsDisconnect())).Times(0);
+  ON_CALL(*mock, readHoldingRegister(_,_)).WillByDefault(Return(std::vector<uint16_t>{3, 4}));
+  ON_CALL(*this, modbus_read_cb(IsSuccessfullRead(std::vector<uint16_t>{3,4})))
+    .WillByDefault(Return());
 
   auto client = std::make_shared< PilzModbusReadClient >(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock));
 
