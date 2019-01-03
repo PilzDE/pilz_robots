@@ -2,6 +2,11 @@
 Changelog for package prbt_ikfast_manipulator_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* update moveit ik plugin
+* Contributors: Pilz GmbH and Co. KG
+
 0.4.3 (2018-11-30)
 ------------------
 
