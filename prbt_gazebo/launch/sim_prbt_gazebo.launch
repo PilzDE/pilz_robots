@@ -47,6 +47,11 @@ limitations under the License.
     args="-param robot_description -urdf -model prbt "/>
 
   <!-- set pid parameters -->
+  <rosparam ns="prbt" command="load" file="$(find prbt_gazebo)/config/gazebo_pid_gains.yaml" />
+
+  <!-- set pid parameters for gazebo7, can be removed with ros-kinetic-gazebo-ros-control 2.5.18
+       when https://github.com/ros-simulation/gazebo_ros_pkgs/pull/637 will be released
+  -->
   <rosparam command="load" file="$(find prbt_gazebo)/config/gazebo_pid_gains.yaml" />
 
   <!-- ros_control robot launch file -->
