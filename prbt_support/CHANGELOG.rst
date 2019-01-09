@@ -2,6 +2,9 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.4.3 (2018-11-30)
 ------------------
 * Update readme

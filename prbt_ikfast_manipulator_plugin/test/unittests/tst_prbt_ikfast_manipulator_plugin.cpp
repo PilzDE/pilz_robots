@@ -118,7 +118,9 @@ void PrbtIKFastPluginTest::SetUp()
   EXPECT_TRUE(ph_.getParam(JOINT_NAMES_PARAM, joint_names_))
       << "The parameter " << JOINT_NAMES_PARAM << " was not found.";
 
-  ASSERT_TRUE( solver_->initialize(ROBOT_DESCRIPTION_PARAM, group_name_, root_link_, tip_link_,
+  std::vector<std::string> tip_links {tip_link_};
+
+  ASSERT_TRUE( solver_->initialize(ROBOT_DESCRIPTION_PARAM, group_name_, root_link_, tip_links,
                                    DEFAULT_SEARCH_DISCRETIZATION) ) << "Failed to initialize plugin.";
 }
 
