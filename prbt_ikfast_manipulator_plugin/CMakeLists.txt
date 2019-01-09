@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8.12)
 project(prbt_ikfast_manipulator_plugin)
 add_compile_options(-std=c++11)
 add_compile_options(-Wall)
@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_core
   pluginlib
   roscpp
-  tf_conversions
+  tf2_kdl
 )
 
 include_directories(${catkin_INCLUDE_DIRS})
@@ -22,7 +22,7 @@ catkin_package(
     moveit_core
     pluginlib
     roscpp
-    tf_conversions
+    tf2_kdl
 )
 
 include_directories(include)
