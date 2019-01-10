@@ -39,9 +39,10 @@
 #include <prbt_hardware_support/pilz_modbus_server_mock.h>
 #include <prbt_hardware_support/pilz_modbus_read_client.h>
 #include <prbt_hardware_support/pilz_manipulator_mock.h>
-#include <prbt_hardware_support/async_test.h>
 
 #include <prbt_hardware_support/ros_test_helper.h>
+
+#include <pilz_testutils/async_test.h>
 
 namespace prbt_hardware_support
 {
@@ -176,7 +177,8 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
     EXPECT_CALL(manipulator, unholdCb(_,_)).Times(1);
     EXPECT_CALL(manipulator, holdCb(_,_)).Times(0);
     EXPECT_CALL(manipulator, haltCb(_,_)).Times(0);
-    EXPECT_CALL(manipulator, recoverCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER(1)); // Expected came true -> go on
+    EXPECT_CALL(manipulator, recoverCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("recover_callback"));
+      // Expected came true -> go on
   }
 
   // This should trigger the expected reaction
@@ -186,7 +188,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
   /**********
    * Step 1 *
    **********/
-  BARRIER_STEP(1);
+  BARRIER("recover_callback");
 
   {
     InSequence dummy;
@@ -195,7 +197,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
     EXPECT_CALL(manipulator, unholdCb(_,_)).Times(0);
     EXPECT_CALL(manipulator, recoverCb(_,_)).Times(0);
     EXPECT_CALL(manipulator, holdCb(_,_)).Times(1);
-    EXPECT_CALL(manipulator, haltCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER(2));
+    EXPECT_CALL(manipulator, haltCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("halt_callback"));
   }
 
   std::vector<uint16_t> stop_holding_register{modbus_api::v2::MODBUS_STO_ACTIVE_VALUE, MODBUS_API_VERSION_VALUE};
@@ -204,7 +206,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
   /**********
    * Step 2 *
    **********/
-  BARRIER_STEP(2);
+  BARRIER("halt_callback");
 
   {
     InSequence dummy;
@@ -213,7 +215,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
     EXPECT_CALL(manipulator, holdCb(_,_)).Times(0);
     EXPECT_CALL(manipulator, haltCb(_,_)).Times(0);
     EXPECT_CALL(manipulator, unholdCb(_,_)).Times(1);
-    EXPECT_CALL(manipulator, recoverCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER(3));
+    EXPECT_CALL(manipulator, recoverCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("recover_callback"));
 
   }
 
@@ -223,7 +225,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
   /**********
    * Step 3 *
    **********/
-  BARRIER_STEP(3);
+  BARRIER("recover_callback");
   {
     InSequence dummy;
 
@@ -231,7 +233,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
     EXPECT_CALL(manipulator, holdCb(_,_)).Times(1);
     EXPECT_CALL(manipulator, unholdCb(_,_)).Times(0);
     EXPECT_CALL(manipulator, recoverCb(_,_)).Times(0);
-    EXPECT_CALL(manipulator, haltCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER(4));
+    EXPECT_CALL(manipulator, haltCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("halt_callback"));
   }
 
   modbus_server.terminate();
@@ -240,7 +242,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
   /**********
    * Step 4 *
    **********/
-  BARRIER_STEP(4); // Needed for proper async finish
+  BARRIER("halt_callback"); // Needed for proper async finish
 }
 
 } // namespace prbt_hardware_support

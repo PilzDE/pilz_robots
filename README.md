@@ -79,6 +79,12 @@ iface can0 can static
 2. Run `roslaunch prbt_moveit_config moveit_planning_execution.launch sim:=false pipeline:=ompl`
 3. Use the moveit Motion Planning rviz plugin to plan and execute (see simulation section; set `Velocity Scaling` to 0.1 first)
 
+Instead of OMPL use the motion planners of Pilz for executing industrial robot commands like PTP, LIN, etc. For this install the
+package [pilz_trajectory_generation](http://wiki.ros.org/pilz_trajectory_generation):
+* `sudo apt-get install ros-kinetic-pilz-trajectory-generation`
+
+then replace the pipeline in the above command by `pipeline:=command_planner`.
+
 ### Running the prbt with a gripper
 Currently only the Schunk pg70 is supported. To run it, first install the package:
 * `sudo apt-get install ros-kinetic-prbt-pg70-support`
@@ -95,6 +101,9 @@ A controlled stop using a hold trajectory is performed thus stopping the manipul
 
 ## Package: prbt_hardware_support
 This package provides support for the Pilz hardware PNOZmulti and realizes the Stop1 functionality. A configurable modbus connection is set up via `roslaunch prbt_hardware_support modbus_read_client.launch`.
+
+## Package: prbt_gazebo
+Provides a launch file to run the prbt manipulator inside gazebo.
 
 ## You need further information?
 Our international hotline staff will support you individually about our ROS packages at

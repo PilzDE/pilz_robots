@@ -4,6 +4,7 @@ Changelog for package prbt_moveit_config
 
 Forthcoming
 -----------
+* do not use command_planner by default to omit circular dependency
 
 0.5.1 (2018-11-30)
 ------------------

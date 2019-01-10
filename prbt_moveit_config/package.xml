@@ -32,6 +32,7 @@
   <!-- <run_depend>warehouse_ros_mongo</run_depend> -->
 
   <depend>prbt_support</depend>
+  <depend>prbt_ikfast_manipulator_plugin</depend>
 
   <test_depend>roslaunch</test_depend>
 

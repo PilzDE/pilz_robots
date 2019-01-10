@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>prbt_gazebo</name>
+  <version>0.4.3</version>
+  <description>Launch prbt robot in an empty Gazebo world.</description>
+
+  <maintainer email="ros@pilz.de">Pilz GmbH and Co. KG</maintainer>
+
+  <license>Apache 2.0</license>
+
+  <url type="website">https://wiki.ros.org/prbt_gazebo</url>
+  <url type="bugtracker">https://github.com/PilzDE/pilz_robots/issues</url>
+  <url type="repository">https://github.com/PilzDE/pilz_robots</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <exec_depend>xacro</exec_depend>
+  <exec_depend>roslaunch</exec_depend>
+  <exec_depend>gazebo_ros</exec_depend>
+  <exec_depend>prbt_moveit_config</exec_depend>
+  <exec_depend>prbt_support</exec_depend>
+  <exec_depend>gazebo_ros_control</exec_depend>
+
+  <test_depend>rostest</test_depend>
+  <test_depend>roscpp</test_depend>
+  <test_depend>actionlib</test_depend>
+  <test_depend>trajectory_msgs</test_depend>
+
+</package>
