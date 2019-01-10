@@ -302,6 +302,9 @@ private:
   bool initialize(const std::string& robot_description, const std::string& group_name, const std::string& base_name,
                   const std::vector<std::string>& tip_names, double search_discretization);
 
+  bool initialize(const std::string& robot_description, const std::string& group_name, const std::string& base_name,
+                  const std::string& tip_name, double search_discretization);
+
   /**
    * @brief Calls the IK solver from IKFast
    * @return The number of solutions found
@@ -335,6 +338,15 @@ private:
   bool sampleRedundantJoint(kinematics::DiscretizationMethod method, std::vector<double>& sampled_joint_vals) const;
 
 };  // end class
+
+bool IKFastKinematicsPlugin::initialize(const std::string& robot_description, const std::string& group_name,
+                                        const std::string& base_name, const std::string& tip_name,
+                                        double search_discretization)
+{
+
+  std::vector<std::string> tipnames {tip_name};
+  return initialize(robot_description, group_name, base_name, tipnames, search_discretization);
+}
 
 bool IKFastKinematicsPlugin::initialize(const std::string& robot_description, const std::string& group_name,
                                         const std::string& base_name, const std::vector<std::string>& tip_names,
