@@ -83,7 +83,7 @@ Instead of OMPL use the motion planners of Pilz for executing industrial robot c
 package [pilz_trajectory_generation](http://wiki.ros.org/pilz_trajectory_generation):
 * `sudo apt-get install ros-kinetic-pilz-trajectory-generation`
 
-then replace the pipeline in the above command by `pipeline:=command_planner`.
+then replace the pipeline in the above command by `pipeline:=pilz_command_planner`.
 
 ### Running the prbt with a gripper
 Currently only the Schunk pg70 is supported. To run it, first install the package:
