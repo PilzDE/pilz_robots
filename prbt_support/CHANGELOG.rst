@@ -2,8 +2,8 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.4 (2019-01-11)
+------------------
 * Add some ambient to dae files to make them appear lighter in gazebo
 * Fix mesh material for gazebo
 
