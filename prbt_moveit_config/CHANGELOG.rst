@@ -2,8 +2,8 @@
 Changelog for package prbt_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.4 (2019-01-16)
+------------------
 * Set default pipeline to ompl. To run with the specified
   run_depends we cannot default to command_planner.
 
