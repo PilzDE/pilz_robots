@@ -2,6 +2,9 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.4.4 (2019-01-16)
 ------------------
 * Fix PilzModbusReadClient unittest
