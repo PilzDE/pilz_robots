@@ -13,4 +13,6 @@
   <url type="repository">https://github.com/PilzDE/pilz_robots</url>
 
   <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
 </package>
