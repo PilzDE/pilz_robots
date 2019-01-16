@@ -34,7 +34,8 @@
 #include <prbt_hardware_support/modbus_msg_in_utils.h>
 #include <prbt_hardware_support/sto_modbus_adapter.h>
 #include <prbt_hardware_support/pilz_manipulator_mock.h>
-#include <prbt_hardware_support/async_test.h>
+
+#include <pilz_testutils/async_test.h>
 
 namespace prbt_hardware_support
 {
@@ -56,13 +57,13 @@ using ::testing::_;
   EXPECT_CALL(manipulator_, unholdCb(_,_)).Times(0);\
   EXPECT_CALL(manipulator_, recoverCb(_,_)).Times(0);\
   EXPECT_CALL(manipulator_, holdCb(_,_)).Times(1);\
-  EXPECT_CALL(manipulator_, haltCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER(1));\
+  EXPECT_CALL(manipulator_, haltCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("halt_callback"));\
 
 #define EXPECT_CLEARANCE \
   EXPECT_CALL(manipulator_, holdCb(_,_)).Times(0); \
   EXPECT_CALL(manipulator_, haltCb(_,_)).Times(0); \
   EXPECT_CALL(manipulator_, unholdCb(_,_)).Times(1); \
-  EXPECT_CALL(manipulator_, recoverCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER(1)); \
+  EXPECT_CALL(manipulator_, recoverCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("recover_callback")); \
 
 /**
  * @brief Test fixture class. Sets up a publisher to the modbus_read topic
@@ -198,7 +199,7 @@ TEST_F(PilzStoModbusAdapterTest, testClearMsg)
 
   pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
 
-  BARRIER_STEP(1);
+  BARRIER("recover_callback");
 }
 
 /**
@@ -210,12 +211,12 @@ TEST_F(PilzStoModbusAdapterTest, testRemoveUnholdService)
 
   PilzStoModbusAdapterNode adapter_node(nh_);
 
-  EXPECT_CALL(manipulator_, recoverCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER(1));
+  EXPECT_CALL(manipulator_, recoverCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("recover_callback"));
 
   manipulator_.shutdownUnholdService();
   pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
 
-  BARRIER_STEP(1);
+  BARRIER("recover_callback");
 }
 
 /**
@@ -227,12 +228,12 @@ TEST_F(PilzStoModbusAdapterTest, testRemoveRecoverService)
 
   PilzStoModbusAdapterNode adapter_node(nh_);
 
-  EXPECT_CALL(manipulator_, unholdCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER(1));
+  EXPECT_CALL(manipulator_, unholdCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("unhold_callback"));
 
   manipulator_.shutdownRecoverService();
   pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
 
-  BARRIER_STEP(1);
+  BARRIER("unhold_callback");
 }
 
 /**
@@ -250,7 +251,7 @@ TEST_F(PilzStoModbusAdapterTest, testHoldMsg)
 
   pub_.publish(createDefaultStoModbusMsg(STO_ACTIVE));
 
-  BARRIER_STEP(1);
+  BARRIER("halt_callback");
 }
 
 /**
@@ -270,7 +271,7 @@ TEST_F(PilzStoModbusAdapterTest, testDisconnectNoStoMsg)
 
   pub_.publish(msg);
 
-  BARRIER_STEP(1);
+  BARRIER("halt_callback");
 }
 
 /**
@@ -290,7 +291,7 @@ TEST_F(PilzStoModbusAdapterTest, testDisconnectWithStoMsg)
 
   pub_.publish(msg);
 
-  BARRIER_STEP(1);
+  BARRIER("halt_callback");
 }
 
 /**
@@ -311,7 +312,7 @@ TEST_F(PilzStoModbusAdapterTest, testDisconnectPure)
 
   pub_.publish(msg);
 
-  BARRIER_STEP(1);
+  BARRIER("halt_callback");
 }
 
 /**
@@ -330,7 +331,7 @@ TEST_F(PilzStoModbusAdapterTest, testNoVersion)
 
   pub_.publish(msg);
 
-  BARRIER_STEP(1);
+  BARRIER("halt_callback");
 }
 
 /**
@@ -349,7 +350,7 @@ TEST_F(PilzStoModbusAdapterTest, testWrongVersion)
 
   pub_.publish(msg);
 
-  BARRIER_STEP(1);
+  BARRIER("halt_callback");
 }
 
 
@@ -371,7 +372,7 @@ TEST_F(PilzStoModbusAdapterTest, testVersion1)
 
   pub_.publish(msg);
 
-  BARRIER_STEP(1);
+  BARRIER("halt_callback");
 }
 
 
@@ -392,7 +393,7 @@ TEST_F(PilzStoModbusAdapterTest, testNoSto)
 
   pub_.publish(msg);
 
-  BARRIER_STEP(1);
+  BARRIER("halt_callback");
 }
 
 /**

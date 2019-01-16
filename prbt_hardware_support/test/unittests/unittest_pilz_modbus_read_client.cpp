@@ -32,10 +32,10 @@
 #include <prbt_hardware_support/pilz_modbus_read_client.h>
 #include <prbt_hardware_support/pilz_modbus_exceptions.h>
 #include <prbt_hardware_support/pilz_modbus_read_client_exception.h>
-#include <prbt_hardware_support/async_test.h>
 
 #include <prbt_hardware_support/client_tests_common.h>
-#include <prbt_hardware_support/async_test.h>
+
+#include <pilz_testutils/async_test.h>
 
 namespace pilz_modbus_read_client_test
 {
@@ -50,6 +50,10 @@ using namespace prbt_hardware_support;
 static constexpr unsigned int DEFAULT_MODBUS_PORT_TEST {502};
 static constexpr unsigned int REGISTER_FIRST_IDX_TEST {512};
 static constexpr unsigned int REGISTER_SIZE_TEST {2};
+
+static constexpr double WAIT_FOR_START_TIMEOUT_S {3.0};
+static constexpr double WAIT_SLEEPTIME_S {0.1};
+static constexpr double WAIT_FOR_STOP_TIMEOUT_S {3.0};
 
 /**
  * @brief Test if PilzModbusReadClient correctly publishes ROS-Modbus messages.
@@ -193,14 +197,14 @@ TEST_F(PilzModbusReadClientTests, properReadingAndDisconnect)
 
     EXPECT_CALL(*this, modbus_read_cb(IsDisconnect()))
         .Times(1)
-        .WillOnce(ACTION_OPEN_BARRIER_VOID(1));
+        .WillOnce(ACTION_OPEN_BARRIER_VOID("disconnected"));
   }
 
   PilzModbusReadClient client(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock));
 
   EXPECT_TRUE(client.init(LOCALHOST, DEFAULT_MODBUS_PORT_TEST));
   EXPECT_NO_THROW(client.run());
-  BARRIER_STEP(1);
+  BARRIER("disconnected");
 }
 
 /**
@@ -229,26 +233,43 @@ TEST_F(PilzModbusReadClientTests, terminateRunningClient)
   EXPECT_CALL(*mock, init(_,_))
     .Times(1)
     .WillOnce(Return(true));
-  EXPECT_CALL(*mock, readHoldingRegister(_,_)).WillRepeatedly(Return(std::vector<uint16_t>{3, 4}));
-  EXPECT_CALL(*this, modbus_read_cb(IsSuccessfullRead(std::vector<uint16_t>{3,4})))
-    .WillOnce(ACTION_OPEN_BARRIER_VOID(1))
-    .WillRepeatedly(Return());
-  EXPECT_CALL(*this, modbus_read_cb(IsDisconnect())).Times(0);
+  ON_CALL(*mock, readHoldingRegister(_,_)).WillByDefault(Return(std::vector<uint16_t>{3, 4}));
+  ON_CALL(*this, modbus_read_cb(IsSuccessfullRead(std::vector<uint16_t>{3,4})))
+    .WillByDefault(Return());
 
   auto client = std::make_shared< PilzModbusReadClient >(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock));
 
   EXPECT_TRUE(client->init(LOCALHOST, DEFAULT_MODBUS_PORT_TEST));
 
-  auto terminate_thread = std::thread([client]
+  auto running_thread = std::thread([client]
   {
-    EXPECT_TRUE(client->isRunning());
-    client->terminate();
+    client->run();
   });
 
-  client->run();
-  BARRIER_STEP(1);
-  terminate_thread.join();
+  ros::Time start_waiting = ros::Time::now();
+  while (!client->isRunning())
+  {
+    ros::Duration(WAIT_SLEEPTIME_S).sleep();
+    if (ros::Time::now() > start_waiting + ros::Duration(WAIT_FOR_START_TIMEOUT_S))
+    {
+      break;
+    }
+  }
+  EXPECT_TRUE(client->isRunning());
+
+  client->terminate();
+
+  start_waiting = ros::Time::now();
+  while (client->isRunning())
+  {
+    ros::Duration(WAIT_SLEEPTIME_S).sleep();
+    if (ros::Time::now() > start_waiting + ros::Duration(WAIT_FOR_STOP_TIMEOUT_S))
+    {
+      break;
+    }
+  }
   EXPECT_FALSE(client->isRunning());
+  running_thread.join();
 }
 
 }  // namespace pilz_modbus_read_client_test
