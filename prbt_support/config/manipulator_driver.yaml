@@ -25,12 +25,6 @@ defaults:
   eds_pkg: prbt_support
   eds_file: "config/prbt_0_1.dcf"
 
-  #the following scaling is due to 16bit value range limitation of velocity command in vl mode (2)
-  vel_to_device: "rint(rad2deg(vel)*250)"
-  dcf_overlay: # "ObjectID": "ParameterValue" (both as strings)
-    "604Csub1": "1" # vl dimension factor numerator
-    "604Csub2": "24000" # vl dimension factor denominator
-
 nodes:
   prbt_joint_1:
     id: 3
@@ -44,4 +38,3 @@ nodes:
     id: 7
   prbt_joint_6:
     id: 8
-    publish: ["20A0sub7!"]
