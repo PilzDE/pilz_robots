@@ -21,6 +21,12 @@
 
 name: manipulator
 
+bus:
+  device: can0
+sync:
+  interval_ms: 10
+  overflow: 0
+
 defaults:
   eds_pkg: prbt_support
   eds_file: "config/prbt_0_1.dcf"

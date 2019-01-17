@@ -1,9 +1,28 @@
 <?xml version="1.0"?>
 <launch>	
-
+  <!-- gripper e.g. pg70. See documentation of meta-package prbt_grippers -->
   <arg name="gripper" default="" />
+
+  <!-- load description to the parameter server. If you wrote your own xacro model, you can load it yourself
+       and set load_robot_description to false -->
   <arg name="load_robot_description" default="true" />
+
+  <!-- safe-torque-off-input from the safety controller is read to do a stop1 -->
+  <!-- The signal is read via modbus and you can configure the modbus server ip -->
   <arg name="sto" default="pnoz"/>
+  <arg name="sto_modbus_server_ip" default="169.254.60.1" />
+
+  <!-- set the name of the config file for canopen_motor_node. If you want to change settings, copy the yaml
+       file into your package and set canopen_config to your new config file path -->
+  <arg name="canopen_config" default="$(find prbt_support)/config/manipulator_driver.yaml" />
+
+  <!-- manipulator_controller.yaml defines different types of controllers and you can select which ones
+       are automatically started.
+       By default, spawn joint_state and joint_trajectory controllers;
+       gripper controller is added to the defaults list, if gripper arg is set -->
+  <arg name="spawn_controllers"
+       default="$(eval 'manipulator_joint_trajectory_controller manipulator_joint_state_controller' +
+                      (' gripper_joint_trajectory_controller' if arg('gripper') else ''))" />
 
   <!-- send urdf to param server -->
   <param name="robot_description" if="$(arg load_robot_description)"
@@ -17,8 +36,7 @@
 
   <!-- start the driver -->
   <node ns="prbt" name="driver" pkg="canopen_motor_node" type="canopen_motor_node" output="screen" clear_params="true">
-    <rosparam command="load" file="$(find prbt_support)/config/can0.yaml" />
-    <rosparam command="load" file="$(find prbt_support)/config/manipulator_driver.yaml" />
+    <rosparam command="load" file="$(arg canopen_config)" />
 
     <!-- allow can grippers to interfere with the canopen_motor_node parameters -->
     <rosparam unless="$(eval not arg('gripper'))" command="load"
@@ -31,15 +49,15 @@
             file="$(eval find('prbt_'+ gripper + '_support') + '/config/gripper_controller.yaml')" />
 
   <!-- spawn controllers -->
-  <node if="$(eval not arg('gripper'))" ns="prbt" name="controller_spawner" pkg="controller_manager" type="spawner"
-        args="manipulator_joint_trajectory_controller manipulator_joint_state_controller" />
-  <node unless="$(eval not arg('gripper'))" ns="prbt" name="controller_spawner" pkg="controller_manager" type="spawner"
-        args="manipulator_joint_trajectory_controller manipulator_joint_state_controller gripper_joint_trajectory_controller" />
+  <node ns="prbt" name="controller_spawner" pkg="controller_manager" type="spawner"
+        args="$(arg spawn_controllers)" />
 
   <!-- Initialize controllers and start STO-processing (if configured) -->
   <group if="$(eval sto == 'pnoz')" >
     <node pkg="rosservice" type="rosservice" name="robot_init" args="call --wait /prbt/driver/init"/>
-    <include file="$(find prbt_hardware_support)/launch/modbus_read_client.launch" />
+    <include file="$(find prbt_hardware_support)/launch/modbus_read_client.launch">
+      <arg name="modbus_server_ip" value="$(arg sto_modbus_server_ip)" />
+    </include>
     <include file="$(find prbt_hardware_support)/launch/sto_modbus_adapter_node.launch" />
   </group>
 
