@@ -2,8 +2,8 @@
 Changelog for package prbt_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.6 (2019-01-18)
+------------------
 * Rename command_planner to pilz_command_planner
 
 0.4.5 (2019-01-16)
