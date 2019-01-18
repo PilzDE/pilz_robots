@@ -2,6 +2,10 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update used pipeline in test from command_planner to pilz_command_planner
+
 0.4.5 (2019-01-16)
 ------------------
 
