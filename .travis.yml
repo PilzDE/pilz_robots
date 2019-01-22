@@ -8,7 +8,9 @@ notifications:
   email:
     on_failure: always
     recipients:
-      - ros@pilz.de
+      - a.gutenkunst@pilz.de
+      - h.slusarek@pilz.de
+      - i.martini@pilz.de
 env:
   matrix:
     - ROS_DISTRO="kinetic" ROS_REPO=ros CATKIN_LINT=true
