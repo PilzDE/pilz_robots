@@ -4,6 +4,7 @@ Changelog for package prbt_moveit_config
 
 Forthcoming
 -----------
+<<<<<<< HEAD
 
 0.5.1 (2018-11-30)
 ------------------
@@ -13,6 +14,22 @@ Forthcoming
 0.5.0 (2018-11-07)
 ------------------
 
+=======
+* Remove exec_depend on metapackages
+
+0.4.6 (2019-01-18)
+------------------
+* Rename command_planner to pilz_command_planner
+
+0.4.5 (2019-01-16)
+------------------
+
+0.4.4 (2019-01-16)
+------------------
+* Set default pipeline to ompl. To run with the specified
+  run_depends we cannot default to command_planner.
+
+>>>>>>> kinetic-devel
 0.4.3 (2018-11-30)
 ------------------
 * load pilz capabilities for command_planner by default

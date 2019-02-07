@@ -8,7 +8,10 @@ notifications:
   email:
     on_failure: always
     recipients:
-      - ros@pilz.de
+      - a.gutenkunst@pilz.de
+      - c.henkel@pilz.de
+      - h.slusarek@pilz.de
+      - i.martini@pilz.de
 env:
   matrix:
     - ROS_DISTRO="melodic" ROS_REPO=ros

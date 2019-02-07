@@ -1,0 +1,71 @@
+<!--
+Copyright (c) 2018 Pilz GmbH & Co. KG
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<launch>
+
+  <!-- these are the arguments you can pass this launch file, for example paused:=true -->
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+  <arg name="pipeline" default="ompl" />
+
+  <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="headless" value="$(arg headless)"/>
+  </include>
+
+  <!-- Load the URDF into the ROS Parameter Server -->
+  <include file="$(find prbt_moveit_config)/launch/move_group.launch">
+      <arg name="publish_monitored_planning_scene" value="true" />
+      <arg name="fake_execution" value="false"/>
+      <arg name="moveit_manage_controllers" value="false"/>
+      <arg name="pipeline" value="$(arg pipeline)" />
+  </include>
+
+
+  <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF robot -->
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" output="screen"
+    args="-param robot_description -urdf -model prbt "/>
+
+  <!-- set pid parameters -->
+  <rosparam ns="prbt" command="load" file="$(find prbt_gazebo)/config/gazebo_pid_gains.yaml" />
+
+  <!-- set pid parameters for gazebo7, can be removed with ros-kinetic-gazebo-ros-control 2.5.18
+       when https://github.com/ros-simulation/gazebo_ros_pkgs/pull/637 will be released
+  -->
+  <rosparam command="load" file="$(find prbt_gazebo)/config/gazebo_pid_gains.yaml" />
+
+  <!-- ros_control robot launch file -->
+  <rosparam ns="prbt" command="load" file="$(find prbt_support)/config/manipulator_controller.yaml" />
+  <!-- set the standart controller -->
+  <param name="prbt/manipulator_joint_trajectory_controller/type"
+         value="position_controllers/JointTrajectoryController" />
+
+  <node ns="prbt" name="controller_spawner" pkg="controller_manager" type="spawner"
+        args="manipulator_joint_state_controller manipulator_joint_trajectory_controller --timeout 100" />
+
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <rosparam param="source_list">['/prbt/joint_states']</rosparam>
+  </node>
+
+</launch>
