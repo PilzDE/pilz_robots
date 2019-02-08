@@ -42,9 +42,8 @@ limitations under the License.
 
   <link name="world"/>
   <joint name="world-base_link-fixed" type="fixed">
-    <child link="world"/>
-    <parent link="$(arg robot_prefix)base_link"/>
-    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    <parent link="world"/>
+    <child link="$(arg robot_prefix)base_link"/>
   </joint>
 
   <!-- TCP -->

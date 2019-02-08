@@ -6,18 +6,18 @@
   <xacro:arg name="gripper" default=""/>
   <xacro:property name="gripper" value="$(arg gripper)"/>
   <xacro:arg name="prefix" default="prbt_"/>
-
+  
   <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an
                      external frame of reference (considered fixed with respect to the robot)-->
   <virtual_joint name="FixedBase" type="fixed" parent_frame="world" child_link="$(arg prefix)base_link" />
-
+  
   <!-- robot manipulator -->
   <xacro:include filename="$(find prbt_moveit_config)/config/prbt_manipulator.srdf.xacro" />
   <xacro:prbt_manipulator prefix="$(arg prefix)"/>
-
+  
   <!-- has gripper -->
   <xacro:unless value="${not gripper}">
     <xacro:include filename="$(find prbt_${gripper}_support)/config/${gripper}.srdf.xacro" />
   </xacro:unless>
-
+  
 </robot>
