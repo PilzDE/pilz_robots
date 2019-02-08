@@ -20,6 +20,7 @@
   <exec_depend>roscpp</exec_depend>
   <exec_depend>canopen_motor_node</exec_depend>
   <exec_depend>joint_trajectory_controller</exec_depend>
+  <exec_depend>joint_state_controller</exec_depend>
   <exec_depend>joint_state_publisher</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>topic_tools</exec_depend>
