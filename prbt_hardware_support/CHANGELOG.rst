@@ -4,8 +4,9 @@ Changelog for package prbt_hardware_support
 
 Forthcoming
 -----------
+* Update used pipeline in test from command_planner to pilz_command_planner
+* Fix PilzModbusReadClient unittest
 
-<<<<<<< HEAD
 0.5.1 (2018-11-30)
 ------------------
 * melodic release based on kinetic version 0.4.3
@@ -14,19 +15,6 @@ Forthcoming
 0.5.0 (2018-11-07)
 ------------------
 
-=======
-0.4.6 (2019-01-18)
-------------------
-* Update used pipeline in test from command_planner to pilz_command_planner
-
-0.4.5 (2019-01-16)
-------------------
-
-0.4.4 (2019-01-16)
-------------------
-* Fix PilzModbusReadClient unittest
-
->>>>>>> kinetic-devel
 0.4.3 (2018-11-30)
 ------------------
 

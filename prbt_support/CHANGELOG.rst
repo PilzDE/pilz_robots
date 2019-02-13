@@ -4,7 +4,9 @@ Changelog for package prbt_support
 
 Forthcoming
 -----------
-<<<<<<< HEAD
+* drop outdated can configuration
+* Fixup of mesh files due to errors in gazebo visualization
+* Contributors: Pilz GmbH and Co. KG
 
 0.5.1 (2018-11-30)
 ------------------
@@ -13,20 +15,6 @@ Forthcoming
 
 0.5.0 (2018-11-07)
 ------------------
-=======
-* drop outdated can configuration
-* Contributors: Pilz GmbH and Co. KG
-
-0.4.6 (2019-01-18)
-------------------
-
-0.4.5 (2019-01-16)
-------------------
-
-0.4.4 (2019-01-16)
-------------------
-* Fixup of mesh files due to errors in gazebo visualization
->>>>>>> kinetic-devel
 
 0.4.3 (2018-11-30)
 ------------------

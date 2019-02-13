@@ -4,7 +4,8 @@ Changelog for package prbt_ikfast_manipulator_plugin
 
 Forthcoming
 -----------
-<<<<<<< HEAD
+* Use ikfast plugin template of moveit version 0.10.8
+* Fix sign-compare and deprecated warnings
 * update IKfast plugin based on moveit version 0.10.8
 * Contributors: Pilz GmbH and Co. KG
 
@@ -16,20 +17,6 @@ Forthcoming
 0.5.0 (2018-11-07)
 ------------------
 
-=======
-
-0.4.6 (2019-01-18)
-------------------
-
-0.4.5 (2019-01-16)
-------------------
-
-0.4.4 (2019-01-16)
-------------------
-* Use ikfast plugin template of moveit version 0.10.8
-* Fix sign-compare and deprecated warnings
-
->>>>>>> kinetic-devel
 0.4.3 (2018-11-30)
 ------------------
 
