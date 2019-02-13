@@ -42,4 +42,3 @@ Forthcoming
 ------------------
 * generate IKfast solver and plugin
 * Contributors: Pilz GmbH and Co. KG
-
