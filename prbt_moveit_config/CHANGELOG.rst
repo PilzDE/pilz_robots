@@ -2,8 +2,8 @@
 Changelog for package prbt_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.7 (2019-02-15)
+------------------
 * Remove exec_depend on metapackages
 * Contributors: Pilz GmbH and Co. KG
 

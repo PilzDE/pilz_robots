@@ -2,8 +2,8 @@
 Changelog for package prbt_gazebo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.7 (2019-02-15)
+------------------
 * With this change the integrationtest loads the blank.world which
   has no models.
 * drop outdated can configuration

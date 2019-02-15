@@ -2,8 +2,8 @@
 Changelog for package prbt_ikfast_manipulator_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.7 (2019-02-15)
+------------------
 * drop outdated can configuration
 * Contributors: Pilz GmbH and Co. KG
 
