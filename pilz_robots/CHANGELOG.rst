@@ -4,6 +4,8 @@ Changelog for package pilz_robots
 
 Forthcoming
 -----------
+* drop outdated can configurationss
+* Contributors: Pilz GmbH and Co. KG
 
 0.4.6 (2019-01-18)
 ------------------
