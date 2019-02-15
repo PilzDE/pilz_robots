@@ -1,5 +1,5 @@
 <launch>
-  <arg name="pipeline" default="command_planner" />
+  <arg name="pipeline" default="ompl" />
   <!-- By default, we do not start a database (it can be large) -->
   <arg name="db" default="false" />
   <!-- Allow user to specify database location -->

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<launch>	
+<launch>
 
   <arg name="gripper" default="" />
   <arg name="load_robot_description" default="true" />
@@ -7,7 +7,7 @@
 
   <!-- send urdf to param server -->
   <param name="robot_description" if="$(arg load_robot_description)"
-    command="$(find xacro)/xacro --inorder '$(find prbt_support)/urdf/prbt.xacro' gripper:=$(arg gripper)" />
+    command="$(find xacro)/xacro '$(find prbt_support)/urdf/prbt.xacro' gripper:=$(arg gripper)" />
 
   <!-- robot state publisher -->
   <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" />
@@ -36,11 +36,7 @@
   <node unless="$(eval not arg('gripper'))" ns="prbt" name="controller_spawner" pkg="controller_manager" type="spawner"
         args="manipulator_joint_trajectory_controller manipulator_joint_state_controller gripper_joint_trajectory_controller" />
 
-  <!-- Initialize controllers -->
-
-
-
-  <!-- Initialize controllers -->
+  <!-- Initialize controllers and start STO-processing (if configured) -->
   <group if="$(eval sto == 'pnoz')" >
     <node pkg="rosservice" type="rosservice" name="robot_init" args="call --wait /prbt/driver/init"/>
     <include file="$(find prbt_hardware_support)/launch/modbus_read_client.launch" />
@@ -52,5 +48,3 @@
   </group>
 
 </launch>
-
-

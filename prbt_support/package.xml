@@ -4,7 +4,10 @@
   <description> Mechanical, kinematic and visual description
   of the Pilz light weight arm PRBT. </description>
 
-  <maintainer email="ros@pilz.de">Pilz GmbH and Co. KG</maintainer>
+  <maintainer email="a.gutenkunst@pilz.de">Alexander Gutenkunst</maintainer>
+  <maintainer email="c.henkel@pilz.de">Christian Henkel</maintainer>
+  <maintainer email="h.slusarek@pilz.de">Hagen Slusarek</maintainer>
+  <maintainer email="i.martini@pilz.de">Immanuel Martini</maintainer>
 
   <license>Apache 2.0</license>
 
@@ -17,6 +20,7 @@
   <exec_depend>roscpp</exec_depend>
   <exec_depend>canopen_motor_node</exec_depend>
   <exec_depend>joint_trajectory_controller</exec_depend>
+  <exec_depend>joint_state_controller</exec_depend>
   <exec_depend>joint_state_publisher</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>topic_tools</exec_depend>

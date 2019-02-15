@@ -4,6 +4,10 @@ Changelog for package prbt_moveit_config
 
 Forthcoming
 -----------
+* Remove exec_depend on metapackages
+* Rename command_planner to pilz_command_planner
+* Set default pipeline to ompl. To run with the specified
+  run_depends we cannot default to command_planner.
 
 0.5.1 (2018-11-30)
 ------------------

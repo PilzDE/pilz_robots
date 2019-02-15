@@ -4,6 +4,7 @@ Changelog for package prbt_ikfast_manipulator_plugin
 
 Forthcoming
 -----------
+* Fix sign-compare and deprecated warnings
 * update IKfast plugin based on moveit version 0.10.8
 * Contributors: Pilz GmbH and Co. KG
 
@@ -40,4 +41,3 @@ Forthcoming
 ------------------
 * generate IKfast solver and plugin
 * Contributors: Pilz GmbH and Co. KG
-

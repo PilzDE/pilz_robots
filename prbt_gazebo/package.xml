@@ -1,30 +1,31 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>pilz_robots</name>
+  <name>prbt_gazebo</name>
   <version>0.5.1</version>
-  <description>The metapackage</description>
-
-  <url type="website">http://ros.org/wiki/pilz_robots</url>
+  <description>Launch prbt robot in an empty Gazebo world.</description>
 
   <maintainer email="a.gutenkunst@pilz.de">Alexander Gutenkunst</maintainer>
-  <maintainer email="c.henkel@pilz.de">Christian Henkel</maintainer>
   <maintainer email="h.slusarek@pilz.de">Hagen Slusarek</maintainer>
   <maintainer email="i.martini@pilz.de">Immanuel Martini</maintainer>
 
   <license>Apache 2.0</license>
 
-  <url type="website">https://wiki.ros.org/pilz_robots</url>
+  <url type="website">https://wiki.ros.org/prbt_gazebo</url>
   <url type="bugtracker">https://github.com/PilzDE/pilz_robots/issues</url>
   <url type="repository">https://github.com/PilzDE/pilz_robots</url>
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <exec_depend>prbt_support</exec_depend>
-  <exec_depend>prbt_ikfast_manipulator_plugin</exec_depend>
+  <exec_depend>xacro</exec_depend>
+  <exec_depend>roslaunch</exec_depend>
+  <exec_depend>gazebo_ros</exec_depend>
   <exec_depend>prbt_moveit_config</exec_depend>
+  <exec_depend>prbt_support</exec_depend>
+  <exec_depend>gazebo_ros_control</exec_depend>
 
-  <export>
-    <metapackage/>
-    <architecture_independent/>
-  </export>
+  <test_depend>rostest</test_depend>
+  <test_depend>roscpp</test_depend>
+  <test_depend>actionlib</test_depend>
+  <test_depend>trajectory_msgs</test_depend>
+
 </package>

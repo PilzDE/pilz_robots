@@ -6,7 +6,10 @@
      An automatically generated package with all the configuration and launch files for using the prbt with the MoveIt! Motion Planning Framework
   </description>
 
-  <maintainer email="ros@pilz.de">Pilz GmbH and Co. KG</maintainer>
+  <maintainer email="a.gutenkunst@pilz.de">Alexander Gutenkunst</maintainer>
+  <maintainer email="c.henkel@pilz.de">Christian Henkel</maintainer>
+  <maintainer email="h.slusarek@pilz.de">Hagen Slusarek</maintainer>
+  <maintainer email="i.martini@pilz.de">Immanuel Martini</maintainer>
 
   <license>Apache 2.0</license>
 
@@ -22,16 +25,13 @@
   <exec_depend>moveit_ros_visualization</exec_depend>
   <exec_depend>moveit_fake_controller_manager</exec_depend>
   <exec_depend>moveit_simple_controller_manager</exec_depend>
-  <exec_depend>ros_control</exec_depend>
-  <exec_depend>ros_controllers</exec_depend>
+  <exec_depend>joint_trajectory_controller</exec_depend>
   <exec_depend>joint_state_publisher</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>xacro</exec_depend>
   <exec_depend>rviz</exec_depend>
-  <!-- This package is referenced in the warehouse launch files, but does not build out of the box at the moment. Commented the dependency until this works. -->
-  <!-- <run_depend>warehouse_ros_mongo</run_depend> -->
-
-  <depend>prbt_support</depend>
+  <exec_depend>prbt_support</exec_depend>
+  <exec_depend>prbt_ikfast_manipulator_plugin</exec_depend>
 
   <test_depend>roslaunch</test_depend>
 

@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="pipeline" default="command_planner" />
+  <arg name="pipeline" default="ompl" />
   <arg name="load_robot_description" default="true" />
 
   <!-- GDB Debug Option -->
@@ -27,11 +27,11 @@
   <!-- Enable/Disable gripper -->
   <arg name="gripper" default="" />
 
-  <!-- add sequence capabilities for command_planner pipeline -->
-  <arg name="_capabilities" value="$(arg capabilities)" unless="$(eval arg('pipeline')=='command_planner')" />
+  <!-- add sequence capabilities for pilz_command_planner pipeline -->
+  <arg name="_capabilities" value="$(arg capabilities)" unless="$(eval arg('pipeline')=='pilz_command_planner')" />
   <arg name="_capabilities"
        value="$(arg capabilities) pilz_trajectory_generation/MoveGroupSequenceAction pilz_trajectory_generation/MoveGroupSequenceService"
-       if="$(eval arg('pipeline')=='command_planner')" />
+       if="$(eval arg('pipeline')=='pilz_command_planner')" />
 
   <!-- load robot models -->
   <include file="$(find prbt_moveit_config)/launch/planning_context.launch" >
