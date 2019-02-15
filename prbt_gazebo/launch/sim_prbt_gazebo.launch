@@ -31,6 +31,7 @@ limitations under the License.
     <arg name="paused" value="$(arg paused)"/>
     <arg name="use_sim_time" value="$(arg use_sim_time)"/>
     <arg name="headless" value="$(arg headless)"/>
+    <arg name="world_name" value="worlds/blank.world"/>
   </include>
 
   <!-- Load the URDF into the ROS Parameter Server -->
