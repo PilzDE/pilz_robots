@@ -7,6 +7,18 @@ find_package(catkin REQUIRED COMPONENTS actionlib roscpp trajectory_msgs)
 
 catkin_package()
 
+#############
+## Install ##
+#############
+
+## Install launch and config files
+install(DIRECTORY launch DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+install(DIRECTORY config DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+
+#############
+## Testing ##
+#############
+
 if(CATKIN_ENABLE_TESTING)
 
   find_package(rostest REQUIRED)

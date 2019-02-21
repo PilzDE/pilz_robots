@@ -6,6 +6,7 @@ Forthcoming
 -----------
 * drop outdated can configuration
 * Fixup of mesh files due to errors in gazebo visualization
+* make robot.launch file configurable with args
 * Contributors: Pilz GmbH and Co. KG
 
 0.5.1 (2018-11-30)
