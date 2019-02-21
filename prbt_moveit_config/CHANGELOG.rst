@@ -8,6 +8,7 @@ Forthcoming
 * Rename command_planner to pilz_command_planner
 * Set default pipeline to ompl. To run with the specified
   run_depends we cannot default to command_planner.
+* Contributors: Pilz GmbH and Co. KG
 
 0.5.1 (2018-11-30)
 ------------------

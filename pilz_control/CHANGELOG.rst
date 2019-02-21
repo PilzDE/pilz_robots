@@ -4,7 +4,6 @@ Changelog for package pilz_control
 
 Forthcoming
 -----------
-* drop outdated can configuration
 * Increase controller holding mode user feedback from INFO to WARN
 * Contributors: Pilz GmbH and Co. KG
 
