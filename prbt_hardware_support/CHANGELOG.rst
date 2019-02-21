@@ -2,8 +2,8 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.2 (2019-02-21)
+------------------
 * Update used pipeline in test from command_planner to pilz_command_planner
 * Fix PilzModbusReadClient unittest
 * Contributors: Pilz GmbH and Co. KG

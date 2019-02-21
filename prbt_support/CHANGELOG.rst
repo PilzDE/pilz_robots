@@ -2,8 +2,8 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.2 (2019-02-21)
+------------------
 * drop outdated can configuration
 * Fixup of mesh files due to errors in gazebo visualization
 * make robot.launch file configurable with args
