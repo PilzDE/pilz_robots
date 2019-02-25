@@ -1,6 +1,8 @@
 # Overview
 The prbt_hardware_support package contains files needed to control hardware functions of the PRBT manipulator like STO for Stop1 functionality. The Pilz hardware PNOZmulti is supported using a Modbus connection.
 
+There is no need to call these launch files directly; they are included from `prbt_support/robot.launch`.
+
 # Safe stop 1 (SS1)
 The STO function (“Safe torque off”) of the robot arm is a safety function to immediately turn off torque of the drives. To allow a
 controlled stop, the safety controller is allowed to delay the STO signal by several milliseconds. This package opens a
