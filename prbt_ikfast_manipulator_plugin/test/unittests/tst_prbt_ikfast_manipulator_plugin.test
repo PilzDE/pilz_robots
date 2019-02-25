@@ -1,6 +1,5 @@
 <launch>
   <arg name="debug" default="false"/>
-  <param name="prbt_ikfast_manipulator_plugin/testdata_file_name" value="$(find prbt_ikfast_manipulator_plugin)/test/testdata.xml" type="str"/>
 
   <include file="$(find prbt_moveit_config)/launch/planning_context.launch">
     <arg name="load_robot_description" value="true"/>
