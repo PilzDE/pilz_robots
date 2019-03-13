@@ -6,6 +6,14 @@ The meta package for the PILZ manipulator PRBT 6. Here you can find documentatio
 
 ![PRBT manipulator](prbt_support/img/prbt.jpg)
 
+### Installation
+To use the packages, you can install prebuilt packages with
+```
+sudo apt install ros-kinetic-pilz-robots
+or
+sudo apt install ros-melodic-pilz-robots
+```
+
 ### Build Status
 
 | Kinetic | Melodic |
@@ -58,8 +66,16 @@ The launch file allows to set optional parameters
     false: connect to real robot using `ros_canopen`
 * `pipeline` (default: ompl) <br>
     Planning pipeline to use with moveit
+* `load_robot_description` (default: True)<br>
+    Load robot description to parameter server. Can be set to false to let someone else load the model
+* `rviz_default` (default: True)<br>
+    Start RViz with default configuration settings. Set this to `False` once you have changed the configuration and have saved it as default.
 * `gripper` (default: None) <br>
     See [Running the prbt with a gripper](#running-the-prbt-with-a-gripper)
+* `sto` (default: pnoz)<br>
+    Connect to the safety controller that handles the safe-torque-off signal. 
+	Only relevant for `sim:=False` to issue a Safe stop 1.
+	See [prbt_hardware_support package](prbt_hardware_support/README.md).
 
 ### Running the simulation
 1. Run `roslaunch prbt_moveit_config moveit_planning_execution.launch sim:=true pipeline:=ompl`
@@ -81,9 +97,15 @@ iface can0 can static
 
 Instead of OMPL use the motion planners of Pilz for executing industrial robot commands like PTP, LIN, etc. For this install the
 package [pilz_trajectory_generation](http://wiki.ros.org/pilz_trajectory_generation):
-* `sudo apt-get install ros-kinetic-pilz-trajectory-generation`
+* `sudo apt install ros-kinetic-pilz-trajectory-generation`
 
 then replace the pipeline in the above command by `pipeline:=pilz_command_planner`.
+
+### Adjust expert paramters
+If you've created an application package with your own launch file as described in the
+[tutorials](https://wiki.ros.org/pilz_robots/Tutorials/ModelYourApplicationWithPRBT#Create_your_application_ROS_package),
+you can easily adjust many other configuration parameters.
+See the template and comments in the [pilz_tutorials package](https://github.com/PilzDE/pilz_tutorials).
 
 ### Running the prbt with a gripper
 Currently only the Schunk pg70 is supported. To run it, first install the package:
