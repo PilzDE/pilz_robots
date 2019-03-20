@@ -39,8 +39,9 @@ limitations under the License.
   <!-- Load robot description to parameter server. Can be set to false to let someone else load the model -->
   <arg name="load_robot_description" default="true" />
 
-  <!-- Start RViz with default configuration settings. Set this to false once you have changed the configuration and have saved it as default. -->
-  <arg name="rviz_default" default="true" />
+  <!-- Start RViz with default configuration settings. Once you have changed the configuration and have saved
+       it inside your package folder, set the path and file name here. -->
+  <arg name="rviz_config" default="$(find prbt_moveit_config)/launch/moveit.rviz" />
 
   <!-- configuration for moveit -->
   <arg name="pipeline" default="ompl" /><!-- Choose planning pipeline -->
@@ -86,7 +87,7 @@ limitations under the License.
   </include>
 
   <include file="$(find prbt_moveit_config)/launch/moveit_rviz.launch">
-    <arg name="config" value="$(arg rviz_default)"/>
+    <arg name="rviz_config" value="$(arg rviz_config)"/>
   </include>
 
 </launch>
