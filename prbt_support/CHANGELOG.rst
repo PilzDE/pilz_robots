@@ -3,7 +3,8 @@ Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Forthcoming
------------
+------------------
+* Add support for force-/torque-sensors in gazebo
 * Add gripper brackets definition to prbt.xacro
 * Contributors: Pilz GmbH and Co. KG
 

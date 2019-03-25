@@ -377,6 +377,78 @@ limitations under the License.
       </plugin>
     </gazebo>
 
+    <gazebo reference="${prefix}joint_1">
+      <provideFeedback>true</provideFeedback>
+    </gazebo>
+
+    <gazebo>
+      <plugin name="ft_sensor" filename="libgazebo_ros_ft_sensor.so">
+	<updateRate>100.0</updateRate>
+	<topicName>prbt/ft_sensor/joint_1</topicName>
+	<jointName>${prefix}joint_1</jointName>
+      </plugin>
+    </gazebo>
+
+    <gazebo reference="${prefix}joint_2">
+      <provideFeedback>true</provideFeedback>
+    </gazebo>
+
+    <gazebo>
+      <plugin name="ft_sensor" filename="libgazebo_ros_ft_sensor.so">
+	<updateRate>100.0</updateRate>
+	<topicName>prbt/ft_sensor/joint_2</topicName>
+	<jointName>${prefix}joint_2</jointName>
+      </plugin>
+    </gazebo>
+
+    <gazebo reference="${prefix}joint_3">
+      <provideFeedback>true</provideFeedback>
+    </gazebo>
+
+    <gazebo>
+      <plugin name="ft_sensor" filename="libgazebo_ros_ft_sensor.so">
+	<updateRate>100.0</updateRate>
+	<topicName>prbt/ft_sensor/joint_3</topicName>
+	<jointName>${prefix}joint_3</jointName>
+      </plugin>
+    </gazebo>
+
+    <gazebo reference="${prefix}joint_4">
+      <provideFeedback>true</provideFeedback>
+    </gazebo>
+
+    <gazebo>
+      <plugin name="ft_sensor" filename="libgazebo_ros_ft_sensor.so">
+	<updateRate>100.0</updateRate>
+	<topicName>prbt/ft_sensor/joint_4</topicName>
+	<jointName>${prefix}joint_4</jointName>
+      </plugin>
+    </gazebo>
+
+    <gazebo reference="${prefix}joint_5">
+      <provideFeedback>true</provideFeedback>
+    </gazebo>
+
+    <gazebo>
+      <plugin name="ft_sensor" filename="libgazebo_ros_ft_sensor.so">
+	<updateRate>100.0</updateRate>
+	<topicName>prbt/ft_sensor/joint_5</topicName>
+	<jointName>${prefix}joint_5</jointName>
+      </plugin>
+    </gazebo>
+
+    <gazebo reference="${prefix}joint_6">
+      <provideFeedback>true</provideFeedback>
+    </gazebo>
+
+    <gazebo>
+      <plugin name="ft_sensor" filename="libgazebo_ros_ft_sensor.so">
+	<updateRate>100.0</updateRate>
+	<topicName>prbt/ft_sensor/joint_6</topicName>
+	<jointName>${prefix}joint_6</jointName>
+      </plugin>
+    </gazebo>
+
   </xacro:macro>
 
 </robot>
