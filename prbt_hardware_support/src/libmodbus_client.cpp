@@ -37,7 +37,8 @@ bool LibModbusClient::init(const char* ip, unsigned int port)
 
   if (modbus_connect(modbus_connection_) == -1)
   {
-    ROS_ERROR_STREAM("Could not establish modbus connection." << modbus_strerror(errno));
+    ROS_ERROR_STREAM("Could not establish modbus connection. "
+      << modbus_strerror(errno));
     modbus_free(modbus_connection_);
     modbus_connection_ = nullptr;
     return false;
@@ -73,7 +74,10 @@ std::vector<uint16_t> LibModbusClient::readHoldingRegister(int addr, int nb)
   rc = modbus_read_registers(modbus_connection_, addr, nb, tab_reg);
   if (rc == -1)
   {
-    throw ModbusExceptionDisconnect("Modbus disconnected!");
+    std::string err = "Failed to read modbus registers! ";
+    err.append(modbus_strerror(errno));
+    ROS_ERROR_STREAM(err);
+    throw ModbusExceptionDisconnect(err);
   }
 
   return std::vector<uint16_t> (tab_reg, tab_reg + nb);
