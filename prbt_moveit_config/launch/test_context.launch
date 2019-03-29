@@ -19,11 +19,19 @@
 
   <!-- Load updated joint limits (override information from URDF) -->
   <group ns="$(arg robot_description)_planning">
-    <rosparam command="load" file="$(find prbt_moveit_config)/config/joint_limits.yaml"/>
+    <rosparam if="$(eval not gripper)" command="load" file="$(find prbt_moveit_config)/config/joint_limits.yaml"/>
+    <rosparam unless="$(eval not gripper)" command="load"
+              file="$(eval find('prbt_'+ gripper + '_support') + '/config/joint_limits.yaml')" />
+
+    <!-- Load cartesian limits -->
+    <rosparam command="load" file="$(find prbt_moveit_config)/config/cartesian_limits.yaml"/>
   </group>
 
-  <!-- Load updated joint limits (override information from URDF) -->
-  <group ns="$(arg robot_description)_planning">
+  <!-- Load limits again in default namespace (which may not be configurable for planners) -->
+  <group ns="robot_description_planning">
+    <rosparam if="$(eval not gripper)" command="load" file="$(find prbt_moveit_config)/config/joint_limits.yaml"/>
+    <rosparam unless="$(eval not gripper)" command="load"
+              file="$(eval find('prbt_'+ gripper + '_support') + '/config/joint_limits.yaml')" />
     <rosparam command="load" file="$(find prbt_moveit_config)/config/cartesian_limits.yaml"/>
   </group>
 
