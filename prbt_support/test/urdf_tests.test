@@ -17,7 +17,7 @@ limitations under the License.
 <launch>
 
     <!-- load test parameters-->
-    <include file="$(find prbt_moveit_config)/launch/test_context.launch" />
+    <include file="$(find prbt_moveit_config)/launch/planning_context.launch" />
 
     <!-- run test -->
     <test pkg="prbt_support" test-name="urdf_tests" type="urdf_tests" >
