@@ -3,6 +3,8 @@
 #include <pluginlib/class_loader.h>
 
 #include <moveit/kinematics_base/kinematics_base.h>
+#include <moveit/robot_model_loader/robot_model_loader.h>
+#include <moveit/robot_model/robot_model.h>
 
 typedef std::vector<double> Vec1D;
 typedef std::vector<Vec1D> Vec2D;
@@ -119,8 +121,10 @@ void PrbtIKFastPluginTest::SetUp()
       << "The parameter " << JOINT_NAMES_PARAM << " was not found.";
 
   std::vector<std::string> tip_links {tip_link_};
+  robot_model_loader::RobotModelLoader robot_model_loader(ROBOT_DESCRIPTION_PARAM, false);
+  robot_model::RobotModelPtr robot_model = robot_model_loader.getModel();
 
-  ASSERT_TRUE( solver_->initialize(ROBOT_DESCRIPTION_PARAM, group_name_, root_link_, tip_links,
+  ASSERT_TRUE( solver_->initialize(*robot_model, group_name_, root_link_, tip_links,
                                    DEFAULT_SEARCH_DISCRETIZATION) ) << "Failed to initialize plugin.";
 }
 
