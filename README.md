@@ -68,8 +68,9 @@ The launch file allows to set optional parameters
     Planning pipeline to use with moveit
 * `load_robot_description` (default: True)<br>
     Load robot description to parameter server. Can be set to false to let someone else load the model
-* `rviz_default` (default: True)<br>
-    Start RViz with default configuration settings. Set this to `False` once you have changed the configuration and have saved it as default.
+* `rviz_config` (default: prbt_moveit_config/launch/moveit.rviz)<br>
+    Start RViz with default configuration settings. Once you have changed the configuration and have saved
+       it inside your package folder, set the path and file name here.
 * `gripper` (default: None) <br>
     See [Running the prbt with a gripper](#running-the-prbt-with-a-gripper)
 * `sto` (default: pnoz)<br>
