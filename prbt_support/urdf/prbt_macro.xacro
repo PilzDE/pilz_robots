@@ -58,7 +58,7 @@ limitations under the License.
       <parent link="${prefix}base_link"/>
       <child link="${prefix}link_1"/>
       <axis xyz="0 0 1"/>
-      <limit effort="370" velocity="1.57" lower="-2.967" upper="2.967"/>
+      <limit effort="370" velocity="1.57" lower="-2.96706" upper="2.96706"/>
       <dynamics damping="15.0" friction="11" />
     </joint>
 
@@ -104,7 +104,7 @@ limitations under the License.
       <parent link="${prefix}link_1"/>
       <child link="${prefix}link_2"/>
       <axis xyz="0 0 1"/>
-      <limit effort="370" velocity="1.57" lower="-2.531" upper="2.531"/>
+      <limit effort="370" velocity="1.57" lower="-2.53073" upper="2.53073"/>
       <dynamics damping="12.0" friction="10.0" />
     </joint>
 
@@ -143,7 +143,7 @@ limitations under the License.
       <parent link="${prefix}link_2"/>
       <child link="${prefix}link_3"/>
       <axis xyz="0 0 1"/>
-      <limit effort="176" velocity="1.57" lower="-2.356" upper="2.356"/>
+      <limit effort="176" velocity="1.57" lower="-2.35620" upper="2.35620"/>
       <dynamics damping="4.5" friction="4.5" />
     </joint>
 
@@ -187,7 +187,7 @@ limitations under the License.
       <parent link="${prefix}link_3"/>
       <child link="${prefix}link_4"/>
       <axis xyz="0 0 1" />
-      <limit effort="176" velocity="1.57" lower="-2.967" upper="2.967"/>
+      <limit effort="176" velocity="1.57" lower="-2.96706" upper="2.96706"/>
       <dynamics damping="4.2" friction="3.8" />
     </joint>
 
@@ -226,7 +226,7 @@ limitations under the License.
       <parent link="${prefix}link_4"/>
       <child link="${prefix}link_5"/>
       <axis xyz="0 0 1" />
-      <limit effort="41.6" velocity="1.57" lower="-2.967" upper="2.967" />
+      <limit effort="41.6" velocity="1.57" lower="-2.96706" upper="2.96706" />
       <dynamics damping="1.5" friction="3.5" />
     </joint>
 
@@ -282,7 +282,7 @@ limitations under the License.
       <parent link="${prefix}link_5"/>
       <child link="${prefix}flange"/>
       <axis xyz="0 0 1" />
-      <limit effort="20.1" velocity="1.57" lower="-3.124" upper="3.124" />
+      <limit effort="20.1" velocity="1.57" lower="-3.12414" upper="3.12414" />
       <dynamics damping="4.5" friction="7.0" />
     </joint>
 
