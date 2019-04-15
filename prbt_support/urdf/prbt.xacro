@@ -63,10 +63,7 @@ limitations under the License.
 
     <!-- Add gripper brackets -->
     <xacro:include filename="$(find prbt_support)/urdf/simple_gripper_brackets.urdf.xacro" />
-    <xacro:simple_gripper_brackets
-        gripper_name="$(arg gripper_name)"
-        parent_left="$(arg gripper_name)_finger_left_link"
-        parent_right="$(arg gripper_name)_finger_right_link"/>
+    <xacro:simple_gripper_brackets gripper_name="$(arg gripper_name)" />
   </xacro:if>
 
 </robot>
