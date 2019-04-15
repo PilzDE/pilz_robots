@@ -2,6 +2,10 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+------------------
+* Add support for force-/torque-sensors in gazebo
+
 0.5.2 (2019-02-21)
 ------------------
 * drop outdated can configuration
