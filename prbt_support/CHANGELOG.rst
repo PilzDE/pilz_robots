@@ -2,6 +2,11 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add gripper brackets definition to prbt.xacro
+* Contributors: Pilz GmbH and Co. KG
+
 0.4.7 (2019-02-15)
 ------------------
 * drop outdated can configuration
