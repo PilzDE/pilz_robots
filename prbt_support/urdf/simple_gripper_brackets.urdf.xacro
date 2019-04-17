@@ -18,7 +18,7 @@ limitations under the License.
 
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:macro name="simple_gripper_brackets"
-               params="gripper_name
+               params="gripper_name:=^
                        parent_left:=^|''
                        parent_right:=^|''
                        size_x:=^|0.03
