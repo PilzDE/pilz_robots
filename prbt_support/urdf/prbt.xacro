@@ -57,13 +57,13 @@ limitations under the License.
   <!-- If gripper given then... -->
   <xacro:if value="${gripper != ''}">
     <!-- name of the gripper -->
-    <xacro:arg name="gripper_name" default="$(arg robot_prefix)gripper"/>
+    <xacro:property name="gripper_name" value="$(arg robot_prefix)gripper"/>
 
     <xacro:include filename="$(find prbt_${gripper}_support)/urdf/${gripper}.urdf.xacro" />
 
     <!-- Add gripper brackets -->
     <xacro:include filename="$(find prbt_support)/urdf/simple_gripper_brackets.urdf.xacro" />
-    <xacro:simple_gripper_brackets gripper_name="$(arg gripper_name)" />
+    <xacro:simple_gripper_brackets />
   </xacro:if>
 
 </robot>
