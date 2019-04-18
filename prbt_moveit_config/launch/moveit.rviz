@@ -284,7 +284,7 @@ Visualization Manager:
         Colliding Link Color: 255; 0; 0
         Goal State Alpha: 0.699999988
         Goal State Color: 250; 128; 0
-        Interactive Marker Size: 0
+        Interactive Marker Size: 0.25
         Joint Violation Color: 255; 0; 255
         Planning Group: manipulator
         Query Goal State: true
