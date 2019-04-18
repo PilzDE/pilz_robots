@@ -98,7 +98,11 @@ iface can0 can static
 
 Instead of OMPL use the motion planners of Pilz for executing industrial robot commands like PTP, LIN, etc. For this install the
 package [pilz_trajectory_generation](http://wiki.ros.org/pilz_trajectory_generation):
-* `sudo apt install ros-kinetic-pilz-trajectory-generation`
+```
+sudo apt install ros-kinetic-pilz-trajectory-generation
+or
+sudo apt install ros-melodic-pilz-trajectory-generation
+```
 
 then replace the pipeline in the above command by `pipeline:=pilz_command_planner`.
 
@@ -110,7 +114,11 @@ See the template and comments in the [pilz_tutorials package](https://github.com
 
 ### Running the prbt with a gripper
 Currently only the Schunk pg70 is supported. To run it, first install the package:
-* `sudo apt-get install ros-kinetic-prbt-pg70-support`
+```
+sudo apt install ros-kinetic-prbt-pg70-support
+or
+sudo apt install ros-melodic-prbt-pg70-support
+```
 
 then start the robot like before but with the `gripper:=pg70` set. Both simulation and real robot work.
 
