@@ -3,7 +3,8 @@ Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Forthcoming
-------------------
+-----------
+* Relax joint limits (recompute radian values and round up 5th decimal)
 * Add support for force-/torque-sensors in gazebo
 * Add gripper brackets definition to prbt.xacro
 * Contributors: Pilz GmbH and Co. KG
