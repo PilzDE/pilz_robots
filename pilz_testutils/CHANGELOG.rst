@@ -2,6 +2,11 @@
 Changelog for package pilz_testutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Make docu compabtible with both kinetic and melodic
+* Contributors: Pilz GmbH and Co. KG
+
 0.4.7 (2019-02-15)
 ------------------
 * drop outdated can configuration

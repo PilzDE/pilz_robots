@@ -2,6 +2,14 @@
 Changelog for package prbt_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Set interactive marker size in RViz config
+* Remove unnecessary file test_context.launch
+* Add missing dependency on joint_state_controller
+* update the documentation
+* Contributors: Pilz GmbH and Co. KG
+
 0.4.7 (2019-02-15)
 ------------------
 * Remove exec_depend on metapackages

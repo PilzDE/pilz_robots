@@ -2,6 +2,9 @@
 Changelog for package pilz_robots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.4.7 (2019-02-15)
 ------------------
 * drop outdated can configurationss
