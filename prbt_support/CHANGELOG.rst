@@ -2,7 +2,7 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
+0.5.3 (2019-04-24)
 ------------------
 * Add acceptance test for joint position limits
 * Relax joint limits. 
