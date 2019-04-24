@@ -2,8 +2,8 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.8 (2019-04-24)
+------------------
 * Add acceptance test for joint position limits
 * Relax joint limits. 
 * Replace the radian values for the position limits (they have been rounded too roughly).

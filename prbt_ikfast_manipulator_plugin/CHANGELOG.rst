@@ -2,8 +2,8 @@
 Changelog for package prbt_ikfast_manipulator_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.8 (2019-04-24)
+------------------
 * Remove unused testfile
 * Contributors: Pilz GmbH and Co. KG
 

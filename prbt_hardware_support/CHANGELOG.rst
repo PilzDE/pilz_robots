@@ -2,8 +2,8 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.8 (2019-04-24)
+------------------
 * cleanup CMakeLists of prbt_hardware_support
 * update the documentation
 * Contributors: Pilz GmbH and Co. KG
