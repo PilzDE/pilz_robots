@@ -19,6 +19,7 @@ limitations under the License.
 
   <include file="$(find prbt_gazebo)/launch/sim_prbt_gazebo.launch">
     <arg name="gui" value="false" />
+    <arg name="world_name" value="worlds/blank.world"/>
   </include>
 
   <test ns="prbt" pkg="prbt_gazebo" type="integrationtest_gazebo_bringup"

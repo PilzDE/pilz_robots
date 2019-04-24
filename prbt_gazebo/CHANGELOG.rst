@@ -2,6 +2,13 @@
 Changelog for package prbt_gazebo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remove rosparam block no longer needed
+* Add world_name argument to gazebo launch file. 
+* Install launch and config folder of prbt_gazebo
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.2 (2019-02-21)
 ------------------
 * With this change the integrationtest loads the blank.world which

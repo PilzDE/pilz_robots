@@ -8,12 +8,11 @@ add_definitions(-Werror)
 add_definitions(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
+  message_filters
+  message_generation
   roscpp
   std_msgs
   std_srvs
-  message_generation
-  message_filters
-  pilz_testutils
 )
 
 # message generation
@@ -31,9 +30,8 @@ generate_messages(
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  INCLUDE_DIRS include test/include
+  INCLUDE_DIRS include
   CATKIN_DEPENDS message_runtime std_msgs
-  LIBRARIES ${PROJECT_NAME} prbt_hardware_support
 )
 
 ###########
@@ -88,13 +86,16 @@ install(TARGETS sto_modbus_adapter_node pilz_modbus_read_client_node
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
   find_package(code_coverage REQUIRED)
+  find_package(pilz_testutils REQUIRED)
+
+  include_directories(${pilz_testutils_INCLUDE_DIRS})
 
   add_rostest_gmock(unittest_update_filter
                     test/unittests/unittest_update_filter.test
                     test/unittests/unittest_update_filter.cpp
   )
   target_link_libraries(unittest_update_filter
-    ${catkin_LIBRARIES}
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
   )
   add_dependencies(unittest_update_filter ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
@@ -106,7 +107,7 @@ if(CATKIN_ENABLE_TESTING)
 
   )
   target_link_libraries(unittest_libmodbus_client
-    ${catkin_LIBRARIES}
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
     modbus
   )
   add_dependencies(unittest_libmodbus_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
@@ -127,7 +128,7 @@ if(CATKIN_ENABLE_TESTING)
       src/pilz_modbus_read_client.cpp
   )
   target_link_libraries(unittest_pilz_modbus_read_client
-    ${catkin_LIBRARIES}
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
   )
   add_dependencies(unittest_pilz_modbus_read_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
@@ -138,7 +139,9 @@ if(CATKIN_ENABLE_TESTING)
    src/sto_modbus_adapter.cpp
    src/modbus_msg_sto_wrapper.cpp
   )
-  target_link_libraries(unittest_sto_modbus_adapter ${catkin_LIBRARIES})
+  target_link_libraries(unittest_sto_modbus_adapter
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
   #----------------------------------
 
   # --- Stop integration test ---
@@ -149,8 +152,8 @@ if(CATKIN_ENABLE_TESTING)
      src/libmodbus_client.cpp
   )
   target_link_libraries(integrationtest_stop1
-   ${catkin_LIBRARIES}
-   modbus
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+    modbus
   )
   add_dependencies(integrationtest_stop1 ${catkin_EXPORTED_TARGETS} pilz_modbus_read_client_node sto_modbus_adapter_node)
 

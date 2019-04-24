@@ -37,8 +37,7 @@ bool LibModbusClient::init(const char* ip, unsigned int port)
 
   if (modbus_connect(modbus_connection_) == -1)
   {
-    ROS_ERROR_STREAM("Could not establish modbus connection. "
-      << modbus_strerror(errno));
+    ROS_ERROR_STREAM("Could not establish modbus connection." << modbus_strerror(errno));
     modbus_free(modbus_connection_);
     modbus_connection_ = nullptr;
     return false;

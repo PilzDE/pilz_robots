@@ -28,9 +28,7 @@ limitations under the License.
   <rosparam command="load" file="$(find prbt_moveit_config)/config/joint_names.yaml"/>
  
   <!-- the "sim" argument controls whether we connect to a Simulated or Real robot -->
-  <!--  - if sim=false, a robot_ip argument is required -->
   <arg name="sim" default="true" />
-  <arg name="robot_ip" unless="$(arg sim)" />
 
   <!-- Set gripper -->
   <arg name="gripper" default="" />
@@ -40,6 +38,10 @@ limitations under the License.
  
   <!-- Load robot description to parameter server. Can be set to false to let someone else load the model -->
   <arg name="load_robot_description" default="true" />
+
+  <!-- Start RViz with default configuration settings. Once you have changed the configuration and have saved
+       it inside your package folder, set the path and file name here. -->
+  <arg name="rviz_config" default="$(find prbt_moveit_config)/launch/moveit.rviz" />
 
   <!-- configuration for moveit -->
   <arg name="pipeline" default="ompl" /><!-- Choose planning pipeline -->
@@ -65,8 +67,7 @@ limitations under the License.
   </group>
 
   <!-- run the "real robot" interface nodes -->
-  <!--   - this typically includes: robot_state, motion_interface, and joint_trajectory_action nodes -->
-  <!--   - replace these calls with appropriate robot-specific calls or launch files -->
+  <!--   - this includes: robot_state, canopen, and sto nodes -->
   <group unless="$(arg sim)">
     <include file="$(find prbt_support)/launch/robot.launch" >
       <arg name="gripper" value="$(arg gripper)" />
@@ -86,7 +87,7 @@ limitations under the License.
   </include>
 
   <include file="$(find prbt_moveit_config)/launch/moveit_rviz.launch">
-    <arg name="config" value="true"/>
+    <arg name="rviz_config" value="$(arg rviz_config)"/>
   </include>
 
 </launch>
