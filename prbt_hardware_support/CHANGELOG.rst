@@ -2,6 +2,13 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* cleanup CMakeLists of prbt_hardware_support
+* update the documentation
+* more precise error output when failing to read modbus register
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.2 (2019-02-21)
 ------------------
 * Update used pipeline in test from command_planner to pilz_command_planner

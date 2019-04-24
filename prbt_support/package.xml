@@ -19,7 +19,6 @@
   <build_depend>roscpp</build_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>canopen_motor_node</exec_depend>
-  <exec_depend>joint_trajectory_controller</exec_depend>
   <exec_depend>joint_state_controller</exec_depend>
   <exec_depend>joint_state_publisher</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
@@ -28,7 +27,7 @@
   <exec_depend>xacro</exec_depend>
   <exec_depend>rviz</exec_depend>
   <exec_depend>controller_manager</exec_depend>
-  <exec_depend>pilz_control</exec_depend>
+  <exec_depend>pilz_control</exec_depend> <!--contains the PilzJointTrajectoryController-->
   <exec_depend>prbt_hardware_support</exec_depend>
 
   <test_depend>rostest</test_depend>

@@ -2,6 +2,11 @@
 Changelog for package prbt_ikfast_manipulator_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remove unused testfile
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.2 (2019-02-21)
 ------------------
 * Fix sign-compare and deprecated warnings

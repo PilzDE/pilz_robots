@@ -17,7 +17,19 @@ limitations under the License.
 -->
 
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <xacro:macro name="simple_gripper_brackets" params="gripper_name parent_left parent_right">
+  <xacro:macro name="simple_gripper_brackets"
+               params="gripper_name:=^
+                       parent_left:=^|''
+                       parent_right:=^|''
+                       size_x:=^|0.03
+                       size_y:=^|0.01
+                       size_z:=^|0.05">
+    <xacro:if value="${parent_left==''}">
+      <xacro:property name="parent_left" value="${gripper_name}_finger_left_link" />
+    </xacro:if>
+    <xacro:if value="${parent_right==''}">
+      <xacro:property name="parent_right" value="${gripper_name}_finger_right_link" />
+    </xacro:if>
 
     <!-- fixed joint attaching to left bracket mounting -->
     <joint name="${gripper_name}_link_left_bracket_fixed_joint" type="fixed">
@@ -33,18 +45,18 @@ limitations under the License.
           <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01" />
         </inertial>
         <visual>
-          <origin xyz="0 0.005 0.02" rpy="0 0 0" />
+          <origin xyz="0 ${size_y/2} ${size_z/2-0.005}" rpy="0 0 0" />
           <geometry>
-            <box size="0.03 0.01 0.05"/>
+            <box size="${size_x} ${size_y} ${size_z}"/>
           </geometry>
           <material name="light_gray">
             <color rgba="0.6 0.6 0.6 1"/>
           </material>
         </visual>
         <collision>
-          <origin xyz="0 0.005 0.02" rpy="0 0 0" />
+          <origin xyz="0 ${size_y/2} ${size_z/2-0.005}" rpy="0 0 0" />
           <geometry>
-            <box size="0.03 0.01 0.05"/>
+            <box size="${size_x} ${size_y} ${size_z}"/>
           </geometry>
         </collision>
     </link>
@@ -63,18 +75,18 @@ limitations under the License.
           <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01" />
         </inertial>
         <visual>
-          <origin xyz="0 -0.005 0.02" rpy="0 0 0" />
+          <origin xyz="0 -${size_y/2} ${size_z/2-0.005}" rpy="0 0 0" />
           <geometry>
-            <box size="0.03 0.01 0.05"/>
+            <box size="${size_x} ${size_y} ${size_z}"/>
           </geometry>
           <material name="dark_grey">
             <color rgba="0.8 0.8 0.8 1"/>
           </material>
         </visual>
         <collision>
-          <origin xyz="0 -0.005 0.02" rpy="0 0 0" />
+          <origin xyz="0 -${size_y/2} ${size_z/2-0.005}" rpy="0 0 0" />
           <geometry>
-            <box size="0.03 0.01 0.05"/>
+            <box size="${size_x} ${size_y} ${size_z}"/>
           </geometry>
         </collision>
     </link>

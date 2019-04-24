@@ -23,6 +23,8 @@ limitations under the License.
   <arg name="headless" default="false"/>
   <arg name="debug" default="false"/>
   <arg name="pipeline" default="ompl" />
+  <arg name="world_name" default="worlds/empty.world" /> <!-- Note: the world_name is with respect to the
+                                                                    GAZEBO_RESOURCE_PATH environmental variable -->
 
   <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
@@ -31,7 +33,7 @@ limitations under the License.
     <arg name="paused" value="$(arg paused)"/>
     <arg name="use_sim_time" value="$(arg use_sim_time)"/>
     <arg name="headless" value="$(arg headless)"/>
-    <arg name="world_name" value="worlds/blank.world"/>
+    <arg name="world_name" value="$(arg world_name)"/>
   </include>
 
   <!-- Load the URDF into the ROS Parameter Server -->
@@ -49,11 +51,6 @@ limitations under the License.
 
   <!-- set pid parameters -->
   <rosparam ns="prbt" command="load" file="$(find prbt_gazebo)/config/gazebo_pid_gains.yaml" />
-
-  <!-- set pid parameters for gazebo7, can be removed with ros-kinetic-gazebo-ros-control 2.5.18
-       when https://github.com/ros-simulation/gazebo_ros_pkgs/pull/637 will be released
-  -->
-  <rosparam command="load" file="$(find prbt_gazebo)/config/gazebo_pid_gains.yaml" />
 
   <!-- ros_control robot launch file -->
   <rosparam ns="prbt" command="load" file="$(find prbt_support)/config/manipulator_controller.yaml" />

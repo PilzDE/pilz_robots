@@ -2,6 +2,11 @@
 Changelog for package pilz_testutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* drop outdated can configuration
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.2 (2019-02-21)
 ------------------
 
