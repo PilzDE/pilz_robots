@@ -67,8 +67,7 @@ limitations under the License.
   </group>
 
   <!-- run the "real robot" interface nodes -->
-  <!--   - this typically includes: robot_state, motion_interface, and joint_trajectory_action nodes -->
-  <!--   - replace these calls with appropriate robot-specific calls or launch files -->
+  <!--   - this includes: robot_state, canopen, and sto nodes -->
   <group unless="$(arg sim)">
     <include file="$(find prbt_support)/launch/robot.launch" >
       <arg name="gripper" value="$(arg gripper)" />
@@ -88,7 +87,7 @@ limitations under the License.
   </include>
 
   <include file="$(find prbt_moveit_config)/launch/moveit_rviz.launch">
-    <arg name="config" value="true"/>
+    <arg name="rviz_config" value="$(arg rviz_config)"/>
   </include>
 
 </launch>
