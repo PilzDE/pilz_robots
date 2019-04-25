@@ -25,15 +25,18 @@
 
 namespace prbt_hardware_support
 {
-    
+
 PilzModbusReadClient::PilzModbusReadClient(ros::NodeHandle& nh,
-                                           const unsigned int num_registers_to_read,
+                                           const std::string topic,
                                            const unsigned int index_of_first_register,
+                                           const unsigned int num_registers_to_read,
+                                           const unsigned int rate_hz,
                                            ModbusClientUniquePtr modbus_client)
-  : NUM_REGISTERS_TO_READ(num_registers_to_read)
-  , INDEX_OF_FIRST_REGISTER(index_of_first_register)
+  : INDEX_OF_FIRST_REGISTER(index_of_first_register)
+  , NUM_REGISTERS_TO_READ(num_registers_to_read)
+  , RATE_HZ(rate_hz)
   , modbus_client_(std::move(modbus_client))
-  , modbus_pub_(nh.advertise<ModbusMsgInStamped>(TOPIC_MODBUS_READ, DEFAULT_QUEUE_SIZE_MODBUS))
+  , modbus_pub_(nh.advertise<ModbusMsgInStamped>(topic, DEFAULT_QUEUE_SIZE_MODBUS))
 {
 }
 
@@ -98,6 +101,7 @@ void PilzModbusReadClient::sendDisconnectMsg()
 
 void PilzModbusReadClient::run()
 {
+  ROS_INFO("running %d", RATE_HZ);
   State expectedState {State::initialized};
   if (!state_.compare_exchange_strong(expectedState, State::running))
   {
@@ -108,7 +112,7 @@ void PilzModbusReadClient::run()
   std::vector<uint16_t> last_holding_register;
   ros::Time last_update {ros::Time::now()};
   state_ = State::running;
-  ros::Rate rate(MODBUS_RATE_HZ);
+  ros::Rate rate(RATE_HZ);
   while ( ros::ok() && !stop_run_.load() )
   {
     try

@@ -1,0 +1,8 @@
+modbus_read:
+  index_of_first_register_to_read: 512
+  num_registers_to_read: 2
+  rate_hz: 500
+another_topic:
+  index_of_first_register_to_read: 1024
+  num_registers_to_read: 99
+  rate_hz: 20 

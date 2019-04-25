@@ -43,13 +43,14 @@ public:
    * @param ModbusClient to use
    */
   PilzModbusReadClient(ros::NodeHandle& nh,
-                       const unsigned int num_registers_to_read,
+                       const std::string topic,
                        const unsigned int index_of_first_register,
+                       const unsigned int num_registers_to_read,
+                       const unsigned int rate_hz,
                        ModbusClientUniquePtr modbus_client);
 
   ~PilzModbusReadClient(){}
 
-public:
   /**
    * @brief Tries to connect to a modbus server.
    * @param ip
@@ -104,14 +105,16 @@ private:
     running,
   };
 
-  //! Number of registers which have to be read.
-  const uint32_t NUM_REGISTERS_TO_READ;
   //! Index from which the registers have to be read.
   const uint32_t INDEX_OF_FIRST_REGISTER;
 
-  static constexpr unsigned int RESPONSE_TIMEOUT_IN_MS {10};
+  //! Number of registers which have to be read.
+  const uint32_t NUM_REGISTERS_TO_READ;
 
-  static constexpr double MODBUS_RATE_HZ {500};
+  //! Rate at which the registers have to be read.
+  const uint32_t RATE_HZ;
+
+  static constexpr unsigned int RESPONSE_TIMEOUT_IN_MS {10};
 
   static constexpr int DEFAULT_QUEUE_SIZE_MODBUS {1};
 
