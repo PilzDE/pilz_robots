@@ -2,8 +2,8 @@
 Changelog for package prbt_gazebo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.3 (2019-04-24)
+------------------
 * Remove rosparam block no longer needed
 * Add world_name argument to gazebo launch file. 
 * Install launch and config folder of prbt_gazebo

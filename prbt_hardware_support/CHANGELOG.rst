@@ -2,8 +2,8 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.3 (2019-04-24)
+------------------
 * cleanup CMakeLists of prbt_hardware_support
 * update the documentation
 * more precise error output when failing to read modbus register

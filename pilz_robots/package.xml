@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>pilz_robots</name>
-  <version>0.5.2</version>
+  <version>0.5.3</version>
   <description>The metapackage</description>
 
   <url type="website">http://ros.org/wiki/pilz_robots</url>

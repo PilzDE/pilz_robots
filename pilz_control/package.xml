@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>pilz_control</name>
-  <version>0.5.2</version>
+  <version>0.5.3</version>
   <description>
   This package provides a specialized joint_trajectory_controller that can be moved into holding state via service call.
   No further trajectories will be accepted/followed in this state.
