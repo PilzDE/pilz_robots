@@ -43,10 +43,10 @@ public:
    * @param ModbusClient to use
    */
   PilzModbusReadClient(ros::NodeHandle& nh,
-                       const std::string topic,
-                       const unsigned int index_of_first_register,
-                       const unsigned int num_registers_to_read,
-                       const unsigned int rate_hz,
+                       std::string topic,
+                       unsigned int index_of_first_register,
+                       unsigned int num_registers_to_read,
+                       unsigned int rate_hz,
                        ModbusClientUniquePtr modbus_client);
 
   ~PilzModbusReadClient(){}

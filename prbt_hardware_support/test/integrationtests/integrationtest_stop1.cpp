@@ -168,6 +168,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
 
   waitForNode("/pilz_modbus_read_client_node");
   waitForNode("/sto_modbus_adapter_node");
+  ROS_INFO("waited ...");
 
   // We expect:
   {

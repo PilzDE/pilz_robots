@@ -33,6 +33,9 @@ static const std::string SUB_PARAM_INDEX_OF_FIRST_REGISTER_TO_READ_STR {"index_o
 static const std::string SUB_PARAM_NUM_REGISTERS_TO_READ_STR {"num_registers_to_read"};
 static const std::string SUB_PARAM_RATE_HZ_STR {"rate_hz"};
 
+/* for testing only: */
+static const std::string PARAM_INDEX_OF_FIRST_REGISTER_TO_READ_STR {"index_of_first_register_to_read"};
+static const std::string PARAM_NUM_REGISTERS_TO_READ_STR {"num_registers_to_read"};
 }
 
 #endif // PARAM_NAMES_H

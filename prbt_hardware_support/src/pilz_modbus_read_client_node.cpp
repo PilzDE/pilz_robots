@@ -71,10 +71,7 @@ int main(int argc, char **argv)
     return EXIT_FAILURE;
   }
 
-
   ROS_DEBUG_STREAM("Modbus client IP: " << ip << " | Port: " << port);
-
-
 
   ROS_DEBUG_STREAM("Config: " << rpc.toXml().c_str());
 

@@ -31,18 +31,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <arg name="num_registers_to_read" default="2" />
 
 <node name="pilz_modbus_read_client_node" pkg="prbt_hardware_support" type="pilz_modbus_read_client_node">
-  <param name="index_of_first_register_to_read" value="$(arg index_of_first_register_to_read)"/>
   <param name="modbus_server_ip" value="$(arg modbus_server_ip)"/>
   <param name="modbus_server_port" value="$(arg modbus_server_port)"/>
-  <param name="index_of_first_register_to_read" value="$(arg index_of_first_register_to_read)"/>
-  <param name="num_registers_to_read" value="$(arg num_registers_to_read)"/>
+  <rosparam ns="topics" command="load" file="$(find prbt_hardware_support)/config/modbus_read.yaml" />
 </node>
 
 <node name="sto_modbus_adapter_node" pkg="prbt_hardware_support" type="sto_modbus_adapter_node">
   <param name="index_of_first_register_to_read" value="$(arg index_of_first_register_to_read)"/>
 </node>
 
-<test test-name="integrationtest_stop1" pkg="prbt_hardware_support" type="integrationtest_stop1">
+<test test-name="integrationtest_stop1" pkg="prbt_hardware_support" type="integrationtest_stop1" time-limit="10.0">
   <param name="modbus_server_ip" value="$(arg modbus_server_ip)"/>
   <param name="modbus_server_port" value="$(arg modbus_server_port)"/>
   <param name="modbus_register_size" value="$(arg modbus_register_size)"/>

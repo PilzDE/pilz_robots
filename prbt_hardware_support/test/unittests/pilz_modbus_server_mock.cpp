@@ -20,7 +20,7 @@
 #include <prbt_hardware_support/param_names.h>
 #include <prbt_hardware_support/pilz_modbus_server_mock.h>
 
-#include <ros/console.h>
+#include <ros/ros.h>
 
 namespace prbt_hardware_support
 {
@@ -121,7 +121,6 @@ void PilzModbusServerMock::run()
 #endif
 
   uint8_t query[MODBUS_TCP_MAX_ADU_LENGTH];
-
   // Connect to client loop
   while (!terminate_)
   {
@@ -129,21 +128,23 @@ void PilzModbusServerMock::run()
     // Set socket non blocking
     //fcntl(socket_, F_SETFL, O_NONBLOCK);
 
-{
-   std::lock_guard<std::mutex> lk(running_mutex_);
-    running_cv_.notify_one();
-}
+    {
+	    std::lock_guard<std::mutex> lk(running_mutex_);
+	    running_cv_.notify_one();
+    }
 
     ROS_ERROR("Notify");
 
     ROS_DEBUG("Waiting for connection");
     int result {-1};
+
+    while(!ros::isInitialized()){}
+
     while(result < 0)
     {
-      ROS_ERROR("Inside Loop");
       result = modbus_tcp_accept(modbus_connection_, &socket_);
-      ROS_ERROR("modbus_tcp_accept");
-
+      ROS_ERROR("modbus_tcp_accept: %d", result);
+			ros::Duration(0.5).sleep();
       if(terminate_) break;
     }
     ROS_DEBUG_STREAM("Connection with client accepted.");
