@@ -109,7 +109,7 @@ private:
   //! Index from which the registers have to be read.
   const uint32_t INDEX_OF_FIRST_REGISTER;
 
-  static constexpr unsigned int RESPONSE_TIMEOUT_IN_MS {10};
+  static constexpr unsigned int RESPONSE_TIMEOUT_IN_MS {20};
 
   static constexpr double MODBUS_RATE_HZ {500};
 

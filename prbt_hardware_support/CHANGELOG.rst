@@ -2,6 +2,10 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* increased modbus response timeout to 20ms
+
 0.5.3 (2019-04-24)
 ------------------
 * cleanup CMakeLists of prbt_hardware_support
