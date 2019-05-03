@@ -29,7 +29,6 @@
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <prbt_hardware_support/update_filter.h>
 
-#include <prbt_hardware_support/sto_modbus_adapter_exception.h>
 #include <prbt_hardware_support/modbus_msg_sto_wrapper.h>
 
 namespace prbt_hardware_support
@@ -85,7 +84,9 @@ private:
 
   static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {2};
 
-  static constexpr int WAIT_FOR_SERVICE_TIMEOUT_S {5};
+  static constexpr double RETRY_SERVICE_CONNECTION_TIME_S {0.2};
+
+  static constexpr double WAIT_FOR_SERVICE_TIMEOUT_S {5.0};
 
   /**
    * @brief Specifies the time between holding the controller and disabling the driver. This allows the controller
