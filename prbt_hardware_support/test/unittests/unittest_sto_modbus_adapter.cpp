@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 #include <stdexcept>
+#include <thread>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -75,6 +76,7 @@ protected:
   void SetUp();
 
   ModbusMsgInStampedPtr createDefaultStoModbusMsg(bool sto_clear);
+  std::thread asyncConstructor();
 
 protected:
   ros::NodeHandle nh_;
@@ -118,6 +120,14 @@ ModbusMsgInStampedPtr PilzStoModbusAdapterTest::createDefaultStoModbusMsg(bool s
   return msg;
 }
 
+std::thread PilzStoModbusAdapterTest::asyncConstructor()
+{
+  std::thread t([this](){
+                    PilzStoModbusAdapterNode adapter_node(nh_);
+                  });
+  return t;
+}
+
 /**
  * @brief Test that the Setup functions properly
  */
@@ -131,7 +141,9 @@ TEST_F(PilzStoModbusAdapterTest, testSetup)
 }
 
 /**
- * @brief Test an expection is thrown if there is no disable service to disable the drives
+ * @brief Test constructor with delayed halt service
+ *
+ * Expected: Constructor blocks until the halt service is available.
  */
 TEST_F(PilzStoModbusAdapterTest, testSetupNoDisableService)
 {
@@ -139,13 +151,18 @@ TEST_F(PilzStoModbusAdapterTest, testSetupNoDisableService)
   manipulator_.advertiseUnholdService(nh_, UNHOLD_SERVICE_T);
   manipulator_.advertiseRecoverService(nh_, RECOVER_SERVICE_T);
 
-  EXPECT_THROW(PilzStoModbusAdapterNode adapter_node(nh_), PilzStoModbusAdapterNodeException);
+  auto t = asyncConstructor();
+  ros::Duration(5.5).sleep(); // slightly longer than WAIT_FOR_SERVICE_TIMEOUT_S
 
-  EXPECT_EQ(0, pub_.getNumSubscribers());
+  EXPECT_EQ(0, pub_.getNumSubscribers()); // the constructor should wait, no subscription yet
+  manipulator_.advertiseHaltService(nh_, HALT_SERVICE_T);
+  t.join();
 }
 
 /**
- * @brief Test that no expection is thrown if there is no service for unholding the controller
+ * @brief Test constructor if there is no service for unholding the controller
+ *
+ * Expected: Constructor finishes successfully without unhold service.
  */
 TEST_F(PilzStoModbusAdapterTest, testSetupNoUnholdService)
 {
@@ -159,7 +176,9 @@ TEST_F(PilzStoModbusAdapterTest, testSetupNoUnholdService)
 }
 
 /**
- * @brief Test that no expection is thrown if there is no service for recovering the driver
+ * @brief Test constructor if there is no service for recovering the driver
+ *
+ * Expected: Constructor finishes successfully without recover service
  */
 TEST_F(PilzStoModbusAdapterTest, testSetupNoRecoverService)
 {
@@ -173,7 +192,9 @@ TEST_F(PilzStoModbusAdapterTest, testSetupNoRecoverService)
 }
 
 /**
- * @brief Test that a expection is thrown if there is no service for holding the controller
+ * @brief Test constructor with delayed hold service
+ *
+ * Expected: Constructor blocks until the hold service is available.
  */
 TEST_F(PilzStoModbusAdapterTest, testSetupNoHoldService)
 {
@@ -181,9 +202,12 @@ TEST_F(PilzStoModbusAdapterTest, testSetupNoHoldService)
   manipulator_.advertiseHaltService(nh_, HALT_SERVICE_T);
   manipulator_.advertiseRecoverService(nh_, RECOVER_SERVICE_T);
 
-  EXPECT_THROW(PilzStoModbusAdapterNode adapter_node(nh_), PilzStoModbusAdapterNodeException);
+  auto t = asyncConstructor();
+  ros::Duration(5.5).sleep(); // slightly longer than WAIT_FOR_SERVICE_TIMEOUT_S
 
-  EXPECT_EQ(0, pub_.getNumSubscribers());
+  EXPECT_EQ(0, pub_.getNumSubscribers()); // the constructor should wait, no subscription yet
+  manipulator_.advertiseHoldService(nh_, HOLD_SERVICE_T);
+  t.join();
 }
 
 /**
@@ -394,16 +418,6 @@ TEST_F(PilzStoModbusAdapterTest, testNoSto)
   pub_.publish(msg);
 
   BARRIER("halt_callback");
-}
-
-/**
- * @brief Check construction of the exception (essentially for full function coverage)
- */
-TEST_F(PilzStoModbusAdapterTest, ExceptionCTOR)
-{
-  PilzStoModbusAdapterNodeException* exception = new PilzStoModbusAdapterNodeException("test");
-
-  delete exception;
 }
 
 /**
