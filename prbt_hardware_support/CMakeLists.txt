@@ -206,7 +206,7 @@ if(CATKIN_ENABLE_TESTING)
   if(ENABLE_COVERAGE_TESTING)
     include(CodeCoverage)
     APPEND_COVERAGE_COMPILER_FLAGS()
-    set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*" "*/devel/include/${PROJECT_NAME}/*")
+    set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*" "*/ModbusMsgInStamped.h")
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
       DEPENDS tests
