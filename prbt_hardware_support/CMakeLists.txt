@@ -40,10 +40,11 @@ catkin_package(
 
 include_directories(
   include
-  ${catkin_INCLUDE_DIRS}
   test/include
+  ${catkin_INCLUDE_DIRS}
 )
 
+# STO_MODBUS_ADAPTER_NODE
 add_executable(sto_modbus_adapter_node
   src/sto_modbus_adapter_node.cpp
   src/sto_modbus_adapter.cpp
@@ -51,6 +52,15 @@ add_executable(sto_modbus_adapter_node
 )
 add_dependencies(sto_modbus_adapter_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
 target_link_libraries(sto_modbus_adapter_node ${catkin_LIBRARIES})
+
+# BRAKE_TEST_NODE
+add_executable(modbus_brake_test_announcer_node
+  src/modbus_brake_test_announcer_node.cpp
+  src/modbus_brake_test_announcer.cpp
+  src/brake_test_announcer.cpp
+)
+add_dependencies(modbus_brake_test_announcer_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(modbus_brake_test_announcer_node ${catkin_LIBRARIES})
 
 # +++++++++++++++++++++++++++++++++
 # + Build modbus read client node +
@@ -99,8 +109,16 @@ if(CATKIN_ENABLE_TESTING)
   )
   add_dependencies(unittest_update_filter ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+  add_rostest_gmock(unittest_brake_test_filter
+                    test/unittests/unittest_brake_test_filter.test
+                    test/unittests/unittest_brake_test_filter.cpp
+  )
+  target_link_libraries(unittest_brake_test_filter
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  add_dependencies(unittest_brake_test_filter ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-  catkin_add_gmock(unittest_libmodbus_client
+  catkin_add_gtest(unittest_libmodbus_client
       test/unittests/unittest_libmodbus_client.cpp
       test/unittests/pilz_modbus_server_mock.cpp
       src/libmodbus_client.cpp
@@ -144,6 +162,18 @@ if(CATKIN_ENABLE_TESTING)
   )
   #----------------------------------
 
+  # --- ModbusBrakeTestAnnouncer unit test ---
+  add_rostest_gmock(unittest_modbus_brake_test_announcer
+    test/unittests/unittest_modbus_brake_test_announcer.test
+    test/unittests/unittest_modbus_brake_test_announcer.cpp
+    src/modbus_brake_test_announcer.cpp
+    src/brake_test_announcer.cpp
+  )
+  target_link_libraries(unittest_modbus_brake_test_announcer
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  #----------------------------------
+
   # --- Stop integration test ---
   add_rostest_gmock(integrationtest_stop1
      test/integrationtests/integrationtest_stop1.test
@@ -155,16 +185,31 @@ if(CATKIN_ENABLE_TESTING)
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
     modbus
   )
-  add_dependencies(integrationtest_stop1 ${catkin_EXPORTED_TARGETS} pilz_modbus_read_client_node sto_modbus_adapter_node)
+  add_dependencies(integrationtest_stop1 ${catkin_EXPORTED_TARGETS})
+  #----------------------------------
+
+  # --- Brake test required integration test ---
+  add_rostest_gmock(integrationtest_brake_test_required
+     test/integrationtests/integrationtest_brake_test_required.test
+     test/integrationtests/integrationtest_brake_test_required.cpp
+     test/unittests/pilz_modbus_server_mock.cpp
+     src/libmodbus_client.cpp
+  )
+  target_link_libraries(integrationtest_brake_test_required
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+    modbus
+  )
+  add_dependencies(integrationtest_brake_test_required ${catkin_EXPORTED_TARGETS})
+  #----------------------------------
 
   # to run: catkin_make -DENABLE_COVERAGE_TESTING=ON package_name_coverage (adding -j1 recommended)
   if(ENABLE_COVERAGE_TESTING)
     include(CodeCoverage)
     APPEND_COVERAGE_COMPILER_FLAGS()
-    set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*" "ModbusMsgInStamped.h")
+    set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*" "*/devel/include/${PROJECT_NAME}/*")
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
-      DEPENDENCIES tests
+      DEPENDS tests
     )
   endif()
 endif()
