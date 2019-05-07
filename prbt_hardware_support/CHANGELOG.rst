@@ -5,6 +5,9 @@ Changelog for package prbt_hardware_support
 Forthcoming
 -----------
 * increased modbus response timeout to 20ms
+* publish brake test requests obtained from safety controller via modbus
+* Contributors: Pilz GmbH and Co. KG
+
 
 0.4.8 (2019-04-24)
 ------------------
