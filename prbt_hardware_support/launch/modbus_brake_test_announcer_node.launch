@@ -17,17 +17,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <launch>
 
-  <!-- PNoz-Multi settings -->
-  <arg name="modbus_server_ip" default="169.254.60.1" />
-  <arg name="modbus_server_port" default="502" />
-  <arg name="index_of_first_register_to_read" default="512" />
-  <arg name="num_registers_to_read" default="3" />
+  <arg name="api_spec_file" default="$(find prbt_hardware_support)/config/modbus_api_spec_pss4000.yaml" />
 
-  <node required="true" pkg="prbt_hardware_support" type="pilz_modbus_read_client_node" name="pilz_modbus_read_client_node" output="screen">
-    <param name="modbus_server_ip" value="$(arg modbus_server_ip)"/>
-    <param name="modbus_server_port" value="$(arg modbus_server_port)"/>
-    <param name="index_of_first_register_to_read" value="$(arg index_of_first_register_to_read)"/>
-    <param name="num_registers_to_read" value="$(arg num_registers_to_read)"/>
+  <node required="true" ns="prbt" pkg="prbt_hardware_support" type="modbus_brake_test_announcer_node" name="modbus_brake_test_announcer_node" output="screen">
+    <rosparam ns="api_spec" command="load" file="$(arg api_spec_file)" />
   </node>
 
 </launch>
