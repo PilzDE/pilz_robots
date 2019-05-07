@@ -1,5 +1,5 @@
-#ifndef MODBUS_MSG_STO_WRAPPER_EXCPETION_H
-#define MODBUS_MSG_STO_WRAPPER_EXCPETION_H
+#ifndef MODBUS_MSG_STO_WRAPPER_EXCEPTION_H
+#define MODBUS_MSG_STO_WRAPPER_EXCEPTION_H
 
 #include <string>
 #include <stdexcept>
@@ -22,4 +22,4 @@ namespace prbt_hardware_support
 
 }
 
-#endif // MODBUS_MSG_STO_WRAPPER_EXCPETION_H
+#endif // MODBUS_MSG_STO_WRAPPER_EXCEPTION_H
