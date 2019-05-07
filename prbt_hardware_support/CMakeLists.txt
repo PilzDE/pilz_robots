@@ -18,7 +18,14 @@ find_package(catkin REQUIRED COMPONENTS
 # message generation
 add_message_files(
   FILES
+  BrakeTestErrorCodes.msg
   ModbusMsgInStamped.msg
+)
+
+# action generation
+add_service_files(
+  FILES
+  BrakeTest.srv
 )
 
 generate_messages(
@@ -31,7 +38,7 @@ generate_messages(
 ###################################
 catkin_package(
   INCLUDE_DIRS include
-  CATKIN_DEPENDS message_runtime std_msgs
+  CATKIN_DEPENDS message_runtime std_msgs std_srvs
 )
 
 ###########
@@ -61,6 +68,22 @@ add_executable(modbus_brake_test_announcer_node
 )
 add_dependencies(modbus_brake_test_announcer_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
 target_link_libraries(modbus_brake_test_announcer_node ${catkin_LIBRARIES})
+
+add_executable(brake_test_executor_node
+  src/brake_test_executor_node.cpp
+  src/brake_test_executor.cpp
+  src/brake_test_executor_exception.cpp
+)
+add_dependencies(brake_test_executor_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(brake_test_executor_node ${catkin_LIBRARIES})
+
+add_executable(canopen_braketest_adapter_node
+  src/canopen_braketest_adapter_node.cpp
+  src/canopen_braketest_adapter.cpp
+  src/canopen_braketest_adapter_exception.cpp
+)
+add_dependencies(canopen_braketest_adapter_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(canopen_braketest_adapter_node ${catkin_LIBRARIES})
 
 # +++++++++++++++++++++++++++++++++
 # + Build modbus read client node +
@@ -174,6 +197,43 @@ if(CATKIN_ENABLE_TESTING)
   )
   #----------------------------------
 
+  # --- BrakeTestUtils unit test ---
+  add_rostest_gtest(unittest_brake_test_utils
+    test/unittests/unittest_brake_test_utils.test
+    test/unittests/unittest_brake_test_utils.cpp
+    test/unittests/joint_states_publisher_mock.cpp
+  )
+  target_link_libraries(unittest_brake_test_utils
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  #----------------------------------
+
+  # --- CanOpenBraketestAdapter unit test ---
+  add_rostest_gmock(unittest_canopen_braketest_adapter
+    test/unittests/unittest_canopen_braketest_adapter.test
+    test/unittests/unittest_canopen_braketest_adapter.cpp
+    test/unittests/canopen_chain_node_mock.cpp
+    src/canopen_braketest_adapter.cpp
+    src/canopen_braketest_adapter_exception.cpp
+  )
+  target_link_libraries(unittest_canopen_braketest_adapter
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  #----------------------------------
+
+  # --- BraketestExecutor unit test ---
+    add_rostest_gmock(unittest_brake_test_executor
+    test/unittests/unittest_brake_test_executor.test
+    test/unittests/unittest_brake_test_executor.cpp
+    test/unittests/joint_states_publisher_mock.cpp
+    src/brake_test_executor.cpp
+    src/brake_test_executor_exception.cpp
+  )
+  target_link_libraries(unittest_brake_test_executor
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  #----------------------------------
+
   # --- Stop integration test ---
   add_rostest_gmock(integrationtest_stop1
      test/integrationtests/integrationtest_stop1.test
@@ -202,11 +262,28 @@ if(CATKIN_ENABLE_TESTING)
   add_dependencies(integrationtest_brake_test_required ${catkin_EXPORTED_TARGETS})
   #----------------------------------
 
+  # --- Trigger brake test integration test ---
+  add_rostest_gmock(integrationtest_trigger_brake_test
+    test/integrationtests/integrationtest_trigger_brake_test.test
+    test/integrationtests/integrationtest_trigger_brake_test.cpp
+    test/unittests/joint_states_publisher_mock.cpp
+    test/unittests/canopen_chain_node_mock.cpp
+  )
+  target_link_libraries(integrationtest_trigger_brake_test
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  add_dependencies(integrationtest_trigger_brake_test ${catkin_EXPORTED_TARGETS})
+
   # to run: catkin_make -DENABLE_COVERAGE_TESTING=ON package_name_coverage (adding -j1 recommended)
   if(ENABLE_COVERAGE_TESTING)
     include(CodeCoverage)
     APPEND_COVERAGE_COMPILER_FLAGS()
-    set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*" "*/ModbusMsgInStamped.h")
+    set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*"
+                          "*/ModbusMsgInStamped.h"
+                          "*/BrakeTest.h"
+                          "*/BrakeTestErrorCodes.h"
+                          "*/BrakeTestRequest.h"
+                          "*/BrakeTestResponse.h")
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
       DEPENDS tests
