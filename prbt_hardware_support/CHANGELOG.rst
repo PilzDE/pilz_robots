@@ -7,6 +7,7 @@ Forthcoming
 * increased modbus response timeout to 20ms
 * publish brake test requests obtained from safety controller via modbus
 * sto_modbus_adapter waits for the services to appear instead of throwing exceptions
+* Add ability to execute a braketest on each drive.
 * Contributors: Pilz GmbH and Co. KG
 
 
