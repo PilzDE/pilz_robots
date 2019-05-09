@@ -35,6 +35,7 @@
 #include <modbus/modbus.h>
 
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
+#include <prbt_hardware_support/IsBrakeTestRequired.h>
 #include <prbt_hardware_support/pilz_modbus_server_mock.h>
 #include <prbt_hardware_support/pilz_modbus_read_client.h>
 
@@ -91,6 +92,7 @@ protected:
   ros::NodeHandle nh_;
   ros::NodeHandle nh_priv_{"~"};
   ros::Subscriber brake_test_topic_sub_;
+  ros::ServiceClient is_brake_test_required_client_;
 };
 
 BrakeTestRequiredIntegrationTest::BrakeTestRequiredIntegrationTest()
@@ -99,11 +101,12 @@ BrakeTestRequiredIntegrationTest::BrakeTestRequiredIntegrationTest()
                                                            DEFAULT_QUEUE_SIZE_BRAKE_TEST,
                                                            &BrakeTestRequiredIntegrationTest::brake_test_announcer_callback,
                                                            this);
+	is_brake_test_required_client_ = nh_.serviceClient<prbt_hardware_support::IsBrakeTestRequired>("/prbt/is_brake_test_required");
 }
 
 /**
  * @brief Send data via ModbusServerMock -> ModbusReadClient -> ModbusBrakeTestAnnouncer connection
- * and check that the expected message arrives on the brake test topic.
+ * and check that the expected message arrives on the brake test topic and via the service call.
  *
  * @note Due to the asynchronicity of the test each step of the sequence passed successful
  *       allows the next step to be taken. See testing::AsyncTest for details.
@@ -111,15 +114,17 @@ BrakeTestRequiredIntegrationTest::BrakeTestRequiredIntegrationTest()
  * Test Sequence:
  *    0. Start Modbus-server in separate thread. Make sure that the nodes are up.
  *    1. Send a brake test required message with the correct API version.
- *    2. Send a brake test required message with the correct API version (change another but irelevant register entry).
+ *    2. Send a brake test required message with the correct API version (change another but irrelevant register entry).
  *    3. Send a brake test not-required message with the correct API version.
  *    4. Terminate ModbusServerMock.
  *
  * Expected Results:
  *    0. -
  *    1. A message informing about the required brake test arrives on the brake test topic.
+ *       - And the service call gives the same result.
  *    2. No message arrives on the brake test topic.
  *    3. A message informing about the not-required brake test arrives on the brake test topic.
+ *       - And the service call gives the same result.
  *    4. No message arrives on the brake test topic.
  */
 TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
@@ -146,6 +151,7 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
 
   std::thread modbus_server_thread( &initalizeAndRun<prbt_hardware_support::PilzModbusServerMock>,
                                     std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port) );
+	prbt_hardware_support::IsBrakeTestRequired srv;
 
   waitForNode("/pilz_modbus_read_client_node");
   waitForNode("/modbus_brake_test_announcer_node");
@@ -177,11 +183,17 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
   std::vector<uint16_t> required_holding_register_changed{MODBUS_API_VERSION_VALUE, 1, 0, 0, 1};
   modbus_server.setHoldingRegister(required_holding_register_changed, index_of_first_register_to_read);
 
+	is_brake_test_required_client_.call(srv);
+	ASSERT_TRUE(srv.response.result == true);
+
   /**********
    * Step 3 *
    **********/
   std::vector<uint16_t> not_required_holding_register{MODBUS_API_VERSION_VALUE, 0, 0, 0, 0};
   modbus_server.setHoldingRegister(not_required_holding_register, index_of_first_register_to_read);
+
+	is_brake_test_required_client_.call(srv);
+	ASSERT_TRUE(srv.response.result == false);
 
   BARRIER("brake_test_announcer_not_required");
 

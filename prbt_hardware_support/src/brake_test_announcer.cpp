@@ -30,8 +30,15 @@ BrakeTestAnnouncer::BrakeTestAnnouncer(ros::NodeHandle& nh)
 {
 }
 
-void BrakeTestAnnouncer::sendBrakeTestRequiredMsg(bool brake_test_required) const
+void BrakeTestAnnouncer::sendBrakeTestRequiredMsg(bool brake_test_required)
 {
+	// when the first data is received, the node is initialized (i.e. the service advertised)
+	if(!initialized_) {
+		init();
+		initialized_ = true;
+	}
+	brake_test_required_ = brake_test_required;
+
   std_msgs::Bool pub_msg;
   pub_msg.data = brake_test_required;
   brake_test_required_pub_.publish(pub_msg);
@@ -40,5 +47,11 @@ void BrakeTestAnnouncer::sendBrakeTestRequiredMsg(bool brake_test_required) cons
     ROS_INFO("Braketest required.");
   }
 }
+
+bool BrakeTestAnnouncer::isBrakeTestRequired(IsBrakeTestRequired::Request& req,
+				                                     IsBrakeTestRequired::Response& res) {
+	res.result = brake_test_required_;
+	return true;
+ }
 
 }
