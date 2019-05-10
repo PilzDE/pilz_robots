@@ -40,6 +40,14 @@ A Modbus client (for usage with the PNOZmulti) can be started with `roslaunch pr
 - num_registers_to_read
 - modbus_connection_retries (default: 10)
 - modbus_connection_retry_timeout - timeout between retries (default: 1s)
+- modbus_response_timeout (default: 20ms)
+- modbus_topic_name (default: "/pilz_modbus_node/modbus_read")
+
+**Please note:**
+- The parameters ``modbus_response_timeout`` and ``modbus_topic_name`` are
+important for the Safe stop 1 functionality and must NOT be given, if the
+``modbus_read_node`` is used as part of the Safe stop 1 functionality.
+If the parameters are not given the default values for these parameters are used.
 
 ## StoModbusAdapterNode
 The ``PilzStoModbusAdapterNode`` is noticed via the topic `/modbus_read` if the STO is true or false and reacts as follows calling the corresponding services of the controllers and drivers:
@@ -47,3 +55,4 @@ The ``PilzStoModbusAdapterNode`` is noticed via the topic `/modbus_read` if the 
 enable drives, unhold controllers
 - **STO false:**
 hold controllers, disable drives
+
