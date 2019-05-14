@@ -25,7 +25,6 @@
   <exec_depend>topic_tools</exec_depend>
   <exec_depend>rosservice</exec_depend>
   <exec_depend>xacro</exec_depend>
-  <exec_depend>rviz</exec_depend>
   <exec_depend>controller_manager</exec_depend>
   <exec_depend>pilz_control</exec_depend> <!--contains the PilzJointTrajectoryController-->
   <exec_depend>prbt_hardware_support</exec_depend>
