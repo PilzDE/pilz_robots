@@ -25,7 +25,7 @@ These acceptance tests check that the real robot system reacts to STO messages a
 ## 1. Starting while acknowledge button is pressed
 ### Test Sequence
   1. Press the acknowledge button. Make sure the green light on the power cabinet is on.
-     Run `roslaunch psir_moveit_config moveit_planning_execution.launch sim:=False pipeline:=pilz_command_planner`
+     Run `roslaunch prbt_moveit_config moveit_planning_execution.launch sim:=False pipeline:=pilz_command_planner`
   2. Release the acknowledge button. Try to move the robot.
   3. Press the acknowledge button. Make sure the green light on the power cabinet is on.
   4. Using Rviz perform a long motion during which you release the acknowledge button.
@@ -38,7 +38,7 @@ These acceptance tests check that the real robot system reacts to STO messages a
 ## 2. Starting without acknowledge button beeing pressed
 ### Test Sequence
   1. Do not press the acknowledge button.
-     Run `roslaunch psir_moveit_config moveit_planning_execution.launch sim:=False pipeline:=pilz_command_planner`
+     Run `roslaunch prbt_moveit_config moveit_planning_execution.launch sim:=False pipeline:=pilz_command_planner`
      After a about 10 seconds press the safety cabinet.
   2. Try to move the Robot via Rviz.
 
