@@ -285,7 +285,7 @@ TEST_F(PilzModbusReadClientTests, terminateRunningClient)
 }
 
 /**
- * @brief Test that topic name can be changed.
+ * @brief Tests that topic name can be changed.
  */
 TEST_F(PilzModbusReadClientTests, testTopicNameChange)
 {
@@ -299,6 +299,27 @@ TEST_F(PilzModbusReadClientTests, testTopicNameChange)
   ros::Duration(WAIT_SLEEPTIME_S).sleep();
   ros::Subscriber sub = nh_.subscribe<ModbusMsgInStamped>(topic_name, 1, &callbackDummy);
   ASSERT_EQ(1u, sub.getNumPublishers());
+}
+
+/**
+ * @brief Tests that response timeout can be changed.
+ */
+TEST_F(PilzModbusReadClientTests, testSettingOfTimeOut)
+{
+  std::unique_ptr<PilzModbusClientMock> mock(new PilzModbusClientMock());
+
+  const unsigned int response_timeout {RESPONSE_TIMEOUT + 4};
+
+  EXPECT_CALL(*mock, init(_,_))
+      .Times(1)
+      .WillOnce(Return(true));
+
+  EXPECT_CALL(*mock, setResponseTimeoutInMs(response_timeout)).Times(1);
+
+  auto client = std::make_shared< PilzModbusReadClient >(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock),
+                                                         response_timeout, prbt_hardware_support::TOPIC_MODBUS_READ);
+
+  EXPECT_TRUE(client->init(LOCALHOST, DEFAULT_MODBUS_PORT_TEST));
 }
 
 }  // namespace pilz_modbus_read_client_test
