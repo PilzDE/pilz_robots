@@ -73,7 +73,10 @@ protected:
   ros::NodeHandle nh_;
 
   MOCK_METHOD1(modbus_read_cb,  void(ModbusMsgInStamped msg));
+
 };
+
+void callbackDummy(const ModbusMsgInStampedConstPtr& /*msg*/) {}
 
 void PilzModbusReadClientTests::SetUp()
 {
@@ -279,6 +282,23 @@ TEST_F(PilzModbusReadClientTests, terminateRunningClient)
   }
   EXPECT_FALSE(client->isRunning());
   running_thread.join();
+}
+
+/**
+ * @brief Test that topic name can be changed.
+ */
+TEST_F(PilzModbusReadClientTests, testTopicNameChange)
+{
+  std::unique_ptr<PilzModbusClientMock> mock(new PilzModbusClientMock());
+
+  const std::string topic_name {"test_topic_name"};
+
+  auto client = std::make_shared< PilzModbusReadClient >(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock),
+                                                         RESPONSE_TIMEOUT, topic_name);
+  // Wait for a moment to ensure the topic is "up and running"
+  ros::Duration(WAIT_SLEEPTIME_S).sleep();
+  ros::Subscriber sub = nh_.subscribe<ModbusMsgInStamped>(topic_name, 1, &callbackDummy);
+  ASSERT_EQ(1u, sub.getNumPublishers());
 }
 
 }  // namespace pilz_modbus_read_client_test
