@@ -17,10 +17,10 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
+
   <exec_depend>roscpp</exec_depend>
   <exec_depend>canopen_motor_node</exec_depend>
   <exec_depend>joint_state_controller</exec_depend>
-  <exec_depend>joint_state_publisher</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>topic_tools</exec_depend>
   <exec_depend>rosservice</exec_depend>
@@ -35,4 +35,6 @@
   <test_depend>cmake_modules</test_depend>
   <test_depend>eigen</test_depend>
   <test_depend>roslaunch</test_depend>
+  <test_depend>rviz</test_depend> <!-- test_urdf.launch for acceptance test -->
+  <test_depend>joint_state_publisher</test_depend> <!-- test_urdf.launch -->
 </package>
