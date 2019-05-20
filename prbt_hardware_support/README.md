@@ -61,12 +61,13 @@ A Modbus client (for usage with the PNOZmulti or PSS4000) can be started with `r
 - modbus_connection_retries (default: 10)
 - modbus_connection_retry_timeout - timeout between retries (default: 1s)
 - modbus_response_timeout (default: 20ms)
-- modbus_topic_name (default: "/pilz_modbus_node/modbus_read")
+- modbus_read_topic_name (default: "/pilz_modbus_node/modbus_read")
+- modbus_write_topic_name (default: "/pilz_modbus_node/modbus_write")
 
 **Please note:**
-- The parameters ``modbus_response_timeout`` and ``modbus_topic_name`` are
+- The parameters ``modbus_response_timeout`` and ``modbus_read_topic_name`` are
 important for the Safe stop 1 functionality and must NOT be given, if the
-``modbus_read_node`` is used as part of the Safe stop 1 functionality.
+``modbus_client_node`` is used as part of the Safe stop 1 functionality.
 If the parameters are not given the default values for these parameters are used.
 
 ## StoModbusAdapterNode

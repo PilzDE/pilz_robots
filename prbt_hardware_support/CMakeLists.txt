@@ -108,16 +108,16 @@ add_dependencies(system_info_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gen
 target_link_libraries(system_info_node ${catkin_LIBRARIES})
 
 # +++++++++++++++++++++++++++++++++
-# + Build modbus read client node +
+# + Build modbus client node +
 # +++++++++++++++++++++++++++++++++
 add_executable(
-  pilz_modbus_read_client_node
-  src/pilz_modbus_read_client_node.cpp
-  src/pilz_modbus_read_client.cpp
+  pilz_modbus_client_node
+  src/pilz_modbus_client_node.cpp
+  src/pilz_modbus_client.cpp
   src/libmodbus_client.cpp
 )
-add_dependencies(pilz_modbus_read_client_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
-target_link_libraries(pilz_modbus_read_client_node ${catkin_LIBRARIES} modbus)
+add_dependencies(pilz_modbus_client_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(pilz_modbus_client_node ${catkin_LIBRARIES} modbus)
 
 #############
 ## Install ##
@@ -132,7 +132,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
 
 install(TARGETS
   sto_modbus_adapter_node
-  pilz_modbus_read_client_node
+  pilz_modbus_client_node
   canopen_braketest_adapter_node
   modbus_adapter_brake_test_node
   brake_test_executor_node
@@ -209,20 +209,20 @@ if(CATKIN_ENABLE_TESTING)
   add_dependencies(unittest_modbus_msg_wrapper ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------
 
-  catkin_add_gtest(unittest_pilz_modbus_read_client_exception
-  test/unittests/unittest_pilz_modbus_read_client_exception.cpp)
-  add_dependencies(unittest_pilz_modbus_read_client_exception ${${PROJECT_NAME}_EXPORTED_TARGETS})
+  catkin_add_gtest(unittest_pilz_modbus_client_exception
+  test/unittests/unittest_pilz_modbus_client_exception.cpp)
+  add_dependencies(unittest_pilz_modbus_client_exception ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-  #--- PilzModbusReadClient unit test ---
-  add_rostest_gmock(unittest_pilz_modbus_read_client
-      test/unittests/unittest_pilz_modbus_read_client.test
-      test/unittests/unittest_pilz_modbus_read_client.cpp
-      src/pilz_modbus_read_client.cpp
+  #--- PilzModbusClient unit test ---
+  add_rostest_gmock(unittest_pilz_modbus_client
+      test/unittests/unittest_pilz_modbus_client.test
+      test/unittests/unittest_pilz_modbus_client.cpp
+      src/pilz_modbus_client.cpp
   )
-  target_link_libraries(unittest_pilz_modbus_read_client
+  target_link_libraries(unittest_pilz_modbus_client
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
   )
-  add_dependencies(unittest_pilz_modbus_read_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
+  add_dependencies(unittest_pilz_modbus_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
   #--- StoModbusAdapter unit test ---
   add_rostest_gmock(unittest_sto_modbus_adapter

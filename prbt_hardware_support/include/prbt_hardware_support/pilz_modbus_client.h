@@ -15,14 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PRBT_HARDWARE_SUPPORT_READ_CLIENT_NODE_H
-#define PRBT_HARDWARE_SUPPORT_READ_CLIENT_NODE_H
+#ifndef PRBT_HARDWARE_SUPPORT_CLIENT_NODE_H
+#define PRBT_HARDWARE_SUPPORT_CLIENT_NODE_H
 
 #include <atomic>
+#include <mutex>
+
+#include <boost/optional.hpp>
 
 #include <ros/ros.h>
+#include <std_msgs/UInt16MultiArray.h>
 
 #include <prbt_hardware_support/modbus_client.h>
+#include <prbt_hardware_support/register_container.h>
 
 namespace prbt_hardware_support
 {
@@ -30,29 +35,30 @@ namespace prbt_hardware_support
 /**
  * @brief Connects to a modbus server and publishes the received data into ROS.
  */
-class PilzModbusReadClient
+class PilzModbusClient
 {
-typedef std::unique_ptr<ModbusClient> ModbusClientUniquePtr;
+  typedef std::unique_ptr<ModbusClient> ModbusClientUniquePtr;
 
 public:
   /**
-   * @brief Sets up publisher. To open the modbus connection call PilzModbusReadClient::init.
+   * @brief Sets up publisher. To open the modbus connection call PilzModbusClient::init.
    * @param nh Node handle.
    * @param num_registers_to_read Size of the data array.
    * @param index_of_first_register Offset of the modbus data.
    * @param modbus_client ModbusClient to use
    * @param response_timeout_ms Time to wait for a response from Modbus server.
-   * @param modbus_topic_name Name under which ROS-Modbus message is published.
+   * @param modbus_read_topic_name Name under which modbus read message are published.
+   * @param modbus_write_topic_name Name under which modbus write messages are received.
    * @param read_frequency_hz Defines how often Modbus registers are read in.
    */
-  PilzModbusReadClient(ros::NodeHandle& nh,
+  PilzModbusClient(ros::NodeHandle& nh,
                        const unsigned int num_registers_to_read,
                        const unsigned int index_of_first_register,
                        ModbusClientUniquePtr modbus_client,
                        unsigned int response_timeout_ms,
-                       const std::string& modbus_topic_name,
+                       const std::string& modbus_read_topic_name,
+                       const std::string& modbus_write_topic_name,
                        double read_frequency_hz = DEFAULT_MODBUS_READ_FREQUENCY_HZ);
-
 public:
   /**
    * @brief Tries to connect to a modbus server.
@@ -96,6 +102,9 @@ public:
 
 private:
   void sendDisconnectMsg();
+  void modbus_write_callback(std_msgs::UInt16MultiArray msg);
+
+private:
 
   /**
    * @brief States of the Modbus-client.
@@ -127,18 +136,29 @@ private:
   std::atomic_bool stop_run_ {false};
   ModbusClientUniquePtr modbus_client_;
   ros::Publisher modbus_pub_;
+  ros::Subscriber modbus_sub_;
+
+  std::mutex write_reg_msg_mutex_;
+  boost::optional<std_msgs::UInt16MultiArray> write_reg_msg_ {boost::none};
+  RegCont write_reg_;
 };
 
-inline void PilzModbusReadClient::terminate()
+inline void PilzModbusClient::terminate()
 {
   stop_run_ = true;
 }
 
-inline bool PilzModbusReadClient::isRunning()
+inline bool PilzModbusClient::isRunning()
 {
   return state_.load() == State::running;
 }
 
+inline void PilzModbusClient::modbus_write_callback(std_msgs::UInt16MultiArray msg)
+{
+  std::lock_guard<std::mutex> lock(write_reg_msg_mutex_);
+  write_reg_msg_ = msg;
+}
+
 } // namespace prbt_hardware_support
 
-#endif // PRBT_HARDWARE_SUPPORT_READ_CLIENT_NODE_H
+#endif // PRBT_HARDWARE_SUPPORT_CLIENT_NODE_H

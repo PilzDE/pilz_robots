@@ -37,7 +37,7 @@
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <prbt_hardware_support/IsBrakeTestRequired.h>
 #include <prbt_hardware_support/pilz_modbus_server_mock.h>
-#include <prbt_hardware_support/pilz_modbus_read_client.h>
+#include <prbt_hardware_support/pilz_modbus_client.h>
 
 #include <prbt_hardware_support/ros_test_helper.h>
 
@@ -135,7 +135,7 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
                                     std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port) );
 	prbt_hardware_support::IsBrakeTestRequired srv;
 
-  waitForNode("/pilz_modbus_read_client_node");
+  waitForNode("/pilz_modbus_client_node");
   waitForNode("/prbt/modbus_adapter_brake_test_node");
 
   /**********

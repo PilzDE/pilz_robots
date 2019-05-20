@@ -29,6 +29,8 @@
 
 #include <ros/console.h>
 
+#include "prbt_hardware_support/register_container.h"
+
 namespace prbt_hardware_support
 {
 
@@ -37,7 +39,7 @@ namespace prbt_hardware_support
  * via subscription publication.
  */
 class PilzModbusServerMock
-{
+{ 
 public:
   PilzModbusServerMock(const unsigned int& holding_register_size);
 
@@ -69,7 +71,19 @@ public:
    * @param data The values in the holding register
    * @param start_index The index from where the value is set, other values remain untouched.
    */
-  void setHoldingRegister(const std::vector<uint16_t>& data, unsigned int start_index);
+  void setHoldingRegister(const RegCont& data, unsigned int start_index);
+
+  /**
+   * @brief Reads the specified number of registers, beginning at the specified
+   * start point from the holding register.
+   *
+   * @param start_index Index of first register to read.
+   * @param num_reg_to_read Number of registers to read.
+   *
+   * @returns the registers which were read.
+   */
+  RegCont readHoldingRegister(const RegCont::size_type start_index,
+                              const RegCont::size_type num_reg_to_read);
 
   /**
    * @brief Terminate the Server. Reading or connecting to it will fail.
