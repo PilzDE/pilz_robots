@@ -59,7 +59,11 @@ limitations under the License.
     <!-- name of the gripper -->
     <xacro:property name="gripper_name" value="$(arg robot_prefix)gripper"/>
 
+    <!-- load gripper macro -->
     <xacro:include filename="$(find prbt_${gripper}_support)/urdf/${gripper}.urdf.xacro" />
+
+    <!-- instantiate gripper -->
+    <xacro:prbt_gripper parent="$(arg robot_prefix)flange" />
 
     <!-- Add gripper brackets -->
     <xacro:include filename="$(find prbt_support)/urdf/simple_gripper_brackets.urdf.xacro" />
