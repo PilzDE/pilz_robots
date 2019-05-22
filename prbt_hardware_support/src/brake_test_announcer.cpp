@@ -36,11 +36,6 @@ void BrakeTestAnnouncer::init() {
 }
 
 void BrakeTestAnnouncer::updateBrakeTestRequiredState(bool brake_test_required) {
-	// when the first data is received, the node is initialized (i.e. the service advertised)
-	if(!initialized_) {
-		init();
-		initialized_ = true;
-	}
 	brake_test_required_ = brake_test_required;
 
   if(brake_test_required_){
@@ -49,6 +44,12 @@ void BrakeTestAnnouncer::updateBrakeTestRequiredState(bool brake_test_required) 
   else {
     ROS_INFO("Brake Test not required.");
   }
+
+	// when the first data is received, the node is initialized (i.e. the service advertised)
+	if(!initialized_) {
+		init();
+		initialized_ = true;
+	}
 }
 
 bool BrakeTestAnnouncer::isBrakeTestRequired(IsBrakeTestRequired::Request& req,
