@@ -19,7 +19,6 @@
 
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <prbt_hardware_support/modbus_msg_in_utils.h>
-#include <prbt_hardware_support/modbus_topic_definitions.h>
 #include <prbt_hardware_support/pilz_modbus_exceptions.h>
 #include <prbt_hardware_support/pilz_modbus_read_client_exception.h>
 
@@ -29,11 +28,16 @@ namespace prbt_hardware_support
 PilzModbusReadClient::PilzModbusReadClient(ros::NodeHandle& nh,
                                            const unsigned int num_registers_to_read,
                                            const unsigned int index_of_first_register,
-                                           ModbusClientUniquePtr modbus_client)
+                                           ModbusClientUniquePtr modbus_client,
+                                           unsigned int response_timeout_ms,
+                                           const std::string& modbus_topic_name,
+                                           double read_frequency_hz)
   : NUM_REGISTERS_TO_READ(num_registers_to_read)
   , INDEX_OF_FIRST_REGISTER(index_of_first_register)
+  , RESPONSE_TIMEOUT_MS(response_timeout_ms)
+  , READ_FREQUENCY_HZ(read_frequency_hz)
   , modbus_client_(std::move(modbus_client))
-  , modbus_pub_(nh.advertise<ModbusMsgInStamped>(TOPIC_MODBUS_READ, DEFAULT_QUEUE_SIZE_MODBUS))
+  , modbus_pub_(nh.advertise<ModbusMsgInStamped>(modbus_topic_name, DEFAULT_QUEUE_SIZE_MODBUS))
 {
 }
 
@@ -78,7 +82,7 @@ bool PilzModbusReadClient::init(const char* ip, unsigned int port)
     return false;
   }
 
-  modbus_client_->setResponseTimeoutInMs(RESPONSE_TIMEOUT_IN_MS);
+  modbus_client_->setResponseTimeoutInMs(RESPONSE_TIMEOUT_MS);
 
   state_ = State::initialized;
   ROS_DEBUG_STREAM("Connection to " << ip << ":" << port << " establised");
@@ -108,7 +112,7 @@ void PilzModbusReadClient::run()
   std::vector<uint16_t> last_holding_register;
   ros::Time last_update {ros::Time::now()};
   state_ = State::running;
-  ros::Rate rate(MODBUS_RATE_HZ);
+  ros::Rate rate(READ_FREQUENCY_HZ);
   while ( ros::ok() && !stop_run_.load() )
   {
     try
