@@ -169,8 +169,8 @@ void PilzModbusServerMock::run()
       usleep(50);
     } // End reading loop
 
-    socket_ = -1;
     close(socket_);
+    socket_ = -1;
   } // End connect to client loop
   ROS_DEBUG("Modbus-server run loop finished.");
 
