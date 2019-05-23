@@ -30,8 +30,7 @@
 namespace prbt_hardware_support
 {
 static constexpr int DEFAULT_QUEUE_SIZE_MODBUS{1};
-static const std::string TOPIC_BRAKE_TEST_REQUIRED = "/prbt/brake_test_required";
-static constexpr int DEFAULT_QUEUE_SIZE_BRAKE_TEST{1};
+static const std::string SERVICE_NAME_IS_BRAKE_TEST_REQUIRED = "/prbt/brake_test_required";
 
 static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{2};
 
@@ -40,7 +39,7 @@ static constexpr ModbusApiSpec test_api_spec(969, 973);
 /**
  * @brief Test fixture for unit-tests of the ModbusBrakeTestAnnouncer.
  *
- * Publish messages on the modbus topic and subscribe to the brake_test topic
+ * Publish messages on the modbus topic and call the brake_test_required service
  * in order to check if the expectations are met.
  */
 class ModbusBrakeTestAnnouncerTest : public testing::Test, public testing::AsyncTest
@@ -53,23 +52,18 @@ public:
                                                         unsigned int modbus_api_version = MODBUS_API_VERSION_REQUIRED,
                                                         uint32_t brake_test_required_index = test_api_spec.braketest_register_);
 
-  MOCK_METHOD1(brake_test_announcer_callback, void(std_msgs::Bool msg));
-
 protected:
   ros::NodeHandle nh_;
   std::shared_ptr<ModbusBrakeTestAnnouncer> brake_test_announcer_;
   ros::Publisher modbus_topic_pub_;
-  ros::Subscriber brake_test_topic_sub_;
+  ros::ServiceClient brake_test_required_client_;
 };
 
 ModbusBrakeTestAnnouncerTest::ModbusBrakeTestAnnouncerTest()
 {
   brake_test_announcer_.reset(new ModbusBrakeTestAnnouncer(nh_, test_api_spec));
   modbus_topic_pub_ = nh_.advertise<ModbusMsgInStamped>(TOPIC_MODBUS_READ, DEFAULT_QUEUE_SIZE_MODBUS);
-  brake_test_topic_sub_ = nh_.subscribe<std_msgs::Bool>(TOPIC_BRAKE_TEST_REQUIRED,
-                                                        DEFAULT_QUEUE_SIZE_BRAKE_TEST,
-                                                        &ModbusBrakeTestAnnouncerTest::brake_test_announcer_callback,
-                                                        this);
+  brake_test_required_client_ = nh_.serviceClient<prbt_hardware_support::IsBrakeTestRequired>(SERVICE_NAME_IS_BRAKE_TEST_REQUIRED);
 }
 
 ModbusBrakeTestAnnouncerTest::~ModbusBrakeTestAnnouncerTest()
@@ -101,16 +95,19 @@ MATCHER(InformsAboutNotRequired, "") { return !arg.data; }
  *  1. Publish modbus message informing about a required brake test.
  *
  * Expected Results:
- *  1. A message informing about the required brake test arrives on the brake test topic.
+ *  1. The service returns true
  */
 TEST_F(ModbusBrakeTestAnnouncerTest, testBrakeTestRequired)
 {
-  EXPECT_CALL(*this, brake_test_announcer_callback(InformsAboutRequired()))
-      .Times(1)
-      .WillOnce(ACTION_OPEN_BARRIER_VOID("brake_test_announcer_callback"));
   modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(true));
+  sleep(2.0);
 
-  BARRIER("brake_test_announcer_callback");
+  prbt_hardware_support::IsBrakeTestRequired srv;
+  brake_test_required_client_.call(srv);
+  ASSERT_TRUE(srv.response.result);
+
+  // Sleep prevents early termination.
+  sleep(2.0);
 }
 
 /**
@@ -120,31 +117,40 @@ TEST_F(ModbusBrakeTestAnnouncerTest, testBrakeTestRequired)
  *  1. Publish modbus message informing about a brake test not being required.
  *
  * Expected Results:
- *  1. A message informing about the brake test not being required arrives on the brake test topic.
+ *  1. The service returns false
  */
 TEST_F(ModbusBrakeTestAnnouncerTest, testBrakeTestNotRequired)
 {
-  EXPECT_CALL(*this, brake_test_announcer_callback(InformsAboutNotRequired()))
-      .Times(1)
-      .WillOnce(ACTION_OPEN_BARRIER_VOID("brake_test_announcer_callback"));
   modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(false));
+  sleep(0.5);
 
-  BARRIER("brake_test_announcer_callback");
+  prbt_hardware_support::IsBrakeTestRequired srv;
+  brake_test_required_client_.call(srv);
+  ASSERT_FALSE(srv.response.result);
+
+  // Sleep prevents early termination.
+  sleep(2.0);
 }
 
 /**
  * Tests the handling of an incoming modbus message informing about a disconnect.
  *
  * Test Sequence:
- *  1. Publish modbus message informing about a disconnect.
+ *  1. Set required state to false
+ *  2. Publish modbus message informing about a disconnect.
  *
  * Expected Results:
- *  1. No message is published on the brake test topic.
+ *  1. The service returns false
+ *  2. The state has not changes (i. e. is still false)
  */
 TEST_F(ModbusBrakeTestAnnouncerTest, testDisconnect)
 {
-  EXPECT_CALL(*this, brake_test_announcer_callback(::testing::_))
-      .Times(0);
+  modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(false));
+  sleep(0.5);
+
+  prbt_hardware_support::IsBrakeTestRequired srv;
+  brake_test_required_client_.call(srv);
+  ASSERT_FALSE(srv.response.result);
 
   uint32_t offset{0};
   std::vector<uint16_t> holding_register;
@@ -152,7 +158,10 @@ TEST_F(ModbusBrakeTestAnnouncerTest, testDisconnect)
   msg->disconnect.data = true;
   modbus_topic_pub_.publish(msg);
 
-  // Cannot use BARRIER here. Sleep prevents early termination.
+  brake_test_required_client_.call(srv);
+  ASSERT_FALSE(srv.response.result);
+
+  // Sleep prevents early termination.
   sleep(2.0);
 }
 
@@ -160,19 +169,60 @@ TEST_F(ModbusBrakeTestAnnouncerTest, testDisconnect)
  * Tests the handling of an incoming modbus message with incorrect api version.
  *
  * Test Sequence:
- *  1. Publish modbus message with incorrect api version.
+ *  1. Set required state to false
+ *  2. Publish modbus message with incorrect api version.
  *
  * Expected Results:
- *  1. No message is published on the brake test topic.
+ *  1. The service returns false
+ *  2. The state has not changes (i. e. is still false)
  */
 TEST_F(ModbusBrakeTestAnnouncerTest, testModbusIncorrectApiVersion)
 {
-  EXPECT_CALL(*this, brake_test_announcer_callback(::testing::_))
-      .Times(0);
+  modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(false));
+  sleep(0.5);
 
+  prbt_hardware_support::IsBrakeTestRequired srv;
+  brake_test_required_client_.call(srv);
+  ASSERT_FALSE(srv.response.result);
+
+  std::vector<uint16_t> holding_register;
   modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(true, 0));
 
-  // Cannot use BARRIER here. Sleep prevents early termination.
+  brake_test_required_client_.call(srv);
+  ASSERT_FALSE(srv.response.result);
+
+  // Sleep prevents early termination.
+  sleep(2.0);
+}
+
+/**
+ * Tests the handling of an incoming modbus message without api version.
+ *
+ * Test Sequence:
+ *  1. Set required state to false
+ *  2. Publish modbus message without api version.
+ *
+ * Expected Results:
+ *  1. The service returns false
+ *  2. The state has not changes (i. e. is still false)
+ */
+TEST_F(ModbusBrakeTestAnnouncerTest, testModbusWithoutApiVersion)
+{
+  modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(false));
+  sleep(0.5);
+
+  prbt_hardware_support::IsBrakeTestRequired srv;
+  brake_test_required_client_.call(srv);
+  ASSERT_FALSE(srv.response.result);
+
+  auto msg{createDefaultBrakeTestModbusMsg(true, test_api_spec.version_register_, test_api_spec.braketest_register_)};
+  msg->holding_registers.data.clear();
+  modbus_topic_pub_.publish(msg);
+
+  brake_test_required_client_.call(srv);
+  ASSERT_FALSE(srv.response.result);
+
+  // Sleep prevents early termination.
   sleep(2.0);
 }
 
@@ -180,43 +230,30 @@ TEST_F(ModbusBrakeTestAnnouncerTest, testModbusIncorrectApiVersion)
  * Tests the handling of an incoming modbus message without a brake test status.
  *
  * Test Sequence:
- *  1. Publish modbus message without a brake test status.
+ *  1. Set required state to false
+ *  2. Publish modbus message without a brake test status.
  *
  * Expected Results:
- *  1. No message is published on the brake test topic.
+ *  1. The service returns false
+ *  2. The state has not changes (i. e. is still false)
  */
 TEST_F(ModbusBrakeTestAnnouncerTest, testBrakeTestRequiredRegisterMissing)
 {
-  EXPECT_CALL(*this, brake_test_announcer_callback(::testing::_))
-      .Times(0);
+  modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(false));
+  sleep(0.5);
+
+  prbt_hardware_support::IsBrakeTestRequired srv;
+  brake_test_required_client_.call(srv);
+  ASSERT_FALSE(srv.response.result);
 
   modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(true,
                                                             test_api_spec.version_register_,
                                                             test_api_spec.braketest_register_ - 1));
 
-  // Cannot use BARRIER here. Sleep prevents early termination.
-  sleep(2.0);
-}
+  brake_test_required_client_.call(srv);
+  ASSERT_FALSE(srv.response.result);
 
-/**
- * Tests the handling of an incoming modbus message without an API version.
- *
- * Test Sequence:
- *  1. Publish modbus message without an API version.
- *
- * Expected Results:
- *  1. No message is published on the brake test topic.
- */
-TEST_F(ModbusBrakeTestAnnouncerTest, testModbusApiVersionMissing)
-{
-  EXPECT_CALL(*this, brake_test_announcer_callback(::testing::_))
-      .Times(0);
-
-  auto msg{createDefaultBrakeTestModbusMsg(true, test_api_spec.version_register_, test_api_spec.braketest_register_)};
-  msg->holding_registers.data.clear();
-  modbus_topic_pub_.publish(msg);
-
-  // Cannot use BARRIER here. Sleep prevents early termination.
+  // Sleep prevents early termination.
   sleep(2.0);
 }
 

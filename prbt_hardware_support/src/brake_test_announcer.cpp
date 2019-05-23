@@ -22,7 +22,7 @@
 namespace prbt_hardware_support
 {
 
-static const std::string SERVICE_NAME_IS_BRAKE_TEST_REQUIRED = "/prbt/is_brake_test_required";
+static const std::string SERVICE_NAME_IS_BRAKE_TEST_REQUIRED = "/prbt/brake_test_required";
 
 BrakeTestAnnouncer::BrakeTestAnnouncer(ros::NodeHandle& nh)
   : initialized_(false)

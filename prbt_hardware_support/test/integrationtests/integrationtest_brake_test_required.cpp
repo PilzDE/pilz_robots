@@ -52,7 +52,7 @@ using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 
 static constexpr uint16_t MODBUS_API_VERSION_VALUE {2};
-static const std::string SERVICE_BRAKETEST_REQUIRED = "/prbt/is_brake_test_required";
+static const std::string SERVICE_BRAKETEST_REQUIRED = "/prbt/brake_test_required";
 static constexpr int DEFAULT_QUEUE_SIZE_BRAKE_TEST {1};
 
 template<class T>

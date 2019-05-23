@@ -19,6 +19,7 @@
 #define BRAKE_TEST_ANNOUNCER_H
 
 #include <ros/ros.h>
+#include <prbt_hardware_support/IsBrakeTestRequired.h>
 
 namespace prbt_hardware_support
 {
