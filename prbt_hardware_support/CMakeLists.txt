@@ -26,6 +26,7 @@ add_message_files(
 add_service_files(
   FILES
   BrakeTest.srv
+  IsBrakeTestRequired.srv
 )
 
 generate_messages(
