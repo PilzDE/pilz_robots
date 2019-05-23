@@ -116,7 +116,7 @@ PDOMapping=0
 ObjFlags=0
 
 [OptionalObjects]
-SupportedObjects=61
+SupportedObjects=62
 1=0x1002
 2=0x1003
 3=0x1005
@@ -178,6 +178,7 @@ SupportedObjects=61
 59=0x60FD
 60=0x60FE
 61=0x6502
+62=0x2060
 
 [1002]
 ParameterName=Manufacturer Status Register
@@ -2015,3 +2016,37 @@ AccessType=ro
 DefaultValue=0
 PDOMapping=1
 ObjFlags=0x1
+
+[2060]
+ParameterName=brake_test
+ObjectType=0x9
+SubNumber=4
+
+[2060sub1]
+ParameterName=brake_test_duration
+ObjectType=0x7
+DataType=0x0006
+AccessType=ro
+DefaultValue=2500
+PDOMapping=0
+ObjFlags=1
+ParameterValue=2500
+
+
+[2060sub2]
+ParameterName=start_brake_test
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+DefaultValue=0
+PDOMapping=0
+ParameterValue=0
+
+[2060sub3]
+ParameterName=brake_test_status
+ObjectType=0x7
+DataType=0x0005
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+ParameterValue=0
