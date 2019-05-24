@@ -224,7 +224,7 @@ if(CATKIN_ENABLE_TESTING)
   #----------------------------------
 
   # --- BraketestExecutor unit test ---
-    add_rostest_gmock(unittest_brake_test_executor
+  add_rostest_gmock(unittest_brake_test_executor
     test/unittests/unittest_brake_test_executor.test
     test/unittests/unittest_brake_test_executor.cpp
     test/unittests/joint_states_publisher_mock.cpp
