@@ -109,7 +109,12 @@ install(DIRECTORY include/${PROJECT_NAME}/
   FILES_MATCHING PATTERN "*.h"
   PATTERN ".svn" EXCLUDE)
 
-install(TARGETS sto_modbus_adapter_node pilz_modbus_read_client_node
+install(TARGETS
+  sto_modbus_adapter_node
+  pilz_modbus_read_client_node
+  canopen_braketest_adapter_node
+  modbus_brake_test_announcer_node
+  brake_test_executor_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

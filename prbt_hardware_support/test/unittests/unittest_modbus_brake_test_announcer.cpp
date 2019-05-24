@@ -97,10 +97,10 @@ bool ModbusBrakeTestAnnouncerTest::expectBrakeTestRequiredServiceCallResult(ros:
   for (int i = 0; i<= retries; i++) {
     brake_test_required_client.call(srv);
     if(srv.response.result == expectation){
-      return true;
       ROS_INFO_STREAM("It took " << i+1 << " tries for the service call.");
+      return true;
     }
-    sleep(0.5); // This then may take {retries * 0.2}seconds.
+    sleep(1); // This then may take {retries*1}seconds.
   }
   return false;
 }
@@ -165,6 +165,7 @@ TEST_F(ModbusBrakeTestAnnouncerTest, testDisconnect)
   msg->disconnect.data = true;
   modbus_topic_pub_.publish(msg);
 
+  sleep(1);
   ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
                                                        false));
 }
@@ -190,6 +191,7 @@ TEST_F(ModbusBrakeTestAnnouncerTest, testModbusIncorrectApiVersion)
   std::vector<uint16_t> holding_register;
   modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(true, 0));
 
+  sleep(1);
   ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
                                                        false));
 }
@@ -216,6 +218,7 @@ TEST_F(ModbusBrakeTestAnnouncerTest, testModbusWithoutApiVersion)
   msg->holding_registers.data.clear();
   modbus_topic_pub_.publish(msg);
 
+  sleep(1);
   ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
                                                        false));
 }
@@ -242,6 +245,7 @@ TEST_F(ModbusBrakeTestAnnouncerTest, testBrakeTestRequiredRegisterMissing)
                                                             test_api_spec.version_register_,
                                                             test_api_spec.braketest_register_ - 1));
 
+  sleep(1);
   ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
                                                        false));
 }
