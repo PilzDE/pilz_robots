@@ -33,6 +33,7 @@ static constexpr int DEFAULT_QUEUE_SIZE_MODBUS{1};
 static const std::string SERVICE_NAME_IS_BRAKE_TEST_REQUIRED = "/prbt/brake_test_required";
 
 static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{2};
+static constexpr unsigned int DEFAULT_RETRIES{10};
 
 static constexpr ModbusApiSpec test_api_spec(969, 973);
 
@@ -51,6 +52,9 @@ public:
   ModbusMsgInStampedPtr createDefaultBrakeTestModbusMsg(bool brake_test_required,
                                                         unsigned int modbus_api_version = MODBUS_API_VERSION_REQUIRED,
                                                         uint32_t brake_test_required_index = test_api_spec.braketest_register_);
+  bool expectBrakeTestRequiredServiceCallResult(ros::ServiceClient& brake_test_required_client,
+                                                bool expectation,
+                                                uint16_t retries = DEFAULT_RETRIES);
 
 protected:
   ros::NodeHandle nh_;
@@ -85,6 +89,22 @@ ModbusMsgInStampedPtr ModbusBrakeTestAnnouncerTest::createDefaultBrakeTestModbus
   return msg;
 }
 
+bool ModbusBrakeTestAnnouncerTest::expectBrakeTestRequiredServiceCallResult(ros::ServiceClient& brake_test_required_client,
+                                                                            bool expectation,
+                                                                            uint16_t retries)
+{
+  prbt_hardware_support::IsBrakeTestRequired srv;
+  for (int i = 0; i<= retries; i++) {
+    brake_test_required_client.call(srv);
+    if(srv.response.result == expectation){
+      return true;
+      ROS_INFO_STREAM("It took " << i+1 << " tries for the service call.");
+    }
+    sleep(0.5); // This then may take {retries * 0.2}seconds.
+  }
+  return false;
+}
+
 MATCHER(InformsAboutRequired, "") { return arg.data; }
 MATCHER(InformsAboutNotRequired, "") { return !arg.data; }
 
@@ -100,14 +120,9 @@ MATCHER(InformsAboutNotRequired, "") { return !arg.data; }
 TEST_F(ModbusBrakeTestAnnouncerTest, testBrakeTestRequired)
 {
   modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(true));
-  sleep(2.0);
-
-  prbt_hardware_support::IsBrakeTestRequired srv;
-  brake_test_required_client_.call(srv);
-  ASSERT_TRUE(srv.response.result);
-
-  // Sleep prevents early termination.
-  sleep(2.0);
+  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
+                                                       true,
+                                                       50));
 }
 
 /**
@@ -122,14 +137,8 @@ TEST_F(ModbusBrakeTestAnnouncerTest, testBrakeTestRequired)
 TEST_F(ModbusBrakeTestAnnouncerTest, testBrakeTestNotRequired)
 {
   modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(false));
-  sleep(0.5);
-
-  prbt_hardware_support::IsBrakeTestRequired srv;
-  brake_test_required_client_.call(srv);
-  ASSERT_FALSE(srv.response.result);
-
-  // Sleep prevents early termination.
-  sleep(2.0);
+  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
+                                                       false));
 }
 
 /**
@@ -146,11 +155,9 @@ TEST_F(ModbusBrakeTestAnnouncerTest, testBrakeTestNotRequired)
 TEST_F(ModbusBrakeTestAnnouncerTest, testDisconnect)
 {
   modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(false));
-  sleep(0.5);
 
-  prbt_hardware_support::IsBrakeTestRequired srv;
-  brake_test_required_client_.call(srv);
-  ASSERT_FALSE(srv.response.result);
+  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
+                                                       false));
 
   uint32_t offset{0};
   std::vector<uint16_t> holding_register;
@@ -158,11 +165,8 @@ TEST_F(ModbusBrakeTestAnnouncerTest, testDisconnect)
   msg->disconnect.data = true;
   modbus_topic_pub_.publish(msg);
 
-  brake_test_required_client_.call(srv);
-  ASSERT_FALSE(srv.response.result);
-
-  // Sleep prevents early termination.
-  sleep(2.0);
+  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
+                                                       false));
 }
 
 /**
@@ -179,20 +183,15 @@ TEST_F(ModbusBrakeTestAnnouncerTest, testDisconnect)
 TEST_F(ModbusBrakeTestAnnouncerTest, testModbusIncorrectApiVersion)
 {
   modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(false));
-  sleep(0.5);
 
-  prbt_hardware_support::IsBrakeTestRequired srv;
-  brake_test_required_client_.call(srv);
-  ASSERT_FALSE(srv.response.result);
+  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
+                                                       false));
 
   std::vector<uint16_t> holding_register;
   modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(true, 0));
 
-  brake_test_required_client_.call(srv);
-  ASSERT_FALSE(srv.response.result);
-
-  // Sleep prevents early termination.
-  sleep(2.0);
+  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
+                                                       false));
 }
 
 /**
@@ -209,21 +208,16 @@ TEST_F(ModbusBrakeTestAnnouncerTest, testModbusIncorrectApiVersion)
 TEST_F(ModbusBrakeTestAnnouncerTest, testModbusWithoutApiVersion)
 {
   modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(false));
-  sleep(0.5);
 
-  prbt_hardware_support::IsBrakeTestRequired srv;
-  brake_test_required_client_.call(srv);
-  ASSERT_FALSE(srv.response.result);
+  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
+                                                       false));
 
   auto msg{createDefaultBrakeTestModbusMsg(true, test_api_spec.version_register_, test_api_spec.braketest_register_)};
   msg->holding_registers.data.clear();
   modbus_topic_pub_.publish(msg);
 
-  brake_test_required_client_.call(srv);
-  ASSERT_FALSE(srv.response.result);
-
-  // Sleep prevents early termination.
-  sleep(2.0);
+  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
+                                                       false));
 }
 
 /**
@@ -240,21 +234,16 @@ TEST_F(ModbusBrakeTestAnnouncerTest, testModbusWithoutApiVersion)
 TEST_F(ModbusBrakeTestAnnouncerTest, testBrakeTestRequiredRegisterMissing)
 {
   modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(false));
-  sleep(0.5);
 
-  prbt_hardware_support::IsBrakeTestRequired srv;
-  brake_test_required_client_.call(srv);
-  ASSERT_FALSE(srv.response.result);
+  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
+                                                       false));
 
   modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(true,
                                                             test_api_spec.version_register_,
                                                             test_api_spec.braketest_register_ - 1));
 
-  brake_test_required_client_.call(srv);
-  ASSERT_FALSE(srv.response.result);
-
-  // Sleep prevents early termination.
-  sleep(2.0);
+  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
+                                                       false));
 }
 
 } // namespace prbt_hardware_support
