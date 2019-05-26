@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <prbt_hardware_support/brake_test_announcer.h>
+#include <prbt_hardware_support/adapter_brake_test.h>
 #include <std_msgs/Bool.h>
 
 
@@ -24,18 +24,18 @@ namespace prbt_hardware_support
 
 static const std::string SERVICE_NAME_IS_BRAKE_TEST_REQUIRED = "/prbt/brake_test_required";
 
-BrakeTestAnnouncer::BrakeTestAnnouncer(ros::NodeHandle& nh)
+AdapterBrakeTest::AdapterBrakeTest(ros::NodeHandle& nh)
   : initialized_(false)
   , nh_(nh) {
 }
 
-void BrakeTestAnnouncer::init() {
+void AdapterBrakeTest::init() {
 	is_brake_test_required_server_ = nh_.advertiseService(SERVICE_NAME_IS_BRAKE_TEST_REQUIRED,
-	                                                      &BrakeTestAnnouncer::isBrakeTestRequired,
+	                                                      &AdapterBrakeTest::isBrakeTestRequired,
 	                                                      this);
 }
 
-void BrakeTestAnnouncer::updateBrakeTestRequiredState(bool brake_test_required) {
+void AdapterBrakeTest::updateBrakeTestRequiredState(bool brake_test_required) {
 	brake_test_required_ = brake_test_required;
 
   if(brake_test_required_){
@@ -52,7 +52,7 @@ void BrakeTestAnnouncer::updateBrakeTestRequiredState(bool brake_test_required) 
 	}
 }
 
-bool BrakeTestAnnouncer::isBrakeTestRequired(IsBrakeTestRequired::Request& req,
+bool AdapterBrakeTest::isBrakeTestRequired(IsBrakeTestRequired::Request& req,
 				                                     IsBrakeTestRequired::Response& res) {
 	res.result = brake_test_required_;
 	return true;

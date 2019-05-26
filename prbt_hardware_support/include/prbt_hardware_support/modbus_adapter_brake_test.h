@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MODBUS_BRAKE_TEST_ANNOUNCER_H
-#define MODBUS_BRAKE_TEST_ANNOUNCER_H
+#ifndef MODBUS_ADAPTER_BRAKE_TEST_H
+#define MODBUS_ADAPTER_BRAKE_TEST_H
 
 #include <memory>
 #include <string>
@@ -24,7 +24,7 @@
 #include <ros/ros.h>
 #include <message_filters/subscriber.h>
 
-#include <prbt_hardware_support/brake_test_announcer.h>
+#include <prbt_hardware_support/adapter_brake_test.h>
 
 #include <prbt_hardware_support/brake_test_filter.h>
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
@@ -38,10 +38,10 @@ namespace prbt_hardware_support
  * @brief Listens to the modbus_read topic and publishes a message
  * informing about a required brake test.
  */
-class ModbusBrakeTestAnnouncer : public BrakeTestAnnouncer
+class ModbusAdapterBrakeTest : public AdapterBrakeTest
 {
 public:
-  ModbusBrakeTestAnnouncer(ros::NodeHandle& nh, const ModbusApiSpec& api_spec);
+  ModbusAdapterBrakeTest(ros::NodeHandle& nh, const ModbusApiSpec& api_spec);
 
 private:
   void modbusInMsgCallback(const ModbusMsgInStampedConstPtr& msg);
@@ -66,4 +66,4 @@ private:
 };
 
 } // namespace prbt_hardware_support
-#endif // MODBUS_BRAKE_TEST_ANNOUNCER_H
+#endif // MODBUS_ADAPTER_BRAKE_TEST_H

@@ -58,8 +58,8 @@ enable drives, unhold controllers
 - **STO false:**
 hold controllers, disable drives
 
-## ModbusBrakeTestAnnouncerNode
-The ``ModbusBrakeTestAnnouncerNode`` is noticed via the topic `/pilz_modbus_node/modbus_read` if the PSS4000 requests a brake test or if a brake test request is no longer prevailing. As a result, the requirement status is published on `/prbt/brake_test_required`.
+## ModbusAdapterBrakeTestNode
+The ``ModbusAdapterBrakeTestNode`` is noticed via the topic `/pilz_modbus_node/modbus_read` if the PSS4000 requests a brake test or if a brake test request is no longer prevailing. As a result, the requirement status is published on `/prbt/brake_test_required`.
 
 ## BraketestExecutorNode
 The ``BraketestExecutorNode`` offers the `/execute_braketest` service which, in interaction with the ``CanOpenBraketestAdapter``,
