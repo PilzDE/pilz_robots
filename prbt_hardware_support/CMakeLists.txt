@@ -62,13 +62,13 @@ add_dependencies(sto_modbus_adapter_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NA
 target_link_libraries(sto_modbus_adapter_node ${catkin_LIBRARIES})
 
 # BRAKE_TEST_NODE
-add_executable(modbus_brake_test_announcer_node
-  src/modbus_brake_test_announcer_node.cpp
-  src/modbus_brake_test_announcer.cpp
-  src/brake_test_announcer.cpp
+add_executable(modbus_adapter_brake_test_node
+  src/modbus_adapter_brake_test_node.cpp
+  src/modbus_adapter_brake_test.cpp
+  src/adapter_brake_test.cpp
 )
-add_dependencies(modbus_brake_test_announcer_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
-target_link_libraries(modbus_brake_test_announcer_node ${catkin_LIBRARIES})
+add_dependencies(modbus_adapter_brake_test_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(modbus_adapter_brake_test_node ${catkin_LIBRARIES})
 
 add_executable(brake_test_executor_node
   src/brake_test_executor_node.cpp
@@ -113,7 +113,7 @@ install(TARGETS
   sto_modbus_adapter_node
   pilz_modbus_read_client_node
   canopen_braketest_adapter_node
-  modbus_brake_test_announcer_node
+  modbus_adapter_brake_test_node
   brake_test_executor_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -192,14 +192,14 @@ if(CATKIN_ENABLE_TESTING)
   )
   #----------------------------------
 
-  # --- ModbusBrakeTestAnnouncer unit test ---
-  add_rostest_gmock(unittest_modbus_brake_test_announcer
-    test/unittests/unittest_modbus_brake_test_announcer.test
-    test/unittests/unittest_modbus_brake_test_announcer.cpp
-    src/modbus_brake_test_announcer.cpp
-    src/brake_test_announcer.cpp
+  # --- ModbusAdapterBrakeTest unit test ---
+  add_rostest_gmock(unittest_modbus_adapter_brake_test
+    test/unittests/unittest_modbus_adapter_brake_test.test
+    test/unittests/unittest_modbus_adapter_brake_test.cpp
+    src/modbus_adapter_brake_test.cpp
+    src/adapter_brake_test.cpp
   )
-  target_link_libraries(unittest_modbus_brake_test_announcer
+  target_link_libraries(unittest_modbus_adapter_brake_test
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
   )
   #----------------------------------
