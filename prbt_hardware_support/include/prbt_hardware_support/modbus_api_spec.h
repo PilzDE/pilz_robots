@@ -24,6 +24,18 @@ namespace prbt_hardware_support
 {
 
 /**
+ * @brief Expection thrown by prbt_hardware_support::PilzModbusReadClient
+ */
+class ModbusApiSpecException : public std::runtime_error
+{
+public:
+  ModbusApiSpecException( const std::string& what_arg ):
+    std::runtime_error(what_arg)
+  {
+  }
+};
+
+/**
  * @brief Specifies the meaning of the holding registers.
  *
  * Currently specifies in which registers version and braketest_request are defined.
@@ -32,12 +44,43 @@ class ModbusApiSpec
 {
 public:
 
-  constexpr ModbusApiSpec(unsigned int version_register, unsigned int braketest_register):
+    ModbusApiSpec(unsigned int version_register,
+                  unsigned int braketest_register,
+                  unsigned int operation_mode_register):
     version_register_(version_register),
-    braketest_register_(braketest_register){};
+    braketest_register_(braketest_register),
+    operation_mode_register_(operation_mode_register)
+    {
 
-  const unsigned int version_register_;
-  const unsigned int braketest_register_;
+    };
+
+
+  ModbusApiSpec(ros::NodeHandle &nh)
+  {
+    static const std::string PARAM_API_SPEC_VERSION_MODBUS{"api_spec/VERSION"};
+    static const std::string PARAM_API_SPEC_BRAKETEST_REQUEST{"api_spec/BRAKETEST_REQUEST"};
+    static const std::string PARAM_API_SPEC_OPERATION_MODE{"api_spec/OPERATION_MODE"};
+
+    // LCOV_EXCL_START Simple parameter reading not analyzed
+    int version_register{0};
+    if (!nh.getParam(PARAM_API_SPEC_VERSION_MODBUS, version_register))
+    {
+      ROS_ERROR("No version register given in api spec");
+      throw ModbusApiSpecException("No version register given in api spec");
+    }
+
+    int operation_mode_register{0};
+    if (!nh.getParam(PARAM_API_SPEC_OPERATION_MODE, operation_mode_register))
+    {
+      ROS_ERROR("No braketest register given in api spec");
+      throw ModbusApiSpecException("No braketest register given in api spec");
+    }
+
+  }
+
+  unsigned int version_register_;
+  unsigned int braketest_register_;
+  unsigned int operation_mode_register_;
 };
 
 } // namespace prbt_hardware_support

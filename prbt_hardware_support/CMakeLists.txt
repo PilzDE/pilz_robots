@@ -22,6 +22,7 @@ add_message_files(
   FILES
   BrakeTestErrorCodes.msg
   ModbusMsgInStamped.msg
+  OperationModes.msg
 )
 
 # action generation
@@ -29,6 +30,7 @@ add_service_files(
   FILES
   BrakeTest.srv
   IsBrakeTestRequired.srv
+  GetOperationMode.srv
 )
 
 generate_messages(
@@ -71,6 +73,15 @@ add_executable(modbus_adapter_brake_test_node
 )
 add_dependencies(modbus_adapter_brake_test_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
 target_link_libraries(modbus_adapter_brake_test_node ${catkin_LIBRARIES})
+
+add_executable(modbus_adapter_operation_mode
+  src/modbus_adapter_operation_mode_node.cpp
+  src/modbus_adapter_operation_mode.cpp
+  src/adapter_operation_mode.cpp
+)
+
+add_dependencies(modbus_adapter_operation_mode ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(modbus_adapter_operation_mode ${catkin_LIBRARIES})
 
 add_executable(brake_test_executor_node
   src/brake_test_executor_node.cpp
@@ -202,6 +213,18 @@ if(CATKIN_ENABLE_TESTING)
     src/adapter_brake_test.cpp
   )
   target_link_libraries(unittest_modbus_adapter_brake_test
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  #----------------------------------
+
+  # --- ModbusAdapterOperationMode unit test ---
+  add_rostest_gmock(unittest_modbus_adapter_operation_mode
+    test/unittests/unittest_modbus_adapter_operation_mode.test
+    test/unittests/unittest_modbus_adapter_operation_mode.cpp
+    src/modbus_adapter_operation_mode.cpp
+    src/adapter_operation_mode.cpp
+  )
+  target_link_libraries(unittest_modbus_adapter_operation_mode
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
   )
   #----------------------------------

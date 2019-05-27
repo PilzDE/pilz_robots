@@ -43,7 +43,7 @@ using ::testing::Return;
 using ::testing::Throw;
 using namespace prbt_hardware_support;
 
-static constexpr ModbusApiSpec test_api_spec(696, 737);
+static const ModbusApiSpec test_api_spec(696, 737, 738);
 
 class CallbackReceiver
 {

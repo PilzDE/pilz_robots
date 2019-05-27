@@ -35,7 +35,7 @@ static const std::string SERVICE_NAME_IS_BRAKE_TEST_REQUIRED = "/prbt/brake_test
 static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{2};
 static constexpr unsigned int DEFAULT_RETRIES{10};
 
-static constexpr ModbusApiSpec test_api_spec(969, 973);
+static const ModbusApiSpec test_api_spec(969, 973, 974);
 
 /**
  * @brief Test fixture for unit-tests of the ModbusAdapterBrakeTest.
