@@ -57,7 +57,7 @@ void ModbusBrakeTestAnnouncer::internalMsgCallback(const ModbusMsgBrakeTestWrapp
     return;
   }
 
-  sendBrakeTestRequiredMsg(msg.isBrakeTestRequired());
+	updateBrakeTestRequiredState(msg.isBrakeTestRequired());
 }
 
 void ModbusBrakeTestAnnouncer::modbusInMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw)
