@@ -17,7 +17,7 @@
 
 #include <ros/ros.h>
 
-#include <prbt_hardware_support/modbus_brake_test_announcer.h>
+#include <prbt_hardware_support/modbus_adapter_brake_test.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
 
 static const std::string PARAM_API_SPEC_VERSION_MODBUS{"api_spec/VERSION"};
@@ -28,7 +28,7 @@ static const std::string PARAM_API_SPEC_BRAKETEST_REQUEST{"api_spec/BRAKETEST_RE
  */
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "modbus_brake_test_announcer");
+  ros::init(argc, argv, "modbus_adapter_brake_test");
   ros::NodeHandle nh{"~"};
 
   // LCOV_EXCL_START Simple parameter reading not analyzed
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
   prbt_hardware_support::ModbusApiSpec api_spec(static_cast<unsigned int>(version_register),
                                                 static_cast<unsigned int>(braketest_request_register));
 
-  prbt_hardware_support::ModbusBrakeTestAnnouncer brake_test_announcer(nh, api_spec);
+  prbt_hardware_support::ModbusAdapterBrakeTest adapter_brake_test(nh, api_spec);
 
   ros::spin();
 

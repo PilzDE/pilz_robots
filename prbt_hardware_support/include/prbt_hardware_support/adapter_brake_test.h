@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef BRAKE_TEST_ANNOUNCER_H
-#define BRAKE_TEST_ANNOUNCER_H
+#ifndef ADAPTER_BRAKE_TEST_H
+#define ADAPTER_BRAKE_TEST_H
 
 #include <ros/ros.h>
 #include <prbt_hardware_support/IsBrakeTestRequired.h>
@@ -29,10 +29,10 @@ namespace prbt_hardware_support
  *
  * A message of type std_msgs::Bool is published which is True if a brake test is required and False otherwise.
  */
-class BrakeTestAnnouncer
+class AdapterBrakeTest
 {
 public:
-  BrakeTestAnnouncer(ros::NodeHandle& nh);
+  AdapterBrakeTest(ros::NodeHandle& nh);
 
 protected:
 	void init();
@@ -55,4 +55,4 @@ private:
 };
 
 } // namespace prbt_hardware_support
-#endif // BRAKE_TEST_ANNOUNCER_H
+#endif // ADAPTER_BRAKE_TEST_H
