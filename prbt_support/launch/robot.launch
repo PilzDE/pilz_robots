@@ -59,6 +59,10 @@
       <arg name="modbus_server_ip" value="$(arg sto_modbus_server_ip)" />
     </include>
     <include file="$(find prbt_hardware_support)/launch/sto_modbus_adapter_node.launch" />
+    <include file="$(find prbt_hardware_support)/launch/brake_test.launch">
+      <arg name="safety_hw" value="$(arg sto)" />
+      <arg name="api_spec_file" value="$(find prbt_hardware_support)/config/modbus_api_spec_$(arg sto).yaml" />
+    </include>
   </group>
 
   <group if="$(eval sto == 'none')" >
