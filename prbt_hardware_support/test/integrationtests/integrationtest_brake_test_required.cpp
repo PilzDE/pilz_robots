@@ -70,7 +70,7 @@ static void initalizeAndRun(T& obj, const char *ip, unsigned int port)
 
 /**
  * @brief BrakeTestRequiredIntegrationTest checks if the chain
- * ModbusServerMock -> ModbusReadClient -> ModbusBrakeTestAnnouncer functions properly
+ * ModbusServerMock -> ModbusReadClient -> ModbusAdapterBrakeTest functions properly
  *
  * @note the test is derived from testing::AsyncTest which allows the asynchronous processes to re-sync
  */
@@ -82,7 +82,7 @@ protected:
 };
 
 /**
- * @brief Send data via ModbusServerMock -> ModbusReadClient -> ModbusBrakeTestAnnouncer connection
+ * @brief Send data via ModbusServerMock -> ModbusReadClient -> ModbusAdapterBrakeTest connection
  * and check that the expected result is returned via the service call.
  *
  * @note Due to the asynchronicity of the test each step of the sequence passed successful
@@ -129,7 +129,7 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
 	prbt_hardware_support::IsBrakeTestRequired srv;
 
   waitForNode("/pilz_modbus_read_client_node");
-  waitForNode("/modbus_brake_test_announcer_node");
+  waitForNode("/modbus_adapter_brake_test_node");
 
   /**********
    * Step 1 *

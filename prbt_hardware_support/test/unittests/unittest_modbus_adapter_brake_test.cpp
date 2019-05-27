@@ -21,7 +21,7 @@
 
 #include <std_msgs/Bool.h>
 
-#include <prbt_hardware_support/modbus_brake_test_announcer.h>
+#include <prbt_hardware_support/modbus_adapter_brake_test.h>
 #include <prbt_hardware_support/modbus_topic_definitions.h>
 #include <prbt_hardware_support/modbus_msg_in_utils.h>
 
@@ -38,16 +38,16 @@ static constexpr unsigned int DEFAULT_RETRIES{10};
 static constexpr ModbusApiSpec test_api_spec(969, 973);
 
 /**
- * @brief Test fixture for unit-tests of the ModbusBrakeTestAnnouncer.
+ * @brief Test fixture for unit-tests of the ModbusAdapterBrakeTest.
  *
  * Publish messages on the modbus topic and call the brake_test_required service
  * in order to check if the expectations are met.
  */
-class ModbusBrakeTestAnnouncerTest : public testing::Test, public testing::AsyncTest
+class ModbusAdapterBrakeTestTest : public testing::Test, public testing::AsyncTest
 {
 public:
-  ModbusBrakeTestAnnouncerTest();
-  ~ModbusBrakeTestAnnouncerTest();
+  ModbusAdapterBrakeTestTest();
+  ~ModbusAdapterBrakeTestTest();
 
   ModbusMsgInStampedPtr createDefaultBrakeTestModbusMsg(bool brake_test_required,
                                                         unsigned int modbus_api_version = MODBUS_API_VERSION_REQUIRED,
@@ -58,23 +58,23 @@ public:
 
 protected:
   ros::NodeHandle nh_;
-  std::shared_ptr<ModbusBrakeTestAnnouncer> brake_test_announcer_;
+  std::shared_ptr<ModbusAdapterBrakeTest> adapter_brake_test_;
   ros::Publisher modbus_topic_pub_;
   ros::ServiceClient brake_test_required_client_;
 };
 
-ModbusBrakeTestAnnouncerTest::ModbusBrakeTestAnnouncerTest()
+ModbusAdapterBrakeTestTest::ModbusAdapterBrakeTestTest()
 {
-  brake_test_announcer_.reset(new ModbusBrakeTestAnnouncer(nh_, test_api_spec));
+  adapter_brake_test_.reset(new ModbusAdapterBrakeTest(nh_, test_api_spec));
   modbus_topic_pub_ = nh_.advertise<ModbusMsgInStamped>(TOPIC_MODBUS_READ, DEFAULT_QUEUE_SIZE_MODBUS);
   brake_test_required_client_ = nh_.serviceClient<prbt_hardware_support::IsBrakeTestRequired>(SERVICE_NAME_IS_BRAKE_TEST_REQUIRED);
 }
 
-ModbusBrakeTestAnnouncerTest::~ModbusBrakeTestAnnouncerTest()
+ModbusAdapterBrakeTestTest::~ModbusAdapterBrakeTestTest()
 {
 }
 
-ModbusMsgInStampedPtr ModbusBrakeTestAnnouncerTest::createDefaultBrakeTestModbusMsg(bool brake_test_required,
+ModbusMsgInStampedPtr ModbusAdapterBrakeTestTest::createDefaultBrakeTestModbusMsg(bool brake_test_required,
                                                                                     unsigned int modbus_api_version,
                                                                                     uint32_t brake_test_required_index)
 {
@@ -89,7 +89,7 @@ ModbusMsgInStampedPtr ModbusBrakeTestAnnouncerTest::createDefaultBrakeTestModbus
   return msg;
 }
 
-bool ModbusBrakeTestAnnouncerTest::expectBrakeTestRequiredServiceCallResult(ros::ServiceClient& brake_test_required_client,
+bool ModbusAdapterBrakeTestTest::expectBrakeTestRequiredServiceCallResult(ros::ServiceClient& brake_test_required_client,
                                                                             bool expectation,
                                                                             uint16_t retries)
 {
@@ -117,7 +117,7 @@ MATCHER(InformsAboutNotRequired, "") { return !arg.data; }
  * Expected Results:
  *  1. The service returns true
  */
-TEST_F(ModbusBrakeTestAnnouncerTest, testBrakeTestRequired)
+TEST_F(ModbusAdapterBrakeTestTest, testBrakeTestRequired)
 {
   modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(true));
   ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
@@ -134,7 +134,7 @@ TEST_F(ModbusBrakeTestAnnouncerTest, testBrakeTestRequired)
  * Expected Results:
  *  1. The service returns false
  */
-TEST_F(ModbusBrakeTestAnnouncerTest, testBrakeTestNotRequired)
+TEST_F(ModbusAdapterBrakeTestTest, testBrakeTestNotRequired)
 {
   modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(false));
   ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
@@ -152,7 +152,7 @@ TEST_F(ModbusBrakeTestAnnouncerTest, testBrakeTestNotRequired)
  *  1. The service returns false
  *  2. The state has not changes (i. e. is still false)
  */
-TEST_F(ModbusBrakeTestAnnouncerTest, testDisconnect)
+TEST_F(ModbusAdapterBrakeTestTest, testDisconnect)
 {
   modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(false));
 
@@ -181,7 +181,7 @@ TEST_F(ModbusBrakeTestAnnouncerTest, testDisconnect)
  *  1. The service returns false
  *  2. The state has not changes (i. e. is still false)
  */
-TEST_F(ModbusBrakeTestAnnouncerTest, testModbusIncorrectApiVersion)
+TEST_F(ModbusAdapterBrakeTestTest, testModbusIncorrectApiVersion)
 {
   modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(false));
 
@@ -207,7 +207,7 @@ TEST_F(ModbusBrakeTestAnnouncerTest, testModbusIncorrectApiVersion)
  *  1. The service returns false
  *  2. The state has not changes (i. e. is still false)
  */
-TEST_F(ModbusBrakeTestAnnouncerTest, testModbusWithoutApiVersion)
+TEST_F(ModbusAdapterBrakeTestTest, testModbusWithoutApiVersion)
 {
   modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(false));
 
@@ -234,7 +234,7 @@ TEST_F(ModbusBrakeTestAnnouncerTest, testModbusWithoutApiVersion)
  *  1. The service returns false
  *  2. The state has not changes (i. e. is still false)
  */
-TEST_F(ModbusBrakeTestAnnouncerTest, testBrakeTestRequiredRegisterMissing)
+TEST_F(ModbusAdapterBrakeTestTest, testBrakeTestRequiredRegisterMissing)
 {
   modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(false));
 
@@ -254,7 +254,7 @@ TEST_F(ModbusBrakeTestAnnouncerTest, testBrakeTestRequiredRegisterMissing)
 
 int main(int argc, char *argv[])
 {
-  ros::init(argc, argv, "unittest_modbus_brake_test_announcer");
+  ros::init(argc, argv, "unittest_modbus_adapter_brake_test");
   ros::NodeHandle nh;
 
   ros::AsyncSpinner spinner_{2};
