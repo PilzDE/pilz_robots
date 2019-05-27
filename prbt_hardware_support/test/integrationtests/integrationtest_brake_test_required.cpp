@@ -81,6 +81,26 @@ protected:
   ros::NodeHandle nh_priv_{"~"};
 };
 
+::testing::AssertionResult expectBrakeTestRequiredServiceCallResult
+                                             (ros::ServiceClient& brake_test_required_client,
+                                              bool expectation,
+                                              uint16_t retries)
+{
+  prbt_hardware_support::IsBrakeTestRequired srv;
+  for (int i = 0; i<= retries; i++) {
+    auto res = brake_test_required_client.call(srv);
+    if(!res)
+    {
+      return ::testing::AssertionFailure() << "Could not call service";
+    }
+    if(srv.response.result == expectation){
+      return ::testing::AssertionSuccess() << "It took " << i+1 << " tries for the service call.";
+    }
+    sleep(1); // This then may take {retries*1}seconds.
+  }
+  return ::testing::AssertionFailure() << "Did not get expected brake test result via service";
+}
+
 /**
  * @brief Send data via ModbusServerMock -> ModbusReadClient -> ModbusAdapterBrakeTest connection
  * and check that the expected result is returned via the service call.
@@ -144,8 +164,7 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
   ASSERT_TRUE(is_brake_test_required_client.exists());
   ROS_ERROR("Calling service!");
 
-	ASSERT_TRUE(is_brake_test_required_client.call(srv));
-	ASSERT_TRUE(srv.response.result);
+	EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(is_brake_test_required_client, true, 10));
 
   /**********
    * Step 2 *
@@ -153,8 +172,7 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
   std::vector<uint16_t> required_holding_register_changed{MODBUS_API_VERSION_VALUE, 1, 0, 0, 1};
   modbus_server.setHoldingRegister(required_holding_register_changed, index_of_first_register_to_read);
 
-	ASSERT_TRUE(is_brake_test_required_client.call(srv));
-	ASSERT_TRUE(srv.response.result);
+	EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(is_brake_test_required_client, true, 10));
 
   /**********
    * Step 3 *
@@ -162,8 +180,7 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
   std::vector<uint16_t> not_required_holding_register{MODBUS_API_VERSION_VALUE, 0, 0, 0, 0};
   modbus_server.setHoldingRegister(not_required_holding_register, index_of_first_register_to_read);
 
-	ASSERT_TRUE(is_brake_test_required_client.call(srv));
-	ASSERT_FALSE(srv.response.result);
+  EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(is_brake_test_required_client, false, 10));
 
   /**********
    * Step 4 *
