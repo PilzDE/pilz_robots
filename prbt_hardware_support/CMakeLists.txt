@@ -99,6 +99,15 @@ add_executable(canopen_braketest_adapter_node
 add_dependencies(canopen_braketest_adapter_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
 target_link_libraries(canopen_braketest_adapter_node ${catkin_LIBRARIES})
 
+# SYSTEM_INFO_NODE
+add_executable(system_info_node
+  src/system_info_node.cpp
+  src/system_info.cpp
+  src/system_info_exception.cpp
+)
+add_dependencies(system_info_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(system_info_node ${catkin_LIBRARIES})
+
 # +++++++++++++++++++++++++++++++++
 # + Build modbus read client node +
 # +++++++++++++++++++++++++++++++++
@@ -129,6 +138,7 @@ install(TARGETS
   modbus_adapter_brake_test_node
   brake_test_executor_node
   modbus_adapter_operation_mode_node
+  system_info_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -346,6 +356,19 @@ if(CATKIN_ENABLE_TESTING)
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
   )
   add_dependencies(integrationtest_trigger_brake_test ${catkin_EXPORTED_TARGETS})
+
+  #--- SystemInfo unit test ---
+  add_rostest_gmock(unittest_system_info
+      test/unittests/unittest_system_info.test
+      test/unittests/unittest_system_info.cpp
+      src/system_info.cpp
+      src/system_info_exception.cpp
+  )
+  target_link_libraries(unittest_system_info
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  add_dependencies(unittest_system_info ${${PROJECT_NAME}_EXPORTED_TARGETS})
+  #----------------------------------------
 
   # to run: catkin_make -DENABLE_COVERAGE_TESTING=ON package_name_coverage (adding -j1 recommended)
   if(ENABLE_COVERAGE_TESTING)
