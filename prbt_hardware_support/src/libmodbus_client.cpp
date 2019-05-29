@@ -73,7 +73,10 @@ std::vector<uint16_t> LibModbusClient::readHoldingRegister(int addr, int nb)
   rc = modbus_read_registers(modbus_connection_, addr, nb, tab_reg);
   if (rc == -1)
   {
-    throw ModbusExceptionDisconnect("Modbus disconnected!");
+    std::string err = "Failed to read modbus registers! ";
+    err.append(modbus_strerror(errno));
+    ROS_ERROR_STREAM(err);
+    throw ModbusExceptionDisconnect(err);
   }
 
   return std::vector<uint16_t> (tab_reg, tab_reg + nb);
