@@ -1,35 +1,38 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<package format="2">
+<package>
   <name>prbt_ikfast_manipulator_plugin</name>
-  <version>0.5.4</version>
+  <version>0.4.8</version>
   <description>The prbt_ikfast_manipulator_plugin package</description>
+
   <maintainer email="a.gutenkunst@pilz.de">Alexander Gutenkunst</maintainer>
   <maintainer email="c.henkel@pilz.de">Christian Henkel</maintainer>
   <maintainer email="h.slusarek@pilz.de">Hagen Slusarek</maintainer>
   <maintainer email="i.martini@pilz.de">Immanuel Martini</maintainer>
+
   <license>Apache 2.0</license>
+
   <buildtool_depend>catkin</buildtool_depend>
+
   <url type="website">https://wiki.ros.org/prbt_ikfast_manipulator_plugin</url>
   <url type="bugtracker">https://github.com/PilzDE/pilz_robots/issues</url>
   <url type="repository">https://github.com/PilzDE/pilz_robots</url>
+
   <export>
     <moveit_core plugin="${prefix}/prbt_manipulator_moveit_ikfast_plugin_description.xml"/>
   </export>
-  <build_depend>eigen_conversions</build_depend>
-  <build_depend>liblapack-dev</build_depend>
+
   <build_depend>moveit_core</build_depend>
-  <build_depend>pluginlib</build_depend>
+  <build_depend>liblapack-dev</build_depend>
   <build_depend>roscpp</build_depend>
-  <build_depend>tf2_eigen</build_depend>
   <build_depend>tf2_kdl</build_depend>
-  <exec_depend>eigen_conversions</exec_depend>
-  <exec_depend>liblapack-dev</exec_depend>
-  <exec_depend>moveit_core</exec_depend>
-  <exec_depend>pluginlib</exec_depend>
-  <exec_depend>roscpp</exec_depend>
-  <exec_depend>tf2_kdl</exec_depend>
+  <build_depend>pluginlib</build_depend>
+  <run_depend>moveit_core</run_depend>
+  <run_depend>liblapack-dev</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>tf2_kdl</run_depend>
+  <run_depend>pluginlib</run_depend>
+
   <!-- Test dependencies -->
-  <test_depend>moveit_ros_planning</test_depend>
   <test_depend>rostest</test_depend>
   <test_depend>rosunit</test_depend>
   <test_depend>code_coverage</test_depend>

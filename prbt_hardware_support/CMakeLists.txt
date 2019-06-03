@@ -26,7 +26,6 @@ add_message_files(
 add_service_files(
   FILES
   BrakeTest.srv
-  IsBrakeTestRequired.srv
 )
 
 generate_messages(
@@ -62,13 +61,13 @@ add_dependencies(sto_modbus_adapter_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NA
 target_link_libraries(sto_modbus_adapter_node ${catkin_LIBRARIES})
 
 # BRAKE_TEST_NODE
-add_executable(modbus_adapter_brake_test_node
-  src/modbus_adapter_brake_test_node.cpp
-  src/modbus_adapter_brake_test.cpp
-  src/adapter_brake_test.cpp
+add_executable(modbus_brake_test_announcer_node
+  src/modbus_brake_test_announcer_node.cpp
+  src/modbus_brake_test_announcer.cpp
+  src/brake_test_announcer.cpp
 )
-add_dependencies(modbus_adapter_brake_test_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
-target_link_libraries(modbus_adapter_brake_test_node ${catkin_LIBRARIES})
+add_dependencies(modbus_brake_test_announcer_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(modbus_brake_test_announcer_node ${catkin_LIBRARIES})
 
 add_executable(brake_test_executor_node
   src/brake_test_executor_node.cpp
@@ -103,18 +102,12 @@ target_link_libraries(pilz_modbus_read_client_node ${catkin_LIBRARIES} modbus)
 #############
 
 install(DIRECTORY launch DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
-install(DIRECTORY config DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h"
   PATTERN ".svn" EXCLUDE)
 
-install(TARGETS
-  sto_modbus_adapter_node
-  pilz_modbus_read_client_node
-  canopen_braketest_adapter_node
-  modbus_adapter_brake_test_node
-  brake_test_executor_node
+install(TARGETS sto_modbus_adapter_node pilz_modbus_read_client_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -192,14 +185,14 @@ if(CATKIN_ENABLE_TESTING)
   )
   #----------------------------------
 
-  # --- ModbusAdapterBrakeTest unit test ---
-  add_rostest_gmock(unittest_modbus_adapter_brake_test
-    test/unittests/unittest_modbus_adapter_brake_test.test
-    test/unittests/unittest_modbus_adapter_brake_test.cpp
-    src/modbus_adapter_brake_test.cpp
-    src/adapter_brake_test.cpp
+  # --- ModbusBrakeTestAnnouncer unit test ---
+  add_rostest_gmock(unittest_modbus_brake_test_announcer
+    test/unittests/unittest_modbus_brake_test_announcer.test
+    test/unittests/unittest_modbus_brake_test_announcer.cpp
+    src/modbus_brake_test_announcer.cpp
+    src/brake_test_announcer.cpp
   )
-  target_link_libraries(unittest_modbus_adapter_brake_test
+  target_link_libraries(unittest_modbus_brake_test_announcer
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
   )
   #----------------------------------
@@ -229,7 +222,7 @@ if(CATKIN_ENABLE_TESTING)
   #----------------------------------
 
   # --- BraketestExecutor unit test ---
-  add_rostest_gmock(unittest_brake_test_executor
+    add_rostest_gmock(unittest_brake_test_executor
     test/unittests/unittest_brake_test_executor.test
     test/unittests/unittest_brake_test_executor.cpp
     test/unittests/joint_states_publisher_mock.cpp
