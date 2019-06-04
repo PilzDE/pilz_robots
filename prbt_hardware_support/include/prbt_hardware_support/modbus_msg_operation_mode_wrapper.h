@@ -19,6 +19,7 @@
 
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
+#include <prbt_hardware_support/modbus_msg_wrapper.h>
 #include <prbt_hardware_support/modbus_msg_operation_mode_wrapper_exception.h>
 #include <prbt_hardware_support/opertion_modes.h>
 
@@ -31,15 +32,10 @@ namespace prbt_hardware_support
  * Allows to easy access to the content behind a raw modbus message
  * which is assumed to contain data about the operation mode.
  */
-class ModbusMsgOperationModeWrapper
+class ModbusMsgOperationModeWrapper : public ModbusMsgWrapper
 {
 public:
   ModbusMsgOperationModeWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw, const ModbusApiSpec& api_spec);
-
-  /**
-   * @return Get the API version defined in the Modbus message.
-   */
-  unsigned int getVersion() const;
 
   /**
    * @brief Get the brake test required flag from the Modbus message.
@@ -48,29 +44,7 @@ public:
    */
   OperationMode getOperationMode() const;
 
-  /**
-   * @brief Check if the Modbus message informs about a disconnect
-   * from the server.
-   *
-   * @return true if the message informs about a disconnect, otherwise false.
-   */
-  bool isDisconnect() const;
-
 private:
-
-  /**
-   * @brief Check if a certain holding register is define in the Modbus message.
-   *
-   * @returns true if the message has the register defined, otherwise false.
-   */
-  bool hasRegister(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
-                          uint32_t reg) const;
-
-  /**
-   * @returns the content of the holding register.
-   */
-  uint16_t getRegister(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
-                              uint32_t reg) const;
 
   /**
    * @brief Check if the message contains a brake test required definition.
@@ -78,28 +52,12 @@ private:
    * @return true if a brake test required flag is defined, false otherwise.
    */
   bool hasOperationMode(const ModbusMsgInStampedConstPtr& modbus_msg_raw) const;
-
-  /**
-   * @brief Check if the modbus_msg contains the API version.
-   */
-  bool hasVersion(const ModbusMsgInStampedConstPtr& modbus_msg_raw) const;
-
-private:
-  ModbusMsgInStampedConstPtr msg_;
-  const ModbusApiSpec api_spec_;
 };
 
 inline ModbusMsgOperationModeWrapper::ModbusMsgOperationModeWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
                                                             const ModbusApiSpec& api_spec):
-  msg_(modbus_msg_raw),
-  api_spec_(api_spec)
+  ModbusMsgWrapper(modbus_msg_raw, api_spec)
 {
-  if (isDisconnect())
-  {
-    // A disconnect message does not have to fullfill any requirements
-    return;
-  }
-
   if(!hasVersion(msg_))
   {
     throw ModbusMsgOperationModeWrapperException("Received message does not contain a version.");
@@ -109,28 +67,6 @@ inline ModbusMsgOperationModeWrapper::ModbusMsgOperationModeWrapper(const Modbus
   {
     throw ModbusMsgOperationModeWrapperException("Received message does not contain information about the operation mode.");
   }
-}
-
-inline bool ModbusMsgOperationModeWrapper::hasRegister(const ModbusMsgInStampedConstPtr& modbus_msg_raw, uint32_t reg) const
-{
-  uint32_t relative_idx = reg - modbus_msg_raw->holding_registers.layout.data_offset;
-
-  return modbus_msg_raw->holding_registers.data.size() > relative_idx;
-}
-
-inline uint16_t ModbusMsgOperationModeWrapper::getRegister(const ModbusMsgInStampedConstPtr& modbus_msg_raw, uint32_t reg) const
-{
-  return modbus_msg_raw->holding_registers.data.at(reg - modbus_msg_raw->holding_registers.layout.data_offset);
-}
-
-inline bool ModbusMsgOperationModeWrapper::hasVersion(const ModbusMsgInStampedConstPtr& modbus_msg_raw) const
-{
-  return hasRegister(modbus_msg_raw, api_spec_.version_register_);
-}
-
-inline unsigned int ModbusMsgOperationModeWrapper::getVersion() const
-{
-  return getRegister(msg_, api_spec_.version_register_);
 }
 
 inline bool ModbusMsgOperationModeWrapper::hasOperationMode(const ModbusMsgInStampedConstPtr& modbus_msg_raw) const
@@ -153,12 +89,6 @@ inline OperationMode ModbusMsgOperationModeWrapper::getOperationMode() const
             return OperationMode::UNKNOWN;
     }
 }
-
-inline bool ModbusMsgOperationModeWrapper::isDisconnect() const
-{
-  return msg_->disconnect.data;
-}
-
 
 }
 

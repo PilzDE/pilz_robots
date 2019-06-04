@@ -86,6 +86,11 @@ private:
         first_call_ = false;
       }
     }
+    catch (const prbt_hardware_support::ModbusMsgWrapperException &ex)
+    {
+      ROS_ERROR_STREAM(ex.what() << "\nCan not interpret Modbus message.");
+      return;
+    }
     catch (const prbt_hardware_support::ModbusMsgBrakeTestWrapperException &ex)
     {
       ROS_ERROR_STREAM(ex.what() << "\nCan not interpret Modbus message as ModbusMsgBrakeTest.");

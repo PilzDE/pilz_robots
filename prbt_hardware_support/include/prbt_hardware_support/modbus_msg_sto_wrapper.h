@@ -31,7 +31,7 @@ namespace prbt_hardware_support
  * Allows to easy access to the content behind a raw modbus message which is assumed to contain
  * data about STO clearance.
  */
-class ModbusMsgStoWrapper
+class ModbusMsgStoWrapper // TODO @agu place this under ModbusMsgWrapper
 {
 public:
   ModbusMsgStoWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw);

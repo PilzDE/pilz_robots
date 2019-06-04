@@ -47,15 +47,6 @@ void ModbusAdapterOperationMode::internalMsgCallback(const ModbusMsgOperationMod
     return;
   }
 
-  unsigned int modbus_api_version = msg.getVersion();
-  if(modbus_api_version != MODBUS_API_VERSION_REQUIRED)
-  {
-    ROS_ERROR_STREAM("Received Modbus Message with unsupported API Version "
-                    << modbus_api_version << ", required Version is " << MODBUS_API_VERSION_REQUIRED);
-    ROS_ERROR_STREAM("Can not determine from Modbus message if brake-test is required.");
-    return;
-  }
-
   updateOperationMode(msg.getOperationMode());
 }
 
