@@ -8,6 +8,7 @@ add_definitions(-Werror)
 add_definitions(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
+  canopen_chain_node
   message_filters
   message_generation
   roscpp

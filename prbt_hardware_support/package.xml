@@ -16,6 +16,7 @@
   <url type="repository">https://github.com/PilzDE/pilz_robots</url>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>canopen_chain_node</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>libmodbus-dev</build_depend>
   <build_depend>message_generation</build_depend>
