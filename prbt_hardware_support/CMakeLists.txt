@@ -242,6 +242,16 @@ if(CATKIN_ENABLE_TESTING)
   )
   #----------------------------------
 
+  # --- getParam unit test ---
+  add_rostest_gtest(unittest_get_param
+    test/unittests/unittest_get_param.test
+    test/unittests/unittest_get_param.cpp
+  )
+  target_link_libraries(unittest_get_param
+    ${catkin_LIBRARIES}
+  )
+#----------------------------------
+
   # --- Stop integration test ---
   add_rostest_gmock(integrationtest_stop1
      test/integrationtests/integrationtest_stop1.test
@@ -287,11 +297,14 @@ if(CATKIN_ENABLE_TESTING)
     include(CodeCoverage)
     APPEND_COVERAGE_COMPILER_FLAGS()
     set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*"
+                          "*/BrakeTestErrorCodes.h"
                           "*/ModbusMsgInStamped.h"
                           "*/BrakeTest.h"
-                          "*/BrakeTestErrorCodes.h"
                           "*/BrakeTestRequest.h"
-                          "*/BrakeTestResponse.h")
+                          "*/BrakeTestResponse.h"
+                          "*/IsBrakeTestRequired.h"
+                          "*/IsBrakeTestRequiredRequest.h"
+                          "*/IsBrakeTestRequiredResponse.h")
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
       DEPENDS tests

@@ -16,9 +16,6 @@
  */
 
 #include <stdlib.h>
-#include <string>
-#include <stdexcept>
-#include <sstream>
 
 #include <ros/ros.h>
 
@@ -27,41 +24,11 @@
 #include <prbt_hardware_support/param_names.h>
 #include <prbt_hardware_support/pilz_modbus_read_client_exception.h>
 #include <prbt_hardware_support/modbus_topic_definitions.h>
+#include <prbt_hardware_support/get_param.h>
 
 static constexpr int32_t MODBUS_CONNECTION_RETRIES_DEFAULT {10};
 static constexpr double MODBUS_CONNECTION_RETRY_TIMEOUT_S_DEFAULT {1.0};
 static constexpr int MODBUS_RESPONSE_TIMEOUT_MS {20};
-
-namespace prbt_hardware_support
-{
-/**
-   * @brief Exception used by the getParam function.
-   */
-class GetParamException : public std::runtime_error
-{
-public:
-  GetParamException(const std::string& msg);
-};
-
-inline GetParamException::GetParamException(const std::string& msg)
-  : std::runtime_error (msg)
-{
-
-}
-
-template<class T>
-T getParam(const ros::NodeHandle& nh, const std::string& param_name)
-{
-  T ret_val;
-  if ( !nh.getParam(param_name, ret_val) )
-  {
-    std::ostringstream os;
-    os << "Parameter \"" << param_name << "\" not given";
-    throw GetParamException(os.str());
-  }
-  return ret_val;
-}
-}
 
 using namespace prbt_hardware_support;
 
