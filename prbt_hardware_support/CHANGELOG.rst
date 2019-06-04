@@ -2,6 +2,11 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* enter hold mode at braketest execution
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.6 (2019-06-12)
 ------------------
 * Essentially reverts wrong fix (depend on canopen_chain_node) from 0.5.5

@@ -19,6 +19,8 @@
 
 #include <ros/ros.h>
 
+#include <std_srvs/Trigger.h>
+
 #include <prbt_hardware_support/BrakeTest.h>
 
 #include <prbt_hardware_support/brake_test_executor.h>
@@ -33,6 +35,9 @@ static constexpr double WAIT_FOR_SERVICE_TIMEOUT_S{5.0};
 static const std::string EXECUTE_BRAKETEST_SERVICE_NAME{"/prbt/execute_braketest"};
 static const std::string BRAKETEST_ADAPTER_SERVICE_NAME{"/prbt/braketest_adapter_node/trigger_braketest"};
 
+static const std::string CONTROLLER_HOLD_MODE_SERVICE_NAME{"/prbt/driver/hold"};
+static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{"/prbt/driver/unhold"};
+
 BrakeTestExecutor::BrakeTestExecutor(ros::NodeHandle& nh)
   :nh_(nh)
 {
@@ -40,11 +45,25 @@ BrakeTestExecutor::BrakeTestExecutor(ros::NodeHandle& nh)
                                          &BrakeTestExecutor::executeBrakeTest,
                                          this);
 
+  // set up braketest service client (required)
   trigger_braketest_client_ = nh_.serviceClient<BrakeTest>(BRAKETEST_ADAPTER_SERVICE_NAME);
-
   if (!trigger_braketest_client_.waitForExistence(ros::Duration(WAIT_FOR_SERVICE_TIMEOUT_S)))
   {
     throw BrakeTestExecutorException("Service " + trigger_braketest_client_.getService() + " not available.");
+  }
+
+  // set up hold service client
+  controller_hold_client_ = nh_.serviceClient<std_srvs::Trigger>(CONTROLLER_HOLD_MODE_SERVICE_NAME);
+  if (!controller_hold_client_.waitForExistence(ros::Duration(WAIT_FOR_SERVICE_TIMEOUT_S)))
+  {
+    ROS_WARN_STREAM("Service " + controller_hold_client_.getService() + " not available.");
+  }
+
+  // setup unhold service client
+  controller_unhold_client_ = nh_.serviceClient<std_srvs::Trigger>(CONTROLLER_UNHOLD_MODE_SERVICE_NAME);
+  if (!controller_unhold_client_.waitForExistence(ros::Duration(WAIT_FOR_SERVICE_TIMEOUT_S)))
+  {
+    ROS_WARN_STREAM("Service " + controller_unhold_client_.getService() + " not available.");
   }
 }
 
@@ -59,16 +78,31 @@ bool BrakeTestExecutor::executeBrakeTest(BrakeTest::Request&,
     return true;
   }
 
-  BrakeTest srv;
-  if (!trigger_braketest_client_.call(srv))
+  ROS_INFO_STREAM("Enter hold for braketest. Do not unhold the controller!");
+
+  std_srvs::Trigger trigger_srv;
+  if (!controller_hold_client_.call(trigger_srv))
+  {
+    ROS_WARN_STREAM("Failed to trigger hold via service " << controller_unhold_client_.getService());
+  }
+
+  BrakeTest braketest_srv;
+  if (!trigger_braketest_client_.call(braketest_srv))
   {
     response.success = false;
     response.error_msg = "Failed to trigger brake test via service " + trigger_braketest_client_.getService();
     response.error_code.value = BrakeTestErrorCodes::TRIGGER_BRAKETEST_SERVICE_FAILURE;
-    return true;
+  }
+  else
+  {
+    response = braketest_srv.response;
   }
 
-  response = srv.response;
+  if (!controller_unhold_client_.call(trigger_srv))
+  {
+    ROS_WARN_STREAM("Failed to trigger unhold via service " << controller_unhold_client_.getService());
+  }
+
   return true;
 }
 
