@@ -35,7 +35,8 @@ static const std::string SERVICE_NAME_OPERATION_MODE = "/prbt/get_operation_mode
 
 static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{2};
 
-static const ModbusApiSpec test_api_spec(1, 11, 111);
+static const ModbusApiSpec test_api_spec{ {modbus_api_spec::VERSION, 1},
+                                          {modbus_api_spec::OPERATION_MODE, 11} };
 
 static constexpr double OPERATION_MODE_CHANGE_WAIT_TIME_S{2.0};
 static const std::vector<unsigned int> OPERATION_MODES{1, 2, 3};
@@ -57,8 +58,8 @@ public:
    */
   ModbusMsgInStampedPtr createDefaultOpModeModbusMsg(unsigned int operation_mode,
                                                      unsigned int modbus_api_version = MODBUS_API_VERSION_REQUIRED,
-                                                     uint32_t operation_mode_index = test_api_spec.operation_mode_register_,
-                                                     uint32_t version_index = test_api_spec.version_register_);
+                                                     uint32_t operation_mode_index = test_api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE),
+                                                     uint32_t version_index = test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION));
 
   /**
    * @brief Wait for a specific change in operation mode to take effect.
@@ -231,7 +232,8 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusIncorrectApiVersion)
  */
 TEST_F(ModbusAdapterOperationModeTest, testModbusWithShortRegisterRange)
 {
-  auto max_required_index = std::max(test_api_spec.version_register_, test_api_spec.operation_mode_register_);
+  auto max_required_index = std::max(test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION),
+                                     test_api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE));
   auto msg{createDefaultOpModeModbusMsg(OPERATION_MODES.at(0),
                                         MODBUS_API_VERSION_REQUIRED,
                                         max_required_index - 1,

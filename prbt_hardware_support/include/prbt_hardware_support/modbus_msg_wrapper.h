@@ -80,7 +80,7 @@ protected:
 };
 
 inline ModbusMsgWrapper::ModbusMsgWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
-                                                  const ModbusApiSpec& api_spec):
+                                          const ModbusApiSpec& api_spec):
   msg_(modbus_msg_raw),
   api_spec_(api_spec)
 {
@@ -110,12 +110,12 @@ inline uint16_t ModbusMsgWrapper::getRegister(const ModbusMsgInStampedConstPtr& 
 
 inline bool ModbusMsgWrapper::hasVersion(const ModbusMsgInStampedConstPtr& modbus_msg_raw) const
 {
-  return hasRegister(modbus_msg_raw, api_spec_.version_register_);
+  return hasRegister(modbus_msg_raw, api_spec_.getRegisterDefinition(modbus_api_spec::VERSION));
 }
 
 inline unsigned int ModbusMsgWrapper::getVersion() const
 {
-  return getRegister(msg_, api_spec_.version_register_);
+  return getRegister(msg_, api_spec_.getRegisterDefinition(modbus_api_spec::VERSION));
 }
 
 inline bool ModbusMsgWrapper::isDisconnect() const

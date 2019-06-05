@@ -65,12 +65,12 @@ ModbusMsgWrapper(modbus_msg_raw, api_spec)
 
 inline bool ModbusMsgBrakeTestWrapper::hasBrakeTestRequiredFlag(const ModbusMsgInStampedConstPtr& modbus_msg_raw) const
 {
-  return hasRegister(modbus_msg_raw, api_spec_.braketest_register_);
+  return hasRegister(modbus_msg_raw, api_spec_.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
 }
 
 inline bool ModbusMsgBrakeTestWrapper::isBrakeTestRequired() const
 {
-  return getRegister(msg_, api_spec_.braketest_register_);
+  return getRegister(msg_, api_spec_.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
 }
 
 }

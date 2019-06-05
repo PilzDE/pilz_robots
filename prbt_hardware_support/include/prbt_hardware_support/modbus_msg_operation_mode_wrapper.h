@@ -71,12 +71,12 @@ inline ModbusMsgOperationModeWrapper::ModbusMsgOperationModeWrapper(const Modbus
 
 inline bool ModbusMsgOperationModeWrapper::hasOperationMode(const ModbusMsgInStampedConstPtr& modbus_msg_raw) const
 {
-  return hasRegister(modbus_msg_raw, api_spec_.operation_mode_register_);
+  return hasRegister(modbus_msg_raw, api_spec_.getRegisterDefinition(modbus_api_spec::OPERATION_MODE));
 }
 
 inline OperationMode ModbusMsgOperationModeWrapper::getOperationMode() const
 {
-    switch(getRegister(msg_, api_spec_.operation_mode_register_)){
+    switch(getRegister(msg_, api_spec_.getRegisterDefinition(modbus_api_spec::OPERATION_MODE))){
         case 0:
             return OperationMode::UNKNOWN;
         case 1:
