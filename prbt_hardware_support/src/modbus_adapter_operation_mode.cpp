@@ -39,14 +39,6 @@ ModbusAdapterOperationMode::ModbusAdapterOperationMode(ros::NodeHandle& nh, cons
 
 void ModbusAdapterOperationMode::internalMsgCallback(const ModbusMsgOperationModeWrapper& msg)
 {
-  if(msg.isDisconnect())
-  {
-    // In case of a disconnect nothing works anymore (see pilz_modbus_read_client.cpp)
-    // and the sto node performs a stop.
-    // Here, we do not publish anything.
-    return;
-  }
-
   updateOperationMode(msg.getOperationMode());
 }
 
