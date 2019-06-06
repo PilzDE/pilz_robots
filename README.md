@@ -132,7 +132,7 @@ A controlled stop using a hold trajectory is performed thus stopping the manipul
 
 ## Package: prbt_hardware_support
 This package provides support for the Pilz hardware PNOZmulti and PSS4000. A configurable modbus connection is set up via
-`roslaunch prbt_hardware_support modbus_read_client.launch`. Particular features:
+`roslaunch prbt_hardware_support modbus_read_client.launch`. Particular features (detailed description [here](prbt_hardware_support/README.md)):
 - Realization of the Stop1 functionality
 - Inform about the Safe Brake Control status
 - Trigger execution of brake test
