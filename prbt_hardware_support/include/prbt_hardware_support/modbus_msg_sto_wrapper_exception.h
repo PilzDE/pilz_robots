@@ -4,6 +4,8 @@
 #include <string>
 #include <stdexcept>
 
+#include <prbt_hardware_support/modbus_msg_wrapper_exception.h>
+
 namespace prbt_hardware_support
 {
   /**
@@ -11,11 +13,11 @@ namespace prbt_hardware_support
    * does not contain the required information.
    *
    */
-  class ModbusMsgStoWrapperException : public std::runtime_error
+  class ModbusMsgStoWrapperException : public ModbusMsgWrapperException
   {
     public:
       ModbusMsgStoWrapperException( const std::string& what_arg ):
-        std::runtime_error(what_arg)
+        ModbusMsgWrapperException(what_arg)
       {
       }
   };

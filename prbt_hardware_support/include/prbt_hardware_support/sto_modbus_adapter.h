@@ -30,6 +30,7 @@
 #include <prbt_hardware_support/update_filter.h>
 
 #include <prbt_hardware_support/modbus_msg_sto_wrapper.h>
+#include <prbt_hardware_support/modbus_api_spec.h>
 
 namespace prbt_hardware_support
 {
@@ -52,7 +53,7 @@ public:
    * @param nh The node handle.
    * @param index_of_first_register_to_read Offset of the data in the modbus registers.
    */
-  PilzStoModbusAdapterNode(ros::NodeHandle& nh);
+  PilzStoModbusAdapterNode(ros::NodeHandle& nh, const ModbusApiSpec& api_spec);
   ~PilzStoModbusAdapterNode();
 
   static const std::string HOLD_SERVICE;
@@ -125,6 +126,8 @@ private:
   //! ServiceClient attached to the driver <code>/halt</code> service
   ros::ServiceClient halt_srv_client_;
 
+  //! Holds the current definition of relevant registers
+  const ModbusApiSpec api_spec_;
 };
 
 }
