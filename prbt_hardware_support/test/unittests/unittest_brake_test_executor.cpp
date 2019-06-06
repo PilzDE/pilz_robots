@@ -26,6 +26,7 @@
 #include <prbt_hardware_support/brake_test_executor.h>
 #include <prbt_hardware_support/BrakeTestErrorCodes.h>
 #include <prbt_hardware_support/joint_states_publisher_mock.h>
+#include <prbt_hardware_support/pilz_manipulator_mock.h>
 
 namespace brake_test_executor_test
 {
@@ -37,21 +38,38 @@ static const std::string BRAKE_TEST_SERVICE_NAME{"/prbt/execute_braketest"};
 
 static const std::string BRAKETEST_ADAPTER_SERVICE_NAME{"/prbt/braketest_adapter_node/trigger_braketest"};
 
+static const std::string CONTROLLER_HOLD_MODE_SERVICE_NAME{"/prbt/driver/hold"};
+static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{"/prbt/driver/unhold"};
+
 class BrakeTestExecutorTest : public Test
 {
 public:
-  MOCK_METHOD2(triggerBrakeTest, bool(BrakeTest::Request&, BrakeTest::Response&));
+  BrakeTestExecutorTest();
+  ~BrakeTestExecutorTest();
+
+  MOCK_METHOD2(triggerBrakeTest, bool(BrakeTest::Request &, BrakeTest::Response &));
 
 protected:
   ros::NodeHandle nh_;
+  ManipulatorMock manipulator_;
 };
+
+BrakeTestExecutorTest::BrakeTestExecutorTest()
+{
+  manipulator_.advertiseHoldService(nh_, CONTROLLER_HOLD_MODE_SERVICE_NAME);
+  manipulator_.advertiseUnholdService(nh_, CONTROLLER_UNHOLD_MODE_SERVICE_NAME);
+}
+
+BrakeTestExecutorTest::~BrakeTestExecutorTest()
+{
+}
 
 /**
  * @brief Test execution of brake tests while robot is not moving.
  *
  * Test Sequence:
  *  0. Setup Server for triggering the braketest
- *  1. Set expectations and action on the service call
+ *  1. Set expectations and action on service calls
  *  2. Publish fixed joint states.
  *  3. Call brake test service.
  *
@@ -59,7 +77,10 @@ protected:
  *  0. Executor is created without problems, a client can attach to its service
  *  1. -
  *  2. -
- *  3. Brake tests is triggered successfully. It is triggered exactly once.
+ *  3. Brake tests are executed successfully. In strict order:
+ *     - Hold mode is triggered
+ *     - Brake test execution is triggered
+ *     - Unhold is triggered
  */
 TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
 {
@@ -77,14 +98,21 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
   /**********
    * Step 1 *
    **********/
-  EXPECT_CALL(*this, triggerBrakeTest(_,_))
-       .Times(1)
-       .WillOnce(testing::Invoke(
-         [](BrakeTest::Request&, BrakeTest::Response& res){
-           res.success = true;
-           return true;
-         }
-       ));
+  {
+    InSequence dummy;
+
+    EXPECT_CALL(manipulator_, holdCb(_, _)).WillOnce(Return(true));
+
+    EXPECT_CALL(*this, triggerBrakeTest(_, _))
+        .Times(1)
+        .WillOnce(testing::Invoke(
+            [](BrakeTest::Request &, BrakeTest::Response &res) {
+              res.success = true;
+              return true;
+            }));
+
+    EXPECT_CALL(manipulator_, unholdCb(_, _)).WillOnce(Return(true));
+  }
 
   /**********
    * Step 2 *
@@ -105,7 +133,7 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
  *
  * Test Sequence:
  *  0. Setup Server for triggering the braketest
- *  1. Set expectations and action on the service call
+ *  1. Set expectations and action on service calls
  *  2. Publish dynamic(moving) joint states.
  *  3. Call brake test service.
  *
@@ -113,7 +141,7 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
  *  0. Executor is created without problems, a client can attach to its service
  *  1. -
  *  2. -
- *  3. Brake tests cannot be triggered. Respective error message is returned.
+ *  3. Brake tests cannot be triggered. Respective error message is returned. The hold service is not called.
  */
 TEST_F(BrakeTestExecutorTest, testBrakeTestServiceWithRobotMotion)
 {
@@ -127,7 +155,8 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestServiceWithRobotMotion)
   /**********
    * Step 1 *
    **********/
-  EXPECT_CALL(*this, triggerBrakeTest(_,_)).Times(0);
+  EXPECT_CALL(*this, triggerBrakeTest(_, _)).Times(0);
+  EXPECT_CALL(manipulator_, holdCb(_, _)).Times(0);
   /**********
    * Step 2 *
    **********/
@@ -163,7 +192,10 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestServiceNoTriggerService)
  *  0. Executor is created without problems, a client can attach to its service
  *  1. -
  *  2. -
- *  3. Error is returned upon service call.
+ *  3. Error is returned upon service call. In strict order:
+ *     - Hold mode is triggered
+ *     - Brake test execution is triggered
+ *     - Unhold is triggered
  */
 TEST_F(BrakeTestExecutorTest, testBrakeTestServiceTriggerFails)
 {
@@ -181,9 +213,17 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestServiceTriggerFails)
   /**********
    * Step 1 *
    **********/
-  EXPECT_CALL(*this, triggerBrakeTest(_,_))
-       .Times(1)
-       .WillOnce(Return(false));
+  {
+    InSequence dummy;
+
+    EXPECT_CALL(manipulator_, holdCb(_, _)).WillOnce(Return(true));
+
+    EXPECT_CALL(*this, triggerBrakeTest(_, _))
+        .Times(1)
+        .WillOnce(Return(false));
+
+    EXPECT_CALL(manipulator_, unholdCb(_, _)).WillOnce(Return(true));
+  }
 
   /**********
    * Step 2 *
