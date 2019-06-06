@@ -35,8 +35,8 @@ static constexpr double WAIT_FOR_SERVICE_TIMEOUT_S{5.0};
 static const std::string EXECUTE_BRAKETEST_SERVICE_NAME{"/prbt/execute_braketest"};
 static const std::string BRAKETEST_ADAPTER_SERVICE_NAME{"/prbt/braketest_adapter_node/trigger_braketest"};
 
-static const std::string CONTROLLER_HOLD_MODE_SERVICE_NAME{"/prbt/driver/hold"};
-static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{"/prbt/driver/unhold"};
+static const std::string CONTROLLER_HOLD_MODE_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/hold"};
+static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/unhold"};
 
 BrakeTestExecutor::BrakeTestExecutor(ros::NodeHandle& nh)
   :nh_(nh)
@@ -83,7 +83,7 @@ bool BrakeTestExecutor::executeBrakeTest(BrakeTest::Request&,
   std_srvs::Trigger trigger_srv;
   if (!controller_hold_client_.call(trigger_srv))
   {
-    ROS_WARN_STREAM("Failed to trigger hold via service " << controller_unhold_client_.getService());
+    ROS_WARN_STREAM("Failed to trigger hold via service " << controller_hold_client_.getService());
   }
 
   BrakeTest braketest_srv;

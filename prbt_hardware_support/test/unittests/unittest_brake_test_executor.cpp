@@ -38,8 +38,8 @@ static const std::string BRAKE_TEST_SERVICE_NAME{"/prbt/execute_braketest"};
 
 static const std::string BRAKETEST_ADAPTER_SERVICE_NAME{"/prbt/braketest_adapter_node/trigger_braketest"};
 
-static const std::string CONTROLLER_HOLD_MODE_SERVICE_NAME{"/prbt/driver/hold"};
-static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{"/prbt/driver/unhold"};
+static const std::string CONTROLLER_HOLD_MODE_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/hold"};
+static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/unhold"};
 
 class BrakeTestExecutorTest : public Test
 {
