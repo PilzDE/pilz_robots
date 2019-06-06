@@ -51,6 +51,26 @@ static ModbusMsgInStamped* createDefaultModbusMsgIn(const uint32_t& offset,
   return msg;
 }
 
+
+/**
+ * @brief Create modbus msg given api version and operation mode.
+ */
+ModbusMsgInStampedPtr createDefaultOpModeModbusMsg(unsigned int operation_mode,
+                                                    unsigned int modbus_api_version,
+                                                    uint32_t operation_mode_index,
+                                                    uint32_t version_index)
+{
+  uint32_t first_index_to_read{std::min(operation_mode_index, version_index)};
+  uint32_t last_index_to_read{std::max(operation_mode_index, version_index)};
+  static int msg_time_counter{1};
+  std::vector<uint16_t> tab_reg(last_index_to_read - first_index_to_read + 1);
+  tab_reg[version_index - first_index_to_read] = modbus_api_version;
+  tab_reg[operation_mode_index - first_index_to_read] = operation_mode;
+  ModbusMsgInStampedPtr msg{createDefaultModbusMsgIn(first_index_to_read, tab_reg)};
+  msg->header.stamp = ros::Time(msg_time_counter++);
+  return msg;
+}
+
 }
 
 #endif // PRBT_HARDWARE_SUPPORT_MODBUS_MSG_IN_UTILS_H

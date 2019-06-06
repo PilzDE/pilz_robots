@@ -54,14 +54,6 @@ public:
   ~ModbusAdapterOperationModeTest();
 
   /**
-   * @brief Create modbus msg given api version and operation mode.
-   */
-  ModbusMsgInStampedPtr createDefaultOpModeModbusMsg(unsigned int operation_mode,
-                                                     unsigned int modbus_api_version = MODBUS_API_VERSION_REQUIRED,
-                                                     uint32_t operation_mode_index = test_api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE),
-                                                     uint32_t version_index = test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION));
-
-  /**
    * @brief Wait for a specific change in operation mode to take effect.
    */
   ::testing::AssertionResult waitForOperationMode(unsigned int op_mode, double timeout = OPERATION_MODE_CHANGE_WAIT_TIME_S);
@@ -87,22 +79,6 @@ ModbusAdapterOperationModeTest::ModbusAdapterOperationModeTest()
 
 ModbusAdapterOperationModeTest::~ModbusAdapterOperationModeTest()
 {
-}
-
-ModbusMsgInStampedPtr ModbusAdapterOperationModeTest::createDefaultOpModeModbusMsg(unsigned int operation_mode,
-                                                                                   unsigned int modbus_api_version,
-                                                                                   uint32_t operation_mode_index,
-                                                                                   uint32_t version_index)
-{
-  uint32_t first_index_to_read{std::min(operation_mode_index, version_index)};
-  uint32_t last_index_to_read{std::max(operation_mode_index, version_index)};
-  static int msg_time_counter{1};
-  std::vector<uint16_t> tab_reg(last_index_to_read - first_index_to_read + 1);
-  tab_reg[version_index - first_index_to_read] = modbus_api_version;
-  tab_reg[operation_mode_index - first_index_to_read] = operation_mode;
-  ModbusMsgInStampedPtr msg{createDefaultModbusMsgIn(first_index_to_read, tab_reg)};
-  msg->header.stamp = ros::Time(msg_time_counter++);
-  return msg;
 }
 
 ::testing::AssertionResult ModbusAdapterOperationModeTest::waitForOperationMode(unsigned int op_mode, double timeout)
@@ -161,7 +137,12 @@ TEST_F(ModbusAdapterOperationModeTest, testOperationModeChange)
 {
   for (auto mode : OPERATION_MODES)
   {
-    modbus_topic_pub_.publish(createDefaultOpModeModbusMsg(mode));
+    modbus_topic_pub_.publish(createDefaultOpModeModbusMsg(
+      mode,
+      MODBUS_API_VERSION_REQUIRED,
+      test_api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE),
+      test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION))
+      );
     ASSERT_TRUE(ros::service::waitForService(SERVICE_NAME_OPERATION_MODE, ros::Duration(3))) << "Service does not appear";
     ASSERT_TRUE(waitForOperationMode(mode));
   }
@@ -199,7 +180,12 @@ TEST_F(ModbusAdapterOperationModeTest, testDisconnect)
 TEST_F(ModbusAdapterOperationModeTest, testModbusUnexpectedOperationMode)
 {
   std::vector<uint16_t> holding_register;
-  modbus_topic_pub_.publish(createDefaultOpModeModbusMsg(0));
+      modbus_topic_pub_.publish(createDefaultOpModeModbusMsg(
+      0,
+      MODBUS_API_VERSION_REQUIRED,
+      test_api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE),
+      test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION))
+      );
 
   ASSERT_TRUE(waitForServiceCallFailure());
 }
@@ -216,7 +202,14 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusUnexpectedOperationMode)
 TEST_F(ModbusAdapterOperationModeTest, testModbusIncorrectApiVersion)
 {
   std::vector<uint16_t> holding_register;
-  modbus_topic_pub_.publish(createDefaultOpModeModbusMsg(OPERATION_MODES.at(0), 0));
+
+  modbus_topic_pub_.publish(
+    createDefaultOpModeModbusMsg(
+      OPERATION_MODES.at(0),
+      MODBUS_API_VERSION_REQUIRED,
+      test_api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE),
+      0 /* incorrect version */)
+  );
 
   ASSERT_TRUE(waitForServiceCallFailure());
 }
