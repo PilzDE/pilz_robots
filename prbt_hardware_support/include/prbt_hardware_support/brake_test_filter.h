@@ -32,6 +32,7 @@ namespace message_filters
 /**
  * @brief Filter to be applied to modbus messages. Only the messages with changes in the brake test state are passed.
  *        The filter also checks whether the message can be wrapped.
+ *        Disconnect messages are not passed along.
  *
  * \code
  *   message_filters::Subscriber sub<MsgStamped>(nh, TOPIC_NAME, 1);
