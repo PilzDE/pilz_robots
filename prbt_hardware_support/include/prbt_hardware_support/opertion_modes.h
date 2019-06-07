@@ -23,10 +23,10 @@ namespace prbt_hardware_support
 
 enum OperationMode
 {
-    UNKNOWN,
-    T1,
-    T2,
-    AUTO
+    UNKNOWN = 0,
+    T1 = 1,
+    T2 = 2,
+    AUTO = 3
 };
 
 }
