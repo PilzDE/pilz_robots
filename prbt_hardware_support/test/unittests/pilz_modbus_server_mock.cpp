@@ -65,6 +65,26 @@ bool PilzModbusServerMock::init(const char *ip, unsigned int port)
   return true;
 }
 
+void PilzModbusServerMock::setHoldingRegister(std::initializer_list< std::pair<unsigned int, uint16_t> > reg_list)
+{
+
+  for(auto entry : reg_list)
+  {
+    ROS_ERROR_STREAM("Holding Register is defined from: 0 ... " << holding_register_size_ << "."
+                  << " Setting Register " << entry.first << " ... " << " is not possible");
+    return;
+  }
+
+  modbus_register_access_mutex.lock();
+  for(auto entry : reg_list)
+  {
+    mb_mapping_->tab_registers[entry.first] = entry.second;
+  }
+  modbus_register_access_mutex.unlock();
+
+  ROS_DEBUG_STREAM("Modbus data for Modbus-Server set.");
+}
+
 void PilzModbusServerMock::setHoldingRegister(const std::vector<uint16_t>& data, unsigned int start_index)
 {
   if ( data.empty() )
