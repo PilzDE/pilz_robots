@@ -26,11 +26,12 @@
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "modbus_adapter_operation_mode");
-  ros::NodeHandle nh{"~"};
+  ros::NodeHandle pnh{"~"};
+  ros::NodeHandle nh{};
 
   prbt_hardware_support::ModbusApiSpec api_spec(nh);
 
-  prbt_hardware_support::ModbusAdapterOperationMode adapter_operation_mode(nh, api_spec);
+  prbt_hardware_support::ModbusAdapterOperationMode adapter_operation_mode(pnh, api_spec);
 
   ros::spin();
 
