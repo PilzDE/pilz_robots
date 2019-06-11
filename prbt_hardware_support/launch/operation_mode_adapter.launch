@@ -19,8 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   <arg name="safety_hw" default="pss4000" />
   <arg name="api_spec_file" default="$(find prbt_hardware_support)/config/modbus_api_spec_$(arg safety_hw).yaml" />
 
-  <node required="true" ns="prbt" pkg="prbt_hardware_support" type="modbus_adapter_operation_mode" name="adapter_operation_mode" output="screen">
-    <rosparam ns="api_spec" command="load" file="$(arg api_spec_file)" />
+  <rosparam ns="prbt/api_spec" command="load" file="$(arg api_spec_file)" />
+  <node required="true" ns="prbt" pkg="prbt_hardware_support" type="modbus_adapter_operation_mode_node" name="modbus_adapter_operation_mode_node" output="screen">
   </node>
 
 </launch>
