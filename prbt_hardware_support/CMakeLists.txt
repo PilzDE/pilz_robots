@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   std_srvs
+  sensor_msgs
 )
 
 # message generation
@@ -40,7 +41,7 @@ generate_messages(
 ###################################
 catkin_package(
   INCLUDE_DIRS include
-  CATKIN_DEPENDS message_runtime std_msgs std_srvs
+  CATKIN_DEPENDS message_runtime std_msgs std_srvs sensor_msgs
 )
 
 ###########
