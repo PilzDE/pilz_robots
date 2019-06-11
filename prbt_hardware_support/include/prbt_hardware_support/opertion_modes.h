@@ -18,6 +18,8 @@
 #ifndef OPERATION_MODE_H
 #define OPERATION_MODE_H
 
+#include <iostream>
+
 namespace prbt_hardware_support
 {
 
@@ -28,6 +30,27 @@ enum class OperationMode
     T2 = 2,
     AUTO = 3
 };
+
+
+inline std::ostream& operator<<(std::ostream& os, const OperationMode& mode)
+{
+    switch(mode)
+    {
+      case OperationMode::T1:
+        os << "T1";
+        break;
+      case OperationMode::T2:
+        os << "T2";
+        break;
+      case OperationMode::AUTO:
+        os << "AUTOMATIC";
+        break;
+      default:
+        os << "UNKNOWN";
+        break;
+    }
+    return os;
+}
 
 }
 

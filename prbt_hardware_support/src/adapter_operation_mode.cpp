@@ -36,6 +36,7 @@ void AdapterOperationMode::init()
 
 void AdapterOperationMode::updateOperationMode(OperationMode mode)
 {
+	ROS_INFO_STREAM("Mode switched: " << current_operation_mode_ << " -> " << mode);
 	current_operation_mode_ = mode;
 
 	// when the first data is received, the node is initialized (i.e. the service advertised)
