@@ -8,6 +8,13 @@ add_compile_options(-Wno-unused-parameter)
 add_compile_options(-Wno-unused-variable)
 add_compile_options(-Werror)
 
+# enable aligned new in gcc7+
+if(CMAKE_COMPILER_IS_GNUCXX) 
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.0) 
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -faligned-new")
+  endif() 
+endif()
+
 find_package(catkin REQUIRED COMPONENTS
   moveit_core
   pluginlib
