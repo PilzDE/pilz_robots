@@ -64,3 +64,7 @@ The ``ModbusAdapterBrakeTestNode`` is noticed via the topic `/pilz_modbus_node/m
 ## BraketestExecutorNode
 The ``BraketestExecutorNode`` offers the `/execute_braketest` service which, in interaction with the ``CanOpenBraketestAdapter``,
 executes a braketest on each drive of the manipulator.
+
+## ModbusAdapterOperationModeNode
+The ``ModbusAdapterOperationModeNode`` offers the `/get_operation_mode` service for accessing the currently
+active operation mode.
