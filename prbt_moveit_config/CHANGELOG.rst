@@ -2,6 +2,9 @@
 Changelog for package prbt_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.5.4 (2019-05-27)
 ------------------
 
