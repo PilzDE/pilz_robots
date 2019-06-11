@@ -35,37 +35,36 @@ const std::string PilzStoModbusAdapterNode::HALT_SERVICE = "driver/halt";
 PilzStoModbusAdapterNode::PilzStoModbusAdapterNode(ros::NodeHandle &nh):
   nh_(nh)
 {
-  // Attach to hold service
-  if (!ros::service::waitForService(HOLD_SERVICE, ros::Duration(WAIT_FOR_SERVICE_TIMEOUT_S)))
+  // Wait for services
+  while (!ros::service::waitForService(HALT_SERVICE, ros::Duration(RETRY_SERVICE_CONNECTION_TIME_S)) && ros::ok())
   {
-    throw PilzStoModbusAdapterNodeException("Controller service " + HOLD_SERVICE
-                     + " not available. STO adapter node can not function properly. Shutting down ROS ...");
+    ROS_WARN_STREAM_DELAYED_THROTTLE(WAIT_FOR_SERVICE_TIMEOUT_S, "Waiting for driver service " + HALT_SERVICE
+                                     + " to become available... Please check, if the motor driver is up and running.");
   }
-  hold_srv_client_ = nh.serviceClient<std_srvs::Trigger>(HOLD_SERVICE);
 
-  // Attach to driver halt service
-  if (!ros::service::waitForService(HALT_SERVICE, ros::Duration(WAIT_FOR_SERVICE_TIMEOUT_S)))
+  while (!ros::service::waitForService(HOLD_SERVICE, ros::Duration(RETRY_SERVICE_CONNECTION_TIME_S)) && ros::ok())
   {
-    throw PilzStoModbusAdapterNodeException("Driver service " + HALT_SERVICE
-                     + " not available. STO adapter node can not function properly. Shutting down ROS ...");
+    ROS_WARN_STREAM_DELAYED_THROTTLE(WAIT_FOR_SERVICE_TIMEOUT_S,
+                                     "Waiting for controller service " + HOLD_SERVICE
+                                     + " to become available...");
   }
-  halt_srv_client_ = nh.serviceClient<std_srvs::Trigger>(HALT_SERVICE);
 
-  // Attach to unhold service
   if(!ros::service::waitForService(UNHOLD_SERVICE, ros::Duration(WAIT_FOR_SERVICE_TIMEOUT_S)))
   {
-    ROS_ERROR_STREAM("Controller service " << UNHOLD_SERVICE
-                     << " not available. STO adapter node can not function properly. You can't unhold the controller"
-                        " once it went to hold mode.");
+    ROS_WARN_STREAM("Controller service " << UNHOLD_SERVICE
+                    << " not available. STO adapter node can not function properly. You can't unhold the controller"
+                       " once it went to hold mode.");
   }
-  unhold_srv_client_ = nh.serviceClient<std_srvs::Trigger>(UNHOLD_SERVICE);
-
-  // Attach to recover service
   if(!ros::service::waitForService(RECOVER_SERVICE, ros::Duration(WAIT_FOR_SERVICE_TIMEOUT_S)))
   {
-    ROS_ERROR_STREAM("Driver service " << RECOVER_SERVICE
-                     << " not available. Driver won't auto-recover after STO clearance.");
+    ROS_WARN_STREAM("Driver service " << RECOVER_SERVICE
+                    << " not available. Driver won't auto-recover after STO clearance.");
   }
+
+  // Attach to services (all should be available now)
+  halt_srv_client_ = nh.serviceClient<std_srvs::Trigger>(HALT_SERVICE);
+  hold_srv_client_ = nh.serviceClient<std_srvs::Trigger>(HOLD_SERVICE);
+  unhold_srv_client_ = nh.serviceClient<std_srvs::Trigger>(UNHOLD_SERVICE);
   recover_srv_client_ = nh.serviceClient<std_srvs::Trigger>(RECOVER_SERVICE);
 
   modbus_sub_ = std::make_shared< message_filters::Subscriber<ModbusMsgInStamped> >(nh, TOPIC_MODBUS_READ, 1);
@@ -159,8 +158,5 @@ void PilzStoModbusAdapterNode::internalMsgCallback(const ModbusMsgStoWrapper& ms
     }
   }
 }
-
-PilzStoModbusAdapterNodeException::PilzStoModbusAdapterNodeException( const std::string& what_arg ):
-  std::runtime_error(what_arg){}
 
 }  // prbt_hardware_support

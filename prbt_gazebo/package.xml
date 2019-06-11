@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>prbt_gazebo</name>
-  <version>0.5.3</version>
+  <version>0.5.4</version>
   <description>Launch prbt robot in an empty Gazebo world.</description>
 
   <maintainer email="a.gutenkunst@pilz.de">Alexander Gutenkunst</maintainer>

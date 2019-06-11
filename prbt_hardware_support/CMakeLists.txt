@@ -8,17 +8,27 @@ add_definitions(-Werror)
 add_definitions(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
+  canopen_chain_node
   message_filters
   message_generation
   roscpp
   std_msgs
   std_srvs
+  sensor_msgs
 )
 
 # message generation
 add_message_files(
   FILES
+  BrakeTestErrorCodes.msg
   ModbusMsgInStamped.msg
+)
+
+# action generation
+add_service_files(
+  FILES
+  BrakeTest.srv
+  IsBrakeTestRequired.srv
 )
 
 generate_messages(
@@ -31,7 +41,7 @@ generate_messages(
 ###################################
 catkin_package(
   INCLUDE_DIRS include
-  CATKIN_DEPENDS message_runtime std_msgs
+  CATKIN_DEPENDS message_runtime std_msgs std_srvs sensor_msgs
 )
 
 ###########
@@ -54,13 +64,29 @@ add_dependencies(sto_modbus_adapter_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NA
 target_link_libraries(sto_modbus_adapter_node ${catkin_LIBRARIES})
 
 # BRAKE_TEST_NODE
-add_executable(modbus_brake_test_announcer_node
-  src/modbus_brake_test_announcer_node.cpp
-  src/modbus_brake_test_announcer.cpp
-  src/brake_test_announcer.cpp
+add_executable(modbus_adapter_brake_test_node
+  src/modbus_adapter_brake_test_node.cpp
+  src/modbus_adapter_brake_test.cpp
+  src/adapter_brake_test.cpp
 )
-add_dependencies(modbus_brake_test_announcer_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
-target_link_libraries(modbus_brake_test_announcer_node ${catkin_LIBRARIES})
+add_dependencies(modbus_adapter_brake_test_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(modbus_adapter_brake_test_node ${catkin_LIBRARIES})
+
+add_executable(brake_test_executor_node
+  src/brake_test_executor_node.cpp
+  src/brake_test_executor.cpp
+  src/brake_test_executor_exception.cpp
+)
+add_dependencies(brake_test_executor_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(brake_test_executor_node ${catkin_LIBRARIES})
+
+add_executable(canopen_braketest_adapter_node
+  src/canopen_braketest_adapter_node.cpp
+  src/canopen_braketest_adapter.cpp
+  src/canopen_braketest_adapter_exception.cpp
+)
+add_dependencies(canopen_braketest_adapter_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(canopen_braketest_adapter_node ${catkin_LIBRARIES})
 
 # +++++++++++++++++++++++++++++++++
 # + Build modbus read client node +
@@ -79,12 +105,18 @@ target_link_libraries(pilz_modbus_read_client_node ${catkin_LIBRARIES} modbus)
 #############
 
 install(DIRECTORY launch DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+install(DIRECTORY config DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h"
   PATTERN ".svn" EXCLUDE)
 
-install(TARGETS sto_modbus_adapter_node pilz_modbus_read_client_node
+install(TARGETS
+  sto_modbus_adapter_node
+  pilz_modbus_read_client_node
+  canopen_braketest_adapter_node
+  modbus_adapter_brake_test_node
+  brake_test_executor_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -162,17 +194,64 @@ if(CATKIN_ENABLE_TESTING)
   )
   #----------------------------------
 
-  # --- ModbusBrakeTestAnnouncer unit test ---
-  add_rostest_gmock(unittest_modbus_brake_test_announcer
-    test/unittests/unittest_modbus_brake_test_announcer.test
-    test/unittests/unittest_modbus_brake_test_announcer.cpp
-    src/modbus_brake_test_announcer.cpp
-    src/brake_test_announcer.cpp
+  # --- ModbusAdapterBrakeTest unit test ---
+  add_rostest_gmock(unittest_modbus_adapter_brake_test
+    test/unittests/unittest_modbus_adapter_brake_test.test
+    test/unittests/unittest_modbus_adapter_brake_test.cpp
+    src/modbus_adapter_brake_test.cpp
+    src/adapter_brake_test.cpp
   )
-  target_link_libraries(unittest_modbus_brake_test_announcer
+  target_link_libraries(unittest_modbus_adapter_brake_test
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
   )
   #----------------------------------
+
+  # --- BrakeTestUtils unit test ---
+  add_rostest_gtest(unittest_brake_test_utils
+    test/unittests/unittest_brake_test_utils.test
+    test/unittests/unittest_brake_test_utils.cpp
+    test/unittests/joint_states_publisher_mock.cpp
+  )
+  target_link_libraries(unittest_brake_test_utils
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  #----------------------------------
+
+  # --- CanOpenBraketestAdapter unit test ---
+  add_rostest_gmock(unittest_canopen_braketest_adapter
+    test/unittests/unittest_canopen_braketest_adapter.test
+    test/unittests/unittest_canopen_braketest_adapter.cpp
+    test/unittests/canopen_chain_node_mock.cpp
+    src/canopen_braketest_adapter.cpp
+    src/canopen_braketest_adapter_exception.cpp
+  )
+  target_link_libraries(unittest_canopen_braketest_adapter
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  #----------------------------------
+
+  # --- BraketestExecutor unit test ---
+  add_rostest_gmock(unittest_brake_test_executor
+    test/unittests/unittest_brake_test_executor.test
+    test/unittests/unittest_brake_test_executor.cpp
+    test/unittests/joint_states_publisher_mock.cpp
+    src/brake_test_executor.cpp
+    src/brake_test_executor_exception.cpp
+  )
+  target_link_libraries(unittest_brake_test_executor
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  #----------------------------------
+
+  # --- getParam unit test ---
+  add_rostest_gtest(unittest_get_param
+    test/unittests/unittest_get_param.test
+    test/unittests/unittest_get_param.cpp
+  )
+  target_link_libraries(unittest_get_param
+    ${catkin_LIBRARIES}
+  )
+#----------------------------------
 
   # --- Stop integration test ---
   add_rostest_gmock(integrationtest_stop1
@@ -202,11 +281,31 @@ if(CATKIN_ENABLE_TESTING)
   add_dependencies(integrationtest_brake_test_required ${catkin_EXPORTED_TARGETS})
   #----------------------------------
 
+  # --- Trigger brake test integration test ---
+  add_rostest_gmock(integrationtest_trigger_brake_test
+    test/integrationtests/integrationtest_trigger_brake_test.test
+    test/integrationtests/integrationtest_trigger_brake_test.cpp
+    test/unittests/joint_states_publisher_mock.cpp
+    test/unittests/canopen_chain_node_mock.cpp
+  )
+  target_link_libraries(integrationtest_trigger_brake_test
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  add_dependencies(integrationtest_trigger_brake_test ${catkin_EXPORTED_TARGETS})
+
   # to run: catkin_make -DENABLE_COVERAGE_TESTING=ON package_name_coverage (adding -j1 recommended)
   if(ENABLE_COVERAGE_TESTING)
     include(CodeCoverage)
     APPEND_COVERAGE_COMPILER_FLAGS()
-    set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*" "*/devel/include/${PROJECT_NAME}/*")
+    set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*"
+                          "*/BrakeTestErrorCodes.h"
+                          "*/ModbusMsgInStamped.h"
+                          "*/BrakeTest.h"
+                          "*/BrakeTestRequest.h"
+                          "*/BrakeTestResponse.h"
+                          "*/IsBrakeTestRequired.h"
+                          "*/IsBrakeTestRequiredRequest.h"
+                          "*/IsBrakeTestRequiredResponse.h")
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
       DEPENDS tests

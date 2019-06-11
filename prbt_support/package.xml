@@ -1,6 +1,6 @@
 <package format="2">
   <name>prbt_support</name>
-  <version>0.5.3</version>
+  <version>0.5.4</version>
   <description> Mechanical, kinematic and visual description
   of the Pilz light weight arm PRBT. </description>
 
@@ -36,4 +36,5 @@
   <test_depend>cmake_modules</test_depend>
   <test_depend>eigen</test_depend>
   <test_depend>roslaunch</test_depend>
+  <test_depend>prbt_hardware_support</test_depend>
 </package>

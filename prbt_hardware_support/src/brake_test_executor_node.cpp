@@ -15,30 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <prbt_hardware_support/brake_test_announcer.h>
-#include <std_msgs/Bool.h>
+#include <ros/ros.h>
+#include <prbt_hardware_support/brake_test_executor.h>
 
-
-namespace prbt_hardware_support
+/**
+ * @brief Provides service to execute a braketest
+ */
+int main(int argc, char **argv)
 {
+  ros::init(argc, argv, "brake_test_executor");
+  ros::NodeHandle nh{"~"};
 
-static const std::string TOPIC_BRAKE_TEST_REQUIRED = "/prbt/brake_test_required";
-static constexpr int DEFAULT_QUEUE_SIZE_BRAKE_TEST {1};
+  prbt_hardware_support::BrakeTestExecutor brake_test_executor(nh);
 
-BrakeTestAnnouncer::BrakeTestAnnouncer(ros::NodeHandle& nh)
-  : brake_test_required_pub_(nh.advertise<std_msgs::Bool>(TOPIC_BRAKE_TEST_REQUIRED, DEFAULT_QUEUE_SIZE_BRAKE_TEST))
-{
-}
+  ros::spin();
 
-void BrakeTestAnnouncer::sendBrakeTestRequiredMsg(bool brake_test_required) const
-{
-  std_msgs::Bool pub_msg;
-  pub_msg.data = brake_test_required;
-  brake_test_required_pub_.publish(pub_msg);
-
-  if(brake_test_required){
-    ROS_INFO("Braketest required.");
-  }
-}
-
+  return EXIT_FAILURE;
 }

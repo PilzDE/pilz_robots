@@ -16,7 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <launch>
-  <test test-name="unittest_modbus_brake_test_announcer" pkg="prbt_hardware_support"
-        type="unittest_modbus_brake_test_announcer">
-  </test>
+
+<test test-name="unittest_brake_test_utils" pkg="prbt_hardware_support" type="unittest_brake_test_utils">
+</test>
+
 </launch>

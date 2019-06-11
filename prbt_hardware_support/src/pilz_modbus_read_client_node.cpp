@@ -16,7 +16,6 @@
  */
 
 #include <stdlib.h>
-#include <string>
 
 #include <ros/ros.h>
 
@@ -24,9 +23,12 @@
 #include <prbt_hardware_support/pilz_modbus_read_client.h>
 #include <prbt_hardware_support/param_names.h>
 #include <prbt_hardware_support/pilz_modbus_read_client_exception.h>
+#include <prbt_hardware_support/modbus_topic_definitions.h>
+#include <prbt_hardware_support/get_param.h>
 
 static constexpr int32_t MODBUS_CONNECTION_RETRIES_DEFAULT {10};
 static constexpr double MODBUS_CONNECTION_RETRY_TIMEOUT_S_DEFAULT {1.0};
+static constexpr int MODBUS_RESPONSE_TIMEOUT_MS {20};
 
 using namespace prbt_hardware_support;
 
@@ -40,31 +42,17 @@ int main(int argc, char **argv)
   ros::NodeHandle nh {"~"};
 
   // LCOV_EXCL_START Simple parameter reading not analyzed
-  std::string ip {};
-  if ( !nh.getParam(PARAM_MODBUS_SERVER_IP_STR, ip) )
+  std::string ip;
+  int port, num_registers_to_read, index_of_first_register;
+  try
   {
-    ROS_ERROR("No modbus server ip given. Abort.");
-    return EXIT_FAILURE;
-  }
-
-  int port {0};
-  if ( !nh.getParam(PARAM_MODBUS_SERVER_PORT_STR, port) )
+    ip = getParam<std::string>(nh, PARAM_MODBUS_SERVER_IP_STR);
+    port = getParam<int>(nh, PARAM_MODBUS_SERVER_PORT_STR);
+    num_registers_to_read = getParam<int>(nh, PARAM_NUM_REGISTERS_TO_READ_STR);
+    index_of_first_register = getParam<int>(nh, PARAM_INDEX_OF_FIRST_REGISTER_TO_READ_STR);
+  } catch (const GetParamException& ex)
   {
-    ROS_ERROR("No modbus server port given. Abort.");
-    return EXIT_FAILURE;
-  }
-
-  int num_registers_to_read {0};
-  if ( !nh.getParam(PARAM_NUM_REGISTERS_TO_READ_STR, num_registers_to_read) )
-  {
-    ROS_ERROR("Numbers of registers to read not given. Abort.");
-    return EXIT_FAILURE;
-  }
-
-  int index_of_first_register {0};
-  if ( !nh.getParam(PARAM_INDEX_OF_FIRST_REGISTER_TO_READ_STR, index_of_first_register) )
-  {
-    ROS_ERROR("Index of first register not given. Abort.");
+    ROS_ERROR_STREAM(ex.what());
     return EXIT_FAILURE;
   }
 
@@ -73,22 +61,35 @@ int main(int argc, char **argv)
 
   double modbus_connection_retry_timeout_s {MODBUS_CONNECTION_RETRY_TIMEOUT_S_DEFAULT};
   nh.param<double>(PARAM_MODBUS_CONNECTION_RETRY_TIMEOUT, modbus_connection_retry_timeout_s,
-           MODBUS_CONNECTION_RETRY_TIMEOUT_S_DEFAULT);
+                   MODBUS_CONNECTION_RETRY_TIMEOUT_S_DEFAULT);
+
+  int response_timeout_ms;
+  nh.param<int>(PARAM_MODBUS_RESPONSE_TIMEOUT_STR, response_timeout_ms,
+                MODBUS_RESPONSE_TIMEOUT_MS);
+
+  std::string modbus_topic_name;
+  nh.param<std::string>(PARAM_MODBUS_TOPIC_NAME_STR, modbus_topic_name,
+                        TOPIC_MODBUS_READ);
+
 
   // LCOV_EXCL_STOP
 
   prbt_hardware_support::PilzModbusReadClient modbus_client(nh,
-                                                  static_cast<uint32_t>(num_registers_to_read),
-                                                  static_cast<uint32_t>(index_of_first_register),
-                                                  std::unique_ptr<LibModbusClient>(new LibModbusClient()));
+                                                            static_cast<uint32_t>(num_registers_to_read),
+                                                            static_cast<uint32_t>(index_of_first_register),
+                                                            std::unique_ptr<LibModbusClient>(new LibModbusClient()),
+                                                            static_cast<unsigned int>(response_timeout_ms),
+                                                            modbus_topic_name);
 
   ROS_DEBUG_STREAM("Modbus client IP: " << ip << " | Port: " << port);
   ROS_DEBUG_STREAM("Number of registers to read: " << num_registers_to_read
                    << "| first register: " << index_of_first_register);
+  ROS_DEBUG_STREAM("Modbus response timeout: " << response_timeout_ms
+                   << "Modbus topic name: " << modbus_topic_name);
 
 
   bool res = modbus_client.init(ip.c_str(), static_cast<unsigned int>(port),
-                                            static_cast<unsigned int>(modbus_connection_retries),
+                                static_cast<unsigned int>(modbus_connection_retries),
                                 ros::Duration(modbus_connection_retry_timeout_s));
 
   ROS_DEBUG_STREAM("Connection with modbus server " << ip << ":" << port << " established");

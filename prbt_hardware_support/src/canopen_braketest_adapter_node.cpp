@@ -15,33 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef BRAKE_TEST_ANNOUNCER_H
-#define BRAKE_TEST_ANNOUNCER_H
-
 #include <ros/ros.h>
-
-namespace prbt_hardware_support
-{
+#include <prbt_hardware_support/canopen_braketest_adapter.h>
 
 /**
- * @brief Publishes a message informing about a required brake test.
- *
- * A message of type std_msgs::Bool is published which is True if a brake test is required and False otherwise.
+ * @brief Provides service to execute a braketest
  */
-class BrakeTestAnnouncer
+int main(int argc, char **argv)
 {
-public:
-  BrakeTestAnnouncer(ros::NodeHandle& nh);
+  ros::init(argc, argv, "canopen_braketest_adapter_node");
+  ros::NodeHandle nh{"~"};
 
-protected:
-  virtual void sendBrakeTestRequiredMsg(bool brake_test_required) const;
+  prbt_hardware_support::CANOpenBrakeTestAdapter brake_test_adapter(nh);
 
-private:
-  //! Publisher used to inform potential listeners about the current
-  //! status of the brake test requirement.
-  ros::Publisher brake_test_required_pub_;
+  ros::spin();
 
-};
-
-} // namespace prbt_hardware_support
-#endif // BRAKE_TEST_ANNOUNCER_H
+  return EXIT_FAILURE;
+}

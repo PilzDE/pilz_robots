@@ -21,9 +21,8 @@ The TCP could for example brake on the current trajectory. After execution of th
 | STO Modbus adapter cannot connect to stop services    | ROS system will not start.                              |
 | STO Modbus adapter cannot connect to recover services | Node does start and robot can be moved until a stop is triggered. Afterwards the brakes will remain closed. |
 
-# Communcation Structure
-![Component diagram](doc/diag_comp_stop1_architecture.png)
-![Component diagram](doc/diag_comp_braketest_elements.png)
+# Architecture
+![Component diagram](doc/architecture_overview.png)
 
 # ROS API
 
@@ -43,6 +42,14 @@ A Modbus client (for usage with the PNOZmulti or PSS4000) can be started with `r
 - num_registers_to_read
 - modbus_connection_retries (default: 10)
 - modbus_connection_retry_timeout - timeout between retries (default: 1s)
+- modbus_response_timeout (default: 20ms)
+- modbus_topic_name (default: "/pilz_modbus_node/modbus_read")
+
+**Please note:**
+- The parameters ``modbus_response_timeout`` and ``modbus_topic_name`` are
+important for the Safe stop 1 functionality and must NOT be given, if the
+``modbus_read_node`` is used as part of the Safe stop 1 functionality.
+If the parameters are not given the default values for these parameters are used.
 
 ## StoModbusAdapterNode
 The ``PilzStoModbusAdapterNode`` is noticed via the topic `/pilz_modbus_node/modbus_read` if the STO is true or false and reacts as follows calling the corresponding services of the controllers and drivers:
@@ -51,5 +58,9 @@ enable drives, unhold controllers
 - **STO false:**
 hold controllers, disable drives
 
-## ModbusBrakeTestAnnouncerNode
-The ``ModbusBrakeTestAnnouncerNode`` is noticed via the topic `/pilz_modbus_node/modbus_read` if the PSS4000 requests a brake test or if a brake test request is no longer prevailing. As a result, the requirement status is published on `/prbt/brake_test_required`.
+## ModbusAdapterBrakeTestNode
+The ``ModbusAdapterBrakeTestNode`` is noticed via the topic `/pilz_modbus_node/modbus_read` if the PSS4000 requests a brake test or if a brake test request is no longer prevailing. As a result, the requirement status is published on `/prbt/brake_test_required`.
+
+## BraketestExecutorNode
+The ``BraketestExecutorNode`` offers the `/execute_braketest` service which, in interaction with the ``CanOpenBraketestAdapter``,
+executes a braketest on each drive of the manipulator.
