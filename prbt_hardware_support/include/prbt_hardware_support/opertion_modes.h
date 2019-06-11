@@ -21,7 +21,7 @@
 namespace prbt_hardware_support
 {
 
-enum OperationMode
+enum class OperationMode
 {
     UNKNOWN = 0,
     T1 = 1,
