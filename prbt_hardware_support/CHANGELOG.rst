@@ -2,6 +2,10 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add missing depend (CATKIN_DEPENDS and <run_depend>) on canopen_chain_node
+
 0.5.4 (2019-05-27)
 ------------------
 * increased modbus response timeout to 20ms
