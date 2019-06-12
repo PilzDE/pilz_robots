@@ -2,6 +2,10 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Essentially reverts wrong fix (depend on canopen_chain_node) from 0.5.5
+
 0.5.5 (2019-06-12)
 ------------------
 * Add missing depend (CATKIN_DEPENDS and <run_depend>) on canopen_chain_node
