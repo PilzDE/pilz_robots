@@ -29,6 +29,7 @@
   <run_depend>std_msgs</run_depend>
   <run_depend>std_srvs</run_depend>
   <run_depend>sensor_msgs</run_depend>
+  <run_depend>canopen_chain_node</run_depend>
 
   <!-- Test dependencies -->
   <test_depend>rostest</test_depend>
