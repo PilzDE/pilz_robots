@@ -22,7 +22,7 @@
 
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
-#include <prbt_hardware_support/opertion_modes.h>
+#include <prbt_hardware_support/operation_modes.h>
 
 namespace prbt_hardware_support
 {

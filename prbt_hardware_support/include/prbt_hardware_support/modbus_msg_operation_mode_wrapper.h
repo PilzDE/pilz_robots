@@ -21,7 +21,7 @@
 #include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/modbus_msg_wrapper.h>
 #include <prbt_hardware_support/modbus_msg_operation_mode_wrapper_exception.h>
-#include <prbt_hardware_support/opertion_modes.h>
+#include <prbt_hardware_support/operation_modes.h>
 
 namespace prbt_hardware_support
 {

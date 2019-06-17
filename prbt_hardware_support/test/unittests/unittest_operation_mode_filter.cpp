@@ -27,7 +27,7 @@
 #include <prbt_hardware_support/operation_mode_filter.h>
 #include <prbt_hardware_support/modbus_msg_in_utils.h>
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
-#include <prbt_hardware_support/opertion_modes.h>
+#include <prbt_hardware_support/operation_modes.h>
 
 static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {2};
 

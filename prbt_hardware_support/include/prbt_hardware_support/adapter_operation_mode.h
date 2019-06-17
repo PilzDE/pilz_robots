@@ -21,7 +21,7 @@
 #include <ros/ros.h>
 #include <prbt_hardware_support/IsBrakeTestRequired.h>
 #include <prbt_hardware_support/GetOperationMode.h>
-#include <prbt_hardware_support/opertion_modes.h>
+#include <prbt_hardware_support/operation_modes.h>
 
 namespace prbt_hardware_support
 {
