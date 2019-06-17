@@ -19,7 +19,6 @@
 #define MODBUS_ADAPTER_OPERATION_MODE_H
 
 #include <memory>
-#include <string>
 
 #include <ros/ros.h>
 #include <message_filters/subscriber.h>
