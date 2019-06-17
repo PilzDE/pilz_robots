@@ -33,6 +33,7 @@ class AdapterOperationMode
 {
 public:
   AdapterOperationMode(ros::NodeHandle& nh);
+  virtual ~AdapterOperationMode() = default;
 
 protected:
   void init();
