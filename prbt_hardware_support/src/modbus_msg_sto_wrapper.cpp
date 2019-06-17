@@ -8,7 +8,7 @@ ModbusMsgStoWrapper::ModbusMsgStoWrapper(const ModbusMsgInStampedConstPtr& modbu
                                          const ModbusApiSpec& api_spec):
   ModbusMsgWrapper(modbus_msg_raw, api_spec)
 {
-  if(!hasSTO(msg_))
+  if(!hasSTO())
   {
     throw ModbusMsgStoWrapperException("Received message does not contain a STO status.");
   }

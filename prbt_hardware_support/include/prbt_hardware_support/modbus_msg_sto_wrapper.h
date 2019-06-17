@@ -54,17 +54,17 @@ private:
    * @return true if a STO is defined
    * @return false if there is no STO defined in the message
    */
-  bool hasSTO(const ModbusMsgInStampedConstPtr& modbus_msg_raw) const;
+  bool hasSTO() const;
 };
 
-inline bool ModbusMsgStoWrapper::hasSTO(const ModbusMsgInStampedConstPtr& modbus_msg_raw) const
+inline bool ModbusMsgStoWrapper::hasSTO() const
 {
-  return hasRegister(modbus_msg_raw, api_spec_.getRegisterDefinition(modbus_api_spec::STO));
+  return hasRegister(api_spec_.getRegisterDefinition(modbus_api_spec::STO));
 }
 
 inline bool ModbusMsgStoWrapper::getSTO() const
 {
-  return getRegister(msg_, api_spec_.getRegisterDefinition(modbus_api_spec::STO));
+  return getRegister(api_spec_.getRegisterDefinition(modbus_api_spec::STO));
 }
 
 }

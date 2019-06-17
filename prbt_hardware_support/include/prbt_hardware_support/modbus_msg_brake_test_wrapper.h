@@ -50,27 +50,27 @@ private:
    *
    * @return true if a brake test required flag is defined, false otherwise.
    */
-  bool hasBrakeTestRequiredFlag(const ModbusMsgInStampedConstPtr& modbus_msg_raw) const;
+  bool hasBrakeTestRequiredFlag() const;
 };
 
 inline ModbusMsgBrakeTestWrapper::ModbusMsgBrakeTestWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
                                                             const ModbusApiSpec& api_spec):
 ModbusMsgWrapper(modbus_msg_raw, api_spec)
 {
-  if(!hasBrakeTestRequiredFlag(msg_))
+  if(!hasBrakeTestRequiredFlag())
   {
     throw ModbusMsgBrakeTestWrapperException("Received message does not contain a brake test status.");
   }
 }
 
-inline bool ModbusMsgBrakeTestWrapper::hasBrakeTestRequiredFlag(const ModbusMsgInStampedConstPtr& modbus_msg_raw) const
+inline bool ModbusMsgBrakeTestWrapper::hasBrakeTestRequiredFlag() const
 {
-  return hasRegister(modbus_msg_raw, api_spec_.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
+  return hasRegister(api_spec_.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
 }
 
 inline bool ModbusMsgBrakeTestWrapper::isBrakeTestRequired() const
 {
-  return getRegister(msg_, api_spec_.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
+  return getRegister(api_spec_.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
 }
 
 }

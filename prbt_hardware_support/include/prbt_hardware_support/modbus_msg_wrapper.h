@@ -62,19 +62,17 @@ protected:
    *
    * @returns true if the message has the register defined, otherwise false.
    */
-  virtual bool hasRegister(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
-                           uint32_t reg) const;
+  virtual bool hasRegister(uint32_t reg) const;
 
   /**
    * @returns the content of the holding register.
    */
-  virtual uint16_t getRegister(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
-                               uint32_t reg) const;
+  virtual uint16_t getRegister(uint32_t reg) const;
 
   /**
    * @brief Check if the modbus_msg contains the API version.
    */
-  virtual bool hasVersion(const ModbusMsgInStampedConstPtr& modbus_msg_raw) const;
+  virtual bool hasVersion() const;
 
 protected:
   ModbusMsgInStampedConstPtr msg_;
@@ -92,32 +90,32 @@ inline ModbusMsgWrapper::ModbusMsgWrapper(const ModbusMsgInStampedConstPtr& modb
     return;
   }
 
-  if(!hasVersion(msg_))
+  if(!hasVersion())
   {
     throw ModbusMsgWrapperException("Received message does not contain a version.");
   }
 }
 
-inline bool ModbusMsgWrapper::hasRegister(const ModbusMsgInStampedConstPtr& modbus_msg_raw, uint32_t reg) const
+inline bool ModbusMsgWrapper::hasRegister(uint32_t reg) const
 {
-  uint32_t relative_idx = reg - modbus_msg_raw->holding_registers.layout.data_offset;
+  uint32_t relative_idx = reg - msg_->holding_registers.layout.data_offset;
 
-  return modbus_msg_raw->holding_registers.data.size() > relative_idx;
+  return msg_->holding_registers.data.size() > relative_idx;
 }
 
-inline uint16_t ModbusMsgWrapper::getRegister(const ModbusMsgInStampedConstPtr& modbus_msg_raw, uint32_t reg) const
+inline uint16_t ModbusMsgWrapper::getRegister(uint32_t reg) const
 {
-  return modbus_msg_raw->holding_registers.data.at(reg - modbus_msg_raw->holding_registers.layout.data_offset);
+  return msg_->holding_registers.data.at(reg - msg_->holding_registers.layout.data_offset);
 }
 
-inline bool ModbusMsgWrapper::hasVersion(const ModbusMsgInStampedConstPtr& modbus_msg_raw) const
+inline bool ModbusMsgWrapper::hasVersion() const
 {
-  return hasRegister(modbus_msg_raw, api_spec_.getRegisterDefinition(modbus_api_spec::VERSION));
+  return hasRegister(api_spec_.getRegisterDefinition(modbus_api_spec::VERSION));
 }
 
 inline unsigned int ModbusMsgWrapper::getVersion() const
 {
-  return getRegister(msg_, api_spec_.getRegisterDefinition(modbus_api_spec::VERSION));
+  return getRegister(api_spec_.getRegisterDefinition(modbus_api_spec::VERSION));
 }
 
 inline bool ModbusMsgWrapper::isDisconnect() const

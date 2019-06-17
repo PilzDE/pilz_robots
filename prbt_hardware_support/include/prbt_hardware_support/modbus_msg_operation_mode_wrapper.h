@@ -51,32 +51,32 @@ private:
    *
    * @return true if a operation mode is defined, false otherwise.
    */
-  bool hasOperationMode(const ModbusMsgInStampedConstPtr& modbus_msg_raw) const;
+  bool hasOperationMode() const;
 };
 
 inline ModbusMsgOperationModeWrapper::ModbusMsgOperationModeWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
                                                             const ModbusApiSpec& api_spec):
   ModbusMsgWrapper(modbus_msg_raw, api_spec)
 {
-  if(!hasVersion(msg_))
+  if(!hasVersion())
   {
     throw ModbusMsgOperationModeWrapperException("Received message does not contain a version.");
   }
 
-  if(!hasOperationMode(msg_))
+  if(!hasOperationMode())
   {
     throw ModbusMsgOperationModeWrapperException("Received message does not contain information about the operation mode.");
   }
 }
 
-inline bool ModbusMsgOperationModeWrapper::hasOperationMode(const ModbusMsgInStampedConstPtr& modbus_msg_raw) const
+inline bool ModbusMsgOperationModeWrapper::hasOperationMode() const
 {
-  return hasRegister(modbus_msg_raw, api_spec_.getRegisterDefinition(modbus_api_spec::OPERATION_MODE));
+  return hasRegister(api_spec_.getRegisterDefinition(modbus_api_spec::OPERATION_MODE));
 }
 
 inline OperationMode ModbusMsgOperationModeWrapper::getOperationMode() const
 {
-    switch(getRegister(msg_, api_spec_.getRegisterDefinition(modbus_api_spec::OPERATION_MODE))){
+    switch(getRegister(api_spec_.getRegisterDefinition(modbus_api_spec::OPERATION_MODE))){
         case 0:
             return OperationMode::UNKNOWN;
         case 1:
