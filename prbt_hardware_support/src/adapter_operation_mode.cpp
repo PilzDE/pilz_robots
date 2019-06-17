@@ -49,7 +49,7 @@ void AdapterOperationMode::updateOperationMode(OperationMode mode)
 bool AdapterOperationMode::getOperationMode(GetOperationMode::Request& req,
                                     GetOperationMode::Response& res)
 {
-  res.mode.value = static_cast<int>(current_operation_mode_);
+  res.mode.value = static_cast<int8_t>(current_operation_mode_);
   return true;
 }
 
