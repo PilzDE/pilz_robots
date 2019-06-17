@@ -40,6 +40,7 @@ void AdapterOperationMode::updateOperationMode(OperationMode mode)
   current_operation_mode_ = mode;
 
   // when the first data is received, the node is initialized (i.e. the service advertised)
+  // "lazy initialization"
   if(!initialized_) {
     init();
     initialized_ = true;
