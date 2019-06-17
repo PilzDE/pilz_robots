@@ -42,7 +42,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   <param name="modbus_server_ip" value="$(arg modbus_server_ip)"/>
   <param name="modbus_server_port" value="$(arg modbus_server_port)"/>
   <param name="modbus_register_size" value="$(arg modbus_register_size)"/>
-  <param name="num_registers_to_read" value="$(arg num_registers_to_read)"/>
   <param name="index_of_first_register_to_read" value="$(arg index_of_first_register_to_read)"/>
 </test>
 

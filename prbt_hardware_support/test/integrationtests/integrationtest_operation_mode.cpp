@@ -110,9 +110,8 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
   ASSERT_TRUE(nh_priv_.getParam("modbus_server_ip", ip));
   ASSERT_TRUE(nh_priv_.getParam("modbus_server_port", port));
 
-  int modbus_register_size, num_registers_to_read, index_of_first_register_to_read;
+  int modbus_register_size, index_of_first_register_to_read;
   ASSERT_TRUE(nh_priv_.getParam("modbus_register_size", modbus_register_size));
-  ASSERT_TRUE(nh_priv_.getParam("num_registers_to_read", num_registers_to_read));
   ASSERT_TRUE(nh_priv_.getParam("index_of_first_register_to_read", index_of_first_register_to_read));
 
   /**********
