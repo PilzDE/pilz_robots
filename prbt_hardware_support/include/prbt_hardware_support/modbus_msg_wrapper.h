@@ -28,7 +28,7 @@ namespace prbt_hardware_support
  * @brief Wrapper class to add semantic to a raw ModbusMsgInStamped
  *
  * Allows to easy access to the content behind a raw modbus message
- * which is assumed to contain data about the operation mode.
+ * which is assumed to contain at least data about the api version used.
  */
 class ModbusMsgWrapper
 {
