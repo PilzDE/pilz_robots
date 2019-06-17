@@ -37,7 +37,7 @@ public:
 
 protected:
   void init();
-  virtual void updateOperationMode(int8_t operation_mode);
+  void updateOperationMode(int8_t operation_mode);
   bool getOperationMode(GetOperationMode::Request&, GetOperationMode::Response& response);
 
 private:
