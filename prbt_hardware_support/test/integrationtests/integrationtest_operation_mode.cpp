@@ -34,8 +34,6 @@
 #include <prbt_hardware_support/OperationModes.h>
 #include <prbt_hardware_support/ros_test_helper.h>
 
-#include <pilz_testutils/async_test.h>
-
 namespace prbt_hardware_support
 {
 
@@ -63,10 +61,8 @@ static void initalizeAndRun(T& obj, const char *ip, unsigned int port)
 /**
  * @brief OperationModeIntegrationTest checks if the chain
  * ModbusServerMock -> ModbusReadClient -> ModbusAdapterOperationMode functions properly
- *
- * @note the test is derived from testing::AsyncTest which allows the asynchronous processes to re-sync
  */
-class OperationModeIntegrationTest : public testing::Test, public testing::AsyncTest
+class OperationModeIntegrationTest : public testing::Test
 {
 protected:
   ros::NodeHandle nh_;
