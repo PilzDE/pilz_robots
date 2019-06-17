@@ -86,7 +86,7 @@ inline ModbusMsgWrapper::ModbusMsgWrapper(const ModbusMsgInStampedConstPtr& modb
   msg_(modbus_msg_raw),
   api_spec_(api_spec)
 {
-  if (isDisconnect()) // TODO  @agu find a better way
+  if (isDisconnect())
   {
     // A disconnect message does not have to fullfill any requirements
     return;
