@@ -75,14 +75,17 @@ protected:
   bool hasVersion() const;
 
 protected:
-  ModbusMsgInStampedConstPtr msg_;
   const ModbusApiSpec api_spec_;
+
+private:
+  const ModbusMsgInStampedConstPtr msg_;
+
 };
 
 inline ModbusMsgWrapper::ModbusMsgWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
                                           const ModbusApiSpec& api_spec):
-  msg_(modbus_msg_raw),
-  api_spec_(api_spec)
+  api_spec_(api_spec),
+  msg_(modbus_msg_raw)
 {
   if (isDisconnect())
   {
