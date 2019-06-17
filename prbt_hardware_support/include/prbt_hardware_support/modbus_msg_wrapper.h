@@ -40,6 +40,8 @@ public:
    */
   ModbusMsgWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw, const ModbusApiSpec& api_spec);
 
+  virtual ~ModbusMsgWrapper() = default;
+
   /**
    * @return Get the API version defined in the Modbus message.
    */
