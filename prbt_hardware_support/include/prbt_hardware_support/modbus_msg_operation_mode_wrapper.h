@@ -52,10 +52,12 @@ private:
    * @return true if a operation mode is defined, false otherwise.
    */
   bool hasOperationMode() const;
+
+  static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {2};
 };
 
 inline ModbusMsgOperationModeWrapper::ModbusMsgOperationModeWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
-                                                            const ModbusApiSpec& api_spec):
+                                                                    const ModbusApiSpec& api_spec):
   ModbusMsgWrapper(modbus_msg_raw, api_spec)
 {
   if(isDisconnect())
@@ -67,6 +69,11 @@ inline ModbusMsgOperationModeWrapper::ModbusMsgOperationModeWrapper(const Modbus
   if(!hasVersion())
   {
     throw ModbusMsgOperationModeWrapperException("Received message does not contain a version.");
+  }
+
+  if(getVersion() != MODBUS_API_VERSION_REQUIRED)
+  {
+    throw ModbusMsgOperationModeWrapperException("Received message does not have expected Version");
   }
 
   if(!hasOperationMode())

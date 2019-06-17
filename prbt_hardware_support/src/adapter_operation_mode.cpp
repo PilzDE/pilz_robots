@@ -36,7 +36,7 @@ void AdapterOperationMode::init()
 
 void AdapterOperationMode::updateOperationMode(int8_t mode)
 {
-  ROS_INFO_STREAM("Mode switched: " << current_operation_mode_ << " -> " << mode);
+  ROS_ERROR_STREAM("Mode switched: " << (int)current_operation_mode_ << " -> " << (int)mode);
   current_operation_mode_ = mode;
 
   // when the first data is received, the node is initialized (i.e. the service advertised)
@@ -48,7 +48,7 @@ void AdapterOperationMode::updateOperationMode(int8_t mode)
 }
 
 bool AdapterOperationMode::getOperationMode(GetOperationMode::Request&,
-                                    GetOperationMode::Response& res)
+                                            GetOperationMode::Response& res)
 {
   res.mode.value = current_operation_mode_;
   return true;

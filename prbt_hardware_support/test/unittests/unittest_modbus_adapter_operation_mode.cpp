@@ -188,37 +188,51 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusUnexpectedOperationMode)
 {
   std::vector<uint16_t> holding_register;
       modbus_topic_pub_.publish(createDefaultOpModeModbusMsg(
-      0,
+      1234, /* stupid value */
       MODBUS_API_VERSION_REQUIRED,
       test_api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE),
       test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION))
-      );
+  );
 
-  ASSERT_TRUE(waitForServiceCallResult(false));
+  // Wait for init
+  ASSERT_TRUE(ros::service::waitForService(SERVICE_NAME_OPERATION_MODE, ros::Duration(3))) << "Service does not appear";
+  ASSERT_TRUE(waitForOperationMode(OperationModes::UNKNOWN));
 }
 
 /**
  * Tests the handling of an incoming modbus message with incorrect api version.
  *
  * Test Sequence:
- *  1. Publish modbus message with incorrect api version.
+ *  1. Publish modbus message with operation mode T1 and correct version.
+ *  2. Publish modbus message with operation mode T2 and incorrect version.
  *
  * Expected Results:
- *  1. The service call is not successful.
+ *  1. The version is T1
+ *  2. The version is still T1
  */
 TEST_F(ModbusAdapterOperationModeTest, testModbusIncorrectApiVersion)
 {
-  std::vector<uint16_t> holding_register;
-
-  modbus_topic_pub_.publish(
-    createDefaultOpModeModbusMsg(
-      OPERATION_MODES.at(0),
-      MODBUS_API_VERSION_REQUIRED,
-      test_api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE),
-      0 /* incorrect version */)
+  // Step 1
+  modbus_topic_pub_.publish(createDefaultOpModeModbusMsg(
+    OperationModes::T1,
+    MODBUS_API_VERSION_REQUIRED,
+    test_api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE),
+    test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION))
   );
 
-  ASSERT_TRUE(waitForServiceCallResult(false));
+  ASSERT_TRUE(ros::service::waitForService(SERVICE_NAME_OPERATION_MODE, ros::Duration(3))) << "Service does not appear";
+  ASSERT_TRUE(waitForOperationMode(OperationModes::T1));
+
+  // Step 2
+  modbus_topic_pub_.publish(
+    createDefaultOpModeModbusMsg(
+      OperationModes::T2,
+      0 /* wrong version */,
+      test_api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE),
+      test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION))
+  );
+
+  ASSERT_TRUE(waitForOperationMode(OperationModes::T1));
 }
 
 /**
