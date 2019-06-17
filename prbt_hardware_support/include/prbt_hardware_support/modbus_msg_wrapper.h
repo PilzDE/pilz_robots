@@ -45,7 +45,7 @@ public:
   /**
    * @return Get the API version defined in the Modbus message.
    */
-  virtual unsigned int getVersion() const;
+  unsigned int getVersion() const;
 
   /**
    * @brief Check if the Modbus message informs about a disconnect
@@ -53,7 +53,7 @@ public:
    *
    * @return true if the message informs about a disconnect, otherwise false.
    */
-  virtual bool isDisconnect() const;
+  bool isDisconnect() const;
 
 protected:
 
@@ -62,17 +62,17 @@ protected:
    *
    * @returns true if the message has the register defined, otherwise false.
    */
-  virtual bool hasRegister(uint32_t reg) const;
+  bool hasRegister(uint32_t reg) const;
 
   /**
    * @returns the content of the holding register.
    */
-  virtual uint16_t getRegister(uint32_t reg) const;
+  uint16_t getRegister(uint32_t reg) const;
 
   /**
    * @brief Check if the modbus_msg contains the API version.
    */
-  virtual bool hasVersion() const;
+  bool hasVersion() const;
 
 protected:
   ModbusMsgInStampedConstPtr msg_;
