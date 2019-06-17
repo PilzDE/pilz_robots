@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Pilz GmbH & Co. KG
+ * Copyright (c) 2019 Pilz GmbH & Co. KG
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -17,7 +17,6 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include <memory>
 #include <string>
 
 #include <prbt_hardware_support/modbus_api_spec.h>
