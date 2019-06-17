@@ -30,6 +30,7 @@
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <prbt_hardware_support/update_filter.h>
 #include <prbt_hardware_support/modbus_msg_operation_mode_wrapper.h>
+#include <prbt_hardware_support/modbus_api_spec.h>
 
 namespace prbt_hardware_support
 {
