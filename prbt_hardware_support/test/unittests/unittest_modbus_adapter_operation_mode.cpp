@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Pilz GmbH & Co. KG
+ * Copyright (c) 2019 Pilz GmbH & Co. KG
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -18,16 +18,11 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <algorithm>
-#include <functional>
-
-#include <std_msgs/Bool.h>
 
 #include <prbt_hardware_support/modbus_adapter_operation_mode.h>
 #include <prbt_hardware_support/modbus_topic_definitions.h>
 #include <prbt_hardware_support/modbus_msg_in_utils.h>
 #include <prbt_hardware_support/OperationModes.h>
-
-#include <pilz_testutils/async_test.h>
 
 namespace prbt_hardware_support
 {
@@ -48,11 +43,10 @@ static const std::vector<unsigned int> OPERATION_MODES{1, 2, 3};
  * Publish messages on the modbus topic and call the operation_mode service
  * in order to check if the expectations are met.
  */
-class ModbusAdapterOperationModeTest : public testing::Test, public testing::AsyncTest
+class ModbusAdapterOperationModeTest : public testing::Test
 {
 public:
   ModbusAdapterOperationModeTest();
-  ~ModbusAdapterOperationModeTest();
 
   /**
    * @brief Wait for a specific change in operation mode to take effect.
@@ -76,10 +70,6 @@ ModbusAdapterOperationModeTest::ModbusAdapterOperationModeTest()
   adapter_operation_mode_.reset(new ModbusAdapterOperationMode(nh_, test_api_spec));
   modbus_topic_pub_ = nh_.advertise<ModbusMsgInStamped>(TOPIC_MODBUS_READ, DEFAULT_QUEUE_SIZE_MODBUS);
   operation_mode_client_ = nh_.serviceClient<prbt_hardware_support::GetOperationMode>(SERVICE_NAME_OPERATION_MODE);
-}
-
-ModbusAdapterOperationModeTest::~ModbusAdapterOperationModeTest()
-{
 }
 
 ::testing::AssertionResult ModbusAdapterOperationModeTest::waitForOperationMode(unsigned int op_mode, double timeout)
