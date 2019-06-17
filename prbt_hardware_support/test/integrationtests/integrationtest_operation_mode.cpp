@@ -99,8 +99,8 @@ protected:
     sleep(1); // This then may take {retries*1}seconds.
   }
   return ::testing::AssertionFailure() << "Did not get expected operation mode:"
-                                       << "Actual: " << (int)srv.response.mode.value
-                                       << " Expected: " << (int)expectation;
+                                       << "Actual: " << static_cast<int>(srv.response.mode.value)
+                                       << " Expected: " << static_cast<int>(expectation);
 }
 
 /**
