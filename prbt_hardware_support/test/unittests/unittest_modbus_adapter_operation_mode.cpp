@@ -25,6 +25,7 @@
 #include <prbt_hardware_support/modbus_adapter_operation_mode.h>
 #include <prbt_hardware_support/modbus_topic_definitions.h>
 #include <prbt_hardware_support/modbus_msg_in_utils.h>
+#include <prbt_hardware_support/OperationModes.h>
 
 #include <pilz_testutils/async_test.h>
 
@@ -154,13 +155,24 @@ TEST_F(ModbusAdapterOperationModeTest, testOperationModeChange)
  */
 TEST_F(ModbusAdapterOperationModeTest, testDisconnect)
 {
+  modbus_topic_pub_.publish(createDefaultOpModeModbusMsg(
+    OperationModes::T1,
+    MODBUS_API_VERSION_REQUIRED,
+    test_api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE),
+    test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION))
+  );
+
+  ASSERT_TRUE(ros::service::waitForService(SERVICE_NAME_OPERATION_MODE, ros::Duration(3))) << "Service does not appear";
+  ASSERT_TRUE(waitForOperationMode(OperationModes::T1));
+
+
   uint32_t offset{0};
   std::vector<uint16_t> holding_register;
   ModbusMsgInStampedPtr msg{createDefaultModbusMsgIn(offset, holding_register)};
   msg->disconnect.data = true;
   modbus_topic_pub_.publish(msg);
 
-  ASSERT_TRUE(waitForServiceCallResult(false));
+  ASSERT_TRUE(waitForOperationMode(OperationModes::UNKNOWN));
 }
 
 /**

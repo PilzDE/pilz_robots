@@ -58,6 +58,12 @@ inline ModbusMsgOperationModeWrapper::ModbusMsgOperationModeWrapper(const Modbus
                                                             const ModbusApiSpec& api_spec):
   ModbusMsgWrapper(modbus_msg_raw, api_spec)
 {
+  if(isDisconnect())
+  {
+    return;
+  }
+
+
   if(!hasVersion())
   {
     throw ModbusMsgOperationModeWrapperException("Received message does not contain a version.");
@@ -76,18 +82,23 @@ inline bool ModbusMsgOperationModeWrapper::hasOperationMode() const
 
 inline int8_t ModbusMsgOperationModeWrapper::getOperationMode() const
 {
-    switch(getRegister(api_spec_.getRegisterDefinition(modbus_api_spec::OPERATION_MODE))){
-        case 0:
+  if(isDisconnect()){
+    return OperationModes::UNKNOWN;
+  }
+
+  switch(getRegister(api_spec_.getRegisterDefinition(modbus_api_spec::OPERATION_MODE)))
+  {
+    case 0:
             return OperationModes::UNKNOWN;
-        case 1:
+    case 1:
             return OperationModes::T1;
-        case 2:
+    case 2:
             return OperationModes::T2;
-        case 3:
+    case 3:
             return OperationModes::AUTO;
-        default:
+    default:
             return OperationModes::UNKNOWN;
-    }
+  }
 }
 
 }

@@ -76,16 +76,13 @@ private:
     {
       prbt_hardware_support::ModbusMsgOperationModeWrapper msg(evt.getMessage(), api_spec_);
 
-      if (!msg.isDisconnect())
+      if (msg.getOperationMode() == last_operation_mode_ && !first_call_)
       {
-        if (msg.getOperationMode() == last_operation_mode_ && !first_call_)
-        {
-          return;
-        }
-
-        last_operation_mode_ = msg.getOperationMode();
-        first_call_ = false;
+        return;
       }
+
+      last_operation_mode_ = msg.getOperationMode();
+      first_call_ = false;
     }
     catch (const prbt_hardware_support::ModbusMsgOperationModeWrapperException &ex)
     {
