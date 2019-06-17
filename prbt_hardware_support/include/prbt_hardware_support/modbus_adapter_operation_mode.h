@@ -52,7 +52,7 @@ private:
   //! Passed messages are redirected to the OperationModeFilter.
   std::shared_ptr< message_filters::UpdateFilter<ModbusMsgInStamped> > update_filter_;
 
-  //! Filters messages with a change in brake test state.
+  //! Filters messages with a change in the operation mode.
   //! Passed messages are redirected to modbusInMsgCallback().
   std::shared_ptr< message_filters::OperationModeFilter<ModbusMsgInStamped> > operation_mode_filter_;
 
