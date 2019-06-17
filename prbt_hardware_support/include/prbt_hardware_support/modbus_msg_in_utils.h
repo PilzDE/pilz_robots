@@ -97,7 +97,7 @@ class ModbusMsgInBuilder
     }
 
     ModbusMsgInBuilder& setOperationMode(OperationMode mode){
-      setRegister(api_spec_.getRegisterDefinition(modbus_api_spec::OPERATION_MODE), static_cast<int>(mode));
+      setRegister(api_spec_.getRegisterDefinition(modbus_api_spec::OPERATION_MODE), static_cast<uint16_t>(mode));
       return *this;
     }
 
