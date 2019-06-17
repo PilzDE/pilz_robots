@@ -38,18 +38,18 @@ public:
   ModbusMsgOperationModeWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw, const ModbusApiSpec& api_spec);
 
   /**
-   * @brief Get the brake test required flag from the Modbus message.
+   * @brief Get the operation mode field from the Modbus message.
    *
-   * @return true if the a brake test is required, otherwise false.
+   * @return The current value of the operation mode
    */
   OperationMode getOperationMode() const;
 
 private:
 
   /**
-   * @brief Check if the message contains a brake test required definition.
+   * @brief Check if the message contains a operation mode definition.
    *
-   * @return true if a brake test required flag is defined, false otherwise.
+   * @return true if a operation mode is defined, false otherwise.
    */
   bool hasOperationMode(const ModbusMsgInStampedConstPtr& modbus_msg_raw) const;
 };
