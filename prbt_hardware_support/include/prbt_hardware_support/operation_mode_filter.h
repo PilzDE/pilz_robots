@@ -87,12 +87,12 @@ private:
         first_call_ = false;
       }
     }
-    catch (const prbt_hardware_support::ModbusMsgWrapperException &ex)
+    catch (const prbt_hardware_support::ModbusMsgOperationModeWrapperException &ex)
     {
       ROS_ERROR_STREAM(ex.what() << "\nCan not interpret Modbus message as OperationMode.");
       return;
     }
-    catch (const prbt_hardware_support::ModbusMsgOperationModeWrapperException &ex)
+    catch (const prbt_hardware_support::ModbusMsgWrapperException &ex)
     {
       ROS_ERROR_STREAM(ex.what() << "\nCan not interpret Modbus message as OperationMode.");
       return;

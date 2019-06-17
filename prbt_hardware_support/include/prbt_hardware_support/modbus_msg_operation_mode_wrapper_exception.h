@@ -19,7 +19,7 @@
 #define MODBUS_MSG_OPERATION_MODE_WRAPPER_EXCEPTION_H
 
 #include <string>
-#include <stdexcept>
+#include <prbt_hardware_support/modbus_msg_wrapper_exception.h>
 
 namespace prbt_hardware_support
 {
@@ -28,11 +28,11 @@ namespace prbt_hardware_support
    * of the message does not contain the required information.
    *
    */
-  class ModbusMsgOperationModeWrapperException : public std::runtime_error
+  class ModbusMsgOperationModeWrapperException : public ModbusMsgWrapperException
   {
     public:
       ModbusMsgOperationModeWrapperException( const std::string& what_arg ):
-        std::runtime_error(what_arg)
+        ModbusMsgWrapperException(what_arg)
       {
       }
   };
