@@ -59,9 +59,9 @@ public:
   ::testing::AssertionResult waitForOperationMode(unsigned int op_mode, double timeout = OPERATION_MODE_CHANGE_WAIT_TIME_S);
 
   /**
-   * @brief Wait until operation mode service call fails.
+   * @brief Wait until operation mode service call return the expected value
    */
-  bool waitForServiceCallFailure(double timeout = OPERATION_MODE_CHANGE_WAIT_TIME_S);
+  bool waitForServiceCallResult(bool expectation, double timeout = OPERATION_MODE_CHANGE_WAIT_TIME_S);
 
 protected:
   ros::NodeHandle nh_;
@@ -102,14 +102,14 @@ ModbusAdapterOperationModeTest::~ModbusAdapterOperationModeTest()
   return ::testing::AssertionFailure() << "Reached timeout waiting for expected operation mode.";
 }
 
-bool ModbusAdapterOperationModeTest::waitForServiceCallFailure(double timeout)
+bool ModbusAdapterOperationModeTest::waitForServiceCallResult(bool expectation, double timeout)
 {
   ros::Rate rate(10.0);
   ros::Time start{ros::Time::now()};
   while (ros::Time::now() - start < ros::Duration(timeout))
   {
     prbt_hardware_support::GetOperationMode srv;
-    if (!operation_mode_client_.call(srv))
+    if (expectation == operation_mode_client_.call(srv))
     {
       return true;
     }
@@ -160,7 +160,7 @@ TEST_F(ModbusAdapterOperationModeTest, testDisconnect)
   msg->disconnect.data = true;
   modbus_topic_pub_.publish(msg);
 
-  ASSERT_TRUE(waitForServiceCallFailure());
+  ASSERT_TRUE(waitForServiceCallResult(false));
 }
 
 /**
@@ -182,7 +182,7 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusUnexpectedOperationMode)
       test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION))
       );
 
-  ASSERT_TRUE(waitForServiceCallFailure());
+  ASSERT_TRUE(waitForServiceCallResult(false));
 }
 
 /**
@@ -206,7 +206,7 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusIncorrectApiVersion)
       0 /* incorrect version */)
   );
 
-  ASSERT_TRUE(waitForServiceCallFailure());
+  ASSERT_TRUE(waitForServiceCallResult(false));
 }
 
 /**
@@ -228,7 +228,7 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusWithShortRegisterRange)
                                         max_required_index - 1)};
   modbus_topic_pub_.publish(msg);
 
-  ASSERT_TRUE(waitForServiceCallFailure());
+  ASSERT_TRUE(waitForServiceCallResult(false));
 }
 
 } // namespace prbt_hardware_support
