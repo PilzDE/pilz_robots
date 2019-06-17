@@ -66,7 +66,7 @@ ModbusMsgInStampedPtr createDefaultOpModeModbusMsg(unsigned int operation_mode,
   uint32_t last_index_to_read{std::max(operation_mode_index, version_index)};
   static int msg_time_counter{1};
   std::vector<uint16_t> tab_reg(last_index_to_read - first_index_to_read + 1);
-  tab_reg[version_index - first_index_to_read] = modbus_api_version;
+  tab_reg[version_index - first_index_to_read] = static_cast<uint16_t>(modbus_api_version);
   tab_reg[operation_mode_index - first_index_to_read] = static_cast<uint16_t>(operation_mode);
   ModbusMsgInStampedPtr msg{createDefaultModbusMsgIn(first_index_to_read, tab_reg)};
   msg->header.stamp = ros::Time(msg_time_counter++);
