@@ -25,8 +25,6 @@ namespace prbt_hardware_support
 
 static constexpr int DEFAULT_QUEUE_SIZE_MODBUS {1};
 
-static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {2};
-
 ModbusAdapterOperationMode::ModbusAdapterOperationMode(ros::NodeHandle& nh, const ModbusApiSpec& api_spec)
   : AdapterOperationMode(nh),
     api_spec_(api_spec)
