@@ -126,11 +126,6 @@ bool ModbusAdapterOperationModeTest::waitForServiceCallFailure(double timeout)
  *  1. Publish modbus message informing about changing operation mode. Repeat for all possible operation modes.
  *
  * Expected Results:
-
-  ros::Duration(OPERATION_MODE_CHANGE_WAIT_TIME_S).sleep();
-
-  prbt_hardware_support::GetOperationMode srv;
-  EXPECT_FALSE(operation_mode_client_.call(srv));
  *  1. The service call is successful and returns the operation modes published above.
  */
 TEST_F(ModbusAdapterOperationModeTest, testOperationModeChange)
