@@ -65,12 +65,6 @@ inline ModbusMsgOperationModeWrapper::ModbusMsgOperationModeWrapper(const Modbus
     return;
   }
 
-
-  if(!hasVersion())
-  {
-    throw ModbusMsgOperationModeWrapperException("Received message does not contain a version.");
-  }
-
   if(getVersion() != MODBUS_API_VERSION_REQUIRED)
   {
     throw ModbusMsgOperationModeWrapperException("Received message does not have expected Version");
