@@ -238,7 +238,7 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusWithShortRegisterRange)
 {
   auto max_required_index = std::max(test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION),
                                      test_api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE));
-  auto msg{createDefaultOpModeModbusMsg(OPERATION_MODES.at(0),
+  auto msg{createDefaultOpModeModbusMsg(OperationModes::UNKNOWN,
                                         MODBUS_API_VERSION_REQUIRED,
                                         max_required_index - 1,
                                         max_required_index - 1)};
