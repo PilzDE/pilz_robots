@@ -47,7 +47,7 @@ void AdapterOperationMode::updateOperationMode(OperationMode mode)
   }
 }
 
-bool AdapterOperationMode::getOperationMode(GetOperationMode::Request& req,
+bool AdapterOperationMode::getOperationMode(GetOperationMode::Request&,
                                     GetOperationMode::Response& res)
 {
   res.mode.value = static_cast<int8_t>(current_operation_mode_);
