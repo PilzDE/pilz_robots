@@ -35,24 +35,24 @@ public:
   AdapterOperationMode(ros::NodeHandle& nh);
 
 protected:
-	void init();
+  void init();
   virtual void updateOperationMode(OperationMode operation_mode);
   bool getOperationMode(GetOperationMode::Request&, GetOperationMode::Response& response);
 
 private:
-	//! Is the node initialized?
-	bool initialized_;
+  //! Is the node initialized?
+  bool initialized_;
 
-	//! Store the current state of whether a brake test is required
-	OperationMode current_operation_mode_;
+  //! Store the current state of whether a brake test is required
+  OperationMode current_operation_mode_;
 
-	//! The node handle
-	ros::NodeHandle& nh_;
+  //! The node handle
+  ros::NodeHandle& nh_;
 
-	//! Server serving a service to ask whether a brake test is currently required
-	ros::ServiceServer operation_mode_server_;
+  //! Server serving a service to ask whether a brake test is currently required
+  ros::ServiceServer operation_mode_server_;
 
 };
 
 } // namespace prbt_hardware_support
-#endif // BRAKE_TEST_ANNOUNCER_H
+#endif // ADAPTER_OPERATION_MODE_H
