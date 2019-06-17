@@ -81,6 +81,10 @@ protected:
   ros::NodeHandle nh_priv_{"~"};
 };
 
+/**
+ * @brief Can be used to check that a expected operation mode is eventually return by the service call
+ *
+ */
 ::testing::AssertionResult expectOperationModeServiceCallResult
                                              (ros::ServiceClient& service_client,
                                               OperationModes::_value_type expectation,
