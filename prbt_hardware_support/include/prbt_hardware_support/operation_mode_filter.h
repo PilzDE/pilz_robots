@@ -25,7 +25,7 @@
 #include <prbt_hardware_support/modbus_msg_operation_mode_wrapper.h>
 #include <prbt_hardware_support/modbus_msg_operation_mode_wrapper_exception.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
-#include <prbt_hardware_support/operation_modes.h>
+#include <prbt_hardware_support/OperationModes.h>
 
 namespace message_filters
 {
@@ -103,7 +103,7 @@ private:
 
   Connection incoming_connection_;
 
-  prbt_hardware_support::OperationMode last_operation_mode_{prbt_hardware_support::OperationMode::UNKNOWN};
+  int8_t last_operation_mode_{prbt_hardware_support::OperationModes::UNKNOWN};
   bool first_call_ = true;
 
   //! Currently valid api_spec (defines modbus register semantic)

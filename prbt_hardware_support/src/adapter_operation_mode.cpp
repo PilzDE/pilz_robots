@@ -34,7 +34,7 @@ void AdapterOperationMode::init()
                                                 this);
 }
 
-void AdapterOperationMode::updateOperationMode(OperationMode mode)
+void AdapterOperationMode::updateOperationMode(int8_t mode)
 {
   ROS_INFO_STREAM("Mode switched: " << current_operation_mode_ << " -> " << mode);
   current_operation_mode_ = mode;
@@ -50,7 +50,7 @@ void AdapterOperationMode::updateOperationMode(OperationMode mode)
 bool AdapterOperationMode::getOperationMode(GetOperationMode::Request&,
                                     GetOperationMode::Response& res)
 {
-  res.mode.value = static_cast<int8_t>(current_operation_mode_);
+  res.mode.value = current_operation_mode_;
   return true;
 }
 

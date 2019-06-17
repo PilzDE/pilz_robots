@@ -21,7 +21,7 @@
 #include <ros/ros.h>
 #include <prbt_hardware_support/IsBrakeTestRequired.h>
 #include <prbt_hardware_support/GetOperationMode.h>
-#include <prbt_hardware_support/operation_modes.h>
+#include <prbt_hardware_support/OperationModes.h>
 
 namespace prbt_hardware_support
 {
@@ -37,15 +37,15 @@ public:
 
 protected:
   void init();
-  virtual void updateOperationMode(OperationMode operation_mode);
+  virtual void updateOperationMode(int8_t operation_mode);
   bool getOperationMode(GetOperationMode::Request&, GetOperationMode::Response& response);
 
 private:
   //! Is the node initialized?
   bool initialized_;
 
-  //! Store the current state of whether a brake test is required
-  OperationMode current_operation_mode_;
+  //! Store the current operation mode according to OperationModes.msg
+  int8_t current_operation_mode_;
 
   //! The node handle
   ros::NodeHandle& nh_;

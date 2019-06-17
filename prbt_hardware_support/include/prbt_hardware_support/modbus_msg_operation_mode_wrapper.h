@@ -18,10 +18,10 @@
 #define MODBUS_MSG_OPERATION_MODE_WRAPPER_H
 
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
+#include <prbt_hardware_support/OperationModes.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/modbus_msg_wrapper.h>
 #include <prbt_hardware_support/modbus_msg_operation_mode_wrapper_exception.h>
-#include <prbt_hardware_support/operation_modes.h>
 
 namespace prbt_hardware_support
 {
@@ -40,9 +40,9 @@ public:
   /**
    * @brief Get the operation mode field from the Modbus message.
    *
-   * @return The current value of the operation mode
+   * @return The current operation mode according to OperationModes.msg
    */
-  OperationMode getOperationMode() const;
+  int8_t getOperationMode() const;
 
 private:
 
@@ -74,19 +74,19 @@ inline bool ModbusMsgOperationModeWrapper::hasOperationMode() const
   return hasRegister(api_spec_.getRegisterDefinition(modbus_api_spec::OPERATION_MODE));
 }
 
-inline OperationMode ModbusMsgOperationModeWrapper::getOperationMode() const
+inline int8_t ModbusMsgOperationModeWrapper::getOperationMode() const
 {
     switch(getRegister(api_spec_.getRegisterDefinition(modbus_api_spec::OPERATION_MODE))){
         case 0:
-            return OperationMode::UNKNOWN;
+            return OperationModes::UNKNOWN;
         case 1:
-            return OperationMode::T1;
+            return OperationModes::T1;
         case 2:
-            return OperationMode::T2;
+            return OperationModes::T2;
         case 3:
-            return OperationMode::AUTO;
+            return OperationModes::AUTO;
         default:
-            return OperationMode::UNKNOWN;
+            return OperationModes::UNKNOWN;
     }
 }
 

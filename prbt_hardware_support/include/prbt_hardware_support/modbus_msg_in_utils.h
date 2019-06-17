@@ -22,7 +22,7 @@
 
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
-#include <prbt_hardware_support/operation_modes.h>
+#include <prbt_hardware_support/OperationModes.h>
 
 namespace prbt_hardware_support
 {
@@ -96,8 +96,8 @@ class ModbusMsgInBuilder
       return *this;
     }
 
-    ModbusMsgInBuilder& setOperationMode(OperationMode mode){
-      setRegister(api_spec_.getRegisterDefinition(modbus_api_spec::OPERATION_MODE), static_cast<uint16_t>(mode));
+    ModbusMsgInBuilder& setOperationMode(uint16_t mode){
+      setRegister(api_spec_.getRegisterDefinition(modbus_api_spec::OPERATION_MODE), mode);
       return *this;
     }
 

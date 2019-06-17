@@ -27,7 +27,7 @@
 #include <prbt_hardware_support/operation_mode_filter.h>
 #include <prbt_hardware_support/modbus_msg_in_utils.h>
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
-#include <prbt_hardware_support/operation_modes.h>
+#include <prbt_hardware_support/OperationModes.h>
 
 static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {2};
 
@@ -99,7 +99,7 @@ TEST_F(OperationModeFilterTest, passOperationModeMsg)
     // Construct valid message
     ModbusMsgInBuilder builder(test_api_spec);
     builder.setApiVersion(MODBUS_API_VERSION_REQUIRED)
-           .setOperationMode(OperationMode::T1);
+           .setOperationMode(OperationModes::T1);
 
     first_filter.signalMessage(builder.build());
 }
@@ -121,13 +121,13 @@ TEST_F(OperationModeFilterTest, passOnlyChange)
     builder.setApiVersion(1);
 
     EXPECT_CALL(*this, modbusInMsgCallback(_)).Times(1);
-    first_filter.signalMessage(builder.setOperationMode(OperationMode::T1).build());
+    first_filter.signalMessage(builder.setOperationMode(OperationModes::T1).build());
 
     EXPECT_CALL(*this, modbusInMsgCallback(_)).Times(0);
-    first_filter.signalMessage(builder.setOperationMode(OperationMode::T1).build());
+    first_filter.signalMessage(builder.setOperationMode(OperationModes::T1).build());
 
     EXPECT_CALL(*this, modbusInMsgCallback(_)).Times(1);
-    first_filter.signalMessage(builder.setOperationMode(OperationMode::T2).build());
+    first_filter.signalMessage(builder.setOperationMode(OperationModes::T2).build());
 }
 
 /**
