@@ -29,28 +29,28 @@ AdapterOperationMode::AdapterOperationMode(ros::NodeHandle& nh)
 
 void AdapterOperationMode::init()
 {
-	operation_mode_server_ = nh_.advertiseService(SERVICE_NAME_GET_OPERATION_MODE,
-	                                              &AdapterOperationMode::getOperationMode,
-	                                                      this);
+  operation_mode_server_ = nh_.advertiseService(SERVICE_NAME_GET_OPERATION_MODE,
+                                                &AdapterOperationMode::getOperationMode,
+                                                this);
 }
 
 void AdapterOperationMode::updateOperationMode(OperationMode mode)
 {
-	ROS_INFO_STREAM("Mode switched: " << current_operation_mode_ << " -> " << mode);
-	current_operation_mode_ = mode;
+  ROS_INFO_STREAM("Mode switched: " << current_operation_mode_ << " -> " << mode);
+  current_operation_mode_ = mode;
 
-	// when the first data is received, the node is initialized (i.e. the service advertised)
-	if(!initialized_) {
-		init();
-		initialized_ = true;
-	}
+  // when the first data is received, the node is initialized (i.e. the service advertised)
+  if(!initialized_) {
+    init();
+    initialized_ = true;
+  }
 }
 
 bool AdapterOperationMode::getOperationMode(GetOperationMode::Request& req,
-				                            GetOperationMode::Response& res)
+                                    GetOperationMode::Response& res)
 {
-	res.mode.value = static_cast<int>(current_operation_mode_);
-	return true;
+  res.mode.value = static_cast<int>(current_operation_mode_);
+  return true;
 }
 
 }
