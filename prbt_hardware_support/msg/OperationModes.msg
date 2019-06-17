@@ -16,8 +16,6 @@
 
 int8 value
 
-# values of CANopen object brake_test_status, see
-# https://www.pilz.com/download/open/PRBT_6_Operat_Manual_1004685-EN-02.pdf (p.100)
 int8 T1 = 1
 int8 T2 = 2
 int8 AUTO = 3
