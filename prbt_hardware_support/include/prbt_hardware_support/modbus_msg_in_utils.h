@@ -134,7 +134,8 @@ class ModbusMsgInBuilder
       return msg;
     }
 
-    void setRegister(unsigned int register_n, uint16_t value){
+    inline void setRegister(unsigned int register_n, uint16_t value)
+    {
       register_values_[register_n] = value;
     }
 
