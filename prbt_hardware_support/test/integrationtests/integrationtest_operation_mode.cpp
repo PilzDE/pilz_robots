@@ -18,13 +18,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include <thread>
 #include <memory>
-#include <chrono>
-#include <vector>
-#include <functional>
-#include <condition_variable>
-#include <atomic>
 #include <string>
 
 #include <ros/ros.h>
@@ -116,17 +110,21 @@ protected:
  *
  * Test Sequence:
  *    0. Start Modbus-server in separate thread. Make sure that the nodes are up.
- *    1. Send a brake test required message with the correct API version.
- *    2. Send a brake test required message with the correct API version (change another but irrelevant register entry).
- *    3. Send a brake test not-required message with the correct API version.
- *    4. Terminate ModbusServerMock.
+ *    1. Send message with 0 (unknown) in operation mode register and with the correct API version.
+ *    2. Send message with T1 in operation mode register and with the correct API version.
+ *    3. Send message with T2 in operation mode register and with the correct API version.
+ *    4. Send message with AUTO (unknown) in operation mode register and with the correct API version.
+ *    5. Send message with 99 (unknown) in operation mode register and with the correct API version.
+ *    6. Terminate ModbusServerMock.
  *
  * Expected Results:
  *    0. -
- *    1. A service call is successfull and returns a positive result.
- *    2. A service call is successfull and returns a positive result.
- *    3. A service call is successfull and returns a negative result.
- *    4. -
+ *    1. A service call is successfull and returns unknown operation mode
+ *    2. A service call is successfull and returns T1 operation mode
+ *    3. A service call is successfull and returns T2 operation mode
+ *    4. A service call is successfull and returns AUTO operation mode
+ *    5. A service call is successfull and returns unknown operation mode
+ *    6. -
  */
 TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
 {
@@ -188,7 +186,6 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
   /**********
    * Step 4 *
    **********/
-  ;
   modbus_server.setHoldingRegister(std::vector<uint16_t> {MODBUS_API_VERSION_VALUE, 0, 0, 0, 0, 3},
                                    index_of_first_register_to_read);
 	EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::AUTO, 10));
@@ -201,7 +198,7 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
 	EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::UNKNOWN, 10));
 
   /**********
-   * Step 4 *
+   * Step 6 *
    **********/
   modbus_server.terminate();
   modbus_server_thread.join();
@@ -212,7 +209,7 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
 
 int main(int argc, char *argv[])
 {
-  ros::init(argc, argv, "integrationtest_brake_test_required");
+  ros::init(argc, argv, "integrationtest_operation_mode");
   ros::NodeHandle nh;
 
   testing::InitGoogleTest(&argc, argv);
