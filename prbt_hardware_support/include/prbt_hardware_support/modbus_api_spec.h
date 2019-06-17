@@ -94,17 +94,17 @@ public:
     }
   }
 
-  bool hasRegisterDefinition(const std::string &key) const
+  inline bool hasRegisterDefinition(const std::string &key) const
   {
     return register_mapping_.find(key) != register_mapping_.end();
   }
 
-  void setRegisterDefinition(const std::string &key, unsigned int value)
+  inline void setRegisterDefinition(const std::string &key, unsigned int value)
   {
     register_mapping_[key] = value;
   }
 
-  unsigned int getRegisterDefinition(const std::string &key) const
+  inline unsigned int getRegisterDefinition(const std::string &key) const
   {
     try
     {
