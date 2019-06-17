@@ -27,8 +27,8 @@ namespace modbus_api
 {
   namespace v2
   {
-    static constexpr uint16_t MODBUS_STO_CLEAR_VALUE  {1}; // TODO @agu move into ApiSpec
-    static constexpr uint16_t MODBUS_STO_ACTIVE_VALUE {0}; // TODO @agu move into ApiSpec
+    static constexpr uint16_t MODBUS_STO_CLEAR_VALUE  {1};
+    static constexpr uint16_t MODBUS_STO_ACTIVE_VALUE {0};
   }
 }
 
