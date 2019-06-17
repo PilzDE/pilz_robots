@@ -37,26 +37,8 @@
 namespace prbt_hardware_support
 {
 
-using ::testing::_;
-using ::testing::InSequence;
-using ::testing::Invoke;
-using ::testing::InvokeWithoutArgs;
-
 static constexpr uint16_t MODBUS_API_VERSION_VALUE {2};
 static const std::string SERVICE_OPERATION_MODE = "/prbt/get_operation_mode";
-
-template<class T>
-static void initalizeAndRun(T& obj, const char *ip, unsigned int port)
-{
-  if ( !obj.init(ip, port) )
-  {
-    ROS_ERROR("Initialization failed.");
-    return;
-  }
-  ROS_INFO_STREAM("Starting Server on " << ip << ":" << port);
-
-  obj.run();
-}
 
 /**
  * @brief OperationModeIntegrationTest checks if the chain
@@ -153,7 +135,7 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
    * Step 1 *
    **********/
   modbus_server.setHoldingRegister(std::vector<uint16_t> {MODBUS_API_VERSION_VALUE, 0, 0, 0, 0, 0},
-                                   index_of_first_register_to_read);
+                                   static_cast<unsigned int>(index_of_first_register_to_read));
 
 
   ros::ServiceClient operation_mode_client =
@@ -167,28 +149,28 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
    * Step 2 *
    **********/
   modbus_server.setHoldingRegister(std::vector<uint16_t>{MODBUS_API_VERSION_VALUE, 0, 0, 0, 0, 1},
-                                   index_of_first_register_to_read);
+                                   static_cast<unsigned int>(index_of_first_register_to_read));
 	EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::T1, 10));
 
   /**********
    * Step 3 *
    **********/
   modbus_server.setHoldingRegister(std::vector<uint16_t>{MODBUS_API_VERSION_VALUE, 0, 0, 0, 0, 2},
-                                   index_of_first_register_to_read);
+                                   static_cast<unsigned int>(index_of_first_register_to_read));
 	EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::T2, 10));
 
   /**********
    * Step 4 *
    **********/
   modbus_server.setHoldingRegister(std::vector<uint16_t> {MODBUS_API_VERSION_VALUE, 0, 0, 0, 0, 3},
-                                   index_of_first_register_to_read);
+                                   static_cast<unsigned int>(index_of_first_register_to_read));
 	EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::AUTO, 10));
 
   /**********
    * Step 5 *
    **********/
   modbus_server.setHoldingRegister(std::vector<uint16_t>{MODBUS_API_VERSION_VALUE, 0, 0, 0, 0, 99},
-                                   index_of_first_register_to_read);
+                                   static_cast<unsigned int>(index_of_first_register_to_read));
 	EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::UNKNOWN, 10));
 
   /**********
