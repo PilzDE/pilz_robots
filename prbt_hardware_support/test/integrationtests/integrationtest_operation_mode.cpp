@@ -22,10 +22,6 @@
 #include <string>
 
 #include <ros/ros.h>
-#include <std_srvs/SetBool.h>
-#include <std_srvs/Trigger.h>
-#include <std_msgs/Bool.h>
-
 #include <modbus/modbus.h>
 
 #include <prbt_hardware_support/pilz_modbus_server_mock.h>
