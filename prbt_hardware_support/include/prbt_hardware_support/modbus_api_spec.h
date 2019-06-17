@@ -121,7 +121,7 @@ private:
 };
 
 //! Simple typedef for class like usage
-typedef ModbusApiSpecTemplated<ros::NodeHandle> ModbusApiSpec;
+typedef ModbusApiSpecTemplated<> ModbusApiSpec;
 
 } // namespace prbt_hardware_support
 #endif // MODBUS_API_SPEC_H
