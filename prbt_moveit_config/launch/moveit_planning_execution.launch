@@ -35,6 +35,7 @@ limitations under the License.
 
   <!-- Set STO handler -->
   <arg name="sto" default="pnoz"/>
+  <arg name="api_spec_file" default="$(find prbt_hardware_support)/config/modbus_api_spec_$(arg sto).yaml" />
  
   <!-- Load robot description to parameter server. Can be set to false to let someone else load the model -->
   <arg name="load_robot_description" default="true" />
@@ -73,6 +74,7 @@ limitations under the License.
       <arg name="gripper" value="$(arg gripper)" />
       <arg name="load_robot_description" value="false" />
       <arg name="sto" value="$(arg sto)" />
+      <arg name="api_spec_file" value="$(arg api_spec_file)" />
     </include>
   </group>
 
