@@ -16,6 +16,9 @@
   <!-- Set braketest usage -->
   <arg name="has_braketest_support" default="false"/>
 
+  <!-- Set operation mode support -->
+  <arg name="has_operation_mode_support" default="false"/>
+
   <!-- set the name of the config file for canopen_motor_node. If you want to change settings, copy the yaml
        file into your package and set canopen_config to your new config file path -->
   <arg name="canopen_config" default="$(find prbt_support)/config/manipulator_driver.yaml" />
@@ -67,6 +70,8 @@
     </include>
     <include file="$(find prbt_hardware_support)/launch/sto_modbus_adapter_node.launch" />
     <include if="$(arg has_braketest_support)" file="$(find prbt_hardware_support)/launch/brake_test.launch" />
+
+    <include if="$(arg has_operation_mode_support)" file="$(find prbt_hardware_support)/launch/operation_mode_adapter.launch" />
   </group>
 
   <group if="$(eval sto == 'none')" >

@@ -39,6 +39,9 @@ limitations under the License.
 
   <!-- Set braketest usage -->
   <arg name="has_braketest_support" default="false"/>
+
+  <!-- Set operation mode support -->
+  <arg name="has_operation_mode_support" default="false"/>
  
   <!-- Load robot description to parameter server. Can be set to false to let someone else load the model -->
   <arg name="load_robot_description" default="true" />
@@ -79,6 +82,7 @@ limitations under the License.
       <arg name="sto" value="$(arg sto)" />
       <arg name="api_spec_file" value="$(arg api_spec_file)" />
       <arg name="has_braketest_support" value="$(arg has_braketest_support)" />
+      <arg name="has_operation_mode_support" value="$(arg has_operation_mode_support)" />
     </include>
   </group>
 
