@@ -51,7 +51,7 @@ public:
   /**
    * @brief Constructor.
    * @param nh The node handle.
-   * @param index_of_first_register_to_read Offset of the data in the modbus registers.
+   * @param api_spec The api_spec to get the register values from.
    */
   PilzStoModbusAdapterNode(ros::NodeHandle& nh, const ModbusApiSpec& api_spec);
   ~PilzStoModbusAdapterNode();
@@ -64,7 +64,7 @@ public:
 private:
   /**
    * @brief Extracts from Modbus message if STO is set or not and publishes information on the /stop1 topic.
-   * @param modbus_msg
+   * @param msg_raw
    */
   void modbusInMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw);
 
@@ -77,7 +77,7 @@ private:
 
   /**
    * @brief Extracts from Modbus message if STO is set or not and publishes information on the /stop1 topic.
-   * @param modbus_msg
+   * @param msg
    */
   void internalMsgCallback(const ModbusMsgStoWrapper& msg);
 

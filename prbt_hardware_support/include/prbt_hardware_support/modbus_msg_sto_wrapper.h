@@ -50,7 +50,6 @@ private:
   /**
    * @brief Check if the message contains a STO definition
    *
-   * @param modbus_msg_raw the message to be checked
    * @return true if a STO is defined
    * @return false if there is no STO defined in the message
    */
