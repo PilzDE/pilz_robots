@@ -128,6 +128,7 @@ install(TARGETS
   canopen_braketest_adapter_node
   modbus_adapter_brake_test_node
   brake_test_executor_node
+  modbus_adapter_operation_mode_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
