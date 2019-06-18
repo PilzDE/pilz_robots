@@ -35,7 +35,8 @@ static const std::string SERVICE_NAME_IS_BRAKE_TEST_REQUIRED = "/prbt/brake_test
 static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{2};
 static constexpr unsigned int DEFAULT_RETRIES{10};
 
-static constexpr ModbusApiSpec test_api_spec(969, 973);
+static const ModbusApiSpec test_api_spec{ {modbus_api_spec::VERSION, 969},
+                                          {modbus_api_spec::BRAKETEST_REQUEST,973} };
 
 /**
  * @brief Test fixture for unit-tests of the ModbusAdapterBrakeTest.
@@ -51,7 +52,7 @@ public:
 
   ModbusMsgInStampedPtr createDefaultBrakeTestModbusMsg(bool brake_test_required,
                                                         unsigned int modbus_api_version = MODBUS_API_VERSION_REQUIRED,
-                                                        uint32_t brake_test_required_index = test_api_spec.braketest_register_);
+                                                        uint32_t brake_test_required_index = test_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
   bool expectBrakeTestRequiredServiceCallResult(ros::ServiceClient& brake_test_required_client,
                                                 bool expectation,
                                                 uint16_t retries = DEFAULT_RETRIES);
@@ -60,7 +61,7 @@ protected:
   ros::NodeHandle nh_;
   std::shared_ptr<ModbusAdapterBrakeTest> adapter_brake_test_;
   ros::Publisher modbus_topic_pub_;
-  ros::ServiceClient brake_test_required_client_;
+  ros::ServiceClient brake_test_required_client_;//(969, 973, 974);
 };
 
 ModbusAdapterBrakeTestTest::ModbusAdapterBrakeTestTest()
@@ -78,7 +79,7 @@ ModbusMsgInStampedPtr ModbusAdapterBrakeTestTest::createDefaultBrakeTestModbusMs
                                                                                     unsigned int modbus_api_version,
                                                                                     uint32_t brake_test_required_index)
 {
-  uint32_t first_index_to_read{test_api_spec.version_register_};
+  uint32_t first_index_to_read{test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION)};
   uint32_t last_index_to_read{brake_test_required_index};
   static int msg_time_counter{1};
   std::vector<uint16_t> tab_reg(last_index_to_read - first_index_to_read + 1);
@@ -214,7 +215,8 @@ TEST_F(ModbusAdapterBrakeTestTest, testModbusWithoutApiVersion)
   ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
                                                        false));
 
-  auto msg{createDefaultBrakeTestModbusMsg(true, test_api_spec.version_register_, test_api_spec.braketest_register_)};
+  auto msg{createDefaultBrakeTestModbusMsg(true, test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION),
+  test_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST))};
   msg->holding_registers.data.clear();
   modbus_topic_pub_.publish(msg);
 
@@ -242,8 +244,8 @@ TEST_F(ModbusAdapterBrakeTestTest, testBrakeTestRequiredRegisterMissing)
                                                        false));
 
   modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(true,
-                                                            test_api_spec.version_register_,
-                                                            test_api_spec.braketest_register_ - 1));
+                                                            test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION),
+                                                            test_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST) - 1));
 
   sleep(1);
   ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,

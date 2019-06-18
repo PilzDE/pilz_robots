@@ -15,30 +15,42 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MODBUS_MSG_STO_WRAPPER_EXCEPTION_H
-#define MODBUS_MSG_STO_WRAPPER_EXCEPTION_H
+#ifndef MODBUS_MSG_WRAPPER_EXCEPTION_H
+#define MODBUS_MSG_WRAPPER_EXCEPTION_H
 
 #include <string>
 #include <stdexcept>
 
-#include <prbt_hardware_support/modbus_msg_wrapper_exception.h>
-
 namespace prbt_hardware_support
 {
   /**
-   * @brief Expection thrown upon construction of ModbusMsgStoWrapper of the message
-   * does not contain the required information.
+   * @brief Expection thrown upon construction of ModbusMsgWrapperBase
+   * of the message does not contain the required information.
    *
    */
-  class ModbusMsgStoWrapperException : public ModbusMsgWrapperException
+  class ModbusMsgWrapperException : public std::runtime_error
   {
     public:
-      ModbusMsgStoWrapperException( const std::string& what_arg ):
-        ModbusMsgWrapperException(what_arg)
+      ModbusMsgWrapperException( const std::string& what_arg ):
+        std::runtime_error(what_arg)
+      {
+      }
+  };
+
+    /**
+   * @brief Expection thrown upon construction of ModbusMsgWrapperBase
+   * of the message does not contain the required information.
+   *
+   */
+  class ModbusMsgWrapperExceptionNoVersion : public ModbusMsgWrapperException
+  {
+    public:
+      ModbusMsgWrapperExceptionNoVersion():
+        ModbusMsgWrapperException("No version given!")
       {
       }
   };
 
 }
 
-#endif // MODBUS_MSG_STO_WRAPPER_EXCEPTION_H
+#endif // MODBUS_MSG_WRAPPER_EXCEPTION_H

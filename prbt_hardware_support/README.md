@@ -10,6 +10,7 @@ modbus connection to the safety controller (PNOZmulti or PSS4000). The safety co
 stop signal via Modbus immediately so that ros_control has a short time interval to stop the drives via a brake ramp.
 The TCP could for example brake on the current trajectory. After execution of the brake ramp, the drivers are halted. Even if ROS would fail, the safety controller turns off the motors via STO (that would be a Stop 0 then).
 
+
 ## Possible error cases and their handling
 
 | Error cases                                             | Handling                                                |
@@ -20,6 +21,16 @@ The TCP could for example brake on the current trajectory. After execution of th
 | System overload (messages don't arrive in time)         | In case a Stop 1 message does not arrive in time, the safety controller will automatically perform a hard stop. In case a Stop 1-release message does not get through, brakes will remain closed. |
 | STO Modbus adapter cannot connect to stop services    | ROS system will not start.                              |
 | STO Modbus adapter cannot connect to recover services | Node does start and robot can be moved until a stop is triggered. Afterwards the brakes will remain closed. |
+
+# Operation Modes
+The robot system can be controlled in various modes.
+
+These modes are:
+  - T1: Speed reduced to 250 mm/s (each robot-frame), enabling switch must be pressed
+  - T2: The robot moves at full speed but still the enabling switch must be pressed
+  - AUTOMATIC: The robot moves at full speed and follows a predefined program/process. No enabling switch is needed but safety has to be ensured by safety peripherie (fences, light curtains, ...).
+
+See DIN EN ISO 10218-1 for more details or contact us: ros@pilz.de
 
 # Architecture
 ![Component diagram](doc/architecture_overview.png)
@@ -64,3 +75,8 @@ The ``ModbusAdapterBrakeTestNode`` is noticed via the topic `/pilz_modbus_node/m
 ## BraketestExecutorNode
 The ``BraketestExecutorNode`` offers the `/execute_braketest` service which, in interaction with the ``CanOpenBraketestAdapter``,
 executes a braketest on each drive of the manipulator.
+
+## ModbusAdapterOperationModeNode
+The ``ModbusAdapterOperationModeNode`` offers the `/get_operation_mode` service for accessing the active operation mode.
+
+Use `rosmsg show prbt_hardware_support/OperationModes` to see the definition of each value.

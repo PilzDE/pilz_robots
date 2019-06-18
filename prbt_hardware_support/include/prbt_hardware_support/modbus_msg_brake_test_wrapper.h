@@ -19,6 +19,7 @@
 
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
+#include <prbt_hardware_support/modbus_msg_wrapper.h>
 #include <prbt_hardware_support/modbus_msg_brake_test_wrapper_exception.h>
 
 namespace prbt_hardware_support
@@ -30,15 +31,10 @@ namespace prbt_hardware_support
  * Allows to easy access to the content behind a raw modbus message
  * which is assumed to contain data about brake test.
  */
-class ModbusMsgBrakeTestWrapper
+class ModbusMsgBrakeTestWrapper : public ModbusMsgWrapper
 {
 public:
   ModbusMsgBrakeTestWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw, const ModbusApiSpec& api_spec);
-
-  /**
-   * @return Get the API version defined in the Modbus message.
-   */
-  unsigned int getVersion() const;
 
   /**
    * @brief Get the brake test required flag from the Modbus message.
@@ -47,106 +43,35 @@ public:
    */
   bool isBrakeTestRequired() const;
 
-  /**
-   * @brief Check if the Modbus message informs about a disconnect
-   * from the server.
-   *
-   * @return true if the message informs about a disconnect, otherwise false.
-   */
-  bool isDisconnect() const;
-
 private:
-
-  /**
-   * @brief Check if a certain holding register is define in the Modbus message.
-   *
-   * @returns true if the message has the register defined, otherwise false.
-   */
-  bool hasRegister(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
-                          uint32_t reg) const;
-
-  /**
-   * @returns the content of the holding register.
-   */
-  uint16_t getRegister(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
-                              uint32_t reg) const;
 
   /**
    * @brief Check if the message contains a brake test required definition.
    *
    * @return true if a brake test required flag is defined, false otherwise.
    */
-  bool hasBrakeTestRequiredFlag(const ModbusMsgInStampedConstPtr& modbus_msg_raw) const;
-
-  /**
-   * @brief Check if the modbus_msg contains the API version.
-   */
-  bool hasVersion(const ModbusMsgInStampedConstPtr& modbus_msg_raw) const;
-
-private:
-  ModbusMsgInStampedConstPtr msg_;
-  const ModbusApiSpec api_spec_;
+  bool hasBrakeTestRequiredFlag() const;
 };
 
 inline ModbusMsgBrakeTestWrapper::ModbusMsgBrakeTestWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
                                                             const ModbusApiSpec& api_spec):
-  msg_(modbus_msg_raw),
-  api_spec_(api_spec)
+ModbusMsgWrapper(modbus_msg_raw, api_spec)
 {
-  if (isDisconnect())
-  {
-    // A disconnect message does not have to fullfill any requirements
-    return;
-  }
-
-  if(!hasVersion(msg_))
-  {
-    throw ModbusMsgBrakeTestWrapperException("Received message does not contain a version.");
-  }
-
-  if(!hasBrakeTestRequiredFlag(msg_))
+  if(!hasBrakeTestRequiredFlag())
   {
     throw ModbusMsgBrakeTestWrapperException("Received message does not contain a brake test status.");
   }
 }
 
-inline bool ModbusMsgBrakeTestWrapper::hasRegister(const ModbusMsgInStampedConstPtr& modbus_msg_raw, uint32_t reg) const
+inline bool ModbusMsgBrakeTestWrapper::hasBrakeTestRequiredFlag() const
 {
-  uint32_t relative_idx = reg - modbus_msg_raw->holding_registers.layout.data_offset;
-
-  return modbus_msg_raw->holding_registers.data.size() > relative_idx;
-}
-
-inline uint16_t ModbusMsgBrakeTestWrapper::getRegister(const ModbusMsgInStampedConstPtr& modbus_msg_raw, uint32_t reg) const
-{
-  return modbus_msg_raw->holding_registers.data.at(reg - modbus_msg_raw->holding_registers.layout.data_offset);
-}
-
-inline bool ModbusMsgBrakeTestWrapper::hasVersion(const ModbusMsgInStampedConstPtr& modbus_msg_raw) const
-{
-  return hasRegister(modbus_msg_raw, api_spec_.version_register_);
-}
-
-inline unsigned int ModbusMsgBrakeTestWrapper::getVersion() const
-{
-  return getRegister(msg_, api_spec_.version_register_);
-}
-
-inline bool ModbusMsgBrakeTestWrapper::hasBrakeTestRequiredFlag(const ModbusMsgInStampedConstPtr& modbus_msg_raw) const
-{
-  return hasRegister(modbus_msg_raw, api_spec_.braketest_register_);
+  return hasRegister(api_spec_.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
 }
 
 inline bool ModbusMsgBrakeTestWrapper::isBrakeTestRequired() const
 {
-  return getRegister(msg_, api_spec_.braketest_register_);
+  return getRegister(api_spec_.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
 }
-
-inline bool ModbusMsgBrakeTestWrapper::isDisconnect() const
-{
-  return msg_->disconnect.data;
-}
-
 
 }
 
