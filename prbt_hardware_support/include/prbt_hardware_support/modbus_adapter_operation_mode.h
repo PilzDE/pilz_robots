@@ -54,7 +54,7 @@ private:
 
   //! Filters messages with a change in the operation mode.
   //! Passed messages are redirected to modbusInMsgCallback().
-  std::shared_ptr< message_filters::OperationModeFilter<ModbusMsgInStamped> > operation_mode_filter_;
+  std::shared_ptr< message_filters::OperationModeFilter > operation_mode_filter_;
 
   //! Subscribes to TOPIC_MODBUS_READ and redirects received messages
   //! to the update-filter.

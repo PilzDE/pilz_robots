@@ -31,7 +31,7 @@ ModbusAdapterOperationMode::ModbusAdapterOperationMode(ros::NodeHandle& nh, cons
 {
   modbus_read_sub_ = std::make_shared< message_filters::Subscriber<ModbusMsgInStamped> >(nh, TOPIC_MODBUS_READ, DEFAULT_QUEUE_SIZE_MODBUS);
   update_filter_ = std::make_shared< message_filters::UpdateFilter<ModbusMsgInStamped> >(*modbus_read_sub_);
-  operation_mode_filter_ = std::make_shared< message_filters::OperationModeFilter<ModbusMsgInStamped> >(*update_filter_, api_spec_);
+  operation_mode_filter_ = std::make_shared< message_filters::OperationModeFilter >(*update_filter_, api_spec_);
 	operation_mode_filter_->registerCallback(boost::bind(&ModbusAdapterOperationMode::modbusInMsgCallback, this, _1));
 }
 

@@ -34,7 +34,6 @@ static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {2};
 namespace mf = message_filters;
 using namespace prbt_hardware_support;
 
-template class message_filters::OperationModeFilter<prbt_hardware_support::ModbusMsgInStamped>;
 
 class FilterMock : public message_filters::SimpleFilter<ModbusMsgInStamped>
 {
@@ -76,7 +75,7 @@ TEST_F(OperationModeFilterTest, passOperationModeMsg)
 {
     FilterMock first_filter;
 
-    mf::OperationModeFilter<ModbusMsgInStamped> op_mode_filter(first_filter, test_api_spec);
+    mf::OperationModeFilter op_mode_filter(first_filter, test_api_spec);
 
     op_mode_filter.registerCallback(boost::bind(&OperationModeFilterTest::modbusInMsgCallback, this, _1));
 
@@ -97,7 +96,7 @@ TEST_F(OperationModeFilterTest, passOnlyChange)
 {
     FilterMock first_filter;
 
-    mf::OperationModeFilter<ModbusMsgInStamped> op_mode_filter(first_filter, test_api_spec);
+    mf::OperationModeFilter op_mode_filter(first_filter, test_api_spec);
 
     op_mode_filter.registerCallback(boost::bind(&OperationModeFilterTest::modbusInMsgCallback, this, _1));
 
@@ -122,7 +121,7 @@ TEST_F(OperationModeFilterTest, messageWithOutOperationMode)
 {
     FilterMock first_filter;
 
-    mf::OperationModeFilter<ModbusMsgInStamped> op_mode_filter(first_filter, test_api_spec);
+    mf::OperationModeFilter op_mode_filter(first_filter, test_api_spec);
 
     op_mode_filter.registerCallback(boost::bind(&OperationModeFilterTest::modbusInMsgCallback, this, _1));
 

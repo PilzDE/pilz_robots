@@ -26,6 +26,7 @@
 #include <prbt_hardware_support/modbus_msg_operation_mode_wrapper_exception.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/OperationModes.h>
+#include <prbt_hardware_support/ModbusMsgInStamped.h>
 
 namespace message_filters
 {
@@ -42,12 +43,10 @@ namespace message_filters
  *   filter.registerCallback(&filteredCallback);
  * \endcode
  */
-template <typename M>
-class OperationModeFilter : public SimpleFilter<M>
+class OperationModeFilter : public SimpleFilter<prbt_hardware_support::ModbusMsgInStamped>
 {
 public:
-  typedef boost::shared_ptr<M const> MConstPtr;
-  typedef ros::MessageEvent<M const> EventType;
+  typedef ros::MessageEvent<prbt_hardware_support::ModbusMsgInStamped const> EventType;
 
   /**
    * @brief Construct the filter and connect to the output of another filter
@@ -65,8 +64,8 @@ public:
   void connectInput(F &f)
   {
     incoming_connection_.disconnect();
-    incoming_connection_ = f.registerCallback(typename OperationModeFilter<M>::EventCallback(boost::bind(&OperationModeFilter::cb,
-                                                                                                     this, _1)));
+    incoming_connection_ = f.registerCallback(
+          typename OperationModeFilter::EventCallback(boost::bind(&OperationModeFilter::cb,this, _1)));
   }
 
 private:
