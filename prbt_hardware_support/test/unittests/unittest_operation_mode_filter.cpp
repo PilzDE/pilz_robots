@@ -134,6 +134,26 @@ TEST_F(OperationModeFilterTest, messageWithOutOperationMode)
     first_filter.signalMessage(builder.build());
 }
 
+
+/**
+ * @brief Tests that the filter does not pass messages without a version
+ */
+TEST_F(OperationModeFilterTest, noVersion)
+{
+    FilterMock first_filter;
+
+    mf::OperationModeFilter op_mode_filter(first_filter, test_api_spec);
+
+    op_mode_filter.registerCallback(boost::bind(&OperationModeFilterTest::modbusInMsgCallback, this, _1));
+
+    // Construct valid message
+    ModbusMsgInBuilder builder(test_api_spec);
+    builder.setOperationMode(OperationModes::T1);
+
+    EXPECT_CALL(*this, modbusInMsgCallback(_)).Times(0);
+    first_filter.signalMessage(builder.build());
+}
+
 } // namespace operation_mode_filter_test
 
 int main(int argc, char *argv[])
