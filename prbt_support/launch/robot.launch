@@ -13,6 +13,9 @@
   <arg name="api_spec_file" default="$(find prbt_hardware_support)/config/modbus_api_spec_$(arg sto).yaml" />
   <arg name="sto_modbus_server_ip" default="169.254.60.1" />
 
+  <!-- Set braketest usage -->
+  <arg name="has_braketest_support" default="false"/>
+
   <!-- set the name of the config file for canopen_motor_node. If you want to change settings, copy the yaml
        file into your package and set canopen_config to your new config file path -->
   <arg name="canopen_config" default="$(find prbt_support)/config/manipulator_driver.yaml" />
@@ -63,7 +66,7 @@
       <arg name="modbus_server_ip" value="$(arg sto_modbus_server_ip)" />
     </include>
     <include file="$(find prbt_hardware_support)/launch/sto_modbus_adapter_node.launch" />
-    <include file="$(find prbt_hardware_support)/launch/brake_test.launch" />
+    <include if="$(arg has_braketest_support)" file="$(find prbt_hardware_support)/launch/brake_test.launch" />
   </group>
 
   <group if="$(eval sto == 'none')" >
