@@ -62,20 +62,6 @@ static const ModbusApiSpec test_api_spec{ {modbus_api_spec::VERSION, 696},
                                           {"FakeValue", 511},
                                           {modbus_api_spec::OPERATION_MODE,737} };
 
-
-ModbusMsgInStampedPtr createDefaultBrakeTestModbusMsg(bool brake_test_required)
-{
-  uint32_t first_index_to_read{test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION)};
-  uint32_t last_index_to_read{test_api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE)};
-  static int msg_time_counter{1};
-  std::vector<uint16_t> tab_reg(last_index_to_read - first_index_to_read + 1);
-  tab_reg[0] = 1;
-  tab_reg[last_index_to_read - first_index_to_read] = brake_test_required;
-  ModbusMsgInStampedPtr msg{createDefaultModbusMsgIn(first_index_to_read, tab_reg)};
-  msg->header.stamp = ros::Time(msg_time_counter++);
-  return msg;
-}
-
 class OperationModeFilterTest : public testing::Test
 {
     public:
