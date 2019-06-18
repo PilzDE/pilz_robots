@@ -25,13 +25,8 @@ namespace prbt_hardware_support
 
 namespace modbus_api
 {
-  // Must hold for every version
-  static constexpr uint32_t MODBUS_REGISTER_API {513};
-
   namespace v2
   {
-    static constexpr uint32_t MODBUS_REGISTER_STO {512};
-
     static constexpr uint16_t MODBUS_STO_CLEAR_VALUE  {1};
     static constexpr uint16_t MODBUS_STO_ACTIVE_VALUE {0};
   }

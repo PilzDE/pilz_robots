@@ -15,16 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef BRAKE_TEST_FILTER_H
-#define BRAKE_TEST_FILTER_H
+#ifndef OPERATION_MODE_FILTER_H
+#define OPERATION_MODE_FILTER_H
 
 #include <vector>
 
 #include <message_filters/simple_filter.h>
 
-#include <prbt_hardware_support/modbus_msg_brake_test_wrapper.h>
-#include <prbt_hardware_support/modbus_msg_brake_test_wrapper_exception.h>
+#include <prbt_hardware_support/modbus_msg_operation_mode_wrapper.h>
+#include <prbt_hardware_support/modbus_msg_operation_mode_wrapper_exception.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
+#include <prbt_hardware_support/OperationModes.h>
+#include <prbt_hardware_support/ModbusMsgInStamped.h>
 
 namespace message_filters
 {
@@ -32,28 +34,25 @@ namespace message_filters
 /**
  * @brief Filter to be applied to modbus messages. Only the messages with changes in the brake test state are passed.
  *        The filter also checks whether the message can be wrapped.
- *        Disconnect messages are not passed along.
  *
  * \code
  *   message_filters::Subscriber sub<MsgStamped>(nh, TOPIC_NAME, 1);
- *   message_filters::BrakeTestFilter filter<MsgStamped>(&sub));
+ *   message_filters::OperationMode filter<MsgStamped>(&sub));
  *
  *   // Register all callback receiving filtered output
  *   filter.registerCallback(&filteredCallback);
  * \endcode
  */
-template <typename M>
-class BrakeTestFilter : public SimpleFilter<M>
+class OperationModeFilter : public SimpleFilter<prbt_hardware_support::ModbusMsgInStamped>
 {
 public:
-  typedef boost::shared_ptr<M const> MConstPtr;
-  typedef ros::MessageEvent<M const> EventType;
+  typedef ros::MessageEvent<prbt_hardware_support::ModbusMsgInStamped const> EventType;
 
   /**
    * @brief Construct the filter and connect to the output of another filter
    */
   template <typename F>
-  BrakeTestFilter(F &f, const prbt_hardware_support::ModbusApiSpec &api_spec) : api_spec_(api_spec)
+  OperationModeFilter(F &f, const prbt_hardware_support::ModbusApiSpec &api_spec) : api_spec_(api_spec)
   {
     connectInput(f);
   }
@@ -65,8 +64,8 @@ public:
   void connectInput(F &f)
   {
     incoming_connection_.disconnect();
-    incoming_connection_ = f.registerCallback(typename BrakeTestFilter<M>::EventCallback(boost::bind(&BrakeTestFilter::cb,
-                                                                                                     this, _1)));
+    incoming_connection_ = f.registerCallback(
+          typename OperationModeFilter::EventCallback(boost::bind(&OperationModeFilter::cb,this, _1)));
   }
 
 private:
@@ -74,27 +73,24 @@ private:
   {
     try
     {
-      prbt_hardware_support::ModbusMsgBrakeTestWrapper brakeTestWrapper(evt.getMessage(), api_spec_);
+      prbt_hardware_support::ModbusMsgOperationModeWrapper msg(evt.getMessage(), api_spec_);
 
-      if (!brakeTestWrapper.isDisconnect())
+      if (msg.getOperationMode() == last_operation_mode_ && !first_call_)
       {
-        if (brakeTestWrapper.isBrakeTestRequired() == last_brake_test_required_ && !first_call_)
-        {
-          return;
-        }
-
-        last_brake_test_required_ = brakeTestWrapper.isBrakeTestRequired();
-        first_call_ = false;
+        return;
       }
+
+      last_operation_mode_ = msg.getOperationMode();
+      first_call_ = false;
+    }
+    catch (const prbt_hardware_support::ModbusMsgOperationModeWrapperException &ex)
+    {
+      ROS_ERROR_STREAM(ex.what() << "\nCan not interpret Modbus message as OperationMode.");
+      return;
     }
     catch (const prbt_hardware_support::ModbusMsgWrapperException &ex)
     {
-      ROS_ERROR_STREAM(ex.what() << "\nCan not interpret Modbus message.");
-      return;
-    }
-    catch (const prbt_hardware_support::ModbusMsgBrakeTestWrapperException &ex)
-    {
-      ROS_ERROR_STREAM(ex.what() << "\nCan not interpret Modbus message as ModbusMsgBrakeTest.");
+      ROS_ERROR_STREAM(ex.what() << "\nCan not interpret Modbus message as OperationMode.");
       return;
     }
 
@@ -103,7 +99,7 @@ private:
 
   Connection incoming_connection_;
 
-  bool last_brake_test_required_;
+  int8_t last_operation_mode_{prbt_hardware_support::OperationModes::UNKNOWN};
   bool first_call_ = true;
 
   //! Currently valid api_spec (defines modbus register semantic)
@@ -112,4 +108,4 @@ private:
 
 } // namespace message_filters
 
-#endif // BRAKE_TEST_FILTER_H
+#endif // OPERATION_MODE_FILTER_H

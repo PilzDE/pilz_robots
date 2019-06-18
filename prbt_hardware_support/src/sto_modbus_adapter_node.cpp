@@ -25,7 +25,9 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "pilz_sto_modbus_adapter_node");
   ros::NodeHandle nh;
 
-  PilzStoModbusAdapterNode sto_modbus_adapter_node(nh);
+  ModbusApiSpec api_spec{nh};
+
+  PilzStoModbusAdapterNode sto_modbus_adapter_node(nh, api_spec);
   ros::spin();
 
   return EXIT_FAILURE;

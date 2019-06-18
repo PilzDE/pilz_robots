@@ -61,6 +61,8 @@ public:
    */
   void startAsync(const char* ip, const unsigned int port);
 
+  void setHoldingRegister(std::initializer_list< std::pair<unsigned int, uint16_t> > reg_list);
+
   /**
    * @brief Set the values in the holding register
    *

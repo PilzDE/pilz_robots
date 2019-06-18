@@ -105,19 +105,6 @@ Stop1IntegrationTest::Stop1IntegrationTest()
   EXPECT_GE(std::thread::hardware_concurrency(), 2) << "Hardware does not support enough threads";
 }
 
-template<class T>
-static void initalizeAndRun(T& obj, const char *ip, unsigned int port)
-{
-  if ( !obj.init(ip, port) )
-  {
-    ROS_ERROR("Initialization failed.");
-    return;
-  }
-  ROS_INFO_STREAM("Starting Server on " << ip << ":" << port);
-
-  obj.run();
-}
-
 /**
  * @brief Send data via ModbusServerMock -> ModbusReadClient -> StoModbusAdapter -> ManipulatorMock connection
  * and check that the expected service calls occur in the respective order.

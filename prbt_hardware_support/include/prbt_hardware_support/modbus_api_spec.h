@@ -18,27 +18,110 @@
 #ifndef MODBUS_API_SPEC_H
 #define MODBUS_API_SPEC_H
 
+#include <map>
+#include <string>
+#include <initializer_list>
+
 #include <ros/ros.h>
+#include <xmlrpcpp/XmlRpc.h>
 
 namespace prbt_hardware_support
 {
 
+namespace modbus_api_spec
+{
+  static const std::string STO {"STO"};
+  static const std::string VERSION {"VERSION"};
+  static const std::string BRAKETEST_REQUEST {"BRAKETEST_REQUEST"};
+  static const std::string OPERATION_MODE {"OPERATION_MODE"};
+}
+
+/**
+ * @brief Expection thrown by prbt_hardware_support::ModbusApiSpec
+ */
+class ModbusApiSpecException : public std::runtime_error
+{
+public:
+  ModbusApiSpecException( const std::string& what_arg ):
+    std::runtime_error(what_arg)
+  {
+  }
+};
+
 /**
  * @brief Specifies the meaning of the holding registers.
  *
- * Currently specifies in which registers version and braketest_request are defined.
+ * @remark this class is templated for easier mocking. However for usability
+ * it can be used by ModbusApiSpec
  */
-class ModbusApiSpec
+template <class T = ros::NodeHandle>
+class ModbusApiSpecTemplated
 {
 public:
 
-  constexpr ModbusApiSpec(unsigned int version_register, unsigned int braketest_register):
-    version_register_(version_register),
-    braketest_register_(braketest_register){};
+  ModbusApiSpecTemplated(std::initializer_list< std::pair<std::string, unsigned int> > reg_list)
+  {
+    for(auto entry : reg_list){
+      setRegisterDefinition(entry.first, entry.second);
+    }
+  }
 
-  const unsigned int version_register_;
-  const unsigned int braketest_register_;
+  /**
+   * @brief Construct a new Modbus Api Spec Templated object.
+   *
+   * The parameters are expected to be provided as
+   * @code
+   * /[nodehandle_namespace]/api_spec/[key1]
+   * /[nodehandle_namespace]/api_spec/[key2]
+   * ...
+   * @endcode
+   * with the values beeing of type <b>int</b>.
+   *
+   * @param nh NodeHandle to read the parameters from
+   */
+  ModbusApiSpecTemplated(T &nh)
+  {
+    XmlRpc::XmlRpcValue rpc;
+    if (!nh.getParam("api_spec/", rpc))
+    {
+      throw ModbusApiSpecException("No api specified. (Expected at " + nh.getNamespace() + "/api_spec/");
+    }
+
+    for (auto rpci = rpc.begin(); rpci != rpc.end(); ++rpci)
+    {
+      int value = rpci->second;
+      setRegisterDefinition(rpci->first.c_str(), static_cast<unsigned int>(value));
+    }
+  }
+
+  inline bool hasRegisterDefinition(const std::string &key) const
+  {
+    return register_mapping_.find(key) != register_mapping_.end();
+  }
+
+  inline void setRegisterDefinition(const std::string &key, unsigned int value)
+  {
+    register_mapping_[key] = value;
+  }
+
+  inline unsigned int getRegisterDefinition(const std::string &key) const
+  {
+    try
+    {
+      return register_mapping_.at(key);
+    }
+    catch(const std::out_of_range& e)
+    {
+      throw ModbusApiSpecException(e.what());
+    }
+  }
+
+private:
+  std::map<std::string, unsigned int> register_mapping_;
 };
+
+//! Simple typedef for class like usage
+typedef ModbusApiSpecTemplated<> ModbusApiSpec;
 
 } // namespace prbt_hardware_support
 #endif // MODBUS_API_SPEC_H
