@@ -136,7 +136,7 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
 	prbt_hardware_support::IsBrakeTestRequired srv;
 
   waitForNode("/pilz_modbus_read_client_node");
-  waitForNode("/modbus_adapter_brake_test_node");
+  waitForNode("/prbt/modbus_adapter_brake_test_node");
 
   /**********
    * Step 1 *

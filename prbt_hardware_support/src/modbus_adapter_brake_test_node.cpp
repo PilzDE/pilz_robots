@@ -26,11 +26,12 @@
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "modbus_adapter_brake_test");
-  ros::NodeHandle nh{"~"};
+  ros::NodeHandle nh{};
+  ros::NodeHandle pnh{"~"};
 
   prbt_hardware_support::ModbusApiSpec api_spec(nh);
 
-  prbt_hardware_support::ModbusAdapterBrakeTest adapter_brake_test(nh, api_spec);
+  prbt_hardware_support::ModbusAdapterBrakeTest adapter_brake_test(pnh, api_spec);
 
   ros::spin();
 

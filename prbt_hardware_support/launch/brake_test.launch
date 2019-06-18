@@ -16,13 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <launch>
-  <arg name="safety_hw" default="pss4000" />
-  <arg name="api_spec_file" default="$(find prbt_hardware_support)/config/modbus_api_spec_$(arg safety_hw).yaml" />
 
-  <include file="$(find prbt_hardware_support)/launch/modbus_adapter_brake_test_node.launch">
-    <arg name="safety_hw" value="$(arg safety_hw)" />
-    <arg name="api_spec_file" value="$(arg api_spec_file)" />
-  </include>
+  <include file="$(find prbt_hardware_support)/launch/modbus_adapter_brake_test_node.launch" />
 
   <include file="$(find prbt_hardware_support)/launch/canopen_braketest_adapter_node.launch" />
   <include file="$(find prbt_hardware_support)/launch/brake_test_executor_node.launch" />

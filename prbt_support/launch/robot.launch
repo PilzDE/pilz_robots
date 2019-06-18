@@ -10,7 +10,14 @@
   <!-- safe-torque-off-input from the safety controller is read to do a stop1 -->
   <!-- The signal is read via modbus and you can configure the modbus server ip -->
   <arg name="sto" default="pnoz"/>
+  <arg name="api_spec_file" default="$(find prbt_hardware_support)/config/modbus_api_spec_$(arg sto).yaml" />
   <arg name="sto_modbus_server_ip" default="169.254.60.1" />
+
+  <!-- Set braketest usage -->
+  <arg name="has_braketest_support" default="false"/>
+
+  <!-- Set operation mode support -->
+  <arg name="has_operation_mode_support" default="false"/>
 
   <!-- set the name of the config file for canopen_motor_node. If you want to change settings, copy the yaml
        file into your package and set canopen_config to your new config file path -->
@@ -54,15 +61,17 @@
 
   <!-- Initialize controllers and start STO-processing (if configured) -->
   <group if="$(eval sto == 'pnoz')" >
+    <!-- Load api spec for all nodes -->
+    <rosparam ns="/prbt/api_spec" command="load" file="$(arg api_spec_file)" />
+
     <node pkg="rosservice" type="rosservice" name="robot_init" args="call --wait /prbt/driver/init"/>
     <include file="$(find prbt_hardware_support)/launch/modbus_read_client.launch">
       <arg name="modbus_server_ip" value="$(arg sto_modbus_server_ip)" />
     </include>
     <include file="$(find prbt_hardware_support)/launch/sto_modbus_adapter_node.launch" />
-    <include file="$(find prbt_hardware_support)/launch/brake_test.launch">
-      <arg name="safety_hw" value="$(arg sto)" />
-      <arg name="api_spec_file" value="$(find prbt_hardware_support)/config/modbus_api_spec_$(arg sto).yaml" />
-    </include>
+    <include if="$(arg has_braketest_support)" file="$(find prbt_hardware_support)/launch/brake_test.launch" />
+
+    <include if="$(arg has_operation_mode_support)" file="$(find prbt_hardware_support)/launch/operation_mode_adapter.launch" />
   </group>
 
   <group if="$(eval sto == 'none')" >

@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <arg name="modbus_register_size" default="974" />
 <arg name="num_registers_to_read" default="5" />
 <arg name="safety_hw" default="pss4000" />
-  
+
 <node name="pilz_modbus_read_client_node" pkg="prbt_hardware_support" type="pilz_modbus_read_client_node">
   <param name="index_of_first_register_to_read" value="$(arg index_of_first_register_to_read)"/>
   <param name="modbus_server_ip" value="$(arg modbus_server_ip)"/>
@@ -33,9 +33,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   <param name="num_registers_to_read" value="$(arg num_registers_to_read)"/>
 </node>
 
-<node name="modbus_adapter_brake_test_node" pkg="prbt_hardware_support" type="modbus_adapter_brake_test_node">
-  <rosparam ns="api_spec" command="load" file="$(find prbt_hardware_support)/config/modbus_api_spec_$(arg safety_hw).yaml" />
-</node>
+
+<rosparam ns="/prbt/api_spec" command="load" file="$(find prbt_hardware_support)/config/modbus_api_spec_$(arg safety_hw).yaml" />
+<node ns="prbt" name="modbus_adapter_brake_test_node" pkg="prbt_hardware_support" type="modbus_adapter_brake_test_node" />
 
 <test test-name="integrationtest_brake_test_required" pkg="prbt_hardware_support" type="integrationtest_brake_test_required">
   <param name="modbus_server_ip" value="$(arg modbus_server_ip)"/>
