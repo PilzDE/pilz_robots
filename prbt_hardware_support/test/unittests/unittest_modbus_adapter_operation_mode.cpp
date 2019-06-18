@@ -226,28 +226,6 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusIncorrectApiVersion)
   ASSERT_TRUE(waitForOperationMode(OperationModes::T1));
 }
 
-/**
- * Tests the handling of an incoming modbus message with short register range
- *
- * Test Sequence:
- *  1. Publish modbus message with holding registers not covering the expected range
- *
- * Expected Results:
- *  1. The service call is not successful.
- */
-TEST_F(ModbusAdapterOperationModeTest, testModbusWithShortRegisterRange)
-{
-  auto max_required_index = std::max(test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION),
-                                     test_api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE));
-  auto msg{createDefaultOpModeModbusMsg(OperationModes::UNKNOWN,
-                                        MODBUS_API_VERSION_REQUIRED,
-                                        max_required_index - 1,
-                                        max_required_index - 1)};
-  modbus_topic_pub_.publish(msg);
-
-  ASSERT_TRUE(waitForServiceCallResult(false));
-}
-
 } // namespace prbt_hardware_support
 
 int main(int argc, char *argv[])
