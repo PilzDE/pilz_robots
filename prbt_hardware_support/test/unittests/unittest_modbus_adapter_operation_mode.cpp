@@ -56,7 +56,7 @@ public:
   /**
    * @brief Wait until operation mode service call return the expected value
    */
-  bool waitForServiceCallResult(bool expectation, double timeout = OPERATION_MODE_CHANGE_WAIT_TIME_S);
+  ::testing::AssertionResult waitForServiceCallResult(bool expectation, double timeout = OPERATION_MODE_CHANGE_WAIT_TIME_S);
 
 protected:
   ros::NodeHandle nh_;
@@ -93,7 +93,7 @@ ModbusAdapterOperationModeTest::ModbusAdapterOperationModeTest()
   return ::testing::AssertionFailure() << "Reached timeout waiting for expected operation mode.";
 }
 
-bool ModbusAdapterOperationModeTest::waitForServiceCallResult(bool expectation, double timeout)
+::testing::AssertionResult ModbusAdapterOperationModeTest::waitForServiceCallResult(bool expectation, double timeout)
 {
   ros::Rate rate(10.0);
   ros::Time start{ros::Time::now()};
@@ -102,12 +102,13 @@ bool ModbusAdapterOperationModeTest::waitForServiceCallResult(bool expectation, 
     prbt_hardware_support::GetOperationMode srv;
     if (expectation == operation_mode_client_.call(srv))
     {
-      return true;
+      return ::testing::AssertionSuccess();
     }
     rate.sleep();
   }
 
-  return false;
+  return ::testing::AssertionFailure() << "Service " << operation_mode_client_.getService() << " did not return the "
+                                       << "exptected result";
 }
 
 /**
