@@ -68,8 +68,7 @@ class OperationModeFilterTest : public testing::Test
 };
 
 /**
- * @brief Tests that the filter properly only passes message to the callback that have a operation mode
- *        when starting with state true.
+ * @brief Tests that the filter properly passes message to the callback that have a operation mode
  */
 TEST_F(OperationModeFilterTest, passOperationModeMsg)
 {
@@ -102,7 +101,7 @@ TEST_F(OperationModeFilterTest, passOnlyChange)
 
     // Construct valid message
     ModbusMsgInBuilder builder(test_api_spec);
-    builder.setApiVersion(1);
+    builder.setApiVersion(2);
 
     EXPECT_CALL(*this, modbusInMsgCallback(_)).Times(1);
     first_filter.signalMessage(builder.setOperationMode(OperationModes::T1).build());
@@ -115,7 +114,7 @@ TEST_F(OperationModeFilterTest, passOnlyChange)
 }
 
 /**
- * @brief Tests that the filter only does not passes messages without a operation mode.
+ * @brief Tests that the filter does not pass messages without a operation mode.
  */
 TEST_F(OperationModeFilterTest, messageWithOutOperationMode)
 {
