@@ -91,8 +91,7 @@ TEST_F(OperationModeFilterTest, passOperationModeMsg)
 }
 
 /**
- * @brief Tests that the filter properly only passes message to the callback that have a operation mode
- *        when starting with state true.
+ * @brief Tests that the filter properly only passes message to the callback that have a change in the operation mode.
  */
 TEST_F(OperationModeFilterTest, passOnlyChange)
 {
@@ -117,8 +116,7 @@ TEST_F(OperationModeFilterTest, passOnlyChange)
 }
 
 /**
- * @brief Tests that the filter properly only passes message to the callback that have a operation mode
- *        when starting with state true.
+ * @brief Tests that the filter only does not passes messages without a operation mode.
  */
 TEST_F(OperationModeFilterTest, messageWithOutOperationMode)
 {
@@ -136,7 +134,6 @@ TEST_F(OperationModeFilterTest, messageWithOutOperationMode)
            .setRegister(511, 5); // Some register
 
     first_filter.signalMessage(builder.build());
-
 }
 
 } // namespace operation_mode_filter_test
