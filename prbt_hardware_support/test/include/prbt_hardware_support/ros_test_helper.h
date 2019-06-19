@@ -67,6 +67,19 @@ inline ::testing::AssertionResult waitForNodeShutdown(std::string node_name, dou
   return ::testing::AssertionSuccess();
 }
 
+template<class T>
+static void initalizeAndRun(T& obj, const char *ip, unsigned int port)
+{
+  if ( !obj.init(ip, port) )
+  {
+    ROS_ERROR("Initialization failed.");
+    return;
+  }
+  ROS_INFO_STREAM("Starting Server on " << ip << ":" << port);
+
+  obj.run();
+}
+
 }  // namespace prbt_hardware_support
 
 

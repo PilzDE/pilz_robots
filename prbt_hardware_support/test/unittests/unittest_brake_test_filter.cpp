@@ -43,7 +43,8 @@ using ::testing::Return;
 using ::testing::Throw;
 using namespace prbt_hardware_support;
 
-static constexpr ModbusApiSpec test_api_spec(696, 737);
+static const ModbusApiSpec test_api_spec{ {modbus_api_spec::VERSION, 696},
+                                          {modbus_api_spec::BRAKETEST_REQUEST,737} };
 
 class CallbackReceiver
 {
@@ -91,8 +92,8 @@ void BrakeTestFilterTest::TearDown()
 
 ModbusMsgInStampedPtr createDefaultBrakeTestModbusMsg(bool brake_test_required)
 {
-  uint32_t first_index_to_read{test_api_spec.version_register_};
-  uint32_t last_index_to_read{test_api_spec.braketest_register_};
+  uint32_t first_index_to_read{test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION)};
+  uint32_t last_index_to_read{test_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST)};
   static int msg_time_counter{1};
   std::vector<uint16_t> tab_reg(last_index_to_read - first_index_to_read + 1);
   tab_reg[0] = 1;

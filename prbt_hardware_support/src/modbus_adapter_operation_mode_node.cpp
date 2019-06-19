@@ -15,30 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MODBUS_MSG_STO_WRAPPER_EXCEPTION_H
-#define MODBUS_MSG_STO_WRAPPER_EXCEPTION_H
+#include <ros/ros.h>
 
-#include <string>
-#include <stdexcept>
+#include <prbt_hardware_support/modbus_adapter_operation_mode.h>
+#include <prbt_hardware_support/modbus_api_spec.h>
 
-#include <prbt_hardware_support/modbus_msg_wrapper_exception.h>
-
-namespace prbt_hardware_support
+/**
+ * @brief Starts a modbus operation mode adapter and runs it until a failure occurs.
+ */
+int main(int argc, char **argv)
 {
-  /**
-   * @brief Expection thrown upon construction of ModbusMsgStoWrapper of the message
-   * does not contain the required information.
-   *
-   */
-  class ModbusMsgStoWrapperException : public ModbusMsgWrapperException
-  {
-    public:
-      ModbusMsgStoWrapperException( const std::string& what_arg ):
-        ModbusMsgWrapperException(what_arg)
-      {
-      }
-  };
+  ros::init(argc, argv, "modbus_adapter_operation_mode");
+  ros::NodeHandle pnh{"~"};
+  ros::NodeHandle nh{};
 
+  prbt_hardware_support::ModbusApiSpec api_spec(nh);
+
+  prbt_hardware_support::ModbusAdapterOperationMode adapter_operation_mode(pnh, api_spec);
+
+  ros::spin();
+
+  return EXIT_FAILURE;
 }
-
-#endif // MODBUS_MSG_STO_WRAPPER_EXCEPTION_H

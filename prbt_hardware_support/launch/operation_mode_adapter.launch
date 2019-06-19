@@ -16,10 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <launch>
-
-  <include file="$(find prbt_hardware_support)/launch/modbus_adapter_brake_test_node.launch" />
-
-  <include file="$(find prbt_hardware_support)/launch/canopen_braketest_adapter_node.launch" />
-  <include file="$(find prbt_hardware_support)/launch/brake_test_executor_node.launch" />
+  <node required="true" ns="prbt" pkg="prbt_hardware_support" type="modbus_adapter_operation_mode_node" name="modbus_adapter_operation_mode_node" output="screen">
+  </node>
 
 </launch>

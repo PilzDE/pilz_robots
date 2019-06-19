@@ -40,9 +40,9 @@ public:
    * @param nh Node handle.
    * @param num_registers_to_read Size of the data array.
    * @param index_of_first_register Offset of the modbus data.
-   * @param ModbusClient to use
+   * @param modbus_client ModbusClient to use
    * @param response_timeout_ms Time to wait for a response from Modbus server.
-   * @param topic_name Name under which ROS-Modbus message is published.
+   * @param modbus_topic_name Name under which ROS-Modbus message is published.
    * @param read_frequency_hz Defines how often Modbus registers are read in.
    */
   PilzModbusReadClient(ros::NodeHandle& nh,
@@ -67,7 +67,7 @@ public:
    * @param ip
    * @param port
    * @param retries Number of retries getting a connection to the server
-   * @param timeout between retries
+   * @param timeout_ms between retries
    * @return True if a connection is established, false otherwise.
    */
   bool init(const char* ip, unsigned int port, unsigned int retries, ros::Duration timeout_ms);

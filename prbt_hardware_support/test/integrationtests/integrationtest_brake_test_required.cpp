@@ -55,19 +55,6 @@ static constexpr uint16_t MODBUS_API_VERSION_VALUE {2};
 static const std::string SERVICE_BRAKETEST_REQUIRED = "/prbt/brake_test_required";
 static constexpr int DEFAULT_QUEUE_SIZE_BRAKE_TEST {1};
 
-template<class T>
-static void initalizeAndRun(T& obj, const char *ip, unsigned int port)
-{
-  if ( !obj.init(ip, port) )
-  {
-    ROS_ERROR("Initialization failed.");
-    return;
-  }
-  ROS_INFO_STREAM("Starting Server on " << ip << ":" << port);
-
-  obj.run();
-}
-
 /**
  * @brief BrakeTestRequiredIntegrationTest checks if the chain
  * ModbusServerMock -> ModbusReadClient -> ModbusAdapterBrakeTest functions properly
@@ -149,7 +136,7 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
 	prbt_hardware_support::IsBrakeTestRequired srv;
 
   waitForNode("/pilz_modbus_read_client_node");
-  waitForNode("/modbus_adapter_brake_test_node");
+  waitForNode("/prbt/modbus_adapter_brake_test_node");
 
   /**********
    * Step 1 *

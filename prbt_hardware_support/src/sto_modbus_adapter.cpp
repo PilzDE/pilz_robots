@@ -32,8 +32,9 @@ const std::string PilzStoModbusAdapterNode::UNHOLD_SERVICE = "manipulator_joint_
 const std::string PilzStoModbusAdapterNode::RECOVER_SERVICE = "driver/recover";
 const std::string PilzStoModbusAdapterNode::HALT_SERVICE = "driver/halt";
 
-PilzStoModbusAdapterNode::PilzStoModbusAdapterNode(ros::NodeHandle &nh):
-  nh_(nh)
+PilzStoModbusAdapterNode::PilzStoModbusAdapterNode(ros::NodeHandle &nh, const ModbusApiSpec& api_spec):
+  nh_(nh),
+  api_spec_(api_spec)
 {
   // Wait for services
   while (!ros::service::waitForService(HALT_SERVICE, ros::Duration(RETRY_SERVICE_CONNECTION_TIME_S)) && ros::ok())
@@ -100,10 +101,10 @@ void PilzStoModbusAdapterNode::modbusInMsgCallback(const ModbusMsgInStampedConst
 {
   try
   {
-    ModbusMsgStoWrapper  msg(msg_raw);
+    ModbusMsgStoWrapper msg(msg_raw, api_spec_);
     internalMsgCallback(msg);
   }
-  catch(ModbusMsgStoWrapperException &e)
+  catch(const ModbusMsgWrapperException &e)
   {
     performStop();
     ROS_ERROR_STREAM(e.what());

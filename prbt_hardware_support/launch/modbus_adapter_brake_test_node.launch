@@ -16,11 +16,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <launch>
-  <arg name="safety_hw" default="pss4000" />
-  <arg name="api_spec_file" default="$(find prbt_hardware_support)/config/modbus_api_spec_$(arg safety_hw).yaml" />
-
-  <node required="true" ns="prbt" pkg="prbt_hardware_support" type="modbus_adapter_brake_test_node" name="modbus_adapter_brake_test_node" output="screen">
-    <rosparam ns="api_spec" command="load" file="$(arg api_spec_file)" />
-  </node>
+  <node required="true" ns="prbt" pkg="prbt_hardware_support" type="modbus_adapter_brake_test_node" name="modbus_adapter_brake_test_node" output="screen"/>
 
 </launch>

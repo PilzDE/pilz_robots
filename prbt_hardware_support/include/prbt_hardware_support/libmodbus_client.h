@@ -54,7 +54,7 @@ public:
    * Interval to wait for a response from the server if within this timespan no answer is received readHoldingRegisters
    * will throw a ModbusExceptionDisconnect
    *
-   * @param timeout in ms
+   * @param timeout_ms in ms
    */
   void setResponseTimeoutInMs(unsigned int timeout_ms);
 
