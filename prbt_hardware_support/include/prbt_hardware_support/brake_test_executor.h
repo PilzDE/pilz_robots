@@ -45,6 +45,9 @@ private:
 
   ros::ServiceClient trigger_braketest_client_;
 
+  ros::ServiceClient controller_hold_client_;
+  ros::ServiceClient controller_unhold_client_;
+
 };
 
 } // namespace prbt_hardware_support

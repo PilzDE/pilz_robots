@@ -22,15 +22,19 @@
 #include <prbt_hardware_support/BrakeTest.h>
 #include <prbt_hardware_support/canopen_chain_node_mock.h>
 #include <prbt_hardware_support/joint_states_publisher_mock.h>
+#include <prbt_hardware_support/pilz_manipulator_mock.h>
 
 static const std::string EXECUTE_BRAKE_TEST_SERVICE_NAME{"/prbt/execute_braketest"};
+static const std::string CONTROLLER_HOLD_MODE_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/hold"};
+static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/unhold"};
+
 static constexpr double WAIT_FOR_BRAKE_TEST_SERVICE_TIMEOUT_S{5.0};
 
 /**
  * @brief Test the BrakeTest service node.
  *
  * Test Sequence:
- *  1. Initialize CANOpen mock and JointStatesPublisher mock
+ *  1. Initialize CANOpen mock, JointStatesPublisher mock and manipulator mock
  *  2. Wait for BrakeTest service
  *  3. Make a service call
  *
@@ -42,6 +46,7 @@ static constexpr double WAIT_FOR_BRAKE_TEST_SERVICE_TIMEOUT_S{5.0};
 TEST(IntegrationtestTriggerBrakeTest, testBrakeTestService)
 {
   using namespace prbt_hardware_support;
+  ros::NodeHandle nh;
 
   /**********
    * Step 1 *
@@ -51,10 +56,13 @@ TEST(IntegrationtestTriggerBrakeTest, testBrakeTestService)
   JointStatesPublisherMock joint_states_pub;
   joint_states_pub.startAsync();
 
+  ManipulatorMock manipulator;
+  manipulator.advertiseHoldService(nh, CONTROLLER_HOLD_MODE_SERVICE_NAME);
+  manipulator.advertiseUnholdService(nh, CONTROLLER_UNHOLD_MODE_SERVICE_NAME);
+
   /**********
    * Step 2 *
    **********/
-  ros::NodeHandle nh;
   ros::ServiceClient brake_test_srv_client_ = nh.serviceClient<BrakeTest>(EXECUTE_BRAKE_TEST_SERVICE_NAME);
   EXPECT_TRUE(brake_test_srv_client_.waitForExistence(ros::Duration(WAIT_FOR_BRAKE_TEST_SERVICE_TIMEOUT_S)));
 
