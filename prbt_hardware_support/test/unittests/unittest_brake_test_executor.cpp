@@ -45,7 +45,6 @@ class BrakeTestExecutorTest : public Test
 {
 public:
   BrakeTestExecutorTest();
-  ~BrakeTestExecutorTest();
 
   MOCK_METHOD2(triggerBrakeTest, bool(BrakeTest::Request &, BrakeTest::Response &));
 
@@ -58,10 +57,6 @@ BrakeTestExecutorTest::BrakeTestExecutorTest()
 {
   manipulator_.advertiseHoldService(nh_, CONTROLLER_HOLD_MODE_SERVICE_NAME);
   manipulator_.advertiseUnholdService(nh_, CONTROLLER_UNHOLD_MODE_SERVICE_NAME);
-}
-
-BrakeTestExecutorTest::~BrakeTestExecutorTest()
-{
 }
 
 /**
