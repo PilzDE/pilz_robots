@@ -2,6 +2,9 @@
 Changelog for package pilz_testutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.4.8 (2019-04-24)
 ------------------
 * Make docu compabtible with both kinetic and melodic
