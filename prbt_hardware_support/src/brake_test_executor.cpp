@@ -26,6 +26,7 @@
 #include <prbt_hardware_support/brake_test_executor.h>
 #include <prbt_hardware_support/brake_test_executor_exception.h>
 #include <prbt_hardware_support/brake_test_utils.h>
+#include <prbt_hardware_support/wait_for_service.h>
 
 namespace prbt_hardware_support
 {
@@ -46,25 +47,16 @@ BrakeTestExecutor::BrakeTestExecutor(ros::NodeHandle& nh)
                                          this);
 
   // set up braketest service client (required)
+  waitForService(BRAKETEST_ADAPTER_SERVICE_NAME);
   trigger_braketest_client_ = nh_.serviceClient<BrakeTest>(BRAKETEST_ADAPTER_SERVICE_NAME);
-  if (!trigger_braketest_client_.waitForExistence(ros::Duration(WAIT_FOR_SERVICE_TIMEOUT_S)))
-  {
-    throw BrakeTestExecutorException("Service " + trigger_braketest_client_.getService() + " not available.");
-  }
 
   // set up hold service client
+  waitForService(CONTROLLER_HOLD_MODE_SERVICE_NAME);
   controller_hold_client_ = nh_.serviceClient<std_srvs::Trigger>(CONTROLLER_HOLD_MODE_SERVICE_NAME);
-  if (!controller_hold_client_.waitForExistence(ros::Duration(WAIT_FOR_SERVICE_TIMEOUT_S)))
-  {
-    ROS_WARN_STREAM("Service " + controller_hold_client_.getService() + " not available.");
-  }
 
   // setup unhold service client
+  waitForService(CONTROLLER_UNHOLD_MODE_SERVICE_NAME);
   controller_unhold_client_ = nh_.serviceClient<std_srvs::Trigger>(CONTROLLER_UNHOLD_MODE_SERVICE_NAME);
-  if (!controller_unhold_client_.waitForExistence(ros::Duration(WAIT_FOR_SERVICE_TIMEOUT_S)))
-  {
-    ROS_WARN_STREAM("Service " + controller_unhold_client_.getService() + " not available.");
-  }
 }
 
 bool BrakeTestExecutor::executeBrakeTest(BrakeTest::Request&,
