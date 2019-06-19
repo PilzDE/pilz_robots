@@ -33,8 +33,6 @@
 
 namespace mf = message_filters;
 
-template class message_filters::BrakeTestFilter<prbt_hardware_support::ModbusMsgInStamped>;
-
 namespace brake_test_filter_test
 {
 using ::testing::_;
@@ -116,7 +114,7 @@ TEST_F(BrakeTestFilterTest, testBrakeTestFilteringThroughSubscriberFromTrue)
   TestPublisher test_pub(pub);
   message_filters::Subscriber<ModbusMsgInStamped> modbus_sub(nh, test_topic_name, 1);
 
-  mf::BrakeTestFilter<ModbusMsgInStamped> brake_test_filter(modbus_sub, test_api_spec);
+  mf::BrakeTestFilter brake_test_filter(modbus_sub, test_api_spec);
 
   // Register to modbus callback
   brake_test_filter.registerCallback(
@@ -156,7 +154,7 @@ TEST_F(BrakeTestFilterTest, testBrakeTestFilteringThroughSubscriberFromFalse)
   TestPublisher test_pub(pub);
   message_filters::Subscriber<ModbusMsgInStamped> modbus_sub(nh, test_topic_name, 1);
 
-  mf::BrakeTestFilter<ModbusMsgInStamped> brake_test_filter(modbus_sub, test_api_spec);
+  mf::BrakeTestFilter brake_test_filter(modbus_sub, test_api_spec);
 
   // Register to modbus callback
   brake_test_filter.registerCallback(
