@@ -2,8 +2,8 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.9 (2019-06-19)
+------------------
 * increased modbus response timeout to 20ms
 * publish brake test requests obtained from safety controller via modbus
 * sto_modbus_adapter waits for the services to appear instead of throwing exceptions

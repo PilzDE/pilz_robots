@@ -2,8 +2,8 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.9 (2019-06-19)
+------------------
 * instantiate pg70 xacro macro (due to change in prbt_grippers)
 * Contributors: Pilz GmbH and Co. KG
 
