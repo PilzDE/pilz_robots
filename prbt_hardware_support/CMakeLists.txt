@@ -86,7 +86,6 @@ target_link_libraries(modbus_adapter_operation_mode_node ${catkin_LIBRARIES})
 add_executable(brake_test_executor_node
   src/brake_test_executor_node.cpp
   src/brake_test_executor.cpp
-  src/brake_test_executor_exception.cpp
 )
 add_dependencies(brake_test_executor_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
 target_link_libraries(brake_test_executor_node ${catkin_LIBRARIES})
@@ -286,7 +285,6 @@ if(CATKIN_ENABLE_TESTING)
     test/unittests/unittest_brake_test_executor.cpp
     test/unittests/joint_states_publisher_mock.cpp
     src/brake_test_executor.cpp
-    src/brake_test_executor_exception.cpp
   )
   target_link_libraries(unittest_brake_test_executor
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}

@@ -22,7 +22,6 @@
 
 #include <ros/ros.h>
 
-#include <prbt_hardware_support/brake_test_executor_exception.h>
 #include <prbt_hardware_support/brake_test_executor.h>
 #include <prbt_hardware_support/BrakeTestErrorCodes.h>
 #include <prbt_hardware_support/joint_states_publisher_mock.h>
@@ -164,14 +163,6 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestServiceWithRobotMotion)
   EXPECT_TRUE(brake_test_srv_client_.call(srv)) << "Failed to call brake test service.";
   EXPECT_FALSE(srv.response.success);
   EXPECT_EQ(BrakeTestErrorCodes::ROBOT_MOTION_DETECTED, srv.response.error_code.value);
-}
-
-/**
- * @brief Test creation of BrakeTestExecutor with missing braketest trigger service.
- */
-TEST_F(BrakeTestExecutorTest, testBrakeTestServiceNoTriggerService)
-{
-  EXPECT_THROW(BrakeTestExecutor brake_test_executor(this->nh_), prbt_hardware_support::BrakeTestExecutorException);
 }
 
 /**

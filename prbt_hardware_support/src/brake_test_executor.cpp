@@ -24,7 +24,6 @@
 #include <prbt_hardware_support/BrakeTest.h>
 
 #include <prbt_hardware_support/brake_test_executor.h>
-#include <prbt_hardware_support/brake_test_executor_exception.h>
 #include <prbt_hardware_support/brake_test_utils.h>
 #include <prbt_hardware_support/wait_for_service.h>
 
