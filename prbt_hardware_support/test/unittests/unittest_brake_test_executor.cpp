@@ -82,7 +82,7 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
    * Step 0 *
    **********/
   ros::ServiceServer service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>
-            (BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
+          (BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
 
   BrakeTestExecutor brake_test_executor(this->nh_);
 
@@ -140,7 +140,7 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
 TEST_F(BrakeTestExecutorTest, testBrakeTestServiceWithRobotMotion)
 {
   ros::ServiceServer service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>
-       (BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
+          (BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
 
   BrakeTestExecutor brake_test_executor(this->nh_);
 
@@ -189,7 +189,7 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestServiceTriggerFails)
    * Step 0 *
    **********/
   ros::ServiceServer service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>
-            (BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
+          (BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
 
   BrakeTestExecutor brake_test_executor(this->nh_);
 
@@ -224,6 +224,72 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestServiceTriggerFails)
   EXPECT_TRUE(brake_test_srv_client_.call(srv)) << "Failed to call brake test service.";
   EXPECT_FALSE(srv.response.success) << "Brake tests succeded unexpectedly.";
   EXPECT_EQ(BrakeTestErrorCodes::TRIGGER_BRAKETEST_SERVICE_FAILURE, srv.response.error_code.value);
+}
+
+/**
+ * @brief Test execution of brake tests when the hold/unhold service calls fail.
+ *
+ * This is essentially for line coverage.
+ *
+ * Test Sequence:
+ *  0. Setup Server for triggering the braketest
+ *  1. Set expectations and action on service calls
+ *  2. Publish fixed joint states.
+ *  3. Call brake test service.
+ *
+ * Expected Results:
+ *  0. Executor is created without problems, a client can attach to its service
+ *  1. -
+ *  2. -
+ *  3. Brake tests are executed successfully. In strict order:
+ *     - Hold mode is triggered
+ *     - Brake test execution is triggered
+ *     - Unhold is triggered
+ */
+TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringHoldFailing)
+{
+  /**********
+   * Step 0 *
+   **********/
+  ros::ServiceServer service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>
+          (BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
+
+  BrakeTestExecutor brake_test_executor(this->nh_);
+
+  ros::ServiceClient brake_test_srv_client_ = nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);
+  ASSERT_TRUE(brake_test_srv_client_.exists()) << "Brake test service not available.";
+
+  /**********
+   * Step 1 *
+   **********/
+  {
+    InSequence dummy;
+
+    EXPECT_CALL(manipulator_, holdCb(_, _)).WillOnce(Return(false));
+
+    EXPECT_CALL(*this, triggerBrakeTest(_, _))
+        .Times(1)
+        .WillOnce(testing::Invoke(
+            [](BrakeTest::Request &, BrakeTest::Response &res) {
+              res.success = true;
+              return true;
+            }));
+
+    EXPECT_CALL(manipulator_, unholdCb(_, _)).WillOnce(Return(false));
+  }
+
+  /**********
+   * Step 2 *
+   **********/
+  JointStatesPublisherMock joint_states_pub;
+  joint_states_pub.startAsync();
+
+  /**********
+   * Step 3 *
+   **********/
+  BrakeTest srv;
+  EXPECT_TRUE(brake_test_srv_client_.call(srv)) << "Failed to call brake test service.";
+  EXPECT_TRUE(srv.response.success) << "Brake tests failed unexpectedly. Message: " << srv.response.error_msg;
 }
 
 } // namespace brake_test_executor_test
