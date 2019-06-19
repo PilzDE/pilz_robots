@@ -54,7 +54,7 @@ private:
 
   //! Filters messages with a change in brake test state.
   //! Passed messages are redirected to modbusInMsgCallback().
-  std::shared_ptr< message_filters::BrakeTestFilter<ModbusMsgInStamped> > brake_test_filter_;
+  std::shared_ptr< message_filters::BrakeTestFilter > brake_test_filter_;
 
   //! Subscribes to TOPIC_MODBUS_READ and redirects received messages
   //! to the update-filter.

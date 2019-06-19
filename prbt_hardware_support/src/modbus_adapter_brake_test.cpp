@@ -34,7 +34,7 @@ ModbusAdapterBrakeTest::ModbusAdapterBrakeTest(ros::NodeHandle& nh, const Modbus
 {
   modbus_read_sub_ = std::make_shared< message_filters::Subscriber<ModbusMsgInStamped> >(nh, TOPIC_MODBUS_READ, DEFAULT_QUEUE_SIZE_MODBUS);
   update_filter_ = std::make_shared< message_filters::UpdateFilter<ModbusMsgInStamped> >(*modbus_read_sub_);
-  brake_test_filter_ = std::make_shared< message_filters::BrakeTestFilter<ModbusMsgInStamped> >(*update_filter_, api_spec_);
+  brake_test_filter_ = std::make_shared< message_filters::BrakeTestFilter >(*update_filter_, api_spec_);
 	brake_test_filter_->registerCallback(boost::bind(&ModbusAdapterBrakeTest::modbusInMsgCallback, this, _1));
 }
 
