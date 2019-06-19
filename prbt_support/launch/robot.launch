@@ -78,6 +78,9 @@
     <node pkg="rosservice" type="rosservice" name="robot_init" args="call --wait /prbt/driver/init"/>
   </group>
 
+  <node ns="prbt" pkg="prbt_hardware_support" name="system_info_node"
+        type="system_info_node" output="screen" />
+
 </launch>
 
 
