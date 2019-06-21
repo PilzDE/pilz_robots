@@ -198,7 +198,9 @@ TEST_F(ModbusAdapterStoTest, testSetup)
 }
 
 /**
- * @brief Test constructor with delayed halt service
+ * @tests{No_Startup_if_driver_halt_missing,
+ *  Test constructor with delayed halt service.
+ * }
  *
  * Expected: Constructor blocks until the halt service is available.
  */
@@ -217,7 +219,9 @@ TEST_F(ModbusAdapterStoTest, testSetupNoDisableService)
 }
 
 /**
- * @brief Test constructor if there is no service for unholding the controller
+ * @tests{Controller_service_unhold_optional,
+ *  Test constructor if there is no service for unholding the controller.
+ * }
  *
  * Expected: Constructor finishes successfully without unhold service.
  */
@@ -233,7 +237,9 @@ TEST_F(ModbusAdapterStoTest, testSetupNoUnholdService)
 }
 
 /**
- * @brief Test constructor if there is no service for recovering the driver
+ * @tests{Driver_service_recover_optional,
+ *  Test successful constructor call if recover service for driver is missing.
+ * }
  *
  * Expected: Constructor finishes successfully without recover service
  */
@@ -249,7 +255,9 @@ TEST_F(ModbusAdapterStoTest, testSetupNoRecoverService)
 }
 
 /**
- * @brief Test constructor with delayed hold service
+ * @tests{No_Startup_if_controller_hold_missing,
+ *  Test that constructor blocks until hold service is available.
+ * }
  *
  * Expected: Constructor blocks until the hold service is available.
  */
@@ -269,6 +277,16 @@ TEST_F(ModbusAdapterStoTest, testSetupNoHoldService)
 
 /**
  * @brief Tests that a message giving sto clearance is handled correctly
+ *
+ * @tests{Recover_driver_after_STO_false,
+ *  Tests that driver is recovered in case of STO switch: false->true.
+ * }
+ *
+ * @tests{No_new_commands_during_STO_false,
+ *  Tests that new commands are accepted by controller in case of STO switch:
+ *  false->true
+ * }
+ *
  */
 TEST_F(ModbusAdapterStoTest, testClearMsg)
 {
@@ -284,7 +302,9 @@ TEST_F(ModbusAdapterStoTest, testClearMsg)
 }
 
 /**
- * @brief Tests that a message giving sto clearance is handled correctly
+ * @tests{Controller_service_unhold_optional,
+ *  Test system can deal correctly with missing unhold service of controller.
+ * }
  */
 TEST_F(ModbusAdapterStoTest, testRemoveUnholdService)
 {
@@ -301,7 +321,9 @@ TEST_F(ModbusAdapterStoTest, testRemoveUnholdService)
 }
 
 /**
- * @brief Tests that a message giving sto clearance is handled correctly
+ * @tests{Driver_service_recover_optional,
+ *  Test system can deal correctly with missing recover service of driver.
+ * }
  */
 TEST_F(ModbusAdapterStoTest, testRemoveRecoverService)
 {
@@ -318,9 +340,17 @@ TEST_F(ModbusAdapterStoTest, testRemoveRecoverService)
 }
 
 /**
- * @brief Tests that a message giving sto request is handled correctly
+ * @brief Tests that a message giving sto request is handled correctly.
+ * Controller must be holded and driver must be disabled.
  *
- * Controller must be holded and driver must be disabled
+ * @tests{Hold_driver_if_STO_false,
+ *  Tests that a message giving sto request leads to driver halt call.
+ * }
+ *
+ * @tests{No_new_commands_during_STO_false,
+ *  Tests that a message giving sto request leads to controller hold call.
+ * }
+ *
  */
 TEST_F(ModbusAdapterStoTest, testHoldMsg)
 {
@@ -336,8 +366,10 @@ TEST_F(ModbusAdapterStoTest, testHoldMsg)
 }
 
 /**
- * @brief Tests that a message indicating a disconnect from modbus stops the
- * robot even if the content would give sto clearance
+ * @tests{Stop1_Trigger,
+ *  Tests that a message indicating a disconnect from modbus stops the
+ *  robot even if the content would give sto clearance.
+ * }
  */
 TEST_F(ModbusAdapterStoTest, testDisconnectNoStoMsg)
 {
@@ -356,8 +388,11 @@ TEST_F(ModbusAdapterStoTest, testDisconnectNoStoMsg)
 }
 
 /**
- * @brief Tests that a message indicating a disconnect from modbus stops the robot when the msg itself
- * would also require sto to go active
+ * @tests{Stop1_Trigger,
+ *  Tests that a message indicating a disconnect from modbus stops the robot
+ *  when the msg itself would also require sto to go active.
+ * }
+ *
  */
 TEST_F(ModbusAdapterStoTest, testDisconnectWithStoMsg)
 {
@@ -376,8 +411,10 @@ TEST_F(ModbusAdapterStoTest, testDisconnectWithStoMsg)
 }
 
 /**
- * @brief Tests that a message indicating a disconnect from modbus stops with no
- * other data defined in the message
+ * @tests{Stop1_Trigger,
+ *  Tests that a message indicating a disconnect from modbus stops with no
+ *  other data defined in the message.
+ * }
  */
 TEST_F(ModbusAdapterStoTest, testDisconnectPure)
 {
@@ -397,7 +434,9 @@ TEST_F(ModbusAdapterStoTest, testDisconnectPure)
 }
 
 /**
- * @brief Tests that stop happens if no version is defined
+ * @tests{Stop1_Trigger,
+ *  Tests that stop happens if no version is defined.
+ * }
  */
 TEST_F(ModbusAdapterStoTest, testNoVersion)
 {
@@ -416,7 +455,9 @@ TEST_F(ModbusAdapterStoTest, testNoVersion)
 }
 
 /**
- * @brief Tests that a stop happens if the version is wrong
+ * @tests{Stop1_Trigger,
+ *  Tests that a stop happens if the version is wrong.
+ * }
  */
 TEST_F(ModbusAdapterStoTest, testWrongVersion)
 {
@@ -436,9 +477,12 @@ TEST_F(ModbusAdapterStoTest, testWrongVersion)
 
 
 /**
- * @brief Tests that a stop happens if a version 1 is received
+ * @tests{Stop1_Trigger,
+ *  Tests that a stop happens if a version 1 is received.
+ * }
  *
- * @note Version 1 had mistake in specification on the hardware therefore not supported at all
+ * @note Version 1 had mistake in specification on the hardware therefore
+ * not supported at all.
  */
 TEST_F(ModbusAdapterStoTest, testVersion1)
 {
@@ -458,7 +502,9 @@ TEST_F(ModbusAdapterStoTest, testVersion1)
 
 
 /**
- * @brief Test that stop happends if no Sto is defined
+ * @tests{Stop1_Trigger,
+ *  Test that stop happends if no Sto is defined.
+ * }
  */
 TEST_F(ModbusAdapterStoTest, testNoSto)
 {
@@ -500,6 +546,15 @@ public:
 /**
  * @brief Tests that unhold, recover, halt, hold services are ONLY called
  * if the STO changes its value.
+ *
+ * @tests{Hold_driver_if_STO_false,
+ *  Test that hold only called in case of STO switch.
+ * }
+ *
+ * @tests{Recover_driver_after_STO_false,
+ *  Test that driver recover only called in case of STO switch.
+ * }
+ *
  */
 TEST_F(ModbusAdapterStoTest, testSameStoValue)
 {

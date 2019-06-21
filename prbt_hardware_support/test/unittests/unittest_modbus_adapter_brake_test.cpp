@@ -143,8 +143,10 @@ TEST_F(ModbusAdapterBrakeTestTest, testModbusMsgBrakeTestWrapperDtor)
 }
 
 /**
- * @brief Test increases function coverage by ensuring that all Dtor variants
- * are called.
+ * @tests{Is_BrakeTest_required_mechanism,
+ *  Test increases function coverage by ensuring that all Dtor variants
+ *  are called.
+ * }
  */
 TEST_F(ModbusAdapterBrakeTestTest, testAdapterBrakeTestDtor)
 {
@@ -152,7 +154,10 @@ TEST_F(ModbusAdapterBrakeTestTest, testAdapterBrakeTestDtor)
 }
 
 /**
- * Tests the handling of an incoming modbus message informing about a required brake test.
+ * @tests{Is_BrakeTest_required_mechanism,
+ *  Tests the handling of an incoming modbus message informing about
+ *  a required brake test.
+ * }
  *
  * Test Sequence:
  *  1. Publish modbus message informing about a required brake test.
@@ -169,7 +174,10 @@ TEST_F(ModbusAdapterBrakeTestTest, testBrakeTestRequired)
 }
 
 /**
- * Tests the handling of an incoming modbus message informing about a brake test not being required.
+ * @tests{Is_BrakeTest_required_mechanism,
+ *  Tests the handling of an incoming modbus message informing about
+ *  a brake test not being required.
+ * }
  *
  * Test Sequence:
  *  1. Publish modbus message informing about a brake test not being required.
@@ -185,7 +193,10 @@ TEST_F(ModbusAdapterBrakeTestTest, testBrakeTestNotRequired)
 }
 
 /**
- * Tests the handling of an incoming modbus message informing about a disconnect.
+ * @tests{Is_BrakeTest_required_mechanism,
+ *  Tests the handling of an incoming modbus message informing
+ *  about a disconnect.
+ * }
  *
  * Test Sequence:
  *  1. Set required state to false
@@ -214,7 +225,10 @@ TEST_F(ModbusAdapterBrakeTestTest, testDisconnect)
 }
 
 /**
- * Tests the handling of an incoming modbus message with incorrect api version.
+ * @tests{Is_BrakeTest_required_mechanism,
+ *  Tests the handling of an incoming modbus message with
+ *  incorrect api version.
+ * }
  *
  * Test Sequence:
  *  1. Set required state to false
@@ -240,7 +254,9 @@ TEST_F(ModbusAdapterBrakeTestTest, testModbusIncorrectApiVersion)
 }
 
 /**
- * Tests the handling of an incoming modbus message without api version.
+ * @tests{Is_BrakeTest_required_mechanism,
+ *  Tests the handling of an incoming modbus message without api version.
+ * }
  *
  * Test Sequence:
  *  1. Set required state to false
@@ -268,7 +284,10 @@ TEST_F(ModbusAdapterBrakeTestTest, testModbusWithoutApiVersion)
 }
 
 /**
- * Tests the handling of an incoming modbus message without a brake test status.
+ * @tests{Is_BrakeTest_required_mechanism,
+ *  Tests the handling of an incoming modbus message without
+ *  a brake test status.
+ * }
  *
  * Test Sequence:
  *  1. Set required state to false

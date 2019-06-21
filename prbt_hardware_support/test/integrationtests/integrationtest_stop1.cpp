@@ -59,6 +59,7 @@ static constexpr uint16_t MODBUS_API_VERSION_VALUE {2};
  * ModbusServerMock -> ModbusReadClient -> StoModbusAdapter -> ManipulatorMock functions properly
  *
  * @note the test is derived from testing::AsyncTest which allows the asynchronous processes to re-sync
+ *
  */
 class Stop1IntegrationTest : public testing::Test, public testing::AsyncTest
 {
@@ -106,11 +107,31 @@ Stop1IntegrationTest::Stop1IntegrationTest()
 }
 
 /**
- * @brief Send data via ModbusServerMock -> ModbusReadClient -> StoModbusAdapter -> ManipulatorMock connection
- * and check that the expected service calls occur in the respective order.
+ * @brief Test that correct service calls occurs based on STO state.
+ *
+ * @tests{No_new_commands_during_STO_false,
+ *  Test that controller is set to hold in case of STO==false.
+ * }
+ *
+ * @tests{Recover_driver_after_STO_false,
+ *  Test that drives are recovered after STO switch: false->true.
+ * }
+ *
+ * @tests{Stop1_Trigger,
+ *  Test that Stop 1 is triggered if STO value changes to false.
+ * }
+ *
+ * @tests{Hold_driver_if_STO_false,
+ *  Test that driver is halt in case of STO switch: true->false.
+ * }
+ *
  *
  * @note Due to the asynchronicity of the test each step of the sequence passed successful
  *       allows the next step to be taken. See testing::AsyncTest for details.
+ *
+ *
+ * Data send via:
+ * ModbusServerMock -> ModbusReadClient -> StoModbusAdapter -> ManipulatorMock connection
  *
  * Test Sequence:
  *    0. Start Modbus-server in seperate thread. Make sure that the nodes are up.

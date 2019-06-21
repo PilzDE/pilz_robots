@@ -90,11 +90,15 @@ protected:
 }
 
 /**
- * @brief Send data via ModbusServerMock -> ModbusReadClient -> ModbusAdapterBrakeTest connection
- * and check that the expected result is returned via the service call.
+ * @tests{Is_BrakeTest_required_mechanism,
+ *  Test that brake test required service returns correct value.
+ * }
  *
  * @note Due to the asynchronicity of the test each step of the sequence passed successful
  *       allows the next step to be taken. See testing::AsyncTest for details.
+ *
+ * Data are send via:
+ *    ModbusServerMock -> ModbusReadClient -> ModbusAdapterBrakeTest connection
  *
  * Test Sequence:
  *    0. Start Modbus-server in separate thread. Make sure that the nodes are up.

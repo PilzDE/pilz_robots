@@ -1,0 +1,116 @@
+/*
+ * Copyright (c) 2019 Pilz GmbH & Co. KG
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/** @page Spec
+ *
+ *  @tableofcontents
+ *  @section system_specification System Specification
+ *  @brief System Specification
+ *
+ *  @subsection ISO-10218-1
+ *
+ *
+ *
+ * @subsubsection sto_stop1 Safe torque off (STO) and  Stop 1
+ *
+ * @note STO == 1/TRUE  <-> robot is allowed to move freely
+ * @note STO == 0/FALSE <-> robot is NOT allowed to move (except for stop motion)
+ *
+ * @definereq{Stop1_Trigger}
+ *  - A Stop 1 is triggered, if at least one of the following cases is true:
+ *    - the state of the STO changes from TRUE -> FALSE,
+ *    - connection to safety controller is lost,
+ *    - the messages informing about the STO (coming from the
+ *      safety controller) is incomplete or in any way corrupted,
+ *    - the communication protocol used by the safety controller
+ *      does not fulfill the expected specification
+ *      (defined by the version of the protocol).
+ *
+ * @definereq{No_new_commands_during_STO_false}
+ *  - As long as the STO is FALSE, no new motions commands are allowed.
+ *
+ * @definereq{Hold_driver_if_STO_false}
+ *  - If the STO changes from TRUE -> FALSE the driver is halted.
+ *
+ * @definereq{Recover_driver_after_STO_false}
+ *  - If the STO changes from FALSE -> TRUE, the driver is recovered.
+ *
+ *
+ * @definereq{No_Startup_if_controller_hold_missing}
+ *  - The system is not allowed to complete the startup procedure until
+ *    the controller hold service is available.
+ *
+ * @definereq{No_Startup_if_driver_halt_missing}
+ *  - The system is not allowed to complete the startup procedure until
+ *    the driver halt service is available.
+ *
+ * @definereq{Controller_service_unhold_optional}
+ *  - The system can still be started even if the controller unhold service
+ *    is missing.
+ *
+ * @definereq{Driver_service_recover_optional}
+ *  - The system can still be started even if the driver recover service
+ *    is missing.
+ *
+ *
+ *
+ * @subsubsection brake_test Braketest
+ *
+ * @definereq{Is_BrakeTest_required_mechanism}
+ *  - The system provides a mechanism which allows to determine if
+ *    a braketest is requested by the safety controller.
+ *
+ *  - The mechanism continues to return the last received value,
+ *    if at least one of the following conditions is true:
+ *    - the connection to the safety controller is lost,
+ *    - the messages informing about the operation mode (coming from the
+ *      safety controller) is incomplete or in any way corrupted,
+ *    - the communication protocol used by the safety controller
+ *      does not fulfill the expected specification
+ *      (defined by the version of the protocol).
+ *
+ * @definereq{Execute_BrakeTest_mechanism}
+ * - The system provides a mechanism which allows to execute a brake test.
+ * - The brake test is performed for all axes.
+ * - The brake test mechanism returns a status stating if the
+ *    brake test was successful xor what error occured.
+ * - At the beginning of the brake test it is checked if the robot is
+ *    currently moving. In case the robot is moving, the brake test is not
+ *    performed and an error is retured.
+ * - As long as the brake test is performed no motion is allowed. Commands
+ *    send during the execution of the brake test are rejected.
+ * - Brake tests are only performed for drives which define that they require
+ *    a brake test (configurable via config file or parameter server).
+ *
+ *
+ *
+ * @subsubsection operation_mode Operation Mode
+ *
+ * @definereq{Get_OperationMode_mechanism}
+ *  - The system provides a mechanism which allows to request the current
+ *    operation mode of the safety controller.
+ *
+ *  - The mechanism to request the operation mode returns UNKNOWN,
+ *    if at least one of the following cases comes true:
+ *    - the connection to the safety controller is lost,
+ *    - the messages informing about the operation mode (coming from the
+ *      safety controller) is incomplete or in any way corrupted,
+ *    - the communication protocol used by the safety controller
+ *      does not fulfill the expected specification
+ *      (defined by the version of the protocol).
+ *
+ */

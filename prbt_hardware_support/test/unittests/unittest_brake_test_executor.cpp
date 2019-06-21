@@ -60,7 +60,9 @@ BrakeTestExecutorTest::BrakeTestExecutorTest()
 }
 
 /**
- * @brief Test execution of brake tests while robot is not moving.
+ * @tests{Execute_BrakeTest_mechanism,
+ * Test execution of brake tests while robot is not moving.
+ * }
  *
  * Test Sequence:
  *  0. Setup Server for triggering the braketest
@@ -124,7 +126,9 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
 }
 
 /**
- * @brief Test execution of brake tests while robot is moving.
+ * @tests{Execute_BrakeTest_mechanism,
+ *  Test execution of brake tests while robot is moving.
+ * }
  *
  * Test Sequence:
  *  0. Setup Server for triggering the braketest
@@ -167,7 +171,9 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestServiceWithRobotMotion)
 }
 
 /**
- * @brief Test behaviour if the triggering of the braketest fails
+ * @tests{Execute_BrakeTest_mechanism,
+ * Test behaviour if the triggering of the braketest fails.
+ * }
  *
  * Test Sequence:
  *  0. Setup Server for triggering the braketest, Executor and Client
@@ -228,9 +234,10 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestServiceTriggerFails)
 }
 
 /**
- * @brief Test execution of brake tests when the hold/unhold service calls fail.
- *
- * This is essentially for line coverage.
+ * @tests{Execute_BrakeTest_mechanism,
+ *  Test execution of brake tests when the hold/unhold service calls fail.
+ *  This test is essentially for line coverage.
+ * }
  *
  * Test Sequence:
  *  0. Setup Server for triggering the braketest
