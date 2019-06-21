@@ -28,6 +28,7 @@
 #include <prbt_hardware_support/modbus_msg_in_utils.h>
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <prbt_hardware_support/OperationModes.h>
+#include <prbt_hardware_support/modbus_msg_operation_mode_wrapper_exception.h>
 
 static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {2};
 
@@ -37,7 +38,7 @@ using namespace prbt_hardware_support;
 
 class FilterMock : public message_filters::SimpleFilter<ModbusMsgInStamped>
 {
-  public:
+public:
   /**
    * \brief Call all registered callbacks, passing them the specified message
    */
@@ -63,29 +64,38 @@ static const ModbusApiSpec test_api_spec{ {modbus_api_spec::VERSION, 696},
 
 class OperationModeFilterTest : public testing::Test
 {
-    public:
-        MOCK_METHOD1(modbusInMsgCallback, void(ModbusMsgInStampedConstPtr msg));
+public:
+  MOCK_METHOD1(modbusInMsgCallback, void(ModbusMsgInStampedConstPtr msg));
 };
+
+/**
+ * @brief Test increases function coverage by ensuring that all Dtor's are
+ * called.
+ */
+TEST_F(OperationModeFilterTest, testModbusMsgOperationModeWrapperExceptionDtor)
+{
+  std::shared_ptr<ModbusMsgOperationModeWrapperException> ex {new ModbusMsgOperationModeWrapperException("Test msg")};
+}
 
 /**
  * @brief Tests that the filter properly passes message to the callback that have a operation mode
  */
 TEST_F(OperationModeFilterTest, passOperationModeMsg)
 {
-    FilterMock first_filter;
+  FilterMock first_filter;
 
-    mf::OperationModeFilter op_mode_filter(first_filter, test_api_spec);
+  mf::OperationModeFilter op_mode_filter(first_filter, test_api_spec);
 
-    op_mode_filter.registerCallback(boost::bind(&OperationModeFilterTest::modbusInMsgCallback, this, _1));
+  op_mode_filter.registerCallback(boost::bind(&OperationModeFilterTest::modbusInMsgCallback, this, _1));
 
-    EXPECT_CALL(*this, modbusInMsgCallback(_)).Times(1);
+  EXPECT_CALL(*this, modbusInMsgCallback(_)).Times(1);
 
-    // Construct valid message
-    ModbusMsgInBuilder builder(test_api_spec);
-    builder.setApiVersion(MODBUS_API_VERSION_REQUIRED)
-           .setOperationMode(OperationModes::T1);
+  // Construct valid message
+  ModbusMsgInBuilder builder(test_api_spec);
+  builder.setApiVersion(MODBUS_API_VERSION_REQUIRED)
+      .setOperationMode(OperationModes::T1);
 
-    first_filter.signalMessage(builder.build());
+  first_filter.signalMessage(builder.build());
 }
 
 /**
@@ -93,24 +103,24 @@ TEST_F(OperationModeFilterTest, passOperationModeMsg)
  */
 TEST_F(OperationModeFilterTest, passOnlyChange)
 {
-    FilterMock first_filter;
+  FilterMock first_filter;
 
-    mf::OperationModeFilter op_mode_filter(first_filter, test_api_spec);
+  mf::OperationModeFilter op_mode_filter(first_filter, test_api_spec);
 
-    op_mode_filter.registerCallback(boost::bind(&OperationModeFilterTest::modbusInMsgCallback, this, _1));
+  op_mode_filter.registerCallback(boost::bind(&OperationModeFilterTest::modbusInMsgCallback, this, _1));
 
-    // Construct valid message
-    ModbusMsgInBuilder builder(test_api_spec);
-    builder.setApiVersion(2);
+  // Construct valid message
+  ModbusMsgInBuilder builder(test_api_spec);
+  builder.setApiVersion(2);
 
-    EXPECT_CALL(*this, modbusInMsgCallback(_)).Times(1);
-    first_filter.signalMessage(builder.setOperationMode(OperationModes::T1).build());
+  EXPECT_CALL(*this, modbusInMsgCallback(_)).Times(1);
+  first_filter.signalMessage(builder.setOperationMode(OperationModes::T1).build());
 
-    EXPECT_CALL(*this, modbusInMsgCallback(_)).Times(0);
-    first_filter.signalMessage(builder.setOperationMode(OperationModes::T1).build());
+  EXPECT_CALL(*this, modbusInMsgCallback(_)).Times(0);
+  first_filter.signalMessage(builder.setOperationMode(OperationModes::T1).build());
 
-    EXPECT_CALL(*this, modbusInMsgCallback(_)).Times(1);
-    first_filter.signalMessage(builder.setOperationMode(OperationModes::T2).build());
+  EXPECT_CALL(*this, modbusInMsgCallback(_)).Times(1);
+  first_filter.signalMessage(builder.setOperationMode(OperationModes::T2).build());
 }
 
 /**
@@ -118,20 +128,20 @@ TEST_F(OperationModeFilterTest, passOnlyChange)
  */
 TEST_F(OperationModeFilterTest, messageWithOutOperationMode)
 {
-    FilterMock first_filter;
+  FilterMock first_filter;
 
-    mf::OperationModeFilter op_mode_filter(first_filter, test_api_spec);
+  mf::OperationModeFilter op_mode_filter(first_filter, test_api_spec);
 
-    op_mode_filter.registerCallback(boost::bind(&OperationModeFilterTest::modbusInMsgCallback, this, _1));
+  op_mode_filter.registerCallback(boost::bind(&OperationModeFilterTest::modbusInMsgCallback, this, _1));
 
-    EXPECT_CALL(*this, modbusInMsgCallback(_)).Times(0);
+  EXPECT_CALL(*this, modbusInMsgCallback(_)).Times(0);
 
-    // Construct valid message
-    ModbusMsgInBuilder builder(test_api_spec);
-    builder.setApiVersion(MODBUS_API_VERSION_REQUIRED)
-           .setRegister(511, 5); // Some register
+  // Construct valid message
+  ModbusMsgInBuilder builder(test_api_spec);
+  builder.setApiVersion(MODBUS_API_VERSION_REQUIRED)
+      .setRegister(511, 5); // Some register
 
-    first_filter.signalMessage(builder.build());
+  first_filter.signalMessage(builder.build());
 }
 
 
@@ -140,18 +150,18 @@ TEST_F(OperationModeFilterTest, messageWithOutOperationMode)
  */
 TEST_F(OperationModeFilterTest, noVersion)
 {
-    FilterMock first_filter;
+  FilterMock first_filter;
 
-    mf::OperationModeFilter op_mode_filter(first_filter, test_api_spec);
+  mf::OperationModeFilter op_mode_filter(first_filter, test_api_spec);
 
-    op_mode_filter.registerCallback(boost::bind(&OperationModeFilterTest::modbusInMsgCallback, this, _1));
+  op_mode_filter.registerCallback(boost::bind(&OperationModeFilterTest::modbusInMsgCallback, this, _1));
 
-    // Construct valid message
-    ModbusMsgInBuilder builder(test_api_spec);
-    builder.setOperationMode(OperationModes::T1);
+  // Construct valid message
+  ModbusMsgInBuilder builder(test_api_spec);
+  builder.setOperationMode(OperationModes::T1);
 
-    EXPECT_CALL(*this, modbusInMsgCallback(_)).Times(0);
-    first_filter.signalMessage(builder.build());
+  EXPECT_CALL(*this, modbusInMsgCallback(_)).Times(0);
+  first_filter.signalMessage(builder.build());
 }
 
 } // namespace operation_mode_filter_test

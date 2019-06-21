@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <mutex>
 #include <thread>
+#include <memory>
 
 #include <gtest/gtest.h>
 
@@ -61,6 +62,21 @@ static ::testing::AssertionResult compareJointStateMessages(const JointStateCons
   }
 
   return ::testing::AssertionSuccess();
+}
+
+/**
+ * @brief Test increases function coverage by ensuring that all Dtor variants
+ * are called.
+ */
+TEST(BrakeTestUtilsTest, testExceptionDtor)
+{
+  {
+    std::shared_ptr<BrakeTestUtilsException> ex {new BrakeTestUtilsException("Test msg")};
+  }
+
+  {
+    std::shared_ptr<GetCurrentJointStatesException> ex {new GetCurrentJointStatesException("Test msg")};
+  }
 }
 
 /**
