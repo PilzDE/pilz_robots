@@ -245,7 +245,7 @@ TEST_F(PilzStoModbusAdapterTest, testClearMsg)
 
   EXPECT_CLEARANCE
 
-      pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
+  pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
 
   BARRIER("recover_callback");
 }
@@ -297,7 +297,7 @@ TEST_F(PilzStoModbusAdapterTest, testHoldMsg)
 
   EXPECT_STOP1
 
-      pub_.publish(createDefaultStoModbusMsg(STO_ACTIVE));
+  pub_.publish(createDefaultStoModbusMsg(STO_ACTIVE));
 
   BARRIER("halt_callback");
 }
@@ -314,7 +314,7 @@ TEST_F(PilzStoModbusAdapterTest, testDisconnectNoStoMsg)
 
   EXPECT_STOP1
 
-      ModbusMsgInStampedPtr msg = createDefaultStoModbusMsg(STO_CLEAR);
+  ModbusMsgInStampedPtr msg = createDefaultStoModbusMsg(STO_CLEAR);
   msg->disconnect.data = true;
 
   pub_.publish(msg);
@@ -334,7 +334,7 @@ TEST_F(PilzStoModbusAdapterTest, testDisconnectWithStoMsg)
 
   EXPECT_STOP1
 
-      ModbusMsgInStampedPtr msg = createDefaultStoModbusMsg(STO_ACTIVE);
+  ModbusMsgInStampedPtr msg = createDefaultStoModbusMsg(STO_ACTIVE);
   msg->disconnect.data = true;
 
   pub_.publish(msg);
@@ -354,7 +354,7 @@ TEST_F(PilzStoModbusAdapterTest, testDisconnectPure)
 
   EXPECT_STOP1
 
-      ModbusMsgInStampedPtr msg (new ModbusMsgInStamped());
+  ModbusMsgInStampedPtr msg (new ModbusMsgInStamped());
   msg->header.stamp = ros::Time::now();
   msg->disconnect.data = true;
 
@@ -374,7 +374,7 @@ TEST_F(PilzStoModbusAdapterTest, testNoVersion)
 
   EXPECT_STOP1
 
-      ModbusMsgInStampedPtr msg = createDefaultStoModbusMsg(STO_ACTIVE);
+  ModbusMsgInStampedPtr msg = createDefaultStoModbusMsg(STO_ACTIVE);
   msg->holding_registers.data.pop_back();
 
   pub_.publish(msg);
@@ -393,7 +393,7 @@ TEST_F(PilzStoModbusAdapterTest, testWrongVersion)
 
   EXPECT_STOP1
 
-      ModbusMsgInStampedPtr msg = createDefaultStoModbusMsg(STO_ACTIVE);
+  ModbusMsgInStampedPtr msg = createDefaultStoModbusMsg(STO_ACTIVE);
   msg->holding_registers.data[1] = 0;
 
   pub_.publish(msg);
@@ -415,7 +415,7 @@ TEST_F(PilzStoModbusAdapterTest, testVersion1)
 
   EXPECT_STOP1
 
-      ModbusMsgInStampedPtr msg = createDefaultStoModbusMsg(STO_ACTIVE);
+  ModbusMsgInStampedPtr msg = createDefaultStoModbusMsg(STO_ACTIVE);
   msg->holding_registers.data[1] = 1;
 
   pub_.publish(msg);
@@ -435,7 +435,7 @@ TEST_F(PilzStoModbusAdapterTest, testNoSto)
 
   EXPECT_STOP1
 
-      ModbusMsgInStampedPtr msg = createDefaultStoModbusMsg(STO_ACTIVE);
+  ModbusMsgInStampedPtr msg = createDefaultStoModbusMsg(STO_ACTIVE);
   msg->holding_registers.data.erase(msg->holding_registers.data.begin());
   msg->holding_registers.layout.data_offset = test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION);
 

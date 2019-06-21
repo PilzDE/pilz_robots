@@ -41,7 +41,6 @@ TEST(ModbusMsgWrapperTest, testModbusMsgWrapperDtor)
   const uint16_t modbus_api_version {1};
   std::vector<uint16_t> holding_register {modbus_api_version};
   ModbusMsgInStampedPtr msg{createDefaultModbusMsgIn(offset, holding_register)};
-  msg->disconnect.data = false;
 
   ModbusMsgInStampedConstPtr msg_const_ptr {msg};
   std::shared_ptr<ModbusMsgWrapper> ex(new ModbusMsgWrapper(msg_const_ptr, test_api_spec));
