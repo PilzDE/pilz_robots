@@ -16,6 +16,7 @@
  */
 
 #include <functional>
+#include <memory>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -67,6 +68,17 @@ class CanOpenBraketestAdapterTest : public Test
 protected:
   ros::NodeHandle nh_;
 };
+
+/**
+ * @brief Test increases function coverage by ensuring that all Dtor variants
+ * are called.
+ */
+TEST_F(CanOpenBraketestAdapterTest, testCANOpenBrakeTestAdapterExceptionDtor)
+{
+  {
+    std::shared_ptr<CANOpenBrakeTestAdapterException> ex {new CANOpenBrakeTestAdapterException("Test msg")};
+  }
+}
 
 /**
  * @brief Test execution of brake tests without the CAN get service.

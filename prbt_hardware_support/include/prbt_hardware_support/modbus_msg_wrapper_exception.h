@@ -37,20 +37,6 @@ namespace prbt_hardware_support
       }
   };
 
-    /**
-   * @brief Expection thrown upon construction of ModbusMsgWrapperBase
-   * of the message does not contain the required information.
-   *
-   */
-  class ModbusMsgWrapperExceptionNoVersion : public ModbusMsgWrapperException
-  {
-    public:
-      ModbusMsgWrapperExceptionNoVersion():
-        ModbusMsgWrapperException("No version given!")
-      {
-      }
-  };
-
 }
 
 #endif // MODBUS_MSG_WRAPPER_EXCEPTION_H
