@@ -203,6 +203,11 @@ if(CATKIN_ENABLE_TESTING)
                    test/unittests/unittest_pilz_modbus_exception.cpp)
   add_dependencies(unittest_pilz_modbus_exception ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+  #--- ModbusMsgWrapper unit test ---
+  catkin_add_gtest(unittest_modbus_msg_wrapper
+                   test/unittests/unittest_modbus_msg_wrapper.cpp)
+  add_dependencies(unittest_modbus_msg_wrapper ${${PROJECT_NAME}_EXPORTED_TARGETS})
+  #----------------------------------
 
   catkin_add_gtest(unittest_pilz_modbus_read_client_exception
   test/unittests/unittest_pilz_modbus_read_client_exception.cpp)
