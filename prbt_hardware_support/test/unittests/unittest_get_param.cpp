@@ -31,6 +31,17 @@ static const std::string FALSE_PARAM_NAME{"false_name"};
 static const std::string DUMMY_PARAM_VALUE{"parameter value"};
 
 /**
+ * @brief Test increases function coverage by ensuring that all Dtor variants
+ * are called.
+ */
+TEST(GetParamTest, testGetParamExceptionDtor)
+{
+  {
+    std::shared_ptr<GetParamException> ex {new GetParamException("Test msg")};
+  }
+}
+
+/**
  * Test description.
  *
  * Test Sequence:

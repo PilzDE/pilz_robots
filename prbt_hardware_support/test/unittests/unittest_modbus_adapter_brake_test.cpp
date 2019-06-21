@@ -18,6 +18,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <functional>
+#include <memory>
 
 #include <std_msgs/Bool.h>
 
@@ -76,8 +77,8 @@ ModbusAdapterBrakeTestTest::~ModbusAdapterBrakeTestTest()
 }
 
 ModbusMsgInStampedPtr ModbusAdapterBrakeTestTest::createDefaultBrakeTestModbusMsg(bool brake_test_required,
-                                                                                    unsigned int modbus_api_version,
-                                                                                    uint32_t brake_test_required_index)
+                                                                                  unsigned int modbus_api_version,
+                                                                                  uint32_t brake_test_required_index)
 {
   uint32_t first_index_to_read{test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION)};
   uint32_t last_index_to_read{brake_test_required_index};
@@ -91,8 +92,8 @@ ModbusMsgInStampedPtr ModbusAdapterBrakeTestTest::createDefaultBrakeTestModbusMs
 }
 
 bool ModbusAdapterBrakeTestTest::expectBrakeTestRequiredServiceCallResult(ros::ServiceClient& brake_test_required_client,
-                                                                            bool expectation,
-                                                                            uint16_t retries)
+                                                                          bool expectation,
+                                                                          uint16_t retries)
 {
   prbt_hardware_support::IsBrakeTestRequired srv;
   for (int i = 0; i<= retries; i++) {
@@ -108,6 +109,26 @@ bool ModbusAdapterBrakeTestTest::expectBrakeTestRequiredServiceCallResult(ros::S
 
 MATCHER(InformsAboutRequired, "") { return arg.data; }
 MATCHER(InformsAboutNotRequired, "") { return !arg.data; }
+
+/**
+ * @brief Test increases function coverage by ensuring that all Dtor variants
+ * are called.
+ */
+TEST_F(ModbusAdapterBrakeTestTest, testModbusMsgBrakeTestWrapperExceptionDtor)
+{
+  std::shared_ptr<ModbusMsgBrakeTestWrapperException> msg_wrapper{new ModbusMsgBrakeTestWrapperException("Test msg")};
+}
+
+/**
+ * @brief Test increases function coverage by ensuring that all Dtor variants
+ * are called.
+ */
+TEST_F(ModbusAdapterBrakeTestTest, testModbusMsgBrakeTestWrapperDtor)
+{
+  {
+    std::shared_ptr<ModbusMsgBrakeTestWrapper> msg_wrapper{new ModbusMsgBrakeTestWrapper(createDefaultBrakeTestModbusMsg(true), test_api_spec)};
+  }
+}
 
 /**
  * Tests the handling of an incoming modbus message informing about a required brake test.
@@ -216,7 +237,7 @@ TEST_F(ModbusAdapterBrakeTestTest, testModbusWithoutApiVersion)
                                                        false));
 
   auto msg{createDefaultBrakeTestModbusMsg(true, test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION),
-  test_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST))};
+                                           test_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST))};
   msg->holding_registers.data.clear();
   modbus_topic_pub_.publish(msg);
 

@@ -19,6 +19,7 @@
 #include <vector>
 #include <stdexcept>
 #include <thread>
+#include <memory>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -127,9 +128,28 @@ ModbusMsgInStampedPtr PilzStoModbusAdapterTest::createDefaultStoModbusMsg(bool s
 std::thread PilzStoModbusAdapterTest::asyncConstructor()
 {
   std::thread t([this](){
-                    PilzStoModbusAdapterNode adapter_node(nh_, test_api_spec);
-                  });
+    PilzStoModbusAdapterNode adapter_node(nh_, test_api_spec);
+  });
   return t;
+}
+
+/**
+ * @brief Test increases function coverage by ensuring that all Dtor variants
+ * are called.
+ */
+TEST_F(PilzStoModbusAdapterTest, testModbusMsgWrapperExceptionDtor)
+{
+  std::shared_ptr<ModbusMsgWrapperException> es{new ModbusMsgWrapperException("Test msg")};
+}
+
+/**
+ * @brief Test increases function coverage by ensuring that all Dtor variants
+ * are called.
+ */
+TEST_F(PilzStoModbusAdapterTest, testModbusMsgStoWrapperDtor)
+{
+  ModbusMsgInStampedConstPtr msg_const_ptr {createDefaultStoModbusMsg(STO_CLEAR)};
+  std::shared_ptr<ModbusMsgStoWrapper> ex {new ModbusMsgStoWrapper(msg_const_ptr, test_api_spec)};
 }
 
 /**

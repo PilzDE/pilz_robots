@@ -18,6 +18,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <string>
+#include <memory>
 
 #include <prbt_hardware_support/modbus_api_spec.h>
 
@@ -31,6 +32,15 @@ class NodeHandleMock
     MOCK_CONST_METHOD0(getNamespace, std::string(void));
     MOCK_CONST_METHOD2(getParam, bool(const std::string& key, XmlRpc::XmlRpcValue& v));
 };
+
+/**
+ * @brief Test increases function coverage by ensuring that all Dtor variants
+ * are called.
+ */
+TEST(ModbusApiSpecTest, testModbusApiSpecExceptionDtor)
+{
+  std::shared_ptr<ModbusApiSpecException> ex {new ModbusApiSpecException("Test msg")};
+}
 
 TEST(ModbusApiSpecTest, ConstructionViaInitilizerListRead)
 {
