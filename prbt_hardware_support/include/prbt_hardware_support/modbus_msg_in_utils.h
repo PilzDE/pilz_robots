@@ -24,6 +24,8 @@
 #include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/OperationModes.h>
 
+#include <boost/numeric/conversion/cast.hpp>
+
 namespace prbt_hardware_support
 {
 
@@ -45,7 +47,7 @@ static ModbusMsgInStamped* createDefaultModbusMsgIn(const uint32_t& offset,
                                              const std::vector<uint16_t>& holding_register)
 {
   ModbusMsgInStamped* msg { new ModbusMsgInStamped() };
-  setLayout(&(msg->holding_registers.layout), offset, holding_register.size());
+  setLayout(&(msg->holding_registers.layout), offset, boost::numeric_cast<uint32_t>(holding_register.size()));
 
   msg->disconnect.data = false;
   msg->holding_registers.data = holding_register;
