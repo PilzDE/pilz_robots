@@ -70,8 +70,8 @@ important for the Safe stop 1 functionality and must NOT be given, if the
 ``modbus_client_node`` is used as part of the Safe stop 1 functionality.
 If the parameters are not given the default values for these parameters are used.
 
-## StoModbusAdapterNode
-The ``PilzStoModbusAdapterNode`` is noticed via the topic `/pilz_modbus_node/modbus_read` if the STO is true or false and reacts as follows calling the corresponding services of the controllers and drivers:
+## ModbusAdapterStoNode
+The ``ModbusAdapterSto`` is noticed via the topic `/pilz_modbus_node/modbus_read` if the STO is true or false and reacts as follows calling the corresponding services of the controllers and drivers:
 - **STO true:**
 enable drives, unhold controllers
 - **STO false:**

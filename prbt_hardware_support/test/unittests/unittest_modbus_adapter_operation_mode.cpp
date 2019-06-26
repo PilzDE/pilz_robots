@@ -49,6 +49,7 @@ class ModbusAdapterOperationModeTest : public testing::Test
 {
 public:
   ModbusAdapterOperationModeTest();
+  virtual ~ModbusAdapterOperationModeTest();
 
   /**
    * @brief Wait for a specific change in operation mode to take effect.
@@ -61,6 +62,7 @@ public:
   ::testing::AssertionResult waitForServiceCallResult(bool expectation, double timeout = OPERATION_MODE_CHANGE_WAIT_TIME_S);
 
 protected:
+  ros::AsyncSpinner spinner_{2};
   ros::NodeHandle nh_;
   std::shared_ptr<ModbusAdapterOperationMode> adapter_operation_mode_;
   ros::Publisher modbus_topic_pub_;
@@ -78,6 +80,18 @@ ModbusAdapterOperationModeTest::ModbusAdapterOperationModeTest()
   adapter_operation_mode_.reset(new ModbusAdapterOperationMode(nh_, test_api_spec));
   modbus_topic_pub_ = nh_.advertise<ModbusMsgInStamped>(TOPIC_MODBUS_READ, DEFAULT_QUEUE_SIZE_MODBUS);
   operation_mode_client_ = nh_.serviceClient<prbt_hardware_support::GetOperationMode>(SERVICE_NAME_OPERATION_MODE);
+
+  spinner_.start();
+}
+
+ModbusAdapterOperationModeTest::~ModbusAdapterOperationModeTest()
+{
+  // Before the destructors of the class members are called, we have
+  // to ensure that all topic and service calls done by the AsyncSpinner
+  // threads are finished. Otherwise, we sporadically will see threading
+  // exceptions like:
+  // "boost::mutex::~mutex(): Assertion `!res' failed".
+  spinner_.stop();
 }
 
 ::testing::AssertionResult ModbusAdapterOperationModeTest::waitForOperationMode(unsigned int op_mode, double timeout)
@@ -132,11 +146,58 @@ TEST_F(ModbusAdapterOperationModeTest, testAdapterOperationModeDtor)
  * @brief Test increases function coverage by ensuring that all Dtor variants
  * are called.
  */
+TEST_F(ModbusAdapterOperationModeTest, testModbusMsgOperationModeWrapperExceptionDtor)
+{
+  std::shared_ptr<ModbusMsgOperationModeWrapperException> ex (new ModbusMsgOperationModeWrapperException("Test message"));
+}
+
+/**
+ * @brief Test increases function coverage by ensuring that all Dtor variants
+ * are called.
+ */
 TEST_F(ModbusAdapterOperationModeTest, testModbusMsgOperationModeWrapperDtor)
 {
   ModbusMsgInBuilder builder(test_api_spec);
   builder.setApiVersion(MODBUS_API_VERSION_REQUIRED).setOperationMode(OperationModes::T1);
   std::shared_ptr<ModbusMsgOperationModeWrapper> wrapper (new ModbusMsgOperationModeWrapper(builder.build(ros::Time::now()), test_api_spec));
+}
+
+/**
+ * @brief Tests that operation mode UNKNOWN is returned, if the
+ * operation mode register is missing in the modbus message.
+ *
+ * Test Sequence:
+ *    1. Send modbus message containing operation mode T1.
+ *    2. Send modbus message which does not contain an operation mode.
+ *
+ * Expected Results:
+ *    1. The operation mode service returns T1 as operation mode.
+ *    2. The operation mode service returns UNKNWON as operation mode.
+ */
+TEST_F(ModbusAdapterOperationModeTest, testMissingOperationModeRegister)
+{
+  ModbusMsgInBuilder builder(test_api_spec);
+  builder.setApiVersion(MODBUS_API_VERSION_REQUIRED);
+
+  ROS_DEBUG("+++  Step 1 +++");
+  modbus_topic_pub_.publish(builder.setOperationMode(OperationModes::T1).build(ros::Time::now()));
+  ASSERT_TRUE(ros::service::waitForService(SERVICE_NAME_OPERATION_MODE, ros::Duration(3)))
+      << "Operation mode service does not appear";
+  ASSERT_TRUE(waitForOperationMode(OperationModes::T1));
+
+  ModbusMsgInStampedPtr msg {builder.setOperationMode(OperationModes::T1).build(ros::Time::now())};
+
+  ROS_DEBUG("+++  Step 2 +++");
+  // Remove operation mode from modbus message
+  ASSERT_GT(test_api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE), test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION))
+      << "For the test to work correctly, the operation mode register has to be stored in the last register.";
+  msg->holding_registers.data.erase(--msg->holding_registers.data.end());
+  const uint32_t new_offset = test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION);
+  msg->holding_registers.layout.data_offset = new_offset;
+  ModbusMsgInBuilder::setDefaultLayout(&(msg->holding_registers.layout), new_offset, static_cast<uint32_t>(msg->holding_registers.data.size()));
+
+  modbus_topic_pub_.publish(msg);
+  ASSERT_TRUE(waitForOperationMode(OperationModes::UNKNOWN));
 }
 
 /**
@@ -218,7 +279,7 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusUnexpectedOperationMode)
  *
  * Expected Results:
  *  1. The version is T1
- *  2. The version is still T1
+ *  2. The version is Unknown
  */
 TEST_F(ModbusAdapterOperationModeTest, testModbusIncorrectApiVersion)
 {
@@ -235,7 +296,7 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusIncorrectApiVersion)
   builder.setApiVersion(0 /* wrong version */).setOperationMode(OperationModes::T2);
   modbus_topic_pub_.publish(builder.build(ros::Time::now()));
 
-  ASSERT_TRUE(waitForOperationMode(OperationModes::T1));
+  ASSERT_TRUE(waitForOperationMode(OperationModes::UNKNOWN));
 }
 
 } // namespace prbt_hardware_support
@@ -244,9 +305,6 @@ int main(int argc, char *argv[])
 {
   ros::init(argc, argv, "unittest_modbus_adapter_operation_mode");
   ros::NodeHandle nh;
-
-  ros::AsyncSpinner spinner_{2};
-  spinner_.start();
 
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

@@ -15,27 +15,42 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MODBUS_MSG_BRAKE_TEST_WRAPPER_EXCEPTION_H
-#define MODBUS_MSG_BRAKE_TEST_WRAPPER_EXCEPTION_H
+#include <stdexcept>
 
-#include <string>
-#include <prbt_hardware_support/modbus_msg_wrapper_exception.h>
+#include <gtest/gtest.h>
 
-namespace prbt_hardware_support
+#include <prbt_hardware_support/filter_pipeline.h>
+
+namespace filter_pipeline_test
 {
-/**
- * @brief Expection thrown upon construction of ModbusMsgBrakeTestWrapper
- * of the message does not contain the required information.
- */
-class ModbusMsgBrakeTestWrapperException : public ModbusMsgWrapperException
+
+using namespace prbt_hardware_support;
+
+class FilterPipelineTest : public testing::Test
 {
-public:
-  ModbusMsgBrakeTestWrapperException( const std::string& what_arg )
-    : ModbusMsgWrapperException(what_arg)
-  {
-  }
+
 };
 
+/**
+ * @brief Tests that exception is thrown if empty callback function is
+ * specified.
+ */
+TEST_F(FilterPipelineTest, testEmptyCallbackFunction)
+{
+  ros::NodeHandle nh;
+  FilterPipeline::TCallbackFunc cb;
+  EXPECT_THROW(FilterPipeline(nh, cb), std::invalid_argument);
 }
 
-#endif // MODBUS_MSG_BRAKE_TEST_WRAPPER_EXCEPTION_H
+
+} // namespace filter_pipeline_test
+
+int main(int argc, char** argv)
+{
+  ros::init(argc, argv, "unittest_filter_pipeline");
+  ros::NodeHandle nh_;
+
+  testing::InitGoogleTest(&argc, argv);
+
+  return RUN_ALL_TESTS();
+}

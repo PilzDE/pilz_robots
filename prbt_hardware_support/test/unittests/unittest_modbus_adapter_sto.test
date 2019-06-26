@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2019 Pilz GmbH & Co. KG
+Copyright (c) 2018 Pilz GmbH & Co. KG
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
@@ -16,7 +16,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <launch>
-  <test pkg="prbt_hardware_support" type="unittest_brake_test_filter"
-        test-name="unittest_brake_test_filter">
+  <arg name="debug" default="false"/>
+  <arg name="index_of_first_register_to_read" default="512"/>
+  <arg name="num_registers_to_read" default="2" />
+
+  <test pkg="prbt_hardware_support" type="unittest_modbus_adapter_sto"
+        test-name="unittest_modbus_adapter_sto">
+    <param name="index_of_first_register_to_read" value="$(arg index_of_first_register_to_read)"/>
+    <param name="num_registers_to_read" value="$(arg num_registers_to_read)"/>
   </test>
 </launch>

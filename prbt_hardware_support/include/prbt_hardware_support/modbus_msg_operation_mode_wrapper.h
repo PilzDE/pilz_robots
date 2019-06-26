@@ -38,6 +38,14 @@ public:
   ModbusMsgOperationModeWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw, const ModbusApiSpec& api_spec);
 
   /**
+   * @brief Calls ModbusMsgWrapper::checkStructuralIntegrity().
+   *
+   * @throw ModbusMsgOperationModeWrapperException if operation mode
+   * register is missing.
+   */
+  virtual void checkStructuralIntegrity() const override;
+
+  /**
    * @brief Get the operation mode field from the Modbus message.
    *
    * @return The current operation mode according to OperationModes.msg
@@ -52,42 +60,22 @@ private:
    * @return true if a operation mode is defined, false otherwise.
    */
   bool hasOperationMode() const;
-
-  static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {2};
 };
 
 inline ModbusMsgOperationModeWrapper::ModbusMsgOperationModeWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
                                                                     const ModbusApiSpec& api_spec):
   ModbusMsgWrapper(modbus_msg_raw, api_spec)
 {
-  if(isDisconnect())
-  {
-    return;
-  }
-
-  if(getVersion() != MODBUS_API_VERSION_REQUIRED)
-  {
-    throw ModbusMsgOperationModeWrapperException("Received message does not have expected Version");
-  }
-
-  if(!hasOperationMode())
-  {
-    throw ModbusMsgOperationModeWrapperException("Received message does not contain information about the operation mode.");
-  }
 }
 
 inline bool ModbusMsgOperationModeWrapper::hasOperationMode() const
 {
-  return hasRegister(api_spec_.getRegisterDefinition(modbus_api_spec::OPERATION_MODE));
+  return hasRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::OPERATION_MODE));
 }
 
 inline int8_t ModbusMsgOperationModeWrapper::getOperationMode() const
 {
-  if(isDisconnect()){
-    return OperationModes::UNKNOWN;
-  }
-
-  switch(getRegister(api_spec_.getRegisterDefinition(modbus_api_spec::OPERATION_MODE)))
+  switch(getRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::OPERATION_MODE)))
   {
     case 0:
             return OperationModes::UNKNOWN;
@@ -99,6 +87,16 @@ inline int8_t ModbusMsgOperationModeWrapper::getOperationMode() const
             return OperationModes::AUTO;
     default:
             return OperationModes::UNKNOWN;
+  }
+}
+
+inline void ModbusMsgOperationModeWrapper::checkStructuralIntegrity() const
+{
+  ModbusMsgWrapper::checkStructuralIntegrity();
+
+  if(!hasOperationMode())
+  {
+    throw ModbusMsgOperationModeWrapperException("Received message does not contain information about the operation mode.");
   }
 }
 

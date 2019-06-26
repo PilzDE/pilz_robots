@@ -35,11 +35,11 @@ namespace prbt_hardware_support
 {
 
 /**
- * @class PilzModbusServerMock offers a modbus server and read/write functionality
- * via subscription publication.
+ * @class PilzModbusServerMock
+ * @brief Offers a modbus server and read/write functionality via subscription/publication.
  */
 class PilzModbusServerMock
-{ 
+{
 public:
   PilzModbusServerMock(const unsigned int& holding_register_size);
 

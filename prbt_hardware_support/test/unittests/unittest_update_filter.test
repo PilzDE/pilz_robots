@@ -16,7 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <launch>
-  <test pkg="prbt_hardware_support" type="unittest_update_filter"
-        test-name="unittest_update_filter">
+  <test pkg="prbt_hardware_support" type="unittest_filter_pipeline"
+        test-name="unittest_filter_pipeline">
   </test>
 </launch>
