@@ -58,14 +58,15 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-# STO_MODBUS_ADAPTER_NODE
-add_executable(sto_modbus_adapter_node
-  src/sto_modbus_adapter_node.cpp
-  src/sto_modbus_adapter.cpp
+# MODBUS_ADAPTER_STO_NODE
+add_executable(modbus_adapter_sto_node
+  src/modbus_adapter_sto_node.cpp
+  src/adapter_sto.cpp
+  src/modbus_adapter_sto.cpp
   src/modbus_msg_sto_wrapper.cpp
 )
-add_dependencies(sto_modbus_adapter_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
-target_link_libraries(sto_modbus_adapter_node ${catkin_LIBRARIES})
+add_dependencies(modbus_adapter_sto_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(modbus_adapter_sto_node ${catkin_LIBRARIES})
 
 # BRAKE_TEST_NODE
 add_executable(modbus_adapter_brake_test_node
@@ -134,7 +135,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
   PATTERN ".svn" EXCLUDE)
 
 install(TARGETS
-  sto_modbus_adapter_node
+  modbus_adapter_sto_node
   pilz_modbus_client_node
   canopen_braketest_adapter_node
   modbus_adapter_brake_test_node
@@ -165,36 +166,16 @@ if(CATKIN_ENABLE_TESTING)
   )
   add_dependencies(unittest_update_filter ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-  add_rostest_gmock(unittest_brake_test_filter
-                    test/unittests/unittest_brake_test_filter.test
-                    test/unittests/unittest_brake_test_filter.cpp
-                    src/modbus_msg_in_builder.cpp
-  )
-  target_link_libraries(unittest_brake_test_filter
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
-  )
-  add_dependencies(unittest_brake_test_filter ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
   catkin_add_gtest(unittest_libmodbus_client
       test/unittests/unittest_libmodbus_client.cpp
       test/unittests/pilz_modbus_server_mock.cpp
       src/libmodbus_client.cpp
-
   )
   target_link_libraries(unittest_libmodbus_client
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
     modbus
   )
   add_dependencies(unittest_libmodbus_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
-  catkin_add_gmock(unittest_operation_mode_filter
-  test/unittests/unittest_operation_mode_filter.cpp
-  src/modbus_msg_in_builder.cpp
-  )
-  target_link_libraries(unittest_operation_mode_filter
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
-  )
-  add_dependencies(unittest_operation_mode_filter ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
   catkin_add_gmock(unittest_modbus_api_spec
   test/unittests/unittest_modbus_api_spec.cpp
@@ -233,14 +214,15 @@ if(CATKIN_ENABLE_TESTING)
   add_dependencies(unittest_pilz_modbus_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
   #--- StoModbusAdapter unit test ---
-  add_rostest_gmock(unittest_sto_modbus_adapter
-   test/unittests/unittest_sto_modbus_adapter.test
-   test/unittests/unittest_sto_modbus_adapter.cpp
-   src/sto_modbus_adapter.cpp
+  add_rostest_gmock(unittest_modbus_adapter_sto
+   test/unittests/unittest_modbus_adapter_sto.test
+   test/unittests/unittest_modbus_adapter_sto.cpp
+   src/adapter_sto.cpp
+   src/modbus_adapter_sto.cpp
    src/modbus_msg_sto_wrapper.cpp
    src/modbus_msg_in_builder.cpp
   )
-  target_link_libraries(unittest_sto_modbus_adapter
+  target_link_libraries(unittest_modbus_adapter_sto
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
   )
   #----------------------------------
@@ -383,6 +365,16 @@ if(CATKIN_ENABLE_TESTING)
   )
   add_dependencies(unittest_system_info ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------------
+
+  # --- FilterPipeline unit test ---
+  add_rostest_gtest(unittest_filter_pipeline
+    test/unittests/unittest_filter_pipeline.test
+    test/unittests/unittest_filter_pipeline.cpp
+  )
+  target_link_libraries(unittest_filter_pipeline
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  #----------------------------------
 
   #--- ModbusMsgInUtils unit test ---
   catkin_add_gtest(unittest_modbus_msg_in_builder

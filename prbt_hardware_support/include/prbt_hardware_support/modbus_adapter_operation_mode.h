@@ -21,15 +21,12 @@
 #include <memory>
 
 #include <ros/ros.h>
-#include <message_filters/subscriber.h>
 
 #include <prbt_hardware_support/adapter_operation_mode.h>
-
-#include <prbt_hardware_support/operation_mode_filter.h>
-#include <prbt_hardware_support/ModbusMsgInStamped.h>
-#include <prbt_hardware_support/update_filter.h>
 #include <prbt_hardware_support/modbus_msg_operation_mode_wrapper.h>
+#include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
+#include <prbt_hardware_support/filter_pipeline.h>
 
 namespace prbt_hardware_support
 {
@@ -42,27 +39,28 @@ class ModbusAdapterOperationMode : public AdapterOperationMode
 {
 public:
   ModbusAdapterOperationMode(ros::NodeHandle& nh, const ModbusApiSpec& api_spec);
+  virtual ~ModbusAdapterOperationMode() = default;
 
 private:
-  void modbusInMsgCallback(const ModbusMsgInStampedConstPtr& msg);
-  void internalMsgCallback(const ModbusMsgOperationModeWrapper& msg);
+  /**
+   * @brief Called whenever a new modbus messages arrives.
+   *
+   * @note Filters like for example the UpdateFilter can restrict
+   * the number of incoming messages.
+   *
+   * @note The operation mode gets unknown in case:
+   *    - of a disconnect from the modbus server,
+   *    - the modbus message does not contain the expected registers,
+   *    - the modbus API version is incorrect.
+   */
+  void modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw);
 
 private:
-  //! Filters consecutive messages with the same timestamp.
-  //! Passed messages are redirected to the OperationModeFilter.
-  std::shared_ptr< message_filters::UpdateFilter<ModbusMsgInStamped> > update_filter_;
-
-  //! Filters messages with a change in the operation mode.
-  //! Passed messages are redirected to modbusInMsgCallback().
-  std::shared_ptr< message_filters::OperationModeFilter > operation_mode_filter_;
-
-  //! Subscribes to TOPIC_MODBUS_READ and redirects received messages
-  //! to the update-filter.
-  std::shared_ptr< message_filters::Subscriber<ModbusMsgInStamped> > modbus_read_sub_;
-
-  //! Currently valid api_spec (defines modbus register semantic)
   const ModbusApiSpec api_spec_;
+  std::unique_ptr<FilterPipeline> filter_pipeline_;
 
+private:
+  static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {2};
 };
 
 } // namespace prbt_hardware_support

@@ -68,7 +68,7 @@
     <include file="$(find prbt_hardware_support)/launch/modbus_client.launch">
       <arg name="modbus_server_ip" value="$(arg sto_modbus_server_ip)" />
     </include>
-    <include file="$(find prbt_hardware_support)/launch/sto_modbus_adapter_node.launch" />
+    <include file="$(find prbt_hardware_support)/launch/modbus_adapter_sto_node.launch" />
     <include if="$(arg has_braketest_support)" file="$(find prbt_hardware_support)/launch/brake_test.launch" />
 
     <include if="$(arg has_operation_mode_support)" file="$(find prbt_hardware_support)/launch/operation_mode_adapter.launch" />

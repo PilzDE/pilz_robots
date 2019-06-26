@@ -154,7 +154,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
                                     std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port) );
 
   waitForNode("/pilz_modbus_client_node");
-  waitForNode("/sto_modbus_adapter_node");
+  waitForNode("/modbus_adapter_sto_node");
 
   // We expect:
   {

@@ -25,10 +25,9 @@ namespace prbt_hardware_support
 {
 
 /**
- * @brief Wrapper class to add semantic to a raw ModbusMsgInStamped
+ * @brief Wrapper class to add semantic to a raw ModbusMsgInStamped.
  *
- * Allows to easy access to the content behind a raw modbus message
- * which is assumed to contain at least data about the api version used.
+ * Allows easy access to the content behind a raw modbus message.
  */
 class ModbusMsgWrapper
 {
@@ -36,11 +35,22 @@ public:
   /**
    * @brief Construct a new Modbus Msg Wrapper object
    *
-   * @throw ModbusMsgWrapperException if no version can be found in the message and thus interpretation is impossible
    */
-  ModbusMsgWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw, const ModbusApiSpec& api_spec);
+  ModbusMsgWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
+                   const ModbusApiSpec& api_spec);
 
   virtual ~ModbusMsgWrapper() = default;
+
+  /**
+   * @brief Checks that the Modbus messages consists of all registers needed.
+   *
+   * Please note: This method does not check if the content of the registers
+   * is correct. It only checks that they exist.
+   *
+   * @throw ModbusMsgWrapperException if no version can be found in
+   * the message and thus interpretation is impossible.
+   */
+  virtual void checkStructuralIntegrity() const;
 
   /**
    * @return Get the API version defined in the Modbus message.
@@ -74,29 +84,22 @@ protected:
    */
   bool hasVersion() const;
 
-protected:
-  const ModbusApiSpec api_spec_;
+  /**
+   * @returns a reference to the internally stored API specification.
+   */
+  const ModbusApiSpec& getApiSpec() const;
 
 private:
+  const ModbusApiSpec api_spec_;
   const ModbusMsgInStampedConstPtr msg_;
 
 };
 
 inline ModbusMsgWrapper::ModbusMsgWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
-                                          const ModbusApiSpec& api_spec):
-  api_spec_(api_spec),
-  msg_(modbus_msg_raw)
+                                          const ModbusApiSpec& api_spec)
+  : api_spec_(api_spec)
+  , msg_(modbus_msg_raw)
 {
-  if (isDisconnect())
-  {
-    // A disconnect message does not have to fullfill any requirements
-    return;
-  }
-
-  if(!hasVersion())
-  {
-    throw ModbusMsgWrapperException("Received message does not contain a version.");
-  }
 }
 
 inline bool ModbusMsgWrapper::hasRegister(uint32_t reg) const
@@ -124,6 +127,19 @@ inline unsigned int ModbusMsgWrapper::getVersion() const
 inline bool ModbusMsgWrapper::isDisconnect() const
 {
   return msg_->disconnect.data;
+}
+
+inline void ModbusMsgWrapper::checkStructuralIntegrity() const
+{
+  if(!hasVersion())
+  {
+    throw ModbusMsgWrapperException("Received message does not contain a version.");
+  }
+}
+
+inline const ModbusApiSpec& ModbusMsgWrapper::getApiSpec() const
+{
+  return api_spec_;
 }
 
 }

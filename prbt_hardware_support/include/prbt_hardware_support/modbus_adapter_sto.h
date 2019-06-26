@@ -15,37 +15,43 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MODBUS_ADAPTER_BRAKE_TEST_H
-#define MODBUS_ADAPTER_BRAKE_TEST_H
+#ifndef MODBUS_ADAPTER_STO_H
+#define MODBUS_ADAPTER_STO_H
 
 #include <memory>
 
 #include <ros/ros.h>
 
-#include <prbt_hardware_support/adapter_brake_test.h>
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
-#include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/filter_pipeline.h>
+#include <prbt_hardware_support/modbus_api_spec.h>
+#include <prbt_hardware_support/adapter_sto.h>
 
 namespace prbt_hardware_support
 {
 
 /**
- * @brief Listens to the modbus_read topic and publishes a message
- * informing about a required brake test.
+ * @brief Listens to the modbus_read topic and reacts to changes to the STO
+ * state.
  */
-class ModbusAdapterBrakeTest : public AdapterBrakeTest
+class ModbusAdapterSto : public AdapterSto
 {
 public:
-  ModbusAdapterBrakeTest(ros::NodeHandle& nh, const ModbusApiSpec& api_spec);
-  virtual ~ModbusAdapterBrakeTest() = default;
+  ModbusAdapterSto(ros::NodeHandle& nh, const ModbusApiSpec& api_spec);
+  virtual ~ModbusAdapterSto() = default;
 
 private:
   /**
-   * @brief Called whenever a new modbus message arrives.
+   * @brief Called whenever a new modbus messages arrives.
    *
    * @note Filters like for example the UpdateFilter can restrict
    * the number of incoming messages.
+   *
+   * @note A STOP1 is triggered in case:
+   *    - of a disconnect from the modbus server,
+   *    - the modbus message does not contain the expected registers,
+   *    - the modbus API version is incorrect,
+   *    - the STO state changes to false.
    */
   void modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw);
 
@@ -53,7 +59,10 @@ private:
   const ModbusApiSpec api_spec_;
   std::unique_ptr<FilterPipeline> filter_pipeline_;
 
+private:
+  static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {2};
 };
 
+
 } // namespace prbt_hardware_support
-#endif // MODBUS_ADAPTER_BRAKE_TEST_H
+#endif // MODBUS_ADAPTER_STO_H

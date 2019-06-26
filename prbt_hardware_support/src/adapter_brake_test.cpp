@@ -25,37 +25,40 @@ namespace prbt_hardware_support
 static const std::string SERVICE_NAME_IS_BRAKE_TEST_REQUIRED = "/prbt/brake_test_required";
 
 AdapterBrakeTest::AdapterBrakeTest(ros::NodeHandle& nh)
-  : initialized_(false)
-  , nh_(nh) {
+  : nh_(nh)
+{
 }
 
-void AdapterBrakeTest::init() {
-	is_brake_test_required_server_ = nh_.advertiseService(SERVICE_NAME_IS_BRAKE_TEST_REQUIRED,
-	                                                      &AdapterBrakeTest::isBrakeTestRequired,
-	                                                      this);
+void AdapterBrakeTest::initBrakeTestService()
+{
+  is_brake_test_required_server_ = nh_.advertiseService(SERVICE_NAME_IS_BRAKE_TEST_REQUIRED,
+                                                        &AdapterBrakeTest::isBrakeTestRequired,
+                                                        this);
 }
 
-void AdapterBrakeTest::updateBrakeTestRequiredState(bool brake_test_required) {
-	brake_test_required_ = brake_test_required;
-
-  if(brake_test_required_){
+void AdapterBrakeTest::updateBrakeTestRequiredState(bool brake_test_required)
+{
+  bool last_brake_test_flag {brake_test_required_};
+  brake_test_required_ = brake_test_required;
+  if(brake_test_required_ && !last_brake_test_flag)
+  {
     ROS_INFO("Brake Test required.");
   }
-  else {
-    ROS_INFO("Brake Test not required.");
-  }
 
-	// when the first data is received, the node is initialized (i.e. the service advertised)
-	if(!initialized_) {
-		init();
-		initialized_ = true;
-	}
+  // when the first data is received, the node is initialized
+  // (i.e. the service advertised) <-> "lazy initialization"
+  if(!service_initialized_)
+  {
+    initBrakeTestService();
+    service_initialized_ = true;
+  }
 }
 
-bool AdapterBrakeTest::isBrakeTestRequired(IsBrakeTestRequired::Request& req,
-				                                     IsBrakeTestRequired::Response& res) {
-	res.result = brake_test_required_;
-	return true;
+bool AdapterBrakeTest::isBrakeTestRequired(IsBrakeTestRequired::Request& /*req*/,
+                                           IsBrakeTestRequired::Response& res)
+{
+  res.result = brake_test_required_;
+  return true;
 }
 
 }

@@ -16,19 +16,22 @@
  */
 
 #include <ros/ros.h>
-#include <prbt_hardware_support/sto_modbus_adapter.h>
+
+#include <prbt_hardware_support/modbus_api_spec.h>
+#include <prbt_hardware_support/modbus_adapter_sto.h>
 
 using namespace prbt_hardware_support;
 
+// LCOV_EXCL_START
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "pilz_sto_modbus_adapter_node");
+  ros::init(argc, argv, "modbus_adapter_sto");
   ros::NodeHandle nh;
 
   ModbusApiSpec api_spec{nh};
-
-  PilzStoModbusAdapterNode sto_modbus_adapter_node(nh, api_spec);
+  ModbusAdapterSto adapter_sto(nh, api_spec);
   ros::spin();
 
   return EXIT_FAILURE;
 }
+// LCOV_EXCL_STOP
