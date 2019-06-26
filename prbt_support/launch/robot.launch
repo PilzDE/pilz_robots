@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<launch>	
+<launch>
   <!-- gripper e.g. pg70. See documentation of meta-package prbt_grippers -->
   <arg name="gripper" default="" />
 
@@ -11,7 +11,7 @@
   <!-- The signal is read via modbus and you can configure the modbus server ip -->
   <arg name="sto" default="pnoz"/>
   <arg name="api_spec_file" default="$(find prbt_hardware_support)/config/modbus_api_spec_$(arg sto).yaml" />
-  <arg name="sto_modbus_server_ip" default="169.254.60.1" />
+  <arg name="sto_modbus_server_ip" default="$(eval '192.168.0.10' if sto=='pss4000' else '169.254.60.1')" />
 
   <!-- Set braketest usage -->
   <arg name="has_braketest_support" default="false"/>
@@ -60,7 +60,7 @@
         args="$(arg spawn_controllers)" />
 
   <!-- Initialize controllers and start STO-processing (if configured) -->
-  <group if="$(eval sto == 'pnoz')" >
+  <group unless="$(eval sto == 'none')" >
     <!-- Load api spec for all nodes -->
     <rosparam ns="/prbt/api_spec" command="load" file="$(arg api_spec_file)" />
 
