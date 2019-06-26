@@ -74,9 +74,11 @@ The launch file allows to set optional parameters
 * `gripper` (default: None) <br>
     See [Running the prbt with a gripper](#running-the-prbt-with-a-gripper)
 * `sto` (default: pnoz)<br>
-    Connect to the safety controller that handles the safe-torque-off signal. 
-	Only relevant for `sim:=False` to issue a Safe stop 1.
-	See [prbt_hardware_support package](prbt_hardware_support/README.md).
+    Connect to the safety controller that handles the safe-torque-off signal.
+	  Only relevant for `sim:=False` to issue a Safe stop 1.
+	  See [prbt_hardware_support package](prbt_hardware_support/README.md).
+* `modbus_server_ip` (default: 169.254.60.1) <br>
+    IP adress of the modbus server of the safety controller. See above (`sto`).
 
 ### Running the simulation
 1. Run `roslaunch prbt_moveit_config moveit_planning_execution.launch sim:=true pipeline:=ompl`
