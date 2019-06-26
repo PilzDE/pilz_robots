@@ -421,7 +421,7 @@ private:
  * - 1. Choose low read frequency (f1). The last received "modbus_read" messages
  *      is stored in a buffer.
  * - 2. Choose "modbus_read" topic check frequency f2, with f2 slightly bigger than f1.
- * - 3. Start a loop (running exactly for #f1 iterations), which checks with
+ * - 3. Start a loop (running exactly for \#f1 iterations), which checks with
  *      frequency f2 the last received "modbus_read" message.
  * - 4. Stop all loops and the PilzModbusClient.
  *
@@ -432,7 +432,7 @@ private:
  *      "new_register_value = last_register_value + 1".
  *      If the condition does not hold, the read fequency could not be
  *      set properly and is probably to high.
- * - 4. Check that the number of received messages is creater than #f1. If the
+ * - 4. Check that the number of received messages is creater than \#f1. If the
  *      condition does not hold, the read fequency is not set properly
  *      and is probably to low.
  */

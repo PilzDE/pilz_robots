@@ -38,6 +38,13 @@ public:
   ModbusMsgStoWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw, const ModbusApiSpec& api_spec);
 
   /**
+   * @brief Calls ModbusMsgWrapper::checkStructuralIntegrity().
+   *
+   * @throw ModbusMsgStoWrapperException if STO register is missing.
+   */
+  virtual void checkStructuralIntegrity() const override;
+
+  /**
    * @brief Get the STO from the Modbus message
    *
    * @return true if the STO is active (manipulator should stop)
@@ -46,7 +53,6 @@ public:
   bool getSTO() const;
 
 private:
-
   /**
    * @brief Check if the message contains a STO definition
    *
@@ -54,16 +60,17 @@ private:
    * @return false if there is no STO defined in the message
    */
   bool hasSTO() const;
+
 };
 
 inline bool ModbusMsgStoWrapper::hasSTO() const
 {
-  return hasRegister(api_spec_.getRegisterDefinition(modbus_api_spec::STO));
+  return hasRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::STO));
 }
 
 inline bool ModbusMsgStoWrapper::getSTO() const
 {
-  return getRegister(api_spec_.getRegisterDefinition(modbus_api_spec::STO));
+  return getRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::STO));
 }
 
 }

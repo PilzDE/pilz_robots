@@ -26,6 +26,8 @@
 #include <prbt_hardware_support/modbus_topic_definitions.h>
 #include <prbt_hardware_support/modbus_msg_in_builder.h>
 #include <prbt_hardware_support/register_container.h>
+#include <prbt_hardware_support/modbus_msg_brake_test_wrapper.h>
+#include <prbt_hardware_support/modbus_msg_brake_test_wrapper_exception.h>
 
 #include <pilz_testutils/async_test.h>
 
@@ -50,8 +52,9 @@ class ModbusAdapterBrakeTestTest : public testing::Test, public testing::AsyncTe
 {
 public:
   ModbusAdapterBrakeTestTest();
-  ~ModbusAdapterBrakeTestTest();
+  virtual ~ModbusAdapterBrakeTestTest();
 
+public:
   ModbusMsgInStampedPtr createDefaultBrakeTestModbusMsg(bool brake_test_required,
                                                         unsigned int modbus_api_version = MODBUS_API_VERSION_REQUIRED,
                                                         uint32_t brake_test_required_index = test_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
@@ -60,21 +63,27 @@ public:
                                                 uint16_t retries = DEFAULT_RETRIES);
 
 protected:
+  ros::AsyncSpinner spinner_{2};
+
   ros::NodeHandle nh_;
-  std::shared_ptr<ModbusAdapterBrakeTest> adapter_brake_test_;
-  ros::Publisher modbus_topic_pub_;
-  ros::ServiceClient brake_test_required_client_;//(969, 973, 974);
+  std::unique_ptr<ModbusAdapterBrakeTest> adapter_brake_test_ {new ModbusAdapterBrakeTest(nh_, test_api_spec)};
+  ros::Publisher modbus_topic_pub_ {nh_.advertise<ModbusMsgInStamped>(TOPIC_MODBUS_READ, DEFAULT_QUEUE_SIZE_MODBUS)};
+  ros::ServiceClient brake_test_required_client_ {nh_.serviceClient<prbt_hardware_support::IsBrakeTestRequired>(SERVICE_NAME_IS_BRAKE_TEST_REQUIRED)};//(969, 973, 974);
 };
 
 ModbusAdapterBrakeTestTest::ModbusAdapterBrakeTestTest()
 {
-  adapter_brake_test_.reset(new ModbusAdapterBrakeTest(nh_, test_api_spec));
-  modbus_topic_pub_ = nh_.advertise<ModbusMsgInStamped>(TOPIC_MODBUS_READ, DEFAULT_QUEUE_SIZE_MODBUS);
-  brake_test_required_client_ = nh_.serviceClient<prbt_hardware_support::IsBrakeTestRequired>(SERVICE_NAME_IS_BRAKE_TEST_REQUIRED);
+  spinner_.start();
 }
 
 ModbusAdapterBrakeTestTest::~ModbusAdapterBrakeTestTest()
 {
+  // Before the destructors of the class members are called, we have
+  // to ensure that all topic and service calls done by the AsyncSpinner
+  // threads are finished. Otherwise, we sporadically will see threading
+  // exceptions like:
+  // "boost::mutex::~mutex(): Assertion `!res' failed".
+  spinner_.stop();
 }
 
 ModbusMsgInStampedPtr ModbusAdapterBrakeTestTest::createDefaultBrakeTestModbusMsg(bool brake_test_required,
@@ -96,10 +105,12 @@ bool ModbusAdapterBrakeTestTest::expectBrakeTestRequiredServiceCallResult(ros::S
                                                                           bool expectation,
                                                                           uint16_t retries)
 {
-  prbt_hardware_support::IsBrakeTestRequired srv;
-  for (int i = 0; i<= retries; i++) {
+  for (int i = 0; i<= retries; ++i)
+  {
+    prbt_hardware_support::IsBrakeTestRequired srv;
     brake_test_required_client.call(srv);
-    if(srv.response.result == expectation){
+    if(srv.response.result == expectation)
+    {
       ROS_INFO_STREAM("It took " << i+1 << " tries for the service call.");
       return true;
     }
@@ -129,6 +140,15 @@ TEST_F(ModbusAdapterBrakeTestTest, testModbusMsgBrakeTestWrapperDtor)
   {
     std::shared_ptr<ModbusMsgBrakeTestWrapper> msg_wrapper{new ModbusMsgBrakeTestWrapper(createDefaultBrakeTestModbusMsg(true), test_api_spec)};
   }
+}
+
+/**
+ * @brief Test increases function coverage by ensuring that all Dtor variants
+ * are called.
+ */
+TEST_F(ModbusAdapterBrakeTestTest, testAdapterBrakeTestDtor)
+{
+  std::shared_ptr<AdapterBrakeTest> adapter{new AdapterBrakeTest(nh_)};
 }
 
 /**
@@ -280,9 +300,6 @@ int main(int argc, char *argv[])
 {
   ros::init(argc, argv, "unittest_modbus_adapter_brake_test");
   ros::NodeHandle nh;
-
-  ros::AsyncSpinner spinner_{2};
-  spinner_.start();
 
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
