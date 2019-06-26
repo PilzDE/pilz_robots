@@ -5,7 +5,6 @@ Changelog for package prbt_hardware_support
 Forthcoming
 -----------
 * enter hold mode at braketest execution
-* Increase modbus response timeout to avoid issues with pss
 * Contributors: Pilz GmbH and Co. KG
 
 0.5.6 (2019-06-12)
