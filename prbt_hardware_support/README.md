@@ -50,8 +50,6 @@ A Modbus client (for usage with the PNOZmulti or PSS4000) can be started with `r
 ### Published Topics
 - ~/pilz_modbus_client_node/modbus_read (prbt_hardware_support/ModbusMsgInStamped)
   - Holds information about the modbus holding register. Timestamp is only updated if the register content changed.
-- ~/prbt/brake_test_required (std_msgs/Bool)
-  - True, if a brake test is required, false otherwise.
 
 ### Parameters
 - modbus_server_ip
@@ -78,7 +76,8 @@ enable drives, unhold controllers
 hold controllers, disable drives
 
 ## ModbusAdapterBrakeTestNode
-The ``ModbusAdapterBrakeTestNode`` is noticed via the topic `/pilz_modbus_client_node/modbus_read` if the PSS4000 requests a brake test or if a brake test request is no longer prevailing. As a result, the requirement status is published on `/prbt/brake_test_required`.
+The ``ModbusAdapterBrakeTestNode`` offers the `/prbt/brake_test_required` service which informs if the PSS4000 requests
+a brake test or if a brake test request is no longer prevailing.
 
 ## BraketestExecutorNode
 The ``BraketestExecutorNode`` offers the `/execute_braketest` service which, in interaction with the ``CanOpenBraketestAdapter``,
