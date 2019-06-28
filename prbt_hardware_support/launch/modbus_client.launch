@@ -17,17 +17,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <launch>
 
-  <!-- PNoz-Multi settings -->
+  <!-- default modbus server ip (pnoz) and port number -->
   <arg name="modbus_server_ip" default="169.254.60.1" />
   <arg name="modbus_server_port" default="502" />
-  <arg name="index_of_first_register_to_read" default="512" />
-  <arg name="num_registers_to_read" default="4" />
+
+  <!-- the register range for reading is determined automatically from the api spec,
+       however this can be overruled by specifying the following arguments -->
+  <arg name="index_of_first_register_to_read" default="" />
+  <arg name="num_registers_to_read" default="" />
+
+  <arg name="has_register_range_parameters"
+       value="$(eval arg('index_of_first_register_to_read')!='' and arg('num_registers_to_read')!='')" />
 
   <node required="true" pkg="prbt_hardware_support" type="pilz_modbus_client_node" name="pilz_modbus_client_node" output="screen">
     <param name="modbus_server_ip" value="$(arg modbus_server_ip)"/>
     <param name="modbus_server_port" value="$(arg modbus_server_port)"/>
-    <param name="index_of_first_register_to_read" value="$(arg index_of_first_register_to_read)"/>
-    <param name="num_registers_to_read" value="$(arg num_registers_to_read)"/>
+    <param if="$(arg has_register_range_parameters)" name="index_of_first_register_to_read" value="$(arg index_of_first_register_to_read)"/>
+    <param if="$(arg has_register_range_parameters)" name="num_registers_to_read" value="$(arg num_registers_to_read)"/>
   </node>
 
 </launch>
