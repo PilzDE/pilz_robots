@@ -120,11 +120,11 @@ Stop1IntegrationTest::Stop1IntegrationTest()
  *    3. Terminate Modbus-server to cause a disconnect.
  *
  * Expected Results:
- *    0. The manipulator mock should receive a call to /unhold after that a call to /recover.
+ *    0. The manipulator mock should receive a call to /recover after that a call to /unhold.
  *       No other calls should happen.
  *    1. The manipulator mock should receive a call to /hold after that a call to /halt.
  *       No other calls should happen.
- *    2. The manipulator mock should receive a call to /unhold after that a call to /recover.
+ *    2. The manipulator mock should receive a call to /recover after that a call to /unhold.
  *       No other calls should happen.
  *    3. The manipulator mock should receive a call to /hold after that a call to /halt.
  *       No other calls should happen.
@@ -161,10 +161,10 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
     InSequence dummy;
 
     // Call from STO clear
-    EXPECT_CALL(manipulator, unholdCb(_,_)).Times(1);
     EXPECT_CALL(manipulator, holdCb(_,_)).Times(0);
     EXPECT_CALL(manipulator, haltCb(_,_)).Times(0);
-    EXPECT_CALL(manipulator, recoverCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("recover_callback"));
+    EXPECT_CALL(manipulator, recoverCb(_,_)).Times(1);
+    EXPECT_CALL(manipulator, unholdCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("unhold_callback"));
       // Expected came true -> go on
   }
 
@@ -175,7 +175,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
   /**********
    * Step 1 *
    **********/
-  BARRIER("recover_callback");
+  BARRIER("unhold_callback");
 
   {
     InSequence dummy;
@@ -201,8 +201,8 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
     // Call from STO clear
     EXPECT_CALL(manipulator, holdCb(_,_)).Times(0);
     EXPECT_CALL(manipulator, haltCb(_,_)).Times(0);
-    EXPECT_CALL(manipulator, unholdCb(_,_)).Times(1);
-    EXPECT_CALL(manipulator, recoverCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("recover_callback"));
+    EXPECT_CALL(manipulator, recoverCb(_,_)).Times(1);
+    EXPECT_CALL(manipulator, unholdCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("unhold_callback"));
 
   }
 
@@ -212,7 +212,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
   /**********
    * Step 3 *
    **********/
-  BARRIER("recover_callback");
+  BARRIER("unhold_callback");
   {
     InSequence dummy;
 

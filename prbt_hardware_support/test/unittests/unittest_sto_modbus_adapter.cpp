@@ -68,8 +68,8 @@ using ::testing::_;
 #define EXPECT_CLEARANCE \
   EXPECT_CALL(manipulator_, holdCb(_,_)).Times(0); \
   EXPECT_CALL(manipulator_, haltCb(_,_)).Times(0); \
-  EXPECT_CALL(manipulator_, unholdCb(_,_)).Times(1); \
-  EXPECT_CALL(manipulator_, recoverCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("recover_callback")); \
+  EXPECT_CALL(manipulator_, recoverCb(_,_)).Times(1); \
+  EXPECT_CALL(manipulator_, unholdCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("recover_callback")); \
 
 /**
  * @brief Test fixture class. Sets up a publisher to the modbus_read topic
@@ -265,6 +265,7 @@ TEST_F(PilzStoModbusAdapterTest, testRemoveUnholdService)
   pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
 
   BARRIER("recover_callback");
+  ros::Duration(1.0).sleep();
 }
 
 /**

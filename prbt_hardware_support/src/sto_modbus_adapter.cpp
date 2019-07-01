@@ -139,15 +139,6 @@ void PilzStoModbusAdapterNode::internalMsgCallback(const ModbusMsgStoWrapper& ms
   {
     std_srvs::Trigger trigger;
 
-    if (unhold_srv_client_.exists())
-    {
-      ROS_DEBUG_STREAM("Calling Unhold (Service: " << unhold_srv_client_.getService() << ")");
-      unhold_srv_client_.call(trigger);
-    }
-    else
-    {
-      ROS_WARN_STREAM("Calling Unhold (Service: " << unhold_srv_client_.getService() << ") failed.");
-    }
     if (recover_srv_client_.exists())
     {
       ROS_DEBUG_STREAM("Calling Recover (Service: " << recover_srv_client_.getService() << ")");
@@ -156,6 +147,15 @@ void PilzStoModbusAdapterNode::internalMsgCallback(const ModbusMsgStoWrapper& ms
     else
     {
       ROS_WARN_STREAM("Calling Recover (Service: " << recover_srv_client_.getService() << ") failed.");
+    }
+    if (unhold_srv_client_.exists())
+    {
+      ROS_DEBUG_STREAM("Calling Unhold (Service: " << unhold_srv_client_.getService() << ")");
+      unhold_srv_client_.call(trigger);
+    }
+    else
+    {
+      ROS_WARN_STREAM("Calling Unhold (Service: " << unhold_srv_client_.getService() << ") failed.");
     }
   }
 }
