@@ -31,16 +31,17 @@ PilzModbusClient::PilzModbusClient(ros::NodeHandle& nh,
                                    ModbusClientUniquePtr modbus_client,
                                    unsigned int response_timeout_ms,
                                    const std::string& modbus_read_topic_name,
-                                   const std::string& modbus_write_topic_name,
+                                   const std::string& modbus_write_service_name,
                                    double read_frequency_hz)
   : NUM_REGISTERS_TO_READ(num_registers_to_read)
   , INDEX_OF_FIRST_REGISTER(index_of_first_register)
   , RESPONSE_TIMEOUT_MS(response_timeout_ms)
   , READ_FREQUENCY_HZ(read_frequency_hz)
   , modbus_client_(std::move(modbus_client))
-  , modbus_pub_(nh.advertise<ModbusMsgInStamped>(modbus_read_topic_name, DEFAULT_QUEUE_SIZE_MODBUS))
-  , modbus_sub_(nh.subscribe<std_msgs::UInt16MultiArray>( modbus_write_topic_name, DEFAULT_QUEUE_SIZE_MODBUS,
-                                                          &PilzModbusClient::modbus_write_callback, this) )
+  , modbus_read_pub_(nh.advertise<ModbusMsgInStamped>(modbus_read_topic_name, DEFAULT_QUEUE_SIZE_MODBUS))
+  , modbus_write_service_( nh.advertiseService(modbus_write_service_name,
+                                               &PilzModbusClient::modbus_write_service_cb,
+                                               this) )
 {
 }
 
@@ -97,7 +98,7 @@ void PilzModbusClient::sendDisconnectMsg()
   ModbusMsgInStamped msg;
   msg.disconnect.data = true;
   msg.header.stamp = ros::Time::now();
-  modbus_pub_.publish(msg);
+  modbus_read_pub_.publish(msg);
   ros::spinOnce();
 }
 
@@ -116,25 +117,29 @@ void PilzModbusClient::run()
   ros::Rate rate(READ_FREQUENCY_HZ);
   while ( ros::ok() && !stop_run_.load() )
   {
-    // Work with local copy of Modbus-Msg to ensure that the function
-    // "modbus_write_callback" does not become blocked
-    boost::optional<std_msgs::UInt16MultiArray> write_reg_msg {boost::none};
+    // Work with local copy of buffer to ensure that the service callback
+    // function does not become blocked
+    boost::optional<ModbusRegisterBlock> write_reg_bock {boost::none};
     {
-      std::lock_guard<std::mutex> lock(write_reg_msg_mutex_);
-      write_reg_msg = write_reg_msg_;
-
-      // Mark data as send/processed, by "deleting" them from memory
-      write_reg_msg_ = boost::none;
+      std::lock_guard<std::mutex> lock(write_reg_blocks_mutex_);
+      if (!write_reg_blocks_.empty())
+      {
+        write_reg_bock = write_reg_blocks_.front();
+        // Mark data as send/processed, by "deleting" them from memory
+        write_reg_blocks_.pop();
+      }
     }
 
     try
     {
-      if (write_reg_msg)
+      if (write_reg_bock)
       {
-        holding_register = modbus_client_->writeReadHoldingRegister(static_cast<int>(write_reg_msg->layout.data_offset),
-                                                                    write_reg_msg->data,
+
+        holding_register = modbus_client_->writeReadHoldingRegister(static_cast<int>(write_reg_bock->start_idx),
+                                                                    write_reg_bock->values,
                                                                     static_cast<int>(INDEX_OF_FIRST_REGISTER),
                                                                     static_cast<int>(NUM_REGISTERS_TO_READ));
+
       }
       else
       {
@@ -162,7 +167,7 @@ void PilzModbusClient::run()
     {
       msg->header.stamp = last_update;
     }
-    modbus_pub_.publish(msg);
+    modbus_read_pub_.publish(msg);
 
     ros::spinOnce();
     rate.sleep();

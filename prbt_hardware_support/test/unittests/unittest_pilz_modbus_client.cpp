@@ -58,6 +58,7 @@ static constexpr unsigned int RESPONSE_TIMEOUT {10};
 static constexpr double WAIT_FOR_START_TIMEOUT_S {3.0};
 static constexpr double WAIT_SLEEPTIME_S {0.1};
 static constexpr double WAIT_FOR_STOP_TIMEOUT_S {3.0};
+static constexpr double WAIT_FOR_SERVICE_TIMEOUT_S {3.0};
 
 /**
  * @brief Helper class to simplify the threading of the PilzModbusClient.
@@ -153,8 +154,8 @@ TEST_F(PilzModbusClientTests, testInitialization)
       .WillOnce(Return(true));
 
   PilzModbusClient client(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock),
-                              RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
-                              prbt_hardware_support::TOPIC_MODBUS_WRITE);
+                          RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
+                          prbt_hardware_support::SERVICE_MODBUS_WRITE);
 
   EXPECT_TRUE(client.init(LOCALHOST, DEFAULT_MODBUS_PORT_TEST));
 }
@@ -172,8 +173,8 @@ TEST_F(PilzModbusClientTests, testInitializationWithRetry)
       .WillOnce(Return(true));
 
   PilzModbusClient client(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock),
-                              RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
-                              prbt_hardware_support::TOPIC_MODBUS_WRITE);
+                          RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
+                          prbt_hardware_support::SERVICE_MODBUS_WRITE);
 
   EXPECT_TRUE(client.init(LOCALHOST, DEFAULT_MODBUS_PORT_TEST, REGISTER_SIZE_TEST, ros::Duration(0.1)));
 }
@@ -190,8 +191,8 @@ TEST_F(PilzModbusClientTests, doubleInitialization)
       .WillOnce(Return(true));
 
   PilzModbusClient client(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock),
-                              RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
-                              prbt_hardware_support::TOPIC_MODBUS_WRITE);
+                          RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
+                          prbt_hardware_support::SERVICE_MODBUS_WRITE);
 
   EXPECT_TRUE(client.init(LOCALHOST, DEFAULT_MODBUS_PORT_TEST));
   EXPECT_FALSE(client.init(LOCALHOST, DEFAULT_MODBUS_PORT_TEST));
@@ -209,8 +210,8 @@ TEST_F(PilzModbusClientTests, failingInitialization)
       .WillOnce(Return(false));
 
   PilzModbusClient client(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock),
-                              RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
-                              prbt_hardware_support::TOPIC_MODBUS_WRITE);
+                          RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
+                          prbt_hardware_support::SERVICE_MODBUS_WRITE);
 
   EXPECT_FALSE(client.init(LOCALHOST, DEFAULT_MODBUS_PORT_TEST));
 }
@@ -228,8 +229,8 @@ TEST_F(PilzModbusClientTests, failingInitializationWithRetry)
       .WillOnce(Return(false));
 
   PilzModbusClient client(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock),
-                              RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
-                              prbt_hardware_support::TOPIC_MODBUS_WRITE);
+                          RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
+                          prbt_hardware_support::SERVICE_MODBUS_WRITE);
 
   EXPECT_FALSE(client.init(LOCALHOST, DEFAULT_MODBUS_PORT_TEST, REGISTER_SIZE_TEST, ros::Duration(0.1)));
 }
@@ -268,8 +269,8 @@ TEST_F(PilzModbusClientTests, properReadingAndDisconnect)
   }
 
   PilzModbusClient client(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock),
-                              RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
-                              prbt_hardware_support::TOPIC_MODBUS_WRITE);
+                          RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
+                          prbt_hardware_support::SERVICE_MODBUS_WRITE);
 
   EXPECT_TRUE(client.init(LOCALHOST, DEFAULT_MODBUS_PORT_TEST));
   EXPECT_NO_THROW(client.run());
@@ -288,8 +289,8 @@ TEST_F(PilzModbusClientTests, runningWithoutInit)
   EXPECT_CALL(*this, modbus_read_cb(_)).Times(0);
 
   PilzModbusClient client(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock),
-                              RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
-                              prbt_hardware_support::TOPIC_MODBUS_WRITE);
+                          RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
+                          prbt_hardware_support::SERVICE_MODBUS_WRITE);
 
   EXPECT_THROW(client.run(), PilzModbusClientException);
 }
@@ -309,8 +310,8 @@ TEST_F(PilzModbusClientTests, terminateRunningClient)
       .WillByDefault(Return());
 
   auto client = std::make_shared< PilzModbusClient >(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock),
-                                                         RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
-                                                         prbt_hardware_support::TOPIC_MODBUS_WRITE);
+                                                     RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
+                                                     prbt_hardware_support::SERVICE_MODBUS_WRITE);
 
   EXPECT_TRUE(client->init(LOCALHOST, DEFAULT_MODBUS_PORT_TEST));
 
@@ -333,7 +334,7 @@ TEST_F(PilzModbusClientTests, testTopicNameChange)
   const std::string topic_name {"test_topic_name"};
 
   auto client = std::make_shared< PilzModbusClient >(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock),
-                                                         RESPONSE_TIMEOUT, topic_name, prbt_hardware_support::TOPIC_MODBUS_WRITE);
+                                                     RESPONSE_TIMEOUT, topic_name, prbt_hardware_support::SERVICE_MODBUS_WRITE);
   // Wait for a moment to ensure the topic is "up and running"
   ros::Duration(WAIT_SLEEPTIME_S).sleep();
   ros::Subscriber sub = nh_.subscribe<ModbusMsgInStamped>(topic_name, 1, &callbackDummy);
@@ -356,8 +357,8 @@ TEST_F(PilzModbusClientTests, testSettingOfTimeOut)
   EXPECT_CALL(*mock, setResponseTimeoutInMs(response_timeout)).Times(1);
 
   auto client = std::make_shared< PilzModbusClient >(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock),
-                                                         response_timeout, prbt_hardware_support::TOPIC_MODBUS_READ,
-                                                         prbt_hardware_support::TOPIC_MODBUS_WRITE);
+                                                     response_timeout, prbt_hardware_support::TOPIC_MODBUS_READ,
+                                                     prbt_hardware_support::SERVICE_MODBUS_WRITE);
 
   EXPECT_TRUE(client->init(LOCALHOST, DEFAULT_MODBUS_PORT_TEST));
 }
@@ -453,9 +454,9 @@ TEST_F(PilzModbusClientTests, testSettingReadFrequency)
 
   const double expected_read_frequency {30.0};
   auto client = std::make_shared< PilzModbusClient >(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock),
-                                                         RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
-                                                         prbt_hardware_support::TOPIC_MODBUS_WRITE,
-                                                         expected_read_frequency);
+                                                     RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
+                                                     prbt_hardware_support::SERVICE_MODBUS_WRITE,
+                                                     expected_read_frequency);
 
   EXPECT_TRUE(client->init(LOCALHOST, DEFAULT_MODBUS_PORT_TEST));
 
@@ -516,13 +517,14 @@ TEST_F(PilzModbusClientTests, testWritingOfHoldingRegister)
 
   // Data to be expected
   RegCont expected_write_reg {1, 5, 4};
-  std_msgs::UInt16MultiArray msg;
-  msg.layout.data_offset = 3;
-  msg.data = expected_write_reg;
+  WriteModbusRegister reg_write_srv;
+  reg_write_srv.request.holding_register_block.start_idx = 3;
+  reg_write_srv.request.holding_register_block.values = expected_write_reg;
 
   RegCont expected_read_reg {14, 17};
 
-  EXPECT_CALL( *mock, writeReadHoldingRegister(static_cast<int>(msg.layout.data_offset), expected_write_reg,
+  EXPECT_CALL( *mock, writeReadHoldingRegister(static_cast<int>(reg_write_srv.request.holding_register_block.start_idx),
+                                               expected_write_reg,
                                                REGISTER_FIRST_IDX_TEST,
                                                static_cast<int>(expected_read_reg.size())) )
       .Times(1)
@@ -534,27 +536,26 @@ TEST_F(PilzModbusClientTests, testWritingOfHoldingRegister)
   EXPECT_CALL(*this, modbus_read_cb(IsSuccessfullRead(expected_read_reg)))
       .Times(AtLeast(1));
 
-  ros::Publisher pub = nh_.advertise<std_msgs::UInt16MultiArray>(prbt_hardware_support::TOPIC_MODBUS_WRITE, 1);
+  auto modbus_client = std::make_shared< PilzModbusClient >(nh_, expected_read_reg.size(),REGISTER_FIRST_IDX_TEST, std::move(mock),
+                                                            RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
+                                                            prbt_hardware_support::SERVICE_MODBUS_WRITE);
 
-  auto client = std::make_shared< PilzModbusClient >(nh_, expected_read_reg.size(),REGISTER_FIRST_IDX_TEST, std::move(mock),
-                                                         RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
-                                                         prbt_hardware_support::TOPIC_MODBUS_WRITE);
+  EXPECT_TRUE(modbus_client->init(LOCALHOST, DEFAULT_MODBUS_PORT_TEST)) << "Initialization of modbus client failed";
 
-  EXPECT_TRUE(client->init(LOCALHOST, DEFAULT_MODBUS_PORT_TEST));
+  ros::ServiceClient writer_client = nh_.serviceClient<WriteModbusRegister>(prbt_hardware_support::SERVICE_MODBUS_WRITE);
+  ASSERT_TRUE(writer_client.waitForExistence(ros::Duration(WAIT_FOR_SERVICE_TIMEOUT_S))) << "Modbus write service was not advertised in time";
 
-  PilzModbusClientExecutor executor(client.get());
+  PilzModbusClientExecutor executor(modbus_client.get());
   executor.start();
-  EXPECT_TRUE(client->isRunning());
+  EXPECT_TRUE(modbus_client->isRunning()) << "Modbus client not running";
 
-  EXPECT_EQ(1u, pub.getNumSubscribers());
-
-  pub.publish(msg);
-  ros::spinOnce();
+  EXPECT_TRUE(writer_client.call(reg_write_srv)) << "Modbus write service failed";
+  EXPECT_TRUE(reg_write_srv.response.success) << "Modbus write service could not write modbus register";
 
   BARRIER("writeHoldingRegister");
 
   executor.stop();
-  EXPECT_FALSE(client->isRunning());
+  EXPECT_FALSE(modbus_client->isRunning());
 }
 
 }  // namespace pilz_modbus_client_test

@@ -23,7 +23,7 @@ add_message_files(
   BrakeTestErrorCodes.msg
   ModbusMsgInStamped.msg
   OperationModes.msg
-  ModbusRegisterEntry.msg
+  ModbusRegisterBlock.msg
 )
 
 # action generation
@@ -32,7 +32,7 @@ add_service_files(
   BrakeTest.srv
   IsBrakeTestRequired.srv
   GetOperationMode.srv
-  SetModbusRegister.srv
+  WriteModbusRegister.srv
 )
 
 generate_messages(
@@ -388,9 +388,9 @@ if(CATKIN_ENABLE_TESTING)
                           "*/IsBrakeTestRequired.h"
                           "*/IsBrakeTestRequiredRequest.h"
                           "*/IsBrakeTestRequiredResponse.h"
-                          "*/SetModbusRegister.h"
-                          "*/SetModbusRegisterRequest.h"
-                          "*/SetModbusRegisterResponse.h")
+                          "*/WriteModbusRegister.h"
+                          "*/WriteModbusRegisterRequest.h"
+                          "*/WriteModbusRegisterResponse.h")
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
       DEPENDS tests

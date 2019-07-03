@@ -62,7 +62,7 @@ A Modbus client (for usage with the PNOZmulti or PSS4000) can be started with `r
 - modbus_connection_retry_timeout - timeout between retries (default: 1s)
 - modbus_response_timeout (default: 20ms)
 - modbus_read_topic_name (default: "/pilz_modbus_node/modbus_read")
-- modbus_write_topic_name (default: "/pilz_modbus_node/modbus_write")
+- modbus_write_service_name (default: "/pilz_modbus_node/modbus_write")
 
 **Please note:**
 - The parameters ``modbus_response_timeout`` and ``modbus_read_topic_name`` are

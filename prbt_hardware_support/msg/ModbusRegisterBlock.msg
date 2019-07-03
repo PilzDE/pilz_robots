@@ -14,7 +14,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-ModbusRegisterEntry[] holding_register_entries
+# Defines the start index of the Modbus register block. A block can consist
+# of one or more registers.
+uint16 start_idx
 
----
-bool success
+# The values of the registers (in order).
+uint16[] values

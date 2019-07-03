@@ -71,9 +71,9 @@ int main(int argc, char **argv)
   nh.param<std::string>(PARAM_MODBUS_READ_TOPIC_NAME_STR, modbus_read_topic_name,
                         TOPIC_MODBUS_READ);
 
-  std::string modbus_write_topic_name;
-  nh.param<std::string>(PARAM_MODBUS_WRITE_TOPIC_NAME_STR, modbus_write_topic_name,
-                        TOPIC_MODBUS_WRITE);
+  std::string modbus_write_service_name;
+  nh.param<std::string>(PARAM_MODBUS_WRITE_SERVICE_NAME_STR, modbus_write_service_name,
+                        SERVICE_MODBUS_WRITE);
 
 
   // LCOV_EXCL_STOP
@@ -83,14 +83,14 @@ int main(int argc, char **argv)
                                                         static_cast<uint32_t>(index_of_first_register),
                                                         std::unique_ptr<LibModbusClient>(new LibModbusClient()),
                                                         static_cast<unsigned int>(response_timeout_ms),
-                                                        modbus_read_topic_name, modbus_write_topic_name);
+                                                        modbus_read_topic_name, modbus_write_service_name);
 
   ROS_DEBUG_STREAM("Modbus client IP: " << ip << " | Port: " << port);
   ROS_DEBUG_STREAM("Number of registers to read: " << num_registers_to_read
                    << "| first register: " << index_of_first_register);
   ROS_DEBUG_STREAM("Modbus response timeout: " << response_timeout_ms);
   ROS_DEBUG_STREAM("Modbus read topic: \"" << modbus_read_topic_name << "\"");
-  ROS_DEBUG_STREAM("Modbus write topic: \"" << modbus_write_topic_name << "\"");
+  ROS_DEBUG_STREAM("Modbus write service: \"" << modbus_write_service_name << "\"");
 
   bool res = modbus_client.init(ip.c_str(), static_cast<unsigned int>(port),
                                 static_cast<unsigned int>(modbus_connection_retries),

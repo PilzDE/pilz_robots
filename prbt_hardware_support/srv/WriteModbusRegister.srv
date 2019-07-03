@@ -14,5 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-uint16 idx
-uint16 value
+ModbusRegisterBlock holding_register_block
+
+---
+bool success
