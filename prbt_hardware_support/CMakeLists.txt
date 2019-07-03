@@ -388,6 +388,7 @@ if(CATKIN_ENABLE_TESTING)
                           "*/IsBrakeTestRequired.h"
                           "*/IsBrakeTestRequiredRequest.h"
                           "*/IsBrakeTestRequiredResponse.h"
+                          "*/ModbusRegisterBlock.h"
                           "*/WriteModbusRegister.h"
                           "*/WriteModbusRegisterRequest.h"
                           "*/WriteModbusRegisterResponse.h")

@@ -29,7 +29,9 @@ namespace prbt_hardware_support
 class ModbusClient
 {
 public:
+  // LCOV_EXCL_START
   virtual ~ModbusClient() = default;
+  // LCOV_EXCL_STOP
 
 public:
 
