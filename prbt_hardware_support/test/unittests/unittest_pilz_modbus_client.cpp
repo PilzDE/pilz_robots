@@ -375,9 +375,9 @@ public:
   {}
 
 public:
-  std::vector<uint16_t> readHoldingRegister(int /*addr*/, int nb)
+  RegCont readHoldingRegister(int /*addr*/, int nb)
   {
-    std::vector<uint16_t> vec( static_cast<std::vector<uint16_t>::size_type>(nb) , 0u);
+    RegCont vec( static_cast<RegCont::size_type>(nb) , 0u);
     vec.at(register_index_) = curr_count_;
     ++curr_count_;
     return vec;

@@ -30,6 +30,7 @@
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <message_filters/pass_through.h>
 #include <message_filters/subscriber.h>
+#include <prbt_hardware_support/register_container.h>
 
 namespace mf = message_filters;
 
@@ -93,7 +94,7 @@ ModbusMsgInStampedPtr createDefaultBrakeTestModbusMsg(bool brake_test_required)
   uint32_t first_index_to_read{test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION)};
   uint32_t last_index_to_read{test_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST)};
   static int msg_time_counter{1};
-  std::vector<uint16_t> tab_reg(last_index_to_read - first_index_to_read + 1);
+  RegCont tab_reg(last_index_to_read - first_index_to_read + 1);
   tab_reg[0] = 1;
   tab_reg[last_index_to_read - first_index_to_read] = brake_test_required;
   ModbusMsgInStampedPtr msg{createDefaultModbusMsgIn(first_index_to_read, tab_reg)};

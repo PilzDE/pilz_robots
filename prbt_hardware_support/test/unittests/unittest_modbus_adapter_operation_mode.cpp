@@ -24,6 +24,7 @@
 #include <prbt_hardware_support/modbus_topic_definitions.h>
 #include <prbt_hardware_support/modbus_msg_in_utils.h>
 #include <prbt_hardware_support/OperationModes.h>
+#include <prbt_hardware_support/register_container.h>
 
 namespace prbt_hardware_support
 {
@@ -182,7 +183,7 @@ TEST_F(ModbusAdapterOperationModeTest, testDisconnect)
 
 
   uint32_t offset{0};
-  std::vector<uint16_t> holding_register;
+  RegCont holding_register;
   ModbusMsgInStampedPtr msg{createDefaultModbusMsgIn(offset, holding_register)};
   msg->disconnect.data = true;
   modbus_topic_pub_.publish(msg);
@@ -201,7 +202,7 @@ TEST_F(ModbusAdapterOperationModeTest, testDisconnect)
  */
 TEST_F(ModbusAdapterOperationModeTest, testModbusUnexpectedOperationMode)
 {
-  std::vector<uint16_t> holding_register;
+  RegCont holding_register;
   modbus_topic_pub_.publish(createDefaultOpModeModbusMsg(
                               1234, /* stupid value */
                               MODBUS_API_VERSION_REQUIRED,
