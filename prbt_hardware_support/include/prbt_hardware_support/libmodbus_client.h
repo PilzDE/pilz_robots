@@ -73,7 +73,7 @@ public:
    * @throw ModbusExceptionDisconnect if a disconnect from the server happens
    * @return std::vector<uint16_t> containing the register contents
    */
-  std::vector<uint16_t> readHoldingRegister(int addr, int nb);
+  std::vector<uint16_t> readHoldingRegister(const int addr, const int nb);
 
   /**
    * @brief Close connection with server

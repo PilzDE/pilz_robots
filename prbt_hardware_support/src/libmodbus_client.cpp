@@ -60,17 +60,17 @@ unsigned int LibModbusClient::getResponseTimeoutInMs()
   return response_timeout.tv_sec * 1000 + (response_timeout.tv_usec  / 1000);
 }
 
-std::vector<uint16_t> LibModbusClient::readHoldingRegister(int addr, int nb)
+std::vector<uint16_t> LibModbusClient::readHoldingRegister(const int addr, const int nb)
 {
   if(modbus_connection_ == nullptr)
   {
     throw ModbusExceptionDisconnect("Modbus disconnected!");
   }
 
-  uint16_t tab_reg[nb];
+  std::vector<uint16_t> tab_reg(nb);
   int rc {-1};
 
-  rc = modbus_read_registers(modbus_connection_, addr, nb, tab_reg);
+  rc = modbus_read_registers(modbus_connection_, addr, nb, &tab_reg.front());
   if (rc == -1)
   {
     std::string err = "Failed to read modbus registers! ";
@@ -79,7 +79,7 @@ std::vector<uint16_t> LibModbusClient::readHoldingRegister(int addr, int nb)
     throw ModbusExceptionDisconnect(err);
   }
 
-  return std::vector<uint16_t> (tab_reg, tab_reg + nb);
+  return tab_reg;
 
 }
 

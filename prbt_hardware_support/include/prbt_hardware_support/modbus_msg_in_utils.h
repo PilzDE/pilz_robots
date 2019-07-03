@@ -24,6 +24,8 @@
 #include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/OperationModes.h>
 
+#include <boost/numeric/conversion/cast.hpp>
+
 namespace prbt_hardware_support
 {
 
@@ -123,11 +125,20 @@ class ModbusMsgInBuilder
 
       msg->holding_registers.layout.data_offset = first_index_to_read;
       msg->holding_registers.layout.dim.push_back(std_msgs::MultiArrayDimension());
-      msg->holding_registers.layout.dim[0].size = tab_reg.size();
+      try
+      {
+        msg->holding_registers.layout.dim[0].size
+                                      = boost::numeric_cast<std_msgs::MultiArrayDimension::_size_type>(tab_reg.size());
+        msg->holding_registers.data = tab_reg;
+      }
+      catch(boost::numeric::positive_overflow& e)
+      {
+        ROS_ERROR("The modbus register is to big!");
+      }
       msg->holding_registers.layout.dim[0].stride = 1;
       msg->holding_registers.layout.dim[0].label = "Data in holding register";
 
-      msg->holding_registers.data = tab_reg;
+
       msg->header.stamp = ros::Time::now();
       msg->disconnect.data = false;
 
