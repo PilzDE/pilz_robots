@@ -18,39 +18,49 @@
 #ifndef PRBT_HARDWARE_SUPPORT_MODBUS_MSG_IN_UTILS_H
 #define PRBT_HARDWARE_SUPPORT_MODBUS_MSG_IN_UTILS_H
 
+#include <limits>
+#include <stdexcept>
+
+#include <std_msgs/MultiArrayLayout.h>
 #include <std_msgs/MultiArrayDimension.h>
 
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/OperationModes.h>
+#include <prbt_hardware_support/register_container.h>
 
 #include <boost/numeric/conversion/cast.hpp>
 
 namespace prbt_hardware_support
 {
 
-static void setLayout(std_msgs::MultiArrayLayout* layout, const uint32_t& offset, const uint32_t& size)
+static void setDefaultLayout(std_msgs::MultiArrayLayout* layout,
+                             const std_msgs::MultiArrayLayout::_data_offset_type& offset,
+                             const RegCont::size_type& size)
 {
+  if (size > std::numeric_limits<std_msgs::MultiArrayDimension::_size_type>::max())
+  {
+    throw std::invalid_argument("Argument \"size\" must not exceed max value of type \"std_msgs::MultiArrayDimension::_size_type\"");
+  }
+
   layout->data_offset = offset;
   layout->dim.push_back(std_msgs::MultiArrayDimension());
-  layout->dim[0].size = size;
-  layout->dim[0].stride = 1;
-  layout->dim[0].label = "Data in holding register";
+  layout->dim.back().size = static_cast<std_msgs::MultiArrayDimension::_size_type>(size);
+  layout->dim.back().stride = 1;
+  layout->dim.back().label = "Data in holding register";
 }
 
 /**
- * @brief Creates a standard ModbusMsgIn which
- * contains default values for all essential
- * elements of the message.
+ * @brief Creates a standard ModbusMsgIn which contains default values for
+ * all essential elements of the message.
  */
-static ModbusMsgInStamped* createDefaultModbusMsgIn(const uint32_t& offset,
-                                             const std::vector<uint16_t>& holding_register)
+static ModbusMsgInStampedPtr createDefaultModbusMsgIn(const std_msgs::MultiArrayLayout::_data_offset_type& offset,
+                                                      const RegCont& holding_register)
 {
-  ModbusMsgInStamped* msg { new ModbusMsgInStamped() };
-  setLayout(&(msg->holding_registers.layout), offset, boost::numeric_cast<uint32_t>(holding_register.size()));
-
-  msg->disconnect.data = false;
+  ModbusMsgInStampedPtr msg { new ModbusMsgInStamped() };
+  setDefaultLayout(&(msg->holding_registers.layout), offset, boost::numeric_cast<uint32_t>(holding_register.size()));
   msg->holding_registers.data = holding_register;
+  msg->disconnect.data = false;
 
   return msg;
 }
@@ -60,9 +70,9 @@ static ModbusMsgInStamped* createDefaultModbusMsgIn(const uint32_t& offset,
  * @brief Create modbus msg given api version and operation mode.
  */
 ModbusMsgInStampedPtr createDefaultOpModeModbusMsg(unsigned int operation_mode,
-                                                    unsigned int modbus_api_version,
-                                                    uint32_t operation_mode_index,
-                                                    uint32_t version_index)
+                                                   unsigned int modbus_api_version,
+                                                   uint32_t operation_mode_index,
+                                                   uint32_t version_index)
 {
   uint32_t first_index_to_read{std::min(operation_mode_index, version_index)};
   uint32_t last_index_to_read{std::max(operation_mode_index, version_index)};
@@ -83,67 +93,57 @@ ModbusMsgInStampedPtr createDefaultOpModeModbusMsg(unsigned int operation_mode,
  */
 class ModbusMsgInBuilder
 {
-  public:
-    ModbusMsgInBuilder(const ModbusApiSpec &api_spec):
+public:
+  ModbusMsgInBuilder(const ModbusApiSpec &api_spec):
     api_spec_(api_spec)
+  {
+    // Initialize for ROS time if not already initialized
+    if(!ros::Time::isValid()){
+      ros::Time::init();
+    }
+  }
+
+  ModbusMsgInBuilder& setSto(uint16_t sto){
+    setRegister(api_spec_.getRegisterDefinition(modbus_api_spec::STO), sto);
+    return *this;
+  }
+
+  ModbusMsgInBuilder& setOperationMode(uint16_t mode){
+    setRegister(api_spec_.getRegisterDefinition(modbus_api_spec::OPERATION_MODE), mode);
+    return *this;
+  }
+
+  ModbusMsgInBuilder& setApiVersion(uint16_t version){
+    setRegister(api_spec_.getRegisterDefinition(modbus_api_spec::VERSION), version);
+    return *this;
+  }
+
+  ModbusMsgInStampedPtr build()
+  {
+    // Get the minimum and maximum register
+    uint32_t first_index_to_read{register_values_.cbegin()->first};
+    uint32_t last_index_to_read{register_values_.crbegin()->first};
+
+    // Setup vector
+    RegCont tab_reg(last_index_to_read - first_index_to_read + 1);
+    for(auto reg : register_values_)
     {
-      // Initialize for ROS time if not already initialized
-      if(!ros::Time::isValid()){
-        ros::Time::init();
-      }
+      tab_reg[reg.first - first_index_to_read] = reg.second;
     }
 
-    ModbusMsgInBuilder& setSto(uint16_t sto){
-      setRegister(api_spec_.getRegisterDefinition(modbus_api_spec::STO), sto);
-      return *this;
-    }
+    ModbusMsgInStampedPtr msg { createDefaultModbusMsgIn(first_index_to_read, tab_reg) };
+    msg->header.stamp = ros::Time::now();
+    return msg;
+  }
 
-    ModbusMsgInBuilder& setOperationMode(uint16_t mode){
-      setRegister(api_spec_.getRegisterDefinition(modbus_api_spec::OPERATION_MODE), mode);
-      return *this;
-    }
+  inline void setRegister(unsigned int register_n, uint16_t value)
+  {
+    register_values_[register_n] = value;
+  }
 
-    ModbusMsgInBuilder& setApiVersion(uint16_t version){
-      setRegister(api_spec_.getRegisterDefinition(modbus_api_spec::VERSION), version);
-      return *this;
-    }
-
-    ModbusMsgInStampedPtr build()
-    {
-      // Get the minimum and maximum register
-      uint32_t first_index_to_read{register_values_.cbegin()->first};
-      uint32_t last_index_to_read{register_values_.crbegin()->first};
-
-      // Setup vector
-      std::vector<uint16_t> tab_reg(last_index_to_read - first_index_to_read + 1);
-      for(auto reg : register_values_)
-      {
-        tab_reg[reg.first - first_index_to_read] = reg.second;
-      }
-
-      ModbusMsgInStampedPtr msg { new ModbusMsgInStamped() };
-
-      msg->holding_registers.layout.data_offset = first_index_to_read;
-      msg->holding_registers.layout.dim.push_back(std_msgs::MultiArrayDimension());
-      msg->holding_registers.layout.dim[0].size = tab_reg.size();
-      msg->holding_registers.layout.dim[0].stride = 1;
-      msg->holding_registers.layout.dim[0].label = "Data in holding register";
-
-      msg->holding_registers.data = tab_reg;
-      msg->header.stamp = ros::Time::now();
-      msg->disconnect.data = false;
-
-      return msg;
-    }
-
-    inline void setRegister(unsigned int register_n, uint16_t value)
-    {
-      register_values_[register_n] = value;
-    }
-
-  private:
-    const ModbusApiSpec api_spec_;
-    std::map<unsigned int, uint16_t> register_values_;
+private:
+  const ModbusApiSpec api_spec_;
+  std::map<unsigned int, uint16_t> register_values_;
 };
 
 }

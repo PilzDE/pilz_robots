@@ -375,6 +375,16 @@ if(CATKIN_ENABLE_TESTING)
   add_dependencies(unittest_system_info ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------------
 
+  #--- ModbusMsgInUtils unit test ---
+  catkin_add_gtest(unittest_modbus_msg_in_utils
+      test/unittests/unittest_modbus_msg_in_utils.cpp
+  )
+  target_link_libraries(unittest_modbus_msg_in_utils
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  add_dependencies(unittest_modbus_msg_in_utils ${${PROJECT_NAME}_EXPORTED_TARGETS})
+  #----------------------------------------
+
   # to run: catkin_make -DENABLE_COVERAGE_TESTING=ON package_name_coverage (adding -j1 recommended)
   if(ENABLE_COVERAGE_TESTING)
     include(CodeCoverage)
