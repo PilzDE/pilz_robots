@@ -17,8 +17,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <launch>
 
-<test test-name="unittest_pilz_modbus_read_client"
-    pkg="prbt_hardware_support" type="unittest_pilz_modbus_read_client">
+<test test-name="unittest_pilz_modbus_client"
+    pkg="prbt_hardware_support" type="unittest_pilz_modbus_client">
 </test>
 
 </launch>

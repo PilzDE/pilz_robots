@@ -15,16 +15,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PRBT_HARDWARE_SUPPORT_COMMON_H
-#define PRBT_HARDWARE_SUPPORT_COMMON_H
+#ifndef PILZ_MODBUS_CLIENT_EXCEPTION_H
+#define PILZ_MODBUS_CLIENT_EXCEPTION_H
 
-#include <string>
+#include <stdexcept>
 
 namespace prbt_hardware_support
 {
-// Topic names
-static const std::string TOPIC_MODBUS_READ = "/pilz_modbus_node/modbus_read";
-static const std::string SERVICE_MODBUS_WRITE = "/pilz_modbus_node/modbus_write";
-
+  /**
+   * @brief Expection thrown by prbt_hardware_support::PilzModbusClient
+   */
+  class PilzModbusClientException : public std::runtime_error
+  {
+    public:
+      PilzModbusClientException( const std::string& what_arg ):
+        std::runtime_error(what_arg)
+      {
+      }
+  };
 }
-#endif // PRBT_HARDWARE_SUPPORT_COMMON_H
+
+#endif // PILZ_MODBUS_CLIENT_EXCEPTION_H
