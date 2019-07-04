@@ -65,7 +65,7 @@
     <rosparam ns="/prbt/api_spec" command="load" file="$(arg api_spec_file)" />
 
     <node pkg="rosservice" type="rosservice" name="robot_init" args="call --wait /prbt/driver/init"/>
-    <include file="$(find prbt_hardware_support)/launch/modbus_read_client.launch">
+    <include file="$(find prbt_hardware_support)/launch/modbus_client.launch">
       <arg name="modbus_server_ip" value="$(arg sto_modbus_server_ip)" />
     </include>
     <include file="$(find prbt_hardware_support)/launch/sto_modbus_adapter_node.launch" />

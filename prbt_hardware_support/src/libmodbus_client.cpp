@@ -19,6 +19,8 @@
 
 #include <vector>
 #include <errno.h>
+#include <limits>
+#include <stdexcept>
 
 #include <prbt_hardware_support/libmodbus_client.h>
 #include <prbt_hardware_support/pilz_modbus_exceptions.h>
@@ -60,24 +62,58 @@ unsigned int LibModbusClient::getResponseTimeoutInMs()
   return response_timeout.tv_sec * 1000 + (response_timeout.tv_usec  / 1000);
 }
 
-std::vector<uint16_t> LibModbusClient::readHoldingRegister(int addr, int nb)
+RegCont LibModbusClient::readHoldingRegister(int addr, int nb)
 {
   if(modbus_connection_ == nullptr)
   {
     throw ModbusExceptionDisconnect("Modbus disconnected!");
   }
 
-  uint16_t tab_reg[nb];
+  RegCont tab_reg(static_cast<RegCont::size_type>(nb));
   int rc {-1};
 
-  rc = modbus_read_registers(modbus_connection_, addr, nb, tab_reg);
+  rc = modbus_read_registers(modbus_connection_, addr, nb, tab_reg.data());
   if (rc == -1)
   {
     throw ModbusExceptionDisconnect("Modbus disconnected!");
   }
 
-  return std::vector<uint16_t> (tab_reg, tab_reg + nb);
+  return tab_reg;
+}
 
+RegCont LibModbusClient::writeReadHoldingRegister(const int write_addr,
+                                                  const RegCont& write_reg,
+                                                  const int read_addr, const int read_nb)
+{
+  if(modbus_connection_ == nullptr)
+  {
+    throw ModbusExceptionDisconnect("Modbus disconnected!");
+  }
+
+  if (read_nb < 0)
+  {
+    throw std::invalid_argument("Argument \"read_nb\" must not be negative");
+  }
+  RegCont read_reg(static_cast<RegCont::size_type>(read_nb));
+
+  if (write_reg.size() > std::numeric_limits<int>::max())
+  {
+    throw std::invalid_argument("Argument \"write_reg\" must not exceed max value of type \"int\"");
+  }
+
+  int rc {-1};
+  rc = modbus_write_and_read_registers(modbus_connection_,
+                                       write_addr, static_cast<int>(write_reg.size()), write_reg.data(),
+                                       read_addr, read_nb, read_reg.data());
+  if (rc == -1)
+  {
+    std::string err = "Failed to write and read modbus registers";
+    err.append(modbus_strerror(errno));
+    ROS_ERROR_STREAM(err);
+    throw ModbusExceptionDisconnect(err);
+  }
+
+  return read_reg;
 }
 
 void LibModbusClient::close()

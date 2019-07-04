@@ -37,7 +37,8 @@
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <prbt_hardware_support/IsBrakeTestRequired.h>
 #include <prbt_hardware_support/pilz_modbus_server_mock.h>
-#include <prbt_hardware_support/pilz_modbus_read_client.h>
+#include <prbt_hardware_support/pilz_modbus_client.h>
+#include <prbt_hardware_support/register_container.h>
 
 #include <prbt_hardware_support/ros_test_helper.h>
 
@@ -135,13 +136,13 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
                                     std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port) );
 	prbt_hardware_support::IsBrakeTestRequired srv;
 
-  waitForNode("/pilz_modbus_read_client_node");
+  waitForNode("/pilz_modbus_client_node");
   waitForNode("/prbt/modbus_adapter_brake_test_node");
 
   /**********
    * Step 1 *
    **********/
-  std::vector<uint16_t> required_holding_register{MODBUS_API_VERSION_VALUE, 0, 0, 0, 1};
+  RegCont required_holding_register{MODBUS_API_VERSION_VALUE, 0, 0, 0, 1};
   modbus_server.setHoldingRegister(required_holding_register, index_of_first_register_to_read);
 
 
@@ -156,7 +157,7 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
   /**********
    * Step 2 *
    **********/
-  std::vector<uint16_t> required_holding_register_changed{MODBUS_API_VERSION_VALUE, 1, 0, 0, 1};
+  RegCont required_holding_register_changed{MODBUS_API_VERSION_VALUE, 1, 0, 0, 1};
   modbus_server.setHoldingRegister(required_holding_register_changed, index_of_first_register_to_read);
 
 	EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(is_brake_test_required_client, true, 10));
@@ -164,7 +165,7 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
   /**********
    * Step 3 *
    **********/
-  std::vector<uint16_t> not_required_holding_register{MODBUS_API_VERSION_VALUE, 0, 0, 0, 0};
+  RegCont not_required_holding_register{MODBUS_API_VERSION_VALUE, 0, 0, 0, 0};
   modbus_server.setHoldingRegister(not_required_holding_register, index_of_first_register_to_read);
 
   EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(is_brake_test_required_client, false, 10));
