@@ -16,7 +16,11 @@
  */
 
 #include <ros/ros.h>
+#include <std_srvs/Trigger.h>
+
+#include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/sto_modbus_adapter.h>
+#include <prbt_hardware_support/sto_executor.h>
 
 using namespace prbt_hardware_support;
 
@@ -24,6 +28,8 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "pilz_sto_modbus_adapter_node");
   ros::NodeHandle nh;
+
+  STOExecutor sto_executor;
 
   ModbusApiSpec api_spec{nh};
 
