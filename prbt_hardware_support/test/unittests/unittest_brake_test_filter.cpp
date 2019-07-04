@@ -26,7 +26,7 @@
 
 #include <prbt_hardware_support/brake_test_filter.h>
 #include <prbt_hardware_support/modbus_msg_brake_test_wrapper.h>
-#include <prbt_hardware_support/modbus_msg_in_utils.h>
+#include <prbt_hardware_support/modbus_msg_in_builder.h>
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <message_filters/pass_through.h>
 #include <message_filters/subscriber.h>
@@ -97,7 +97,7 @@ ModbusMsgInStampedPtr createDefaultBrakeTestModbusMsg(bool brake_test_required)
   RegCont tab_reg(last_index_to_read - first_index_to_read + 1);
   tab_reg[0] = 1;
   tab_reg[last_index_to_read - first_index_to_read] = brake_test_required;
-  ModbusMsgInStampedPtr msg{createDefaultModbusMsgIn(first_index_to_read, tab_reg)};
+  ModbusMsgInStampedPtr msg{ModbusMsgInBuilder::createDefaultModbusMsgIn(first_index_to_read, tab_reg)};
   msg->header.stamp = ros::Time(msg_time_counter++);
   return msg;
 }

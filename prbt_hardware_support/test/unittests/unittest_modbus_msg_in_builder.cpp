@@ -20,7 +20,7 @@
 
 #include <gtest/gtest.h>
 
-#include <prbt_hardware_support/modbus_msg_in_utils.h>
+#include <prbt_hardware_support/modbus_msg_in_builder.h>
 
 namespace pilz_modbus_msg_in_utils_test
 {
@@ -31,11 +31,11 @@ using namespace prbt_hardware_support;
  * @brief Tests that exception is thrown if the register container size
  * exceeds the size allowed by the std_msgs::MultiArrayLayout class.
  */
-TEST(ModbusMsgInUtilsTest, testOutOfRangeRegister)
+TEST(ModbusMsgInBuilderTest, testOutOfRangeRegister)
 {
   std::unique_ptr<std_msgs::MultiArrayLayout> layout {new std_msgs::MultiArrayLayout()};
   const RegCont::size_type N {static_cast<RegCont::size_type>(std::numeric_limits<std_msgs::MultiArrayDimension::_size_type>::max()) + 1};
-  EXPECT_THROW(setDefaultLayout(layout.get(), 1, N), std::invalid_argument);
+  EXPECT_THROW(ModbusMsgInBuilder::setDefaultLayout(layout.get(), 1, N), std::invalid_argument);
 }
 
 

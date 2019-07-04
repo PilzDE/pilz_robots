@@ -24,7 +24,7 @@
 
 #include <prbt_hardware_support/modbus_adapter_brake_test.h>
 #include <prbt_hardware_support/modbus_topic_definitions.h>
-#include <prbt_hardware_support/modbus_msg_in_utils.h>
+#include <prbt_hardware_support/modbus_msg_in_builder.h>
 #include <prbt_hardware_support/register_container.h>
 
 #include <pilz_testutils/async_test.h>
@@ -87,7 +87,7 @@ ModbusMsgInStampedPtr ModbusAdapterBrakeTestTest::createDefaultBrakeTestModbusMs
   RegCont tab_reg(last_index_to_read - first_index_to_read + 1);
   tab_reg[0] = modbus_api_version;
   tab_reg[last_index_to_read - first_index_to_read] = brake_test_required;
-  ModbusMsgInStampedPtr msg{createDefaultModbusMsgIn(first_index_to_read, tab_reg)};
+  ModbusMsgInStampedPtr msg{ModbusMsgInBuilder::createDefaultModbusMsgIn(first_index_to_read, tab_reg)};
   msg->header.stamp = ros::Time(msg_time_counter++);
   return msg;
 }
@@ -184,7 +184,7 @@ TEST_F(ModbusAdapterBrakeTestTest, testDisconnect)
 
   uint32_t offset{0};
   RegCont holding_register;
-  ModbusMsgInStampedPtr msg{createDefaultModbusMsgIn(offset, holding_register)};
+  ModbusMsgInStampedPtr msg{ModbusMsgInBuilder::createDefaultModbusMsgIn(offset, holding_register)};
   msg->disconnect.data = true;
   modbus_topic_pub_.publish(msg);
 

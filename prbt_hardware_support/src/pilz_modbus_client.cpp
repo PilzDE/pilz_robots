@@ -18,7 +18,7 @@
 #include <prbt_hardware_support/pilz_modbus_client.h>
 
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
-#include <prbt_hardware_support/modbus_msg_in_utils.h>
+#include <prbt_hardware_support/modbus_msg_in_builder.h>
 #include <prbt_hardware_support/pilz_modbus_exceptions.h>
 #include <prbt_hardware_support/pilz_modbus_client_exception.h>
 
@@ -153,7 +153,7 @@ void PilzModbusClient::run()
       break;
     }
 
-    ModbusMsgInStampedPtr msg {createDefaultModbusMsgIn(INDEX_OF_FIRST_REGISTER, holding_register)};
+    ModbusMsgInStampedPtr msg {ModbusMsgInBuilder::createDefaultModbusMsgIn(INDEX_OF_FIRST_REGISTER, holding_register)};
 
     // Publish the received data into ROS
     if(holding_register != last_holding_register)

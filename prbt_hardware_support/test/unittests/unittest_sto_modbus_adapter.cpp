@@ -34,7 +34,7 @@
 #include <prbt_hardware_support/param_names.h>
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <prbt_hardware_support/modbus_msg_sto_wrapper.h>
-#include <prbt_hardware_support/modbus_msg_in_utils.h>
+#include <prbt_hardware_support/modbus_msg_in_builder.h>
 #include <prbt_hardware_support/sto_modbus_adapter.h>
 #include <prbt_hardware_support/pilz_manipulator_mock.h>
 #include <prbt_hardware_support/register_container.h>
@@ -121,7 +121,7 @@ ModbusMsgInStampedPtr PilzStoModbusAdapterTest::createDefaultStoModbusMsg(bool s
   RegCont tab_reg(num_registers_to_read_);
   tab_reg[0] = sto;
   tab_reg[1] = MODBUS_API_VERSION_FOR_TESTING;
-  ModbusMsgInStampedPtr msg {createDefaultModbusMsgIn(index_of_first_register_to_read_, tab_reg)};
+  ModbusMsgInStampedPtr msg {ModbusMsgInBuilder::createDefaultModbusMsgIn(index_of_first_register_to_read_, tab_reg)};
   msg->header.stamp = ros::Time(msg_time_counter++);
   return msg;
 }

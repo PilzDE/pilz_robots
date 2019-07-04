@@ -117,6 +117,7 @@ add_executable(
   src/pilz_modbus_client_node.cpp
   src/pilz_modbus_client.cpp
   src/libmodbus_client.cpp
+  src/modbus_msg_in_builder.cpp
 )
 add_dependencies(pilz_modbus_client_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
 target_link_libraries(pilz_modbus_client_node ${catkin_LIBRARIES} modbus)
@@ -167,6 +168,7 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest_gmock(unittest_brake_test_filter
                     test/unittests/unittest_brake_test_filter.test
                     test/unittests/unittest_brake_test_filter.cpp
+                    src/modbus_msg_in_builder.cpp
   )
   target_link_libraries(unittest_brake_test_filter
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
@@ -187,6 +189,7 @@ if(CATKIN_ENABLE_TESTING)
 
   catkin_add_gmock(unittest_operation_mode_filter
   test/unittests/unittest_operation_mode_filter.cpp
+  src/modbus_msg_in_builder.cpp
   )
   target_link_libraries(unittest_operation_mode_filter
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
@@ -207,7 +210,9 @@ if(CATKIN_ENABLE_TESTING)
 
   #--- ModbusMsgWrapper unit test ---
   catkin_add_gtest(unittest_modbus_msg_wrapper
-                   test/unittests/unittest_modbus_msg_wrapper.cpp)
+                   test/unittests/unittest_modbus_msg_wrapper.cpp
+                   src/modbus_msg_in_builder.cpp
+                   )
   add_dependencies(unittest_modbus_msg_wrapper ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------
 
@@ -220,6 +225,7 @@ if(CATKIN_ENABLE_TESTING)
       test/unittests/unittest_pilz_modbus_client.test
       test/unittests/unittest_pilz_modbus_client.cpp
       src/pilz_modbus_client.cpp
+      src/modbus_msg_in_builder.cpp
   )
   target_link_libraries(unittest_pilz_modbus_client
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
@@ -232,6 +238,7 @@ if(CATKIN_ENABLE_TESTING)
    test/unittests/unittest_sto_modbus_adapter.cpp
    src/sto_modbus_adapter.cpp
    src/modbus_msg_sto_wrapper.cpp
+   src/modbus_msg_in_builder.cpp
   )
   target_link_libraries(unittest_sto_modbus_adapter
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
@@ -244,6 +251,7 @@ if(CATKIN_ENABLE_TESTING)
     test/unittests/unittest_modbus_adapter_brake_test.cpp
     src/modbus_adapter_brake_test.cpp
     src/adapter_brake_test.cpp
+    src/modbus_msg_in_builder.cpp
   )
   target_link_libraries(unittest_modbus_adapter_brake_test
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
@@ -256,6 +264,7 @@ if(CATKIN_ENABLE_TESTING)
     test/unittests/unittest_modbus_adapter_operation_mode.cpp
     src/modbus_adapter_operation_mode.cpp
     src/adapter_operation_mode.cpp
+    src/modbus_msg_in_builder.cpp
   )
   target_link_libraries(unittest_modbus_adapter_operation_mode
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
@@ -376,13 +385,14 @@ if(CATKIN_ENABLE_TESTING)
   #----------------------------------------
 
   #--- ModbusMsgInUtils unit test ---
-  catkin_add_gtest(unittest_modbus_msg_in_utils
-      test/unittests/unittest_modbus_msg_in_utils.cpp
+  catkin_add_gtest(unittest_modbus_msg_in_builder
+      test/unittests/unittest_modbus_msg_in_builder.cpp
+      src/modbus_msg_in_builder.cpp
   )
-  target_link_libraries(unittest_modbus_msg_in_utils
+  target_link_libraries(unittest_modbus_msg_in_builder
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
   )
-  add_dependencies(unittest_modbus_msg_in_utils ${${PROJECT_NAME}_EXPORTED_TARGETS})
+  add_dependencies(unittest_modbus_msg_in_builder ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------------
 
   # to run: catkin_make -DENABLE_COVERAGE_TESTING=ON package_name_coverage (adding -j1 recommended)

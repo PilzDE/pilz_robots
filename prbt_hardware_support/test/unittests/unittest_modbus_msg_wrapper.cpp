@@ -22,7 +22,7 @@
 
 #include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/modbus_msg_wrapper.h>
-#include <prbt_hardware_support/modbus_msg_in_utils.h>
+#include <prbt_hardware_support/modbus_msg_in_builder.h>
 #include <prbt_hardware_support/register_container.h>
 
 using namespace prbt_hardware_support;
@@ -41,7 +41,7 @@ TEST(ModbusMsgWrapperTest, testModbusMsgWrapperDtor)
   uint32_t offset{0};
   const uint16_t modbus_api_version {1};
   RegCont holding_register {modbus_api_version};
-  ModbusMsgInStampedPtr msg{createDefaultModbusMsgIn(offset, holding_register)};
+  ModbusMsgInStampedPtr msg{ModbusMsgInBuilder::createDefaultModbusMsgIn(offset, holding_register)};
 
   ModbusMsgInStampedConstPtr msg_const_ptr {msg};
   std::shared_ptr<ModbusMsgWrapper> ex(new ModbusMsgWrapper(msg_const_ptr, test_api_spec));
