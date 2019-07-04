@@ -125,9 +125,13 @@ public:
     }
 
     typedef std::pair<std::string, unsigned int> RegisterMappingEntry;
+    // The following is excluded because lambda functions are not marked properly with gcc-7
+    // see https://github.com/gcc-mirror/gcc/commit/7de708f
+    // LCOV_EXCL_START
     auto it = std::min_element(register_mapping_.begin(), register_mapping_.end(),
                                [] (const RegisterMappingEntry& a, const RegisterMappingEntry& b)
                                { return a.second < b.second; });
+    // LCVO EXCL_STOP
     return it->second;
   }
 
@@ -139,9 +143,13 @@ public:
     }
 
     typedef std::pair<std::string, unsigned int> RegisterMappingEntry;
+    // The following is excluded because lambda functions are not marked properly with gcc-7
+    // see https://github.com/gcc-mirror/gcc/commit/7de708f
+    // LCOV_EXCL_START
     auto it = std::max_element(register_mapping_.begin(), register_mapping_.end(),
                                [] (const RegisterMappingEntry& a, const RegisterMappingEntry& b)
                                { return a.second < b.second; });
+    // LCVO EXCL_STOP
     return it->second;
   }
 
