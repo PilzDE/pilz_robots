@@ -78,7 +78,7 @@ bool BrakeTestUtils::detectRobotMotion(double timeout_s)
   }
 
   return false;
-};
+}
 
 sensor_msgs::JointStateConstPtr BrakeTestUtils::getCurrentJointStates()
 {
@@ -88,7 +88,7 @@ sensor_msgs::JointStateConstPtr BrakeTestUtils::getCurrentJointStates()
     throw GetCurrentJointStatesException("Could not obtain message from joint_states topic.");
   }
   return msg;
-};
+}
 
 bool BrakeTestUtils::compareJointStatePositions(const sensor_msgs::JointStateConstPtr &msg1,
                                                 const sensor_msgs::JointStateConstPtr &msg2,
@@ -96,7 +96,7 @@ bool BrakeTestUtils::compareJointStatePositions(const sensor_msgs::JointStateCon
 {
   return std::equal(msg1->position.begin(), msg1->position.end(), msg2->position.begin(),
                     [tol](double pos1, double pos2) { return (fabs(pos1 - pos2) < tol); });
-};
+}
 
 } // namespace prbt_hardware_support
 
