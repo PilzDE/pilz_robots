@@ -20,9 +20,9 @@
 #include <ros/ros.h>
 
 #include <prbt_hardware_support/libmodbus_client.h>
-#include <prbt_hardware_support/pilz_modbus_read_client.h>
+#include <prbt_hardware_support/pilz_modbus_client.h>
 #include <prbt_hardware_support/param_names.h>
-#include <prbt_hardware_support/pilz_modbus_read_client_exception.h>
+#include <prbt_hardware_support/pilz_modbus_client_exception.h>
 #include <prbt_hardware_support/modbus_topic_definitions.h>
 #include <prbt_hardware_support/get_param.h>
 
@@ -33,11 +33,11 @@ static constexpr int MODBUS_RESPONSE_TIMEOUT_MS {20};
 using namespace prbt_hardware_support;
 
 /**
- * @brief Read requested parameters, start and initialize the prbt_hardware_support::PilzModbusReadClient
+ * @brief Read requested parameters, start and initialize the prbt_hardware_support::PilzModbusClient
  */
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "modbus_read_node");
+  ros::init(argc, argv, "modbus_client_node");
 
   ros::NodeHandle nh {"~"};
 
@@ -67,26 +67,30 @@ int main(int argc, char **argv)
   nh.param<int>(PARAM_MODBUS_RESPONSE_TIMEOUT_STR, response_timeout_ms,
                 MODBUS_RESPONSE_TIMEOUT_MS);
 
-  std::string modbus_topic_name;
-  nh.param<std::string>(PARAM_MODBUS_TOPIC_NAME_STR, modbus_topic_name,
+  std::string modbus_read_topic_name;
+  nh.param<std::string>(PARAM_MODBUS_READ_TOPIC_NAME_STR, modbus_read_topic_name,
                         TOPIC_MODBUS_READ);
+
+  std::string modbus_write_service_name;
+  nh.param<std::string>(PARAM_MODBUS_WRITE_SERVICE_NAME_STR, modbus_write_service_name,
+                        SERVICE_MODBUS_WRITE);
 
 
   // LCOV_EXCL_STOP
 
-  prbt_hardware_support::PilzModbusReadClient modbus_client(nh,
-                                                            static_cast<uint32_t>(num_registers_to_read),
-                                                            static_cast<uint32_t>(index_of_first_register),
-                                                            std::unique_ptr<LibModbusClient>(new LibModbusClient()),
-                                                            static_cast<unsigned int>(response_timeout_ms),
-                                                            modbus_topic_name);
+  prbt_hardware_support::PilzModbusClient modbus_client(nh,
+                                                        static_cast<uint32_t>(num_registers_to_read),
+                                                        static_cast<uint32_t>(index_of_first_register),
+                                                        std::unique_ptr<LibModbusClient>(new LibModbusClient()),
+                                                        static_cast<unsigned int>(response_timeout_ms),
+                                                        modbus_read_topic_name, modbus_write_service_name);
 
   ROS_DEBUG_STREAM("Modbus client IP: " << ip << " | Port: " << port);
   ROS_DEBUG_STREAM("Number of registers to read: " << num_registers_to_read
                    << "| first register: " << index_of_first_register);
-  ROS_DEBUG_STREAM("Modbus response timeout: " << response_timeout_ms
-                   << "Modbus topic name: " << modbus_topic_name);
-
+  ROS_DEBUG_STREAM("Modbus response timeout: " << response_timeout_ms);
+  ROS_DEBUG_STREAM("Modbus read topic: \"" << modbus_read_topic_name << "\"");
+  ROS_DEBUG_STREAM("Modbus write service: \"" << modbus_write_service_name << "\"");
 
   bool res = modbus_client.init(ip.c_str(), static_cast<unsigned int>(port),
                                 static_cast<unsigned int>(modbus_connection_retries),
@@ -105,7 +109,7 @@ int main(int argc, char **argv)
   {
     modbus_client.run();
   }
-  catch(PilzModbusReadClientException& e)
+  catch(PilzModbusClientException& e)
   {
     ROS_ERROR_STREAM(e.what());
     return EXIT_FAILURE;

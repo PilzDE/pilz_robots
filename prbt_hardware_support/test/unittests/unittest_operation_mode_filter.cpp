@@ -25,10 +25,10 @@
 #include <ros/ros.h>
 
 #include <prbt_hardware_support/operation_mode_filter.h>
-#include <prbt_hardware_support/modbus_msg_in_utils.h>
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <prbt_hardware_support/OperationModes.h>
 #include <prbt_hardware_support/modbus_msg_operation_mode_wrapper_exception.h>
+#include <prbt_hardware_support/modbus_msg_in_builder.h>
 
 static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {2};
 
@@ -65,8 +65,21 @@ static const ModbusApiSpec test_api_spec{ {modbus_api_spec::VERSION, 696},
 class OperationModeFilterTest : public testing::Test
 {
 public:
+  OperationModeFilterTest();
+
+public:
   MOCK_METHOD1(modbusInMsgCallback, void(ModbusMsgInStampedConstPtr msg));
 };
+
+OperationModeFilterTest::OperationModeFilterTest()
+{
+  // Initialize for ROS time if not already initialized
+  if(!ros::Time::isValid())
+  {
+    ros::Time::init();
+  }
+}
+
 
 /**
  * @brief Test increases function coverage by ensuring that all Dtor's are
@@ -95,7 +108,7 @@ TEST_F(OperationModeFilterTest, passOperationModeMsg)
   builder.setApiVersion(MODBUS_API_VERSION_REQUIRED)
       .setOperationMode(OperationModes::T1);
 
-  first_filter.signalMessage(builder.build());
+  first_filter.signalMessage(builder.build(ros::Time::now()));
 }
 
 /**
@@ -114,13 +127,13 @@ TEST_F(OperationModeFilterTest, passOnlyChange)
   builder.setApiVersion(2);
 
   EXPECT_CALL(*this, modbusInMsgCallback(_)).Times(1);
-  first_filter.signalMessage(builder.setOperationMode(OperationModes::T1).build());
+  first_filter.signalMessage(builder.setOperationMode(OperationModes::T1).build(ros::Time::now()));
 
   EXPECT_CALL(*this, modbusInMsgCallback(_)).Times(0);
-  first_filter.signalMessage(builder.setOperationMode(OperationModes::T1).build());
+  first_filter.signalMessage(builder.setOperationMode(OperationModes::T1).build(ros::Time::now()));
 
   EXPECT_CALL(*this, modbusInMsgCallback(_)).Times(1);
-  first_filter.signalMessage(builder.setOperationMode(OperationModes::T2).build());
+  first_filter.signalMessage(builder.setOperationMode(OperationModes::T2).build(ros::Time::now()));
 }
 
 /**
@@ -141,7 +154,7 @@ TEST_F(OperationModeFilterTest, messageWithOutOperationMode)
   builder.setApiVersion(MODBUS_API_VERSION_REQUIRED)
       .setRegister(511, 5); // Some register
 
-  first_filter.signalMessage(builder.build());
+  first_filter.signalMessage(builder.build(ros::Time::now()));
 }
 
 
@@ -161,7 +174,7 @@ TEST_F(OperationModeFilterTest, noVersion)
   builder.setOperationMode(OperationModes::T1);
 
   EXPECT_CALL(*this, modbusInMsgCallback(_)).Times(0);
-  first_filter.signalMessage(builder.build());
+  first_filter.signalMessage(builder.build(ros::Time::now()));
 }
 
 } // namespace operation_mode_filter_test

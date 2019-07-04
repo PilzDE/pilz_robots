@@ -23,7 +23,7 @@
 #include <prbt_hardware_support/modbus_client.h>
 
 /**
- * @brief Mock used in the unittest of the PilzModbusReadClient
+ * @brief Mock used in the unittest of the PilzModbusClient
  */
 
 class PilzModbusClientMock : public prbt_hardware_support::ModbusClient
@@ -33,6 +33,10 @@ public:
   MOCK_METHOD0(connect, void());
   MOCK_METHOD1(setResponseTimeoutInMs, void(unsigned int timeout_ms));
   MOCK_METHOD2(readHoldingRegister, std::vector<uint16_t>(int addr, int nb));
+  MOCK_METHOD4(writeReadHoldingRegister, std::vector<uint16_t>(const int write_addr,
+                                                               const std::vector<uint16_t>& write_reg,
+                                                               const int read_addr,
+                                                               const int read_nb));
   MOCK_METHOD0(getResponseTimeoutInMs, unsigned int());
 };
 

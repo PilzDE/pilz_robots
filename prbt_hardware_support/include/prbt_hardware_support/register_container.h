@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Pilz GmbH & Co. KG
+ * Copyright (c) 2019 Pilz GmbH & Co. KG
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -14,25 +14,18 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef REGISTER_CONTAINER_H
+#define REGISTER_CONTAINER_H
 
-#ifndef PRBT_HARDWARE_SUPPORT_READ_CLIENT_EXCEPTION_H
-#define PRBT_HARDWARE_SUPPORT_READ_CLIENT_EXCEPTION_H
-
-#include <stdexcept>
+#include <vector>
+#include <cstdint>
 
 namespace prbt_hardware_support
 {
-  /**
-   * @brief Expection thrown by prbt_hardware_support::PilzModbusReadClient
-   */
-  class PilzModbusReadClientException : public std::runtime_error
-  {
-    public:
-      PilzModbusReadClientException( const std::string& what_arg ):
-        std::runtime_error(what_arg)
-      {
-      }
-  };
+
+//! Convenience data type defining the data type for a collection of registers.
+using RegCont = std::vector<uint16_t>;
+
 }
 
-#endif // PRBT_HARDWARE_SUPPORT_READ_CLIENT_EXCEPTION_H
+#endif // REGISTER_CONTAINER_H
