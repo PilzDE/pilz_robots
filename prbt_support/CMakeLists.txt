@@ -26,7 +26,7 @@ if(CATKIN_ENABLE_TESTING)
 
   find_package(rostest REQUIRED)
   find_package(moveit_core REQUIRED)
-  find_package(moveit_kinematics REQUIRED)
+  find_package(moveit_ros_planning REQUIRED)
   find_package(cmake_modules REQUIRED)
   find_package(Eigen3 REQUIRED)
 
