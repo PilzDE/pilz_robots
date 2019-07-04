@@ -304,7 +304,16 @@ if(CATKIN_ENABLE_TESTING)
   target_link_libraries(unittest_get_param
     ${catkin_LIBRARIES}
   )
-#----------------------------------
+  #----------------------------------
+
+  # --- STOExecutor unit test ---
+  catkin_add_gmock(unittest_sto_executor
+    test/unittests/unittest_sto_executor.cpp
+  )
+  target_link_libraries(unittest_sto_executor
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  #----------------------------------
 
   # --- Stop integration test ---
   add_rostest_gmock(integrationtest_stop1
