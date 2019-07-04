@@ -21,12 +21,18 @@
 #include <vector>
 #include <cstdint>
 
+#include "register_container.h"
 
 namespace prbt_hardware_support
 {
 
 class ModbusClient
 {
+public:
+  // LCOV_EXCL_START
+  virtual ~ModbusClient() = default;
+  // LCOV_EXCL_STOP
+
 public:
 
   /**
@@ -62,9 +68,14 @@ public:
    * @param addr starting address to read from
    * @param nb number of registers to read
    * @throw ModbusExceptionDisconnect if a disconnect from the server happens
-   * @return std::vector<uint16_t> containing the register contents
+   * @returns the registers content.
    */
-  virtual std::vector<uint16_t> readHoldingRegister(int addr, int nb) = 0;
+  virtual RegCont readHoldingRegister(int addr, int nb) = 0;
+
+  virtual RegCont writeReadHoldingRegister(const int write_addr, const RegCont &write_reg,
+                                           const int read_addr, const int read_nb) = 0;
+
+
 
 };
 
