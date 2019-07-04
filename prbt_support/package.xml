@@ -32,7 +32,7 @@
 
   <test_depend>rostest</test_depend>
   <test_depend>moveit_core</test_depend>
-  <test_depend>moveit_kinematics</test_depend>
+  <test_depend>moveit_ros_planning</test_depend>
   <test_depend>cmake_modules</test_depend>
   <test_depend>eigen</test_depend>
   <test_depend>roslaunch</test_depend>
