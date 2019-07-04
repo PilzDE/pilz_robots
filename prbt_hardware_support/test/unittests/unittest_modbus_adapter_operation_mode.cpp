@@ -22,8 +22,9 @@
 
 #include <prbt_hardware_support/modbus_adapter_operation_mode.h>
 #include <prbt_hardware_support/modbus_topic_definitions.h>
-#include <prbt_hardware_support/modbus_msg_in_utils.h>
 #include <prbt_hardware_support/OperationModes.h>
+#include <prbt_hardware_support/register_container.h>
+#include <prbt_hardware_support/modbus_msg_in_builder.h>
 
 namespace prbt_hardware_support
 {
@@ -36,7 +37,7 @@ static const ModbusApiSpec test_api_spec{ {modbus_api_spec::VERSION, 1},
                                           {modbus_api_spec::OPERATION_MODE, 11} };
 
 static constexpr double OPERATION_MODE_CHANGE_WAIT_TIME_S{2.0};
-static const std::vector<unsigned int> OPERATION_MODES{1, 2, 3};
+static const std::vector<uint16_t> OPERATION_MODES{1, 2, 3};
 
 /**
  * @brief Test fixture for unit-tests of the ModbusAdapterOperationMode.
@@ -68,6 +69,12 @@ protected:
 
 ModbusAdapterOperationModeTest::ModbusAdapterOperationModeTest()
 {
+  // Initialize for ROS time if not already initialized
+  if(!ros::Time::isValid())
+  {
+    ros::Time::init();
+  }
+
   adapter_operation_mode_.reset(new ModbusAdapterOperationMode(nh_, test_api_spec));
   modbus_topic_pub_ = nh_.advertise<ModbusMsgInStamped>(TOPIC_MODBUS_READ, DEFAULT_QUEUE_SIZE_MODBUS);
   operation_mode_client_ = nh_.serviceClient<prbt_hardware_support::GetOperationMode>(SERVICE_NAME_OPERATION_MODE);
@@ -127,12 +134,9 @@ TEST_F(ModbusAdapterOperationModeTest, testAdapterOperationModeDtor)
  */
 TEST_F(ModbusAdapterOperationModeTest, testModbusMsgOperationModeWrapperDtor)
 {
-  ModbusMsgInStampedConstPtr msg_const_ptr {createDefaultOpModeModbusMsg(
-          OperationModes::T1,
-          MODBUS_API_VERSION_REQUIRED,
-          test_api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE),
-          test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION))};
-  std::shared_ptr<ModbusMsgOperationModeWrapper> wrapper (new ModbusMsgOperationModeWrapper(msg_const_ptr, test_api_spec));
+  ModbusMsgInBuilder builder(test_api_spec);
+  builder.setApiVersion(MODBUS_API_VERSION_REQUIRED).setOperationMode(OperationModes::T1);
+  std::shared_ptr<ModbusMsgOperationModeWrapper> wrapper (new ModbusMsgOperationModeWrapper(builder.build(ros::Time::now()), test_api_spec));
 }
 
 /**
@@ -146,14 +150,11 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusMsgOperationModeWrapperDtor)
  */
 TEST_F(ModbusAdapterOperationModeTest, testOperationModeChange)
 {
-  for (auto mode : OPERATION_MODES)
+  ModbusMsgInBuilder builder(test_api_spec);
+  builder.setApiVersion(MODBUS_API_VERSION_REQUIRED);
+  for (const auto& mode : OPERATION_MODES)
   {
-    modbus_topic_pub_.publish(createDefaultOpModeModbusMsg(
-                                mode,
-                                MODBUS_API_VERSION_REQUIRED,
-                                test_api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE),
-                                test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION))
-                              );
+    modbus_topic_pub_.publish(builder.setOperationMode(mode).build(ros::Time::now()));
     ASSERT_TRUE(ros::service::waitForService(SERVICE_NAME_OPERATION_MODE, ros::Duration(3))) << "Service does not appear";
     ASSERT_TRUE(waitForOperationMode(mode));
   }
@@ -170,20 +171,18 @@ TEST_F(ModbusAdapterOperationModeTest, testOperationModeChange)
  */
 TEST_F(ModbusAdapterOperationModeTest, testDisconnect)
 {
-  modbus_topic_pub_.publish(createDefaultOpModeModbusMsg(
-                              OperationModes::T1,
-                              MODBUS_API_VERSION_REQUIRED,
-                              test_api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE),
-                              test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION))
-                            );
+  ModbusMsgInBuilder builder(test_api_spec);
+  builder.setApiVersion(MODBUS_API_VERSION_REQUIRED).setOperationMode(OperationModes::T1);
+
+  modbus_topic_pub_.publish(builder.build(ros::Time::now()));
 
   ASSERT_TRUE(ros::service::waitForService(SERVICE_NAME_OPERATION_MODE, ros::Duration(3))) << "Service does not appear";
   ASSERT_TRUE(waitForOperationMode(OperationModes::T1));
 
 
   uint32_t offset{0};
-  std::vector<uint16_t> holding_register;
-  ModbusMsgInStampedPtr msg{createDefaultModbusMsgIn(offset, holding_register)};
+  RegCont holding_register;
+  ModbusMsgInStampedPtr msg{ModbusMsgInBuilder::createDefaultModbusMsgIn(offset, holding_register)};
   msg->disconnect.data = true;
   modbus_topic_pub_.publish(msg);
 
@@ -201,13 +200,9 @@ TEST_F(ModbusAdapterOperationModeTest, testDisconnect)
  */
 TEST_F(ModbusAdapterOperationModeTest, testModbusUnexpectedOperationMode)
 {
-  std::vector<uint16_t> holding_register;
-  modbus_topic_pub_.publish(createDefaultOpModeModbusMsg(
-                              1234, /* stupid value */
-                              MODBUS_API_VERSION_REQUIRED,
-                              test_api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE),
-                              test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION))
-                            );
+  ModbusMsgInBuilder builder(test_api_spec);
+  builder.setApiVersion(MODBUS_API_VERSION_REQUIRED).setOperationMode(1234 /* stupid value */);
+  modbus_topic_pub_.publish(builder.build(ros::Time::now()));
 
   // Wait for init
   ASSERT_TRUE(ros::service::waitForService(SERVICE_NAME_OPERATION_MODE, ros::Duration(3))) << "Service does not appear";
@@ -227,25 +222,18 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusUnexpectedOperationMode)
  */
 TEST_F(ModbusAdapterOperationModeTest, testModbusIncorrectApiVersion)
 {
+  ModbusMsgInBuilder builder(test_api_spec);
+
   // Step 1
-  modbus_topic_pub_.publish(createDefaultOpModeModbusMsg(
-                              OperationModes::T1,
-                              MODBUS_API_VERSION_REQUIRED,
-                              test_api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE),
-                              test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION))
-                            );
+  builder.setApiVersion(MODBUS_API_VERSION_REQUIRED).setOperationMode(OperationModes::T1);
+  modbus_topic_pub_.publish(builder.build(ros::Time::now()));
 
   ASSERT_TRUE(ros::service::waitForService(SERVICE_NAME_OPERATION_MODE, ros::Duration(3))) << "Service does not appear";
   ASSERT_TRUE(waitForOperationMode(OperationModes::T1));
 
   // Step 2
-  modbus_topic_pub_.publish(
-        createDefaultOpModeModbusMsg(
-          OperationModes::T2,
-          0 /* wrong version */,
-          test_api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE),
-          test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION))
-        );
+  builder.setApiVersion(0 /* wrong version */).setOperationMode(OperationModes::T2);
+  modbus_topic_pub_.publish(builder.build(ros::Time::now()));
 
   ASSERT_TRUE(waitForOperationMode(OperationModes::T1));
 }

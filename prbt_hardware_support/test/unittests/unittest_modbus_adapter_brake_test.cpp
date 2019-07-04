@@ -24,7 +24,8 @@
 
 #include <prbt_hardware_support/modbus_adapter_brake_test.h>
 #include <prbt_hardware_support/modbus_topic_definitions.h>
-#include <prbt_hardware_support/modbus_msg_in_utils.h>
+#include <prbt_hardware_support/modbus_msg_in_builder.h>
+#include <prbt_hardware_support/register_container.h>
 
 #include <pilz_testutils/async_test.h>
 
@@ -83,10 +84,10 @@ ModbusMsgInStampedPtr ModbusAdapterBrakeTestTest::createDefaultBrakeTestModbusMs
   uint32_t first_index_to_read{test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION)};
   uint32_t last_index_to_read{brake_test_required_index};
   static int msg_time_counter{1};
-  std::vector<uint16_t> tab_reg(last_index_to_read - first_index_to_read + 1);
+  RegCont tab_reg(last_index_to_read - first_index_to_read + 1);
   tab_reg[0] = modbus_api_version;
   tab_reg[last_index_to_read - first_index_to_read] = brake_test_required;
-  ModbusMsgInStampedPtr msg{createDefaultModbusMsgIn(first_index_to_read, tab_reg)};
+  ModbusMsgInStampedPtr msg{ModbusMsgInBuilder::createDefaultModbusMsgIn(first_index_to_read, tab_reg)};
   msg->header.stamp = ros::Time(msg_time_counter++);
   return msg;
 }
@@ -182,8 +183,8 @@ TEST_F(ModbusAdapterBrakeTestTest, testDisconnect)
                                                        false));
 
   uint32_t offset{0};
-  std::vector<uint16_t> holding_register;
-  ModbusMsgInStampedPtr msg{createDefaultModbusMsgIn(offset, holding_register)};
+  RegCont holding_register;
+  ModbusMsgInStampedPtr msg{ModbusMsgInBuilder::createDefaultModbusMsgIn(offset, holding_register)};
   msg->disconnect.data = true;
   modbus_topic_pub_.publish(msg);
 
@@ -210,7 +211,7 @@ TEST_F(ModbusAdapterBrakeTestTest, testModbusIncorrectApiVersion)
   ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
                                                        false));
 
-  std::vector<uint16_t> holding_register;
+  RegCont holding_register;
   modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(true, 0));
 
   sleep(1);

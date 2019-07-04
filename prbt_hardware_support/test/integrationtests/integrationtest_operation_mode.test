@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <arg name="num_registers_to_read" default="6" />
 <arg name="safety_hw" default="pss4000" />
 
-<node name="pilz_modbus_read_client_node" pkg="prbt_hardware_support" type="pilz_modbus_read_client_node">
+<node name="pilz_modbus_client_node" pkg="prbt_hardware_support" type="pilz_modbus_client_node">
   <param name="index_of_first_register_to_read" value="$(arg index_of_first_register_to_read)"/>
   <param name="modbus_server_ip" value="$(arg modbus_server_ip)"/>
   <param name="modbus_server_port" value="$(arg modbus_server_port)"/>

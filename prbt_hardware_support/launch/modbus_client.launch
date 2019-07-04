@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   <arg name="index_of_first_register_to_read" default="512" />
   <arg name="num_registers_to_read" default="4" />
 
-  <node required="true" pkg="prbt_hardware_support" type="pilz_modbus_read_client_node" name="pilz_modbus_read_client_node" output="screen">
+  <node required="true" pkg="prbt_hardware_support" type="pilz_modbus_client_node" name="pilz_modbus_client_node" output="screen">
     <param name="modbus_server_ip" value="$(arg modbus_server_ip)"/>
     <param name="modbus_server_port" value="$(arg modbus_server_port)"/>
     <param name="index_of_first_register_to_read" value="$(arg index_of_first_register_to_read)"/>
