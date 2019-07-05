@@ -53,14 +53,14 @@ public:
    *
    * @param timeout_ms in ms
    */
-  virtual void setResponseTimeoutInMs(unsigned int timeout_ms) = 0;
+  virtual void setResponseTimeoutInMs(unsigned long timeout_ms) = 0;
 
   /**
    * @brief Get the response timeout
    *
    * @return response timeout
    */
-  virtual unsigned int getResponseTimeoutInMs() = 0;
+  virtual unsigned long getResponseTimeoutInMs() = 0;
 
   /**
    * @brief Read the holding registers

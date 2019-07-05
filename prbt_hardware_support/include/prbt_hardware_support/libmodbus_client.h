@@ -43,10 +43,10 @@ public:
   bool init(const char* ip, unsigned int port) override;
 
   //! @brief See base class.
-  void setResponseTimeoutInMs(unsigned int timeout_ms) override;
+  void setResponseTimeoutInMs(unsigned long timeout_ms) override;
 
   //! @brief See base class.
-  unsigned int getResponseTimeoutInMs() override;
+  unsigned long getResponseTimeoutInMs() override;
 
   //! @brief See base class.
   RegCont readHoldingRegister(int addr, int nb) override;
