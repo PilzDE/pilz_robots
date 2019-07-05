@@ -45,7 +45,7 @@ See DIN EN ISO 10218-1 for more details or contact us: ros@pilz.de
 # ROS API
 
 ## ModbusClient
-A Modbus client (for usage with the PNOZmulti or PSS4000) can be started with `roslaunch prbt_hardware_support modbus_read_client.launch`.
+A Modbus client (for usage with the PNOZmulti or PSS4000) can be started with `roslaunch prbt_hardware_support modbus_client.launch`.
 
 ### Published Topics
 - ~/pilz_modbus_node/modbus_read (prbt_hardware_support/ModbusMsgInStamped)
@@ -67,7 +67,7 @@ A Modbus client (for usage with the PNOZmulti or PSS4000) can be started with `r
 **Please note:**
 - The parameters ``modbus_response_timeout`` and ``modbus_read_topic_name`` are
 important for the Safe stop 1 functionality and must NOT be given, if the
-``modbus_client_node`` is used as part of the Safe stop 1 functionality.
+``pilz_modbus_client_node`` is used as part of the Safe stop 1 functionality.
 If the parameters are not given the default values for these parameters are used.
 
 ## ModbusAdapterStoNode
