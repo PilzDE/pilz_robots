@@ -23,7 +23,8 @@
 namespace prbt_hardware_support
 {
 // Topic names
-static const std::string TOPIC_MODBUS_READ = "/pilz_modbus_node/modbus_read";
+static const std::string TOPIC_MODBUS_READ = "/pilz_modbus_client_node/modbus_read";
+static const std::string SERVICE_MODBUS_WRITE = "/pilz_modbus_client_node/modbus_write";
 
 }
 #endif // PRBT_HARDWARE_SUPPORT_COMMON_H

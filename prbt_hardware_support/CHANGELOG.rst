@@ -4,8 +4,25 @@ Changelog for package prbt_hardware_support
 
 Forthcoming
 -----------
+* add write capability to PilzModbusReadClient, rename PilzModbusReadClient -> PilzModbusClient
+* enter hold mode at braketest execution
+* Contributors: Pilz GmbH and Co. KG
+
+0.5.6 (2019-06-12)
+------------------
+* Essentially reverts wrong fix (depend on canopen_chain_node) from 0.5.5
+
+0.5.5 (2019-06-12)
+------------------
+* Add missing depend (CATKIN_DEPENDS and <run_depend>) on canopen_chain_node
+
+0.5.4 (2019-05-27)
+------------------
 * increased modbus response timeout to 20ms
 * publish brake test requests obtained from safety controller via modbus
+* sto_modbus_adapter waits for the services to appear instead of throwing exceptions
+* Add ability to execute a braketest on each drive.
+* Add service to access the active operation mode
 * Contributors: Pilz GmbH and Co. KG
 
 

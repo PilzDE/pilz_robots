@@ -29,12 +29,14 @@
 
 #include <ros/console.h>
 
+#include "prbt_hardware_support/register_container.h"
+
 namespace prbt_hardware_support
 {
 
 /**
- * @class PilzModbusServerMock offers a modbus server and read/write functionality
- * via subscription publication.
+ * @class PilzModbusServerMock
+ * @brief Offers a modbus server and read/write functionality via subscription/publication.
  */
 class PilzModbusServerMock
 {
@@ -61,13 +63,27 @@ public:
    */
   void startAsync(const char* ip, const unsigned int port);
 
+  void setHoldingRegister(std::initializer_list< std::pair<unsigned int, uint16_t> > reg_list);
+
   /**
    * @brief Set the values in the holding register
    *
    * @param data The values in the holding register
    * @param start_index The index from where the value is set, other values remain untouched.
    */
-  void setHoldingRegister(const std::vector<uint16_t>& data, unsigned int start_index);
+  void setHoldingRegister(const RegCont& data, unsigned int start_index);
+
+  /**
+   * @brief Reads the specified number of registers, beginning at the specified
+   * start point from the holding register.
+   *
+   * @param start_index Index of first register to read.
+   * @param num_reg_to_read Number of registers to read.
+   *
+   * @returns the registers which were read.
+   */
+  RegCont readHoldingRegister(const RegCont::size_type start_index,
+                              const RegCont::size_type num_reg_to_read);
 
   /**
    * @brief Terminate the Server. Reading or connecting to it will fail.

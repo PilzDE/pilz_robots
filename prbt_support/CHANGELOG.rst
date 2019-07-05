@@ -2,10 +2,26 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add default modbus server ip for pss4000
+* Contributors: Pilz GmbH and Co. KG
+
+0.5.6 (2019-06-12)
+------------------
+
+0.5.5 (2019-06-12)
+------------------
+
+0.5.4 (2019-05-27)
+------------------
+* instantiate pg70 xacro macro (due to change in prbt_grippers)
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.3 (2019-04-24)
 ------------------
 * Add acceptance test for joint position limits
-* Relax joint limits. 
+* Relax joint limits.
 * Replace the radian values for the position limits (they have been rounded too roughly).
 * Added support for force-/torque sensors in gazebo
 * allow gripper_name as outside property instead of passing it explicitly

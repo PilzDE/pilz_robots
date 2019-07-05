@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<launch>	
+<launch>
   <!-- gripper e.g. pg70. See documentation of meta-package prbt_grippers -->
   <arg name="gripper" default="" />
 
@@ -10,7 +10,14 @@
   <!-- safe-torque-off-input from the safety controller is read to do a stop1 -->
   <!-- The signal is read via modbus and you can configure the modbus server ip -->
   <arg name="sto" default="pnoz"/>
-  <arg name="sto_modbus_server_ip" default="169.254.60.1" />
+  <arg name="api_spec_file" default="$(find prbt_hardware_support)/config/modbus_api_spec_$(arg sto).yaml" />
+  <arg name="sto_modbus_server_ip" default="$(eval '192.168.0.10' if sto=='pss4000' else '169.254.60.1')" />
+
+  <!-- Set braketest usage -->
+  <arg name="has_braketest_support" default="false"/>
+
+  <!-- Set operation mode support -->
+  <arg name="has_operation_mode_support" default="false"/>
 
   <!-- set the name of the config file for canopen_motor_node. If you want to change settings, copy the yaml
        file into your package and set canopen_config to your new config file path -->
@@ -53,17 +60,26 @@
         args="$(arg spawn_controllers)" />
 
   <!-- Initialize controllers and start STO-processing (if configured) -->
-  <group if="$(eval sto == 'pnoz')" >
+  <group unless="$(eval sto == 'none')" >
+    <!-- Load api spec for all nodes -->
+    <rosparam ns="/prbt/api_spec" command="load" file="$(arg api_spec_file)" />
+
     <node pkg="rosservice" type="rosservice" name="robot_init" args="call --wait /prbt/driver/init"/>
-    <include file="$(find prbt_hardware_support)/launch/modbus_read_client.launch">
+    <include file="$(find prbt_hardware_support)/launch/modbus_client.launch">
       <arg name="modbus_server_ip" value="$(arg sto_modbus_server_ip)" />
     </include>
-    <include file="$(find prbt_hardware_support)/launch/sto_modbus_adapter_node.launch" />
+    <include file="$(find prbt_hardware_support)/launch/modbus_adapter_sto_node.launch" />
+    <include if="$(arg has_braketest_support)" file="$(find prbt_hardware_support)/launch/brake_test.launch" />
+
+    <include if="$(arg has_operation_mode_support)" file="$(find prbt_hardware_support)/launch/operation_mode_adapter.launch" />
   </group>
 
   <group if="$(eval sto == 'none')" >
     <node pkg="rosservice" type="rosservice" name="robot_init" args="call --wait /prbt/driver/init"/>
   </group>
+
+  <node ns="prbt" pkg="prbt_hardware_support" name="system_info_node"
+        type="system_info_node" output="screen" />
 
 </launch>
 

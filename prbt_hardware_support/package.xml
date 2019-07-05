@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>prbt_hardware_support</name>
-  <version>0.5.3</version>
+  <version>0.5.6</version>
   <description>Control hardware functions of the PRBT manipulator like STO for Stop1 functionality.</description>
 
   <maintainer email="a.gutenkunst@pilz.de">Alexander Gutenkunst</maintainer>
@@ -16,16 +16,19 @@
   <url type="repository">https://github.com/PilzDE/pilz_robots</url>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>canopen_chain_node</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>libmodbus-dev</build_depend>
   <build_depend>message_generation</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>std_srvs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
   <build_depend>message_filters</build_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>std_srvs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
 
   <!-- Test dependencies -->
   <test_depend>rostest</test_depend>

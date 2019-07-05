@@ -37,7 +37,7 @@
 #include <prbt_hardware_support/modbus_api_definitions.h>
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <prbt_hardware_support/pilz_modbus_server_mock.h>
-#include <prbt_hardware_support/pilz_modbus_read_client.h>
+#include <prbt_hardware_support/pilz_modbus_client.h>
 #include <prbt_hardware_support/pilz_manipulator_mock.h>
 
 #include <prbt_hardware_support/ros_test_helper.h>
@@ -105,19 +105,6 @@ Stop1IntegrationTest::Stop1IntegrationTest()
   EXPECT_GE(std::thread::hardware_concurrency(), 2) << "Hardware does not support enough threads";
 }
 
-template<class T>
-static void initalizeAndRun(T& obj, const char *ip, unsigned int port)
-{
-  if ( !obj.init(ip, port) )
-  {
-    ROS_ERROR("Initialization failed.");
-    return;
-  }
-  ROS_INFO_STREAM("Starting Server on " << ip << ":" << port);
-
-  obj.run();
-}
-
 /**
  * @brief Send data via ModbusServerMock -> ModbusReadClient -> StoModbusAdapter -> ManipulatorMock connection
  * and check that the expected service calls occur in the respective order.
@@ -166,8 +153,8 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
   std::thread modbus_server_thread( &initalizeAndRun<prbt_hardware_support::PilzModbusServerMock>,
                                     std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port) );
 
-  waitForNode("/pilz_modbus_read_client_node");
-  waitForNode("/sto_modbus_adapter_node");
+  waitForNode("/pilz_modbus_client_node");
+  waitForNode("/modbus_adapter_sto_node");
 
   // We expect:
   {

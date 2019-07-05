@@ -45,6 +45,7 @@ PilzModbusServerMock::~PilzModbusServerMock()
 {
   if (modbus_connection_)
   {
+    ROS_INFO("Close connection");
     modbus_close(modbus_connection_);
     modbus_free(modbus_connection_);
   }
@@ -65,7 +66,26 @@ bool PilzModbusServerMock::init(const char *ip, unsigned int port)
   return true;
 }
 
-void PilzModbusServerMock::setHoldingRegister(const std::vector<uint16_t>& data, unsigned int start_index)
+void PilzModbusServerMock::setHoldingRegister(std::initializer_list< std::pair<unsigned int, uint16_t> > reg_list)
+{
+  for(auto entry : reg_list)
+  {
+    ROS_ERROR_STREAM("Holding Register is defined from: 0 ... " << holding_register_size_ << "."
+                  << " Setting Register " << entry.first << " ... " << " is not possible");
+    return;
+  }
+
+  modbus_register_access_mutex.lock();
+  for(auto entry : reg_list)
+  {
+    mb_mapping_->tab_registers[entry.first] = entry.second;
+  }
+  modbus_register_access_mutex.unlock();
+
+  ROS_DEBUG_STREAM("Modbus data for Modbus-Server set.");
+}
+
+void PilzModbusServerMock::setHoldingRegister(const RegCont& data, unsigned int start_index)
 {
   if ( data.empty() )
   {
@@ -89,6 +109,19 @@ void PilzModbusServerMock::setHoldingRegister(const std::vector<uint16_t>& data,
   }
   modbus_register_access_mutex.unlock();
   ROS_DEBUG_STREAM("Modbus data for Modbus-Server set.");
+}
+
+RegCont PilzModbusServerMock::readHoldingRegister(const RegCont::size_type start_index,
+                                                  const RegCont::size_type num_reg_to_read)
+{
+  RegCont ret_val(num_reg_to_read, 0);
+  modbus_register_access_mutex.lock();
+  for (RegCont::size_type i = 0; i < num_reg_to_read; ++i)
+  {
+    ret_val.at(i) = mb_mapping_->tab_registers[start_index + i];
+  }
+  modbus_register_access_mutex.unlock();
+  return ret_val;
 }
 
 void PilzModbusServerMock::start(const char* ip, const unsigned int port)
@@ -129,24 +162,20 @@ void PilzModbusServerMock::run()
     // Set socket non blocking
     //fcntl(socket_, F_SETFL, O_NONBLOCK);
 
-{
-   std::lock_guard<std::mutex> lk(running_mutex_);
-    running_cv_.notify_one();
-}
+    {
+      std::lock_guard<std::mutex> lk(running_mutex_);
+      running_cv_.notify_one();
+    }
 
-    ROS_ERROR("Notify");
-
-    ROS_DEBUG("Waiting for connection");
+    ROS_INFO("Waiting for connection...");
     int result {-1};
     while(result < 0)
     {
-      ROS_ERROR("Inside Loop");
       result = modbus_tcp_accept(modbus_connection_, &socket_);
-      ROS_ERROR("modbus_tcp_accept");
 
       if(terminate_) break;
     }
-    ROS_DEBUG_STREAM("Connection with client accepted.");
+    ROS_INFO("Connection with client accepted.");
 
     // Loop for reading
     int rc {-1};
@@ -161,7 +190,7 @@ void PilzModbusServerMock::run()
       }
       else
       {
-        ROS_ERROR_STREAM("Connection with client closed");
+        ROS_INFO("Connection with client closed");
         break;
       }
 
@@ -169,10 +198,10 @@ void PilzModbusServerMock::run()
       usleep(50);
     } // End reading loop
 
-    socket_ = -1;
     close(socket_);
+    socket_ = -1;
   } // End connect to client loop
-  ROS_DEBUG("Modbus-server run loop finished.");
+  ROS_INFO("Modbus-server run loop finished.");
 
 }
 
