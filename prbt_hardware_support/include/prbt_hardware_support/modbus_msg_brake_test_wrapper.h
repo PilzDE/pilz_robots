@@ -34,7 +34,16 @@ namespace prbt_hardware_support
 class ModbusMsgBrakeTestWrapper : public ModbusMsgWrapper
 {
 public:
-  ModbusMsgBrakeTestWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw, const ModbusApiSpec& api_spec);
+  ModbusMsgBrakeTestWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
+                            const ModbusApiSpec& api_spec);
+
+  /**
+   * @brief Calls ModbusMsgWrapper::checkStructuralIntegrity().
+   *
+   * @throw ModbusMsgBrakeTestWrapperException if brake test required
+   * register is missing.
+   */
+  virtual void checkStructuralIntegrity() const override;
 
   /**
    * @brief Get the brake test required flag from the Modbus message.
@@ -57,20 +66,26 @@ inline ModbusMsgBrakeTestWrapper::ModbusMsgBrakeTestWrapper(const ModbusMsgInSta
                                                             const ModbusApiSpec& api_spec):
 ModbusMsgWrapper(modbus_msg_raw, api_spec)
 {
-  if(!hasBrakeTestRequiredFlag())
-  {
-    throw ModbusMsgBrakeTestWrapperException("Received message does not contain a brake test status.");
-  }
 }
 
 inline bool ModbusMsgBrakeTestWrapper::hasBrakeTestRequiredFlag() const
 {
-  return hasRegister(api_spec_.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
+  return hasRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
 }
 
 inline bool ModbusMsgBrakeTestWrapper::isBrakeTestRequired() const
 {
-  return getRegister(api_spec_.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
+  return getRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
+}
+
+inline void ModbusMsgBrakeTestWrapper::checkStructuralIntegrity() const
+{
+  ModbusMsgWrapper::checkStructuralIntegrity();
+
+  if(!hasBrakeTestRequiredFlag())
+  {
+    throw ModbusMsgBrakeTestWrapperException("Received message does not contain a brake test status.");
+  }
 }
 
 }

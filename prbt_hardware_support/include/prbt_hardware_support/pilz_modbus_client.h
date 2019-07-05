@@ -49,6 +49,7 @@ public:
    * @param index_of_first_register Offset of the modbus data.
    * @param modbus_client ModbusClient to use
    * @param response_timeout_ms Time to wait for a response from Modbus server.
+   * @param modbus_read_topic_name Name of the topic to which is published.
    * @param modbus_write_service_name Name under which the modbus write service is advertised.
    * @param read_frequency_hz Defines how often Modbus registers are read in.
    */

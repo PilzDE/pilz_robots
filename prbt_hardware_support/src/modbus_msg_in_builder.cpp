@@ -29,7 +29,7 @@ ModbusMsgInBuilder::ModbusMsgInBuilder(const ModbusApiSpec &api_spec)
 {
 }
 
-ModbusMsgInStampedPtr ModbusMsgInBuilder::ModbusMsgInBuilder::build(const ros::Time& time) const
+ModbusMsgInStampedPtr ModbusMsgInBuilder::build(const ros::Time& time) const
 {
   // Get the minimum and maximum register
   uint32_t first_index_to_read{register_values_.cbegin()->first};

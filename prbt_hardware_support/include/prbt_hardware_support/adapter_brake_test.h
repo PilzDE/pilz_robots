@@ -33,24 +33,36 @@ class AdapterBrakeTest
 {
 public:
   AdapterBrakeTest(ros::NodeHandle& nh);
+  virtual ~AdapterBrakeTest() = default;
 
 protected:
-	void init();
-  virtual void updateBrakeTestRequiredState(bool brake_test_required);
-  bool isBrakeTestRequired(IsBrakeTestRequired::Request&, IsBrakeTestRequired::Response& response);
+  void updateBrakeTestRequiredState(bool brake_test_required);
 
 private:
-	//! Is the node initialized?
-	bool initialized_;
+  /**
+   * @brief Initializes the brake test service.
+   */
+  void initBrakeTestService();
+  /**
+   * @brief Stores the brake test required flag and
+   * initializes the brake test service,
+   * the first time the function is called.
+   */
+  bool isBrakeTestRequired(IsBrakeTestRequired::Request&,
+                           IsBrakeTestRequired::Response& response);
 
-	//! Store the current state of whether a brake test is required
-	bool brake_test_required_;
+private:
+  //! Is the service advertising the BrakeTest required flag initialized?
+  bool service_initialized_ {false};
 
-	//! The node handle
-	ros::NodeHandle& nh_;
+  //! Store the current state of whether a brake test is required
+  bool brake_test_required_ {false};
 
-	//! Server serving a service to ask whether a brake test is currently required
-	ros::ServiceServer is_brake_test_required_server_;
+  //! The node handle
+  ros::NodeHandle& nh_;
+
+  //! Server serving a service to ask whether a brake test is currently required
+  ros::ServiceServer is_brake_test_required_server_;
 
 };
 
