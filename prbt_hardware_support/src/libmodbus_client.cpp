@@ -47,7 +47,7 @@ bool LibModbusClient::init(const char* ip, unsigned int port)
   return true;
 }
 
-void LibModbusClient::setResponseTimeoutInMs(unsigned int timeout_ms)
+void LibModbusClient::setResponseTimeoutInMs(unsigned long timeout_ms)
 {
   struct timeval response_timeout;
   response_timeout.tv_sec = timeout_ms/1000;
@@ -55,7 +55,7 @@ void LibModbusClient::setResponseTimeoutInMs(unsigned int timeout_ms)
   modbus_set_response_timeout(modbus_connection_, &response_timeout);
 }
 
-unsigned int LibModbusClient::getResponseTimeoutInMs()
+unsigned long LibModbusClient::getResponseTimeoutInMs()
 {
   struct timeval response_timeout;
   modbus_get_response_timeout(modbus_connection_, &response_timeout);

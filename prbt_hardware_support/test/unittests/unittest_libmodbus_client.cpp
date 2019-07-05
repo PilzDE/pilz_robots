@@ -266,7 +266,7 @@ TEST(LibModbusClientTests, setResponseTimeout)
   std::shared_ptr<PilzModbusServerMock> server(new PilzModbusServerMock(514));
   server->startAsync(LOCALHOST, DEFAULT_PORT);
 
-  unsigned int timeout_ms = 3;
+  unsigned long timeout_ms = 3;
 
   EXPECT_TRUE(client.init(LOCALHOST,DEFAULT_PORT));
   client.setResponseTimeoutInMs(timeout_ms);
