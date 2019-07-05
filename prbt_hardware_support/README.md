@@ -48,7 +48,7 @@ See DIN EN ISO 10218-1 for more details or contact us: ros@pilz.de
 A Modbus client (for usage with the PNOZmulti or PSS4000) can be started with `roslaunch prbt_hardware_support modbus_client.launch`.
 
 ### Published Topics
-- ~/pilz_modbus_node/modbus_read (prbt_hardware_support/ModbusMsgInStamped)
+- ~/pilz_modbus_client_node/modbus_read (prbt_hardware_support/ModbusMsgInStamped)
   - Holds information about the modbus holding register. Timestamp is only updated if the register content changed.
 - ~/prbt/brake_test_required (std_msgs/Bool)
   - True, if a brake test is required, false otherwise.
@@ -61,8 +61,8 @@ A Modbus client (for usage with the PNOZmulti or PSS4000) can be started with `r
 - modbus_connection_retries (default: 10)
 - modbus_connection_retry_timeout - timeout between retries (default: 1s)
 - modbus_response_timeout (default: 20ms)
-- modbus_read_topic_name (default: "/pilz_modbus_node/modbus_read")
-- modbus_write_service_name (default: "/pilz_modbus_node/modbus_write")
+- modbus_read_topic_name (default: "/pilz_modbus_client_node/modbus_read")
+- modbus_write_service_name (default: "/pilz_modbus_client_node/modbus_write")
 
 **Please note:**
 - The parameters ``modbus_response_timeout`` and ``modbus_read_topic_name`` are
@@ -71,14 +71,14 @@ important for the Safe stop 1 functionality and must NOT be given, if the
 If the parameters are not given the default values for these parameters are used.
 
 ## ModbusAdapterStoNode
-The ``ModbusAdapterSto`` is noticed via the topic `/pilz_modbus_node/modbus_read` if the STO is true or false and reacts as follows calling the corresponding services of the controllers and drivers:
+The ``ModbusAdapterSto`` is noticed via the topic `/pilz_modbus_client_node/modbus_read` if the STO is true or false and reacts as follows calling the corresponding services of the controllers and drivers:
 - **STO true:**
 enable drives, unhold controllers
 - **STO false:**
 hold controllers, disable drives
 
 ## ModbusAdapterBrakeTestNode
-The ``ModbusAdapterBrakeTestNode`` is noticed via the topic `/pilz_modbus_node/modbus_read` if the PSS4000 requests a brake test or if a brake test request is no longer prevailing. As a result, the requirement status is published on `/prbt/brake_test_required`.
+The ``ModbusAdapterBrakeTestNode`` is noticed via the topic `/pilz_modbus_client_node/modbus_read` if the PSS4000 requests a brake test or if a brake test request is no longer prevailing. As a result, the requirement status is published on `/prbt/brake_test_required`.
 
 ## BraketestExecutorNode
 The ``BraketestExecutorNode`` offers the `/execute_braketest` service which, in interaction with the ``CanOpenBraketestAdapter``,
