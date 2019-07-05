@@ -2,7 +2,7 @@
 
   <arg name="gripper" default="" />
 
-  <arg name="command_args" value="-d $(find prbt_support)/launch/robotmodel.rviz" />
+  <arg name="command_args" value="-d $(find prbt_support)/test/robotmodel.rviz" />
 
   <!-- load urdf -->
   <param name="robot_description"
