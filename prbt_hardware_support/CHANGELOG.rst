@@ -4,6 +4,7 @@ Changelog for package prbt_hardware_support
 
 Forthcoming
 -----------
+* add write capability to PilzModbusReadClient, rename PilzModbusReadClient -> PilzModbusClient
 * enter hold mode at braketest execution
 * Contributors: Pilz GmbH and Co. KG
 
