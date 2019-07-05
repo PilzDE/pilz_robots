@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   std_srvs
   sensor_msgs
+  tf
 )
 
 add_definitions(-Wall)
@@ -142,6 +143,18 @@ add_executable(
 add_dependencies(pilz_modbus_client_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
 target_link_libraries(pilz_modbus_client_node ${catkin_LIBRARIES} modbus)
 
+
+# +++++++++++++++++++++++++++++
+# + Build speed observer node +
+# +++++++++++++++++++++++++++++
+add_executable(
+  speed_observer_node
+  src/speed_observer_node.cpp
+  src/speed_observer.cpp
+)
+add_dependencies(speed_observer_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
+target_link_libraries(speed_observer_node ${catkin_LIBRARIES})
+
 #############
 ## Install ##
 #############
@@ -161,6 +174,7 @@ install(TARGETS
   brake_test_executor_node
   modbus_adapter_operation_mode_node
   system_info_node
+  speed_observer_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
