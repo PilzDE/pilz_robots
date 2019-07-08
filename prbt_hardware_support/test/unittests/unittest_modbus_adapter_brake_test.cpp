@@ -94,7 +94,7 @@ ModbusMsgInStampedPtr ModbusAdapterBrakeTestTest::createDefaultBrakeTestModbusMs
   uint32_t last_index_to_read{brake_test_required_index};
   static int msg_time_counter{1};
   RegCont tab_reg(last_index_to_read - first_index_to_read + 1);
-  tab_reg[0] = modbus_api_version;
+  tab_reg[0] = static_cast<uint16_t>(modbus_api_version);
   tab_reg[last_index_to_read - first_index_to_read] = brake_test_required;
   ModbusMsgInStampedPtr msg{ModbusMsgInBuilder::createDefaultModbusMsgIn(first_index_to_read, tab_reg)};
   msg->header.stamp = ros::Time(msg_time_counter++);

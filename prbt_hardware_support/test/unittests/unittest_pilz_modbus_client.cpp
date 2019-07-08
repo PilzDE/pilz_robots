@@ -489,7 +489,7 @@ TEST_F(PilzModbusClientTests, testSettingReadFrequency)
     {
       continue;
     }
-    uint16_t expected_value = last + 1u;
+    uint16_t expected_value = static_cast<uint16_t>(last + 1);
     EXPECT_EQ(expected_value, curr_value) << "Frequency used by PilzModbusClient is probably too higher";
     last = curr_value;
   }
