@@ -315,6 +315,16 @@ if(CATKIN_ENABLE_TESTING)
   )
   #----------------------------------
 
+  # --- ServiceClientFactory integration test ---
+  add_rostest_gmock(integrationtest_service_client_factory
+     test/integrationtests/integrationtest_service_client_factory.test
+     test/integrationtests/integrationtest_service_client_factory.cpp
+  )
+  target_link_libraries(integrationtest_service_client_factory
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  #----------------------------------
+
   # --- Stop integration test ---
   add_rostest_gmock(integrationtest_stop1
      test/integrationtests/integrationtest_stop1.test
