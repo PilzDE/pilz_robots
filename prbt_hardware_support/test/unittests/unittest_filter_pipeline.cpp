@@ -49,6 +49,7 @@ TEST_F(FilterPipelineTest, testEmptyCallbackFunction)
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "unittest_filter_pipeline");
+  ros::NodeHandle nh_;  // This nodehandle is held, to avoid rosconsole::shutdown(), which results in subsequent ROS_* messages no longer output.
 
   testing::InitGoogleTest(&argc, argv);
 
