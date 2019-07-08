@@ -35,12 +35,13 @@ class FilterPipelineTest : public testing::Test
  * @brief Tests that exception is thrown if empty callback function is
  * specified.
  */
-//TEST_F(FilterPipelineTest, testEmptyCallbackFunction)
-//{
-//  ros::NodeHandle nh;
-//  FilterPipeline::TCallbackFunc cb;
-//  EXPECT_THROW(FilterPipeline(nh, cb), std::invalid_argument);
-//}
+TEST_F(FilterPipelineTest, testEmptyCallbackFunction)
+{
+  ros::NodeHandle nh;
+  FilterPipeline::TCallbackFunc cb;
+  EXPECT_THROW(FilterPipeline(nh, cb), std::invalid_argument);
+  nh.shutdown();
+}
 
 
 } // namespace filter_pipeline_test
@@ -48,7 +49,6 @@ class FilterPipelineTest : public testing::Test
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "unittest_filter_pipeline");
-  ros::NodeHandle nh_;
 
   testing::InitGoogleTest(&argc, argv);
 
