@@ -1,0 +1,9 @@
+analyzers:
+  motors:
+    type: GenericAnalyzer
+    path: Drives
+    startswith: prbt/driver
+  connection:
+    type: GenericAnalyzer
+    path: PSSConnection
+    startswith: prbt/pilz_modbus_client_node

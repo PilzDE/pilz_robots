@@ -26,6 +26,7 @@
 
 #include <ros/ros.h>
 #include <std_msgs/UInt16MultiArray.h>
+#include <diagnostic_updater/diagnostic_updater.h>
 
 #include <prbt_hardware_support/modbus_client.h>
 #include <prbt_hardware_support/register_container.h>
@@ -115,6 +116,8 @@ private:
   bool modbus_write_service_cb(WriteModbusRegister::Request& req,
                                WriteModbusRegister::Response& res);
 
+  void reportState(diagnostic_updater::DiagnosticStatusWrapper &stat);
+
 private:
   /**
      * @brief States of the Modbus-client.
@@ -149,6 +152,8 @@ private:
 
   std::mutex write_reg_blocks_mutex_;
   std::queue<ModbusRegisterBlock> write_reg_blocks_;
+
+  diagnostic_updater::Updater diag_updater_;
 };
 
 inline void PilzModbusClient::terminate()

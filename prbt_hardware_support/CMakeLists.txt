@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   std_srvs
   sensor_msgs
+  diagnostic_updater
 )
 
 add_definitions(-Wall)

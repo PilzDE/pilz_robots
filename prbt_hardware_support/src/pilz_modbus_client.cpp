@@ -41,6 +41,7 @@ PilzModbusClient::PilzModbusClient(ros::NodeHandle& nh,
                                                &PilzModbusClient::modbus_write_service_cb,
                                                this) )
 {
+  diag_updater_.add("ClientStateUpdater", this, &PilzModbusClient::reportState);
 }
 
 
@@ -74,6 +75,7 @@ bool PilzModbusClient::init(const char* ip, unsigned int port)
   {
     ROS_ERROR_STREAM("Modbus-client not in correct state: " << state_ << "expected:" << State::initializing);
     state_ = State::not_initialized;
+    diag_updater_.update();
     return false;
   }
 
@@ -81,6 +83,7 @@ bool PilzModbusClient::init(const char* ip, unsigned int port)
   {
     ROS_ERROR("Init failed");
     state_ = State::not_initialized;
+    diag_updater_.update();
     return false;
   }
 
@@ -88,6 +91,7 @@ bool PilzModbusClient::init(const char* ip, unsigned int port)
 
   state_ = State::initialized;
   ROS_DEBUG_STREAM("Connection to " << ip << ":" << port << " established");
+  diag_updater_.update();
   return true;
 }
 
@@ -97,12 +101,14 @@ void PilzModbusClient::sendDisconnectMsg()
   msg.disconnect.data = true;
   msg.header.stamp = ros::Time::now();
   modbus_read_pub_.publish(msg);
+  diag_updater_.broadcast(diagnostic_updater::DiagnosticStatusWrapper::ERROR, "Disconnect");
   ros::spinOnce();
 }
 
 void PilzModbusClient::run()
 {
   State expected_state {State::initialized};
+  diag_updater_.update();
   if (!state_.compare_exchange_strong(expected_state, State::running))
   {
     ROS_ERROR_STREAM("Modbus-client not in correct state: " << state_ << "expected:" << State::running);
@@ -185,6 +191,8 @@ void PilzModbusClient::run()
     }
     modbus_read_pub_.publish(msg);
 
+    diag_updater_.update();
+
     ros::spinOnce();
     rate.sleep();
   }
@@ -192,6 +200,34 @@ void PilzModbusClient::run()
   stop_run_ = false;
   state_ = State::not_initialized;
 }
+
+void PilzModbusClient::reportState(diagnostic_updater::DiagnosticStatusWrapper &stat)
+{
+  if(state_ == State::not_initialized)
+  {
+    stat.summary(stat.ERROR, "Modbus client is not initialized");
+    return;
+  }
+
+  if(state_ == State::initializing)
+  {
+    stat.summary(stat.WARN, "Modbus client is initializing");
+    return;
+  }
+
+  if(state_ == State::initialized)
+  {
+    stat.summary(stat.WARN, "initialized");
+    return;
+  }
+
+  if(state_ == State::running)
+  {
+    stat.summary(stat.OK, "Modbus client is running");
+    return;
+  }
+}
+
 
 std::vector<std::vector<unsigned short>> PilzModbusClient::splitIntoBlocks(std::vector<unsigned short> &in){
   std::vector<std::vector<unsigned short>> out;
