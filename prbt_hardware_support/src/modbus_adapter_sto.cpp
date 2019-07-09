@@ -15,31 +15,35 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <prbt_hardware_support/modbus_adapter_operation_mode.h>
+#include <prbt_hardware_support/modbus_adapter_sto.h>
 
-#include <sstream>
 #include <functional>
+#include <sstream>
+
+#include <prbt_hardware_support/modbus_msg_sto_wrapper.h>
 
 namespace prbt_hardware_support
 {
 
 using std::placeholders::_1;
 
-ModbusAdapterOperationMode::ModbusAdapterOperationMode(ros::NodeHandle& nh, const ModbusApiSpec& api_spec)
-  : AdapterOperationMode(nh)
+ModbusAdapterSto::ModbusAdapterSto(ros::NodeHandle& nh,
+                                   const ModbusApiSpec& api_spec)
+  : AdapterSto(nh)
   , api_spec_(api_spec)
-  , filter_pipeline_(new FilterPipeline(nh, std::bind(&ModbusAdapterOperationMode::modbusMsgCallback, this, _1 )) )
+  , filter_pipeline_(new FilterPipeline(nh, std::bind(&ModbusAdapterSto::modbusMsgCallback, this, _1 )) )
 {
 
 }
 
-void ModbusAdapterOperationMode::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw)
+void ModbusAdapterSto::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw)
 {
-  ModbusMsgOperationModeWrapper msg {msg_raw, api_spec_};
+  ModbusMsgStoWrapper msg(msg_raw, api_spec_);
 
-  if (msg.isDisconnect())
+  if(msg.isDisconnect())
   {
-    updateOperationMode(OperationModes::UNKNOWN);
+    ROS_ERROR("A disconnect from the modbus server happend.");
+    performStop();
     return;
   }
 
@@ -47,10 +51,10 @@ void ModbusAdapterOperationMode::modbusMsgCallback(const ModbusMsgInStampedConst
   {
     msg.checkStructuralIntegrity();
   }
-  catch (const prbt_hardware_support::ModbusMsgWrapperException &ex)
+  catch(const ModbusMsgWrapperException &e)
   {
-    ROS_ERROR_STREAM(ex.what());
-    updateOperationMode(OperationModes::UNKNOWN);
+    ROS_ERROR_STREAM(e.what());
+    performStop();
     return;
   }
 
@@ -60,14 +64,13 @@ void ModbusAdapterOperationMode::modbusMsgCallback(const ModbusMsgInStampedConst
     os << "Received Modbus message of unsupported API Version: "
        << msg.getVersion()
        << ", required Version: " << MODBUS_API_VERSION_REQUIRED;
-    os <<"\n";
-    os << "Can not determine OperationMode from Modbus message.";
     ROS_ERROR_STREAM(os.str());
-    updateOperationMode(OperationModes::UNKNOWN);
+    performStop();
     return;
   }
 
-  updateOperationMode(msg.getOperationMode());
+  updateSto(msg.getSTO());
 }
+
 
 }

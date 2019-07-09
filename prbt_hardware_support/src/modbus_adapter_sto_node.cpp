@@ -15,24 +15,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PRBT_HARDWARE_SUPPORT_READ_CLIENT_EXCEPTION_H
-#define PRBT_HARDWARE_SUPPORT_READ_CLIENT_EXCEPTION_H
+#include <ros/ros.h>
 
-#include <stdexcept>
+#include <prbt_hardware_support/modbus_api_spec.h>
+#include <prbt_hardware_support/modbus_adapter_sto.h>
 
-namespace prbt_hardware_support
+using namespace prbt_hardware_support;
+
+// LCOV_EXCL_START
+int main(int argc, char **argv)
 {
-  /**
-   * @brief Expection thrown by prbt_hardware_support::PilzModbusReadClient
-   */
-  class PilzModbusReadClientException : public std::runtime_error
-  {
-    public:
-      PilzModbusReadClientException( const std::string& what_arg ):
-        std::runtime_error(what_arg)
-      {
-      }
-  };
-}
+  ros::init(argc, argv, "modbus_adapter_sto");
+  ros::NodeHandle nh;
 
-#endif // PRBT_HARDWARE_SUPPORT_READ_CLIENT_EXCEPTION_H
+  ModbusApiSpec api_spec{nh};
+  ModbusAdapterSto adapter_sto(nh, api_spec);
+  ros::spin();
+
+  return EXIT_FAILURE;
+}
+// LCOV_EXCL_STOP

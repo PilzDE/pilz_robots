@@ -2,6 +2,11 @@
 Changelog for package pilz_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add is_executing service to joint trajectory controller
+* Contributors: Pilz GmbH and Co. KG
+
 0.4.9 (2019-06-19)
 ------------------
 

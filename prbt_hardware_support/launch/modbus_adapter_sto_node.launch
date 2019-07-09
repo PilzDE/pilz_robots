@@ -17,8 +17,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <launch>
 
-<test test-name="unittest_pilz_modbus_read_client"
-    pkg="prbt_hardware_support" type="unittest_pilz_modbus_read_client">
-</test>
+  <arg name="index_of_first_register_to_read" default="512" />
+
+  <node required="true" ns="prbt" pkg="prbt_hardware_support" type="modbus_adapter_sto_node" name="modbus_adapter_sto_node" output="screen">
+    <param name="index_of_first_register_to_read" value="$(arg index_of_first_register_to_read)"/>
+  </node>
 
 </launch>

@@ -18,9 +18,11 @@
 #ifndef MODBUS_API_SPEC_H
 #define MODBUS_API_SPEC_H
 
+#include <algorithm>
+#include <initializer_list>
 #include <map>
 #include <string>
-#include <initializer_list>
+#include <utility>
 
 #include <ros/ros.h>
 #include <xmlrpcpp/XmlRpc.h>
@@ -114,6 +116,41 @@ public:
     {
       throw ModbusApiSpecException(e.what());
     }
+  }
+  inline unsigned int getMinRegisterDefinition() const
+  {
+    if (register_mapping_.empty())
+    {
+      throw ModbusApiSpecException("Cannot read values. Api spec is empty.");
+    }
+
+    typedef std::pair<std::string, unsigned int> RegisterMappingEntry;
+    // The following is excluded because lambda functions are not marked properly with gcc-7
+    // see https://github.com/gcc-mirror/gcc/commit/7de708f
+    // LCOV_EXCL_START
+    auto it = std::min_element(register_mapping_.begin(), register_mapping_.end(),
+                               [] (const RegisterMappingEntry& a, const RegisterMappingEntry& b)
+                               { return a.second < b.second; });
+    // LCVO EXCL_STOP
+    return it->second;
+  }
+
+  inline unsigned int getMaxRegisterDefinition() const
+  {
+    if (register_mapping_.empty())
+    {
+      throw ModbusApiSpecException("Cannot read values. Api spec is empty.");
+    }
+
+    typedef std::pair<std::string, unsigned int> RegisterMappingEntry;
+    // The following is excluded because lambda functions are not marked properly with gcc-7
+    // see https://github.com/gcc-mirror/gcc/commit/7de708f
+    // LCOV_EXCL_START
+    auto it = std::max_element(register_mapping_.begin(), register_mapping_.end(),
+                               [] (const RegisterMappingEntry& a, const RegisterMappingEntry& b)
+                               { return a.second < b.second; });
+    // LCVO EXCL_STOP
+    return it->second;
   }
 
 private:

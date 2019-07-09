@@ -47,19 +47,32 @@ TEST(ModbusApiSpecTest, ConstructionViaInitilizerListRead)
   ModbusApiSpec api_spec{{"test", 123}};
   ASSERT_TRUE(api_spec.hasRegisterDefinition("test"));
   EXPECT_EQ(123u, api_spec.getRegisterDefinition("test"));
+
+  EXPECT_EQ(123u, api_spec.getMinRegisterDefinition());
+  EXPECT_EQ(123u, api_spec.getMaxRegisterDefinition());
 }
 
 TEST(ModbusApiSpecTest, ConstructionViaInitilizerListReadNonExistent)
 {
   ModbusApiSpec api_spec{};
   EXPECT_THROW(api_spec.getRegisterDefinition("test"), ModbusApiSpecException);
+  EXPECT_THROW(api_spec.getMinRegisterDefinition(), ModbusApiSpecException);
+  EXPECT_THROW(api_spec.getMaxRegisterDefinition(), ModbusApiSpecException);
 }
 
 TEST(ModbusApiSpecTest, ConstructionViaInitilizerListOverwrite)
 {
-  ModbusApiSpec api_spec{{"test", 123}};
+  ModbusApiSpec api_spec{{"test", 123}, {"dummy", 234}};
+
+  EXPECT_EQ(123u, api_spec.getMinRegisterDefinition());
+  EXPECT_EQ(234u, api_spec.getMaxRegisterDefinition());
+
   api_spec.setRegisterDefinition("test", 555);
+  ASSERT_TRUE(api_spec.hasRegisterDefinition("test"));
   EXPECT_EQ(555u, api_spec.getRegisterDefinition("test"));
+
+  EXPECT_EQ(234u, api_spec.getMinRegisterDefinition());
+  EXPECT_EQ(555u, api_spec.getMaxRegisterDefinition());
 }
 
 TEST(ModbusApiSpecTest, NodeHandleConstructionSimpleRead)
@@ -73,6 +86,7 @@ TEST(ModbusApiSpecTest, NodeHandleConstructionSimpleRead)
 
   ModbusApiSpecTemplated<NodeHandleMock> api_spec{nh};
 
+  ASSERT_TRUE(api_spec.hasRegisterDefinition("A"));
   EXPECT_EQ(123u, api_spec.getRegisterDefinition("A"));
 }
 

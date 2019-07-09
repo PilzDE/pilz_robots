@@ -37,7 +37,7 @@
 #include <prbt_hardware_support/modbus_api_definitions.h>
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <prbt_hardware_support/pilz_modbus_server_mock.h>
-#include <prbt_hardware_support/pilz_modbus_read_client.h>
+#include <prbt_hardware_support/pilz_modbus_client.h>
 #include <prbt_hardware_support/pilz_manipulator_mock.h>
 
 #include <prbt_hardware_support/ros_test_helper.h>
@@ -153,8 +153,8 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
   std::thread modbus_server_thread( &initalizeAndRun<prbt_hardware_support::PilzModbusServerMock>,
                                     std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port) );
 
-  waitForNode("/pilz_modbus_read_client_node");
-  waitForNode("/sto_modbus_adapter_node");
+  waitForNode("/pilz_modbus_client_node");
+  waitForNode("/modbus_adapter_sto_node");
 
   // We expect:
   {

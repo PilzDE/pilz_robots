@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Pilz GmbH & Co. KG
+ * Copyright (c) 2019 Pilz GmbH & Co. KG
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -14,21 +14,18 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef REGISTER_CONTAINER_H
+#define REGISTER_CONTAINER_H
 
-#include <ros/ros.h>
-#include <prbt_hardware_support/sto_modbus_adapter.h>
+#include <vector>
+#include <cstdint>
 
-using namespace prbt_hardware_support;
-
-int main(int argc, char **argv)
+namespace prbt_hardware_support
 {
-  ros::init(argc, argv, "pilz_sto_modbus_adapter_node");
-  ros::NodeHandle nh;
 
-  ModbusApiSpec api_spec{nh};
+//! Convenience data type defining the data type for a collection of registers.
+using RegCont = std::vector<uint16_t>;
 
-  PilzStoModbusAdapterNode sto_modbus_adapter_node(nh, api_spec);
-  ros::spin();
-
-  return EXIT_FAILURE;
 }
+
+#endif // REGISTER_CONTAINER_H

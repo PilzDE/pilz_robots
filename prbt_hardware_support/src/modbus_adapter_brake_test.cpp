@@ -17,46 +17,58 @@
 
 #include <prbt_hardware_support/modbus_adapter_brake_test.h>
 
-#include <prbt_hardware_support/modbus_msg_brake_test_wrapper_exception.h>
-#include <prbt_hardware_support/modbus_topic_definitions.h>
+#include <prbt_hardware_support/modbus_msg_brake_test_wrapper.h>
 
+#include <functional>
+#include <sstream>
 
 namespace prbt_hardware_support
 {
 
-static constexpr int DEFAULT_QUEUE_SIZE_MODBUS {1};
-
 static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {2};
 
+using std::placeholders::_1;
+
 ModbusAdapterBrakeTest::ModbusAdapterBrakeTest(ros::NodeHandle& nh, const ModbusApiSpec& api_spec)
-  : AdapterBrakeTest(nh),
-    api_spec_(api_spec)
+  : AdapterBrakeTest(nh)
+  , api_spec_(api_spec)
+  , filter_pipeline_(new FilterPipeline(nh, std::bind(&ModbusAdapterBrakeTest::modbusMsgCallback, this, _1 )) )
 {
-  modbus_read_sub_ = std::make_shared< message_filters::Subscriber<ModbusMsgInStamped> >(nh, TOPIC_MODBUS_READ, DEFAULT_QUEUE_SIZE_MODBUS);
-  update_filter_ = std::make_shared< message_filters::UpdateFilter<ModbusMsgInStamped> >(*modbus_read_sub_);
-  brake_test_filter_ = std::make_shared< message_filters::BrakeTestFilter >(*update_filter_, api_spec_);
-	brake_test_filter_->registerCallback(boost::bind(&ModbusAdapterBrakeTest::modbusInMsgCallback, this, _1));
+
 }
 
-void ModbusAdapterBrakeTest::internalMsgCallback(const ModbusMsgBrakeTestWrapper& msg)
+void ModbusAdapterBrakeTest::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw)
 {
-  unsigned int modbus_api_version = msg.getVersion();
-  if(modbus_api_version != MODBUS_API_VERSION_REQUIRED)
+  ModbusMsgBrakeTestWrapper msg {msg_raw, api_spec_};
+
+  if (msg.isDisconnect())
   {
-    ROS_ERROR_STREAM("Received Modbus Message with unsupported API Version "
-                    << modbus_api_version << ", required Version is " << MODBUS_API_VERSION_REQUIRED);
-    ROS_ERROR_STREAM("Can not determine from Modbus message if brake-test is required.");
     return;
   }
 
-	updateBrakeTestRequiredState(msg.isBrakeTestRequired());
-}
+  try
+  {
+    msg.checkStructuralIntegrity();
+  }
+  catch(const ModbusMsgWrapperException &ex)
+  {
+    ROS_ERROR_STREAM(ex.what());
+    return;
+  }
 
-void ModbusAdapterBrakeTest::modbusInMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw)
-{
-	/* The ModbusMsgBrakeTestWrapperException will be handled in the BrakeTestFilter */
-	ModbusMsgBrakeTestWrapper msg(msg_raw, api_spec_);
-	internalMsgCallback(msg);
+  if(msg.getVersion() != MODBUS_API_VERSION_REQUIRED)
+  {
+    std::ostringstream os;
+    os << "Received Modbus message of unsupported API Version: "
+       << msg.getVersion()
+       << ", required Version: " << MODBUS_API_VERSION_REQUIRED;
+    os <<"\n";
+    os << "Can not determine from Modbus message if brake-test is required.";
+    ROS_ERROR_STREAM(os.str());
+    return;
+  }
+
+  updateBrakeTestRequiredState(msg.isBrakeTestRequired());
 }
 
 }
