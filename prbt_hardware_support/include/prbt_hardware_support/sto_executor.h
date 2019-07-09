@@ -22,11 +22,11 @@
 #include <mutex>
 #include <thread>
 
-#include <ros/service.h>
 #include <ros/time.h>
+#include <ros/service_client.h>
 #include <std_srvs/Trigger.h>
 
-#include <prbt_hardware_support/wait_for_service.h>
+#include <prbt_hardware_support/service_client_factory.h>
 
 namespace prbt_hardware_support
 {
@@ -35,17 +35,6 @@ static const std::string HOLD_SERVICE{"manipulator_joint_trajectory_controller/h
 static const std::string UNHOLD_SERVICE{"manipulator_joint_trajectory_controller/unhold"};
 static const std::string RECOVER_SERVICE{"driver/recover"};
 static const std::string HALT_SERVICE{"driver/halt"};
-
-class ServiceClientFactory
-{
-public:
-  template <typename Service>
-  static ros::ServiceClient create(const std::string &name)
-  {
-    waitForService(name);
-    return ros::service::createClient<Service>(name);
-  }
-};
 
 /**
  * @brief Executes service calls to controllers and drivers needed for a Stop1.

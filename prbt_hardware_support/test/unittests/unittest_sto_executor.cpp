@@ -16,60 +16,17 @@
  */
 
 #include <functional>
-#include <map>
-#include <string>
-
-#include <gmock/gmock.h>
 
 #include <ros/ros.h>
 
 #include <prbt_hardware_support/sto_executor.h>
-
-/**
- * @brief ...
- */
-template <typename S>
-class ServiceClientMock
-{
-public:
-  typedef std::function<bool(const std::string &, S &)> CallFunction;
-
-  ServiceClientMock(const std::string &name, const CallFunction& call_callback)
-        : name_(name)
-        , call_callback_(call_callback)
-  {}
-
-  bool call(S &s)
-  {
-    return call_callback_(name_, s);
-  }
-
-private:
-  std::string name_;
-  CallFunction call_callback_;
-
-};
-
-/**
- * @brief ...
- */
-template <typename S>
-class ServiceClientMockFactory
-{
-public:
-  ServiceClientMock<S> create(const std::string &name)
-  {
-    using std::placeholders::_1;
-    using std::placeholders::_2;
-    return ServiceClientMock<S>(name, std::bind(&ServiceClientMockFactory::call_named, this, _1, _2));
-  }
-
-  MOCK_CONST_METHOD2_T(call_named, bool(const std::string &name, S& s));
-};
+#include <prbt_hardware_support/service_client_mock.h>
 
 TEST(STOExecutorTest, testDummy)
 {
-  // for ros::Time functionality
+  using namespace prbt_hardware_support_tests;
+
+  // for (limited) ros::Time functionality, no ROS communication
   ros::Time::init();
 
   typedef ServiceClientMockFactory<std_srvs::Trigger> MockFactory;
