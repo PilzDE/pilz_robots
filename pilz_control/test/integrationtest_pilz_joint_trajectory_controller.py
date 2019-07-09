@@ -31,6 +31,7 @@ CONTROLLER_NS_PARAM_NAME = 'controller_ns_string'
 JOINT_NAMES = ['joint1']
 HOLD_SERVICE_NAME = '/test_joint_trajectory_controller/hold'
 UNHOLD_SERVICE_NAME = '/test_joint_trajectory_controller/unhold'
+IS_EXECUTING_SERVICE_NAME = '/test_joint_trajectory_controller/is_executing'
 ACTION_NAME = '/test_joint_trajectory_controller/follow_joint_trajectory'
 STATE_TOPIC_NAME = '/test_joint_trajectory_controller/state'
 
@@ -162,6 +163,22 @@ class TrajectoryDispatcher:
   def getLastState(self):
       return self._client.get_state()
 
+
+## Wrapper for the service querying if the controller is executing
+class IsExecutingServiceWrapper:
+  def __init__(self):
+
+      is_executing_service_name = controller_ns + IS_EXECUTING_SERVICE_NAME
+      rospy.wait_for_service(is_executing_service_name, WAIT_FOR_SERVICE_TIMEOUT_S)
+      self._is_executing_srv = rospy.ServiceProxy(is_executing_service_name, Trigger)
+
+  def call(self):
+      req = TriggerRequest()
+      resp = self._is_executing_srv(req)
+
+      return resp.success
+
+
 ## Abstraction around the service call for switch the controller between DEFAULT and HOLDING mode
 class StopServiceWrapper:
   def __init__(self):
@@ -214,6 +231,7 @@ class IntegrationtestPilzJointTrajectoryController(unittest.TestCase):
 
         hold_srv = StopServiceWrapper()
         trajectory_dispatcher = TrajectoryDispatcher()
+        is_executing_srv = IsExecutingServiceWrapper()
 
         rospy.loginfo("2. Send goal to controller action server. Default startup state should be holding!!!!")
         trajectory_dispatcher.dispatchTrajectory(goal_position = DEFAULT_GOAL_POSITION, time_from_start = 1)
@@ -232,8 +250,10 @@ class IntegrationtestPilzJointTrajectoryController(unittest.TestCase):
         rospy.loginfo("5. Send new goal to controller action server and switch to HOLDING during execution.")
         trajectory_dispatcher.dispatchTrajectory(goal_position = 0.2, time_from_start = 5)
 
-        # Hold robot during movement
+        # Wait for movement to commence
         MovementObserver().observeUntilPositionGreater(0.11, 3)
+        self.assertTrue(is_executing_srv.call(), 'is_executing service returned false.')
+        # Hold robot during movement
         rospy.loginfo("  - Robot is moving -> Switch into HOLDING mode")
         self.assertTrue(hold_srv.requestHoldingMode(), 'Switch to Mode HOLDING failed.')
 
