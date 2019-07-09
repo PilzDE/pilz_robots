@@ -19,6 +19,8 @@
 
 #include <mutex>
 
+#include <boost/shared_ptr.hpp>
+
 #include <std_srvs/Trigger.h>
 
 #include <joint_trajectory_controller/joint_trajectory_controller.h>
@@ -44,7 +46,7 @@ class PilzJointTrajectoryController
     typedef joint_trajectory_controller::JointTrajectorySegment<SegmentImpl> Segment;
     typedef std::vector<Segment> TrajectoryPerJoint;
     typedef std::vector<TrajectoryPerJoint> Trajectory;
-    typedef std::shared_ptr<Trajectory> TrajectoryPtr;
+    typedef boost::shared_ptr<Trajectory> TrajectoryPtr;
 
     PilzJointTrajectoryController();
 
