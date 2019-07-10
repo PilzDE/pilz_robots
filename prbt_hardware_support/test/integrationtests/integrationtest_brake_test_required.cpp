@@ -41,6 +41,7 @@
 #include <prbt_hardware_support/register_container.h>
 
 #include <prbt_hardware_support/ros_test_helper.h>
+#include <prbt_hardware_support/modbus_api_spec.h>
 
 #include <pilz_testutils/async_test.h>
 
@@ -126,28 +127,32 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
   ASSERT_TRUE(nh_priv_.getParam("modbus_server_ip", ip));
   ASSERT_TRUE(nh_priv_.getParam("modbus_server_port", port));
 
-  int modbus_register_size, num_registers_to_read, index_of_first_register_to_read;
-  ASSERT_TRUE(nh_priv_.getParam("modbus_register_size", modbus_register_size));
-  ASSERT_TRUE(nh_priv_.getParam("num_registers_to_read", num_registers_to_read));
-  ASSERT_TRUE(nh_priv_.getParam("index_of_first_register_to_read", index_of_first_register_to_read));
+  ModbusApiSpec api_spec {nh_};
+
+  unsigned int modbus_register_size {api_spec.getMaxRegisterDefinition() + 1U};
 
   /**********
    * Step 0 *
    **********/
-  prbt_hardware_support::PilzModbusServerMock modbus_server(static_cast<unsigned int>(modbus_register_size));
+  prbt_hardware_support::PilzModbusServerMock modbus_server(modbus_register_size);
 
   std::thread modbus_server_thread( &initalizeAndRun<prbt_hardware_support::PilzModbusServerMock>,
                                     std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port) );
 	prbt_hardware_support::IsBrakeTestRequired srv;
 
   waitForNode("/pilz_modbus_client_node");
-  waitForNode("/prbt/modbus_adapter_brake_test_node");
+  waitForNode("/modbus_adapter_brake_test_node");
 
   /**********
    * Step 1 *
    **********/
-  RegCont required_holding_register{MODBUS_API_VERSION_VALUE, 0, 0, 0, 1};
-  modbus_server.setHoldingRegister(required_holding_register, index_of_first_register_to_read);
+  ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::VERSION));
+  unsigned int version_register = api_spec.getRegisterDefinition(modbus_api_spec::VERSION);
+
+  ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
+  unsigned int braketest_register = api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST);
+
+  modbus_server.setHoldingRegister({{braketest_register, 1}, {version_register, MODBUS_API_VERSION_VALUE}});
 
 
   ros::ServiceClient	is_brake_test_required_client =
@@ -161,16 +166,17 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
   /**********
    * Step 2 *
    **********/
-  RegCont required_holding_register_changed{MODBUS_API_VERSION_VALUE, 1, 0, 0, 1};
-  modbus_server.setHoldingRegister(required_holding_register_changed, index_of_first_register_to_read);
+  ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::STO));
+  unsigned int sto_register = api_spec.getRegisterDefinition(modbus_api_spec::STO);
+
+  modbus_server.setHoldingRegister({{sto_register, 1}});
 
 	EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(is_brake_test_required_client, true, 10));
 
   /**********
    * Step 3 *
    **********/
-  RegCont not_required_holding_register{MODBUS_API_VERSION_VALUE, 0, 0, 0, 0};
-  modbus_server.setHoldingRegister(not_required_holding_register, index_of_first_register_to_read);
+  modbus_server.setHoldingRegister({{braketest_register, 0}});
 
   EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(is_brake_test_required_client, false, 10));
 
