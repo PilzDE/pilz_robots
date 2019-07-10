@@ -51,10 +51,9 @@ protected:
  * @brief Can be used to check that a expected operation mode is eventually return by the service call
  *
  */
-::testing::AssertionResult expectOperationModeServiceCallResult
-                                             (ros::ServiceClient& service_client,
-                                              OperationModes::_value_type expectation,
-                                              uint16_t retries)
+::testing::AssertionResult expectOperationModeServiceCallResult(ros::ServiceClient& service_client,
+                                                                OperationModes::_value_type expectation,
+                                                                uint16_t retries)
 {
   prbt_hardware_support::GetOperationMode srv;
   for (int i = 0; i<= retries; i++) {
@@ -74,11 +73,15 @@ protected:
 }
 
 /**
- * @brief Send data via ModbusServerMock -> ModbusReadClient -> ModbusAdapterOperationMode connection
- * and check that the expected result is returned via the service call.
+ * @tests{Get_OperationMode_mechanism,
+ *  Test that the expected result is returned via the service call.
+ * }
  *
  * @note Due to the asynchronicity of the test each step of the sequence passed successful
  *       allows the next step to be taken. See testing::AsyncTest for details.
+ *
+ * Data send via:
+ *  ModbusServerMock -> ModbusReadClient -> ModbusAdapterOperationMode
  *
  * Test Sequence:
  *    0. Start Modbus-server in separate thread. Make sure that the nodes are up.
@@ -121,7 +124,7 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
 
   std::thread modbus_server_thread( &initalizeAndRun<prbt_hardware_support::PilzModbusServerMock>,
                                     std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port) );
-	prbt_hardware_support::GetOperationMode srv;
+  prbt_hardware_support::GetOperationMode srv;
 
   waitForNode("/pilz_modbus_client_node");
   waitForNode("/modbus_adapter_operation_mode_node");
@@ -134,39 +137,39 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
 
 
   ros::ServiceClient operation_mode_client =
-    nh_.serviceClient<prbt_hardware_support::GetOperationMode>(SERVICE_OPERATION_MODE);
+      nh_.serviceClient<prbt_hardware_support::GetOperationMode>(SERVICE_OPERATION_MODE);
   ros::service::waitForService(SERVICE_OPERATION_MODE, ros::Duration(10));
   ASSERT_TRUE(operation_mode_client.exists());
 
-	EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::UNKNOWN, 10));
+  EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::UNKNOWN, 10));
 
   /**********
    * Step 2 *
    **********/
   modbus_server.setHoldingRegister(std::vector<uint16_t>{MODBUS_API_VERSION_VALUE, 0, 0, 0, 0, 1},
                                    static_cast<unsigned int>(index_of_first_register_to_read));
-	EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::T1, 10));
+  EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::T1, 10));
 
   /**********
    * Step 3 *
    **********/
   modbus_server.setHoldingRegister(std::vector<uint16_t>{MODBUS_API_VERSION_VALUE, 0, 0, 0, 0, 2},
                                    static_cast<unsigned int>(index_of_first_register_to_read));
-	EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::T2, 10));
+  EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::T2, 10));
 
   /**********
    * Step 4 *
    **********/
   modbus_server.setHoldingRegister(std::vector<uint16_t> {MODBUS_API_VERSION_VALUE, 0, 0, 0, 0, 3},
                                    static_cast<unsigned int>(index_of_first_register_to_read));
-	EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::AUTO, 10));
+  EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::AUTO, 10));
 
   /**********
    * Step 5 *
    **********/
   modbus_server.setHoldingRegister(std::vector<uint16_t>{MODBUS_API_VERSION_VALUE, 0, 0, 0, 0, 99},
                                    static_cast<unsigned int>(index_of_first_register_to_read));
-	EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::UNKNOWN, 10));
+  EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::UNKNOWN, 10));
 
   /**********
    * Step 6 *
