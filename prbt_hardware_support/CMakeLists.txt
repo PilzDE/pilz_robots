@@ -1,12 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(prbt_hardware_support)
 
-add_definitions(-Wall)
-add_definitions(-Wextra)
-add_definitions(-Wno-unused-parameter)
-add_definitions(-Werror)
-add_definitions(-std=c++11)
-
 find_package(catkin REQUIRED COMPONENTS
   canopen_chain_node
   message_filters
@@ -16,6 +10,15 @@ find_package(catkin REQUIRED COMPONENTS
   std_srvs
   sensor_msgs
 )
+
+add_definitions(-Wall)
+add_definitions(-Wextra)
+add_definitions(-Wno-unused-parameter)
+add_definitions(-Werror)
+add_definitions(-std=c++11)
+add_definitions(-Wconversion) # At least this line needs to be below find_package to keep
+                              #  the flag away from the gmock build
+add_definitions(-Wpedantic)
 
 # message generation
 add_message_files(
@@ -70,8 +73,9 @@ endif()
 include_directories(
   include
   test/include
-  ${catkin_INCLUDE_DIRS}
 )
+include_directories(SYSTEM ${catkin_INCLUDE_DIRS}) #Must be declared SYSTEM to avoid Warnings from ros system includes
+
 
 # MODBUS_ADAPTER_STO_NODE
 add_executable(modbus_adapter_sto_node
@@ -171,6 +175,9 @@ if(CATKIN_ENABLE_TESTING)
   find_package(pilz_testutils REQUIRED)
 
   include_directories(${pilz_testutils_INCLUDE_DIRS})
+
+  #catkin_lint: ignore_once missing_directory <-- needed for successful catkin_linting
+  include_directories(SYSTEM ${gmock_SOURCE_DIR}/include/) #Declare system to supress strict conversion errors in gmock
 
   add_rostest_gmock(unittest_update_filter
                     test/unittests/unittest_update_filter.test
