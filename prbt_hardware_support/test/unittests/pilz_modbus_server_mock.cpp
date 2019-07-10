@@ -70,9 +70,12 @@ void PilzModbusServerMock::setHoldingRegister(std::initializer_list< std::pair<u
 {
   for(auto entry : reg_list)
   {
-    ROS_ERROR_STREAM("Holding Register is defined from: 0 ... " << holding_register_size_ << "."
-                  << " Setting Register " << entry.first << " ... " << " is not possible");
-    return;
+    if (entry.first >= holding_register_size_ )
+    {
+      ROS_ERROR_STREAM("Holding Register is defined from: 0 ... " << (holding_register_size_-1) << "."
+                       << " Setting Register " << entry.first << " ... " << " is not possible");
+      return;
+    }
   }
 
   modbus_register_access_mutex.lock();
@@ -95,7 +98,7 @@ void PilzModbusServerMock::setHoldingRegister(const RegCont& data, unsigned int 
 
   if ( (start_index+data.size()) > holding_register_size_ )
   {
-    ROS_ERROR_STREAM("Holding Register is defined from: 0 ... " << holding_register_size_ << "."
+    ROS_ERROR_STREAM("Holding Register is defined from: 0 ... " << (holding_register_size_-1) << "."
                      << " Setting Register " << start_index << " ... " << start_index + data.size() - 1
                      << " is not possible");
     return;
