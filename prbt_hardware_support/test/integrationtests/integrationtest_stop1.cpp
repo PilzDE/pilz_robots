@@ -39,6 +39,7 @@
 #include <prbt_hardware_support/pilz_modbus_server_mock.h>
 #include <prbt_hardware_support/pilz_modbus_client.h>
 #include <prbt_hardware_support/pilz_manipulator_mock.h>
+#include <prbt_hardware_support/modbus_api_spec.h>
 
 #include <prbt_hardware_support/ros_test_helper.h>
 
@@ -161,10 +162,9 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
   ASSERT_TRUE(nh_priv_.getParam("modbus_server_ip", ip));
   ASSERT_TRUE(nh_priv_.getParam("modbus_server_port", port));
 
-  int modbus_register_size, num_registers_to_read, index_of_first_register_to_read;
-  ASSERT_TRUE(nh_priv_.getParam("modbus_register_size", modbus_register_size));
-  ASSERT_TRUE(nh_priv_.getParam("num_registers_to_read", num_registers_to_read));
-  ASSERT_TRUE(nh_priv_.getParam("index_of_first_register_to_read", index_of_first_register_to_read));
+  ModbusApiSpec api_spec {nh_};
+
+  unsigned int modbus_register_size {api_spec.getMaxRegisterDefinition() + 1U};
 
   /**********
    * Step 0 *
@@ -190,8 +190,14 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
   }
 
   // This should trigger the expected reaction
-  std::vector<uint16_t> initial_holding_register{modbus_api::v2::MODBUS_STO_CLEAR_VALUE, MODBUS_API_VERSION_VALUE};
-  modbus_server.setHoldingRegister(initial_holding_register, index_of_first_register_to_read);
+  ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::VERSION));
+  unsigned int version_register = api_spec.getRegisterDefinition(modbus_api_spec::VERSION);
+
+  ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::STO));
+  unsigned int sto_register = api_spec.getRegisterDefinition(modbus_api_spec::STO);
+
+  modbus_server.setHoldingRegister({{version_register, MODBUS_API_VERSION_VALUE},
+                                    {sto_register, modbus_api::v2::MODBUS_STO_CLEAR_VALUE}});
 
   /**********
    * Step 1 *
@@ -208,8 +214,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
     EXPECT_CALL(manipulator, haltCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("halt_callback"));
   }
 
-  std::vector<uint16_t> stop_holding_register{modbus_api::v2::MODBUS_STO_ACTIVE_VALUE, MODBUS_API_VERSION_VALUE};
-  modbus_server.setHoldingRegister(stop_holding_register, index_of_first_register_to_read);
+  modbus_server.setHoldingRegister({{sto_register, modbus_api::v2::MODBUS_STO_ACTIVE_VALUE}});
 
   /**********
    * Step 2 *
@@ -227,8 +232,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
 
   }
 
-  std::vector<uint16_t> clear_holding_register{modbus_api::v2::MODBUS_STO_CLEAR_VALUE, MODBUS_API_VERSION_VALUE};
-  modbus_server.setHoldingRegister(clear_holding_register, index_of_first_register_to_read);
+  modbus_server.setHoldingRegister({{sto_register, modbus_api::v2::MODBUS_STO_CLEAR_VALUE}});
 
   /**********
    * Step 3 *
