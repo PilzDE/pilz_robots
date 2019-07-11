@@ -96,6 +96,14 @@
  * - Brake tests are only performed for drives which define that they require
  *    a brake test (configurable via config file or parameter server).
  *
+ * - (New) After the brake test is performed the result of the brake test is
+ *    reported back to the safety controller. The result is also reported back
+ *    to the safety controller if the brake test was not required by the
+ *    safety controller.
+ * - (New) If the connection to the safety controller is lost, no further
+ *    action regarding the sending of the brake test result is taken (e.g. NO
+ *    result sending as soon as the connection is established again).
+ *
  *
  *
  * @subsubsection operation_mode Operation Mode
