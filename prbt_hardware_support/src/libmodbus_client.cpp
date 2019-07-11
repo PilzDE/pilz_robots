@@ -59,7 +59,7 @@ unsigned long LibModbusClient::getResponseTimeoutInMs()
 {
   struct timeval response_timeout;
   modbus_get_response_timeout(modbus_connection_, &response_timeout);
-  return response_timeout.tv_sec * 1000 + (response_timeout.tv_usec  / 1000);
+  return response_timeout.tv_sec * 1000L + (response_timeout.tv_usec  / 1000L);
 }
 
 RegCont LibModbusClient::readHoldingRegister(int addr, int nb)
