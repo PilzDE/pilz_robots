@@ -26,31 +26,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <!-- Modbus config -->
 <arg name="modbus_server_ip" default="127.0.0.1"/>
 <arg name="modbus_server_port" default="20702"/>
-<arg name="index_of_first_register_to_read" default="512" />
-<arg name="modbus_register_size" default="514" />
-<arg name="num_registers_to_read" default="2" />
 
 <arg name="safety_hw" default="pnoz" />
 <rosparam ns="api_spec" command="load" file="$(find prbt_hardware_support)/config/modbus_api_spec_$(arg safety_hw).yaml" />
 
 <node name="pilz_modbus_client_node" pkg="prbt_hardware_support" type="pilz_modbus_client_node">
-
   <param name="modbus_server_ip" value="$(arg modbus_server_ip)"/>
   <param name="modbus_server_port" value="$(arg modbus_server_port)"/>
-  <param name="index_of_first_register_to_read" value="$(arg index_of_first_register_to_read)"/>
-  <param name="num_registers_to_read" value="$(arg num_registers_to_read)"/>
 </node>
 
 <node name="modbus_adapter_sto_node" pkg="prbt_hardware_support" type="modbus_adapter_sto_node">
-  <param name="index_of_first_register_to_read" value="$(arg index_of_first_register_to_read)"/>
 </node>
 
 <test test-name="integrationtest_stop1" pkg="prbt_hardware_support" type="integrationtest_stop1">
   <param name="modbus_server_ip" value="$(arg modbus_server_ip)"/>
   <param name="modbus_server_port" value="$(arg modbus_server_port)"/>
-  <param name="modbus_register_size" value="$(arg modbus_register_size)"/>
-  <param name="num_registers_to_read" value="$(arg num_registers_to_read)"/>
-  <param name="index_of_first_register_to_read" value="$(arg index_of_first_register_to_read)"/>
   <param name="recover_service_name" value="$(arg recover_service_name)"/>
   <param name="halt_service_name" value="$(arg halt_service_name)"/>
   <param name="hold_service_name" value="$(arg hold_service_name)"/>

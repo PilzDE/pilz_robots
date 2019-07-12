@@ -163,8 +163,10 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusMsgOperationModeWrapperDtor)
 }
 
 /**
- * @brief Tests that operation mode UNKNOWN is returned, if the
- * operation mode register is missing in the modbus message.
+ * @tests{Get_OperationMode_mechanism,
+ *  Tests that operation mode UNKNOWN is returned if the
+ *  operation mode register is missing in the modbus message.
+ * }
  *
  * Test Sequence:
  *    1. Send modbus message containing operation mode T1.
@@ -201,7 +203,10 @@ TEST_F(ModbusAdapterOperationModeTest, testMissingOperationModeRegister)
 }
 
 /**
- * Tests the handling of an incoming modbus message informing about changing operation mode.
+ * @tests{Get_OperationMode_mechanism,
+ *  Tests the handling of an incoming modbus message informing
+ *  about changing operation mode.
+ * }
  *
  * Test Sequence:
  *  1. Publish modbus message informing about changing operation mode. Repeat for all possible operation modes.
@@ -222,7 +227,10 @@ TEST_F(ModbusAdapterOperationModeTest, testOperationModeChange)
 }
 
 /**
- * Tests the handling of an incoming modbus message informing about a disconnect.
+ * @tests{Get_OperationMode_mechanism,
+ *  Tests the handling of an incoming modbus message informing
+ *  about a disconnect.
+ * }
  *
  * Test Sequence:
  *  1. Publish modbus message informing about a disconnect.
@@ -251,7 +259,10 @@ TEST_F(ModbusAdapterOperationModeTest, testDisconnect)
 }
 
 /**
- * Tests the handling of an incoming modbus message with unexpected operation mode.
+ * @tests{Get_OperationMode_mechanism,
+ *  Tests the handling of an incoming modbus message with
+ *  unexpected operation mode.
+ * }
  *
  * Test Sequence:
  *  1. Publish modbus message with an unexpected operation mode.
@@ -271,7 +282,9 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusUnexpectedOperationMode)
 }
 
 /**
- * Tests the handling of an incoming modbus message with incorrect api version.
+ * @tests{Get_OperationMode_mechanism,
+ *  Tests the handling of an incoming modbus message with incorrect api version.
+ * }
  *
  * Test Sequence:
  *  1. Publish modbus message with operation mode T1 and correct version.
