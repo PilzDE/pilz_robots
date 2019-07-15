@@ -106,7 +106,7 @@ private:
   const int DURATION_BETWEEN_HOLD_AND_DISABLE_MS{200};
 
   //! termination flag for the run-loop
-  std::atomic_bool terminate_;
+  std::atomic_bool terminate_{false};
 
   //! Thread for the run-loop
   std::thread run_thread_;
@@ -148,13 +148,18 @@ void STOExecutorTemplated<T>::run()
   Action current_action{Action::HALTING};
   bool execute_action{false};
 
+  // ROS_ERROR_STREAM("terminate_: " << terminate_);
+
   ros::Rate rate(10);
   while (!terminate_)
   {
+    ROS_ERROR_STREAM("inside while loop");
     {
       std::lock_guard<std::mutex> lock(action_mutex_);
       execute_action = (current_action != next_action_);
       current_action = next_action_;
+      // ROS_ERROR_STREAM("current_action: " << current_action);
+      // ROS_ERROR_STREAM("next_action_: " << next_action_);
     }
 
     if (execute_action && execute(current_action))
@@ -242,6 +247,7 @@ void STOExecutorTemplated<T>::autoUpdate(Action finished_action)
 template <class T>
 bool STOExecutorTemplated<T>::execute(Action action)
 {
+  // ROS_ERROR_STREAM("execute()");
   bool success{false};
 
   switch (action)

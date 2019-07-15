@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include <algorithm>
+
 #include <ros/ros.h>
 
 #include <pilz_testutils/async_test.h>
@@ -32,9 +34,12 @@ void AsyncTest::barricade(std::initializer_list<std::string> clear_events)
   std::copy_if(clear_events.begin(), clear_events.end(), std::inserter(clear_events_, clear_events_.end()),
                [this](std::string event){ return this->waitlist_.count(event) == 0; });
   waitlist_.clear();
+
   while(!clear_events_.empty())
   {
+    std::cout << "START WAITING " << *clear_events.begin() << std::endl;
     cv_.wait(lk);
+    std::cout << "NOTIFIED " << *clear_events.begin() << std::endl;
   }
 }
 
@@ -43,13 +48,34 @@ void AsyncTest::triggerClearEvent(std::string event)
   std::lock_guard<std::mutex> lk(m_);
   if (clear_events_.empty())
   {
+    std::cout << "INSERTING " << event << std::endl;
     waitlist_.insert(event);
   }
   else if (clear_events_.erase(event) < 1)
   {
     ROS_WARN_STREAM("Triggered event " << event << " despite not waiting for it.");
   }
+  std::cout << "NOTIFYING " << event << std::endl;
   cv_.notify_one();
+}
+
+void AsyncTest::printAsyncEvents()
+{
+  std::lock_guard<std::mutex> lk(m_);
+
+  std::cout << "Async events waited for: ";
+  for (auto event : clear_events_)
+  {
+    std::cout << event << ", ";
+  }
+  std::cout << std::endl;
+
+  std::cout << "Async events triggered: ";
+  for (auto event : waitlist_)
+  {
+    std::cout << event << ", ";
+  }
+  std::cout << std::endl;
 }
 
 }

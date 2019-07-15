@@ -88,6 +88,11 @@ class AsyncTest
      */
     void barricade(std::initializer_list<std::string> clear_events);
 
+    /**
+     * @brief Print currently tracked events to standard output.
+     */
+    void printAsyncEvents();
+
   protected:
     std::mutex m_;
     std::condition_variable cv_;

@@ -15,12 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <functional>
+
 #include <ros/ros.h>
 #include <std_srvs/Trigger.h>
 
 #include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/sto_modbus_adapter.h>
 #include <prbt_hardware_support/sto_executor.h>
+#include <prbt_hardware_support/service_client_factory.h>
 
 using namespace prbt_hardware_support;
 
@@ -29,7 +32,7 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "pilz_sto_modbus_adapter_node");
   ros::NodeHandle nh;
 
-  STOExecutor sto_executor;
+  STOExecutor sto_executor{ServiceClientFactory::create<std_srvs::Trigger>};
 
   ModbusApiSpec api_spec{nh};
 

@@ -47,6 +47,11 @@ public:
     return call_callback_(name_, s);
   }
 
+  std::string getService() const
+  {
+    return name_;
+  }
+
 private:
   std::string name_;
   CallFunction call_callback_;
