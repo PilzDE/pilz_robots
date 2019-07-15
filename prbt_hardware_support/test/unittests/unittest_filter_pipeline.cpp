@@ -21,36 +21,36 @@
 
 #include <prbt_hardware_support/filter_pipeline.h>
 
-namespace filter_pipeline_test
+namespace prbt_hardware_support
 {
-
-using namespace prbt_hardware_support;
-
-class FilterPipelineTest : public testing::Test
-{
-
-};
 
 /**
  * @brief Tests that exception is thrown if empty callback function is
  * specified.
  */
-TEST_F(FilterPipelineTest, testEmptyCallbackFunction)
-{
-  ros::NodeHandle nh;
-  FilterPipeline::TCallbackFunc cb;
-  EXPECT_THROW(FilterPipeline(nh, cb), std::invalid_argument);
+TEST(FilterPipelineTest, testEmptyCallbackFunction){
+  {
+    ros::NodeHandle nh;
+    FilterPipeline::TCallbackFunc cb;
+    EXPECT_THROW(FilterPipeline(nh, cb), std::invalid_argument);
+  }
 }
 
-
-} // namespace filter_pipeline_test
+} // namespace prbt_hardware_support
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "unittest_filter_pipeline");
-  ros::NodeHandle nh_;
+  ros::NodeHandle nh_;  // This nodehandle is held, to avoid rosconsole::shutdown(), which results in subsequent ROS_* messages no longer output.
+  while (!ros::ok()) {
+    ROS_INFO("waiting for ros to be ok ...");
+    ros::Duration(0.1).sleep(); // making sure ros is ok
+  }
 
   testing::InitGoogleTest(&argc, argv);
 
-  return RUN_ALL_TESTS();
+  int res = RUN_ALL_TESTS();
+  ros::Duration(0.1).sleep(); // making sure all log output is received
+  nh_.shutdown();
+  return res;
 }
