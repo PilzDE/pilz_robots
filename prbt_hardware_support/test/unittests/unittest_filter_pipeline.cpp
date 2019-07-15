@@ -33,7 +33,6 @@ TEST(FilterPipelineTest, testEmptyCallbackFunction){
     ros::NodeHandle nh;
     FilterPipeline::TCallbackFunc cb;
     EXPECT_THROW(FilterPipeline(nh, cb), std::invalid_argument);
-    nh.shutdown();
   }
 }
 
