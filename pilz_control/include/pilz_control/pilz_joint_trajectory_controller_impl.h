@@ -48,9 +48,48 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
                                                          &PilzJointTrajectoryController::handleUnHoldRequest,
                                                          this);
 
+  is_executing_service_ = controller_nh.advertiseService("is_executing",
+                                                         &PilzJointTrajectoryController::handleIsExecutingRequest,
+                                                         this);
+
   return res;
 }
 
+template <class SegmentImpl, class HardwareInterface>
+bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::is_executing()
+{
+  if (JointTrajectoryController::state_ != JointTrajectoryController::RUNNING)
+  {
+    return false;
+  }
+
+  // Get currently followed trajectory
+  TrajectoryPtr curr_traj_ptr;
+  JointTrajectoryController::curr_trajectory_box_.get(curr_traj_ptr);
+  if (!curr_traj_ptr)
+  {
+    return false;
+  }
+
+  Trajectory& curr_traj = *curr_traj_ptr;
+
+  bool is_executing {false};
+
+  for (unsigned int i = 0; i < JointTrajectoryController::joints_.size(); ++i)
+  {
+    auto uptime {JointTrajectoryController::time_data_.readFromRT()->uptime.toSec()};
+    typename TrajectoryPerJoint::const_iterator segment_it = findSegment(curr_traj[i], uptime);
+    // Times that preceed the trajectory start time are ignored here, so is_executing() returns false
+    // even if there is a current trajectory that will be executed in the future.
+    if (segment_it != curr_traj[i].end() && uptime <= segment_it->endTime())
+    {
+      is_executing = true;
+      break;
+    }
+  }
+
+  return is_executing;
+}
 
 template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
@@ -78,6 +117,14 @@ handleUnHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& respon
 
   response.message = "Default mode enabled";
   response.success = true;
+  return true;
+}
+
+template <class SegmentImpl, class HardwareInterface>
+bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
+handleIsExecutingRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response)
+{
+  response.success = is_executing();
   return true;
 }
 

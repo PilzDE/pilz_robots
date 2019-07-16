@@ -15,35 +15,39 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <prbt_hardware_support/pilz_modbus_read_client.h>
+#include <prbt_hardware_support/pilz_modbus_client.h>
 
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
-#include <prbt_hardware_support/modbus_msg_in_utils.h>
+#include <prbt_hardware_support/modbus_msg_in_builder.h>
 #include <prbt_hardware_support/pilz_modbus_exceptions.h>
-#include <prbt_hardware_support/pilz_modbus_read_client_exception.h>
+#include <prbt_hardware_support/pilz_modbus_client_exception.h>
 
 namespace prbt_hardware_support
 {
-    
-PilzModbusReadClient::PilzModbusReadClient(ros::NodeHandle& nh,
-                                           const unsigned int num_registers_to_read,
-                                           const unsigned int index_of_first_register,
-                                           ModbusClientUniquePtr modbus_client,
-                                           unsigned int response_timeout_ms,
-                                           const std::string& modbus_topic_name,
-                                           double read_frequency_hz)
+
+PilzModbusClient::PilzModbusClient(ros::NodeHandle& nh,
+                                   const unsigned int num_registers_to_read,
+                                   const unsigned int index_of_first_register,
+                                   ModbusClientUniquePtr modbus_client,
+                                   unsigned int response_timeout_ms,
+                                   const std::string& modbus_read_topic_name,
+                                   const std::string& modbus_write_service_name,
+                                   double read_frequency_hz)
   : NUM_REGISTERS_TO_READ(num_registers_to_read)
   , INDEX_OF_FIRST_REGISTER(index_of_first_register)
   , RESPONSE_TIMEOUT_MS(response_timeout_ms)
   , READ_FREQUENCY_HZ(read_frequency_hz)
   , modbus_client_(std::move(modbus_client))
-  , modbus_pub_(nh.advertise<ModbusMsgInStamped>(modbus_topic_name, DEFAULT_QUEUE_SIZE_MODBUS))
+  , modbus_read_pub_(nh.advertise<ModbusMsgInStamped>(modbus_read_topic_name, DEFAULT_QUEUE_SIZE_MODBUS))
+  , modbus_write_service_( nh.advertiseService(modbus_write_service_name,
+                                               &PilzModbusClient::modbus_write_service_cb,
+                                               this) )
 {
 }
 
 
-bool PilzModbusReadClient::init(const char* ip, unsigned int port,
-                                              unsigned int retries, ros::Duration timeout)
+bool PilzModbusClient::init(const char* ip, unsigned int port,
+                            unsigned int retries, ros::Duration timeout)
 {
   for(size_t retry_n = 0; retry_n < retries; ++retry_n)
   {
@@ -65,7 +69,7 @@ bool PilzModbusReadClient::init(const char* ip, unsigned int port,
 }
 
 
-bool PilzModbusReadClient::init(const char* ip, unsigned int port)
+bool PilzModbusClient::init(const char* ip, unsigned int port)
 {
   State expectedState {State::not_initialized};
   if (!state_.compare_exchange_strong(expectedState, State::initializing))
@@ -89,35 +93,58 @@ bool PilzModbusReadClient::init(const char* ip, unsigned int port)
   return true;
 }
 
-
-void PilzModbusReadClient::sendDisconnectMsg()
+void PilzModbusClient::sendDisconnectMsg()
 {
   ModbusMsgInStamped msg;
   msg.disconnect.data = true;
   msg.header.stamp = ros::Time::now();
-  modbus_pub_.publish(msg);
+  modbus_read_pub_.publish(msg);
   ros::spinOnce();
 }
 
-
-void PilzModbusReadClient::run()
+void PilzModbusClient::run()
 {
   State expectedState {State::initialized};
   if (!state_.compare_exchange_strong(expectedState, State::running))
   {
-    throw PilzModbusReadClientException("Modbus-client not in correct state.");
+    throw PilzModbusClientException("Modbus-client not in correct state.");
   }
 
-  std::vector<uint16_t> holding_register;
-  std::vector<uint16_t> last_holding_register;
+  RegCont holding_register;
+  RegCont last_holding_register;
   ros::Time last_update {ros::Time::now()};
   state_ = State::running;
   ros::Rate rate(READ_FREQUENCY_HZ);
   while ( ros::ok() && !stop_run_.load() )
   {
+    // Work with local copy of buffer to ensure that the service callback
+    // function does not become blocked
+    boost::optional<ModbusRegisterBlock> write_reg_bock {boost::none};
+    {
+      std::lock_guard<std::mutex> lock(write_reg_blocks_mutex_);
+      if (!write_reg_blocks_.empty())
+      {
+        write_reg_bock = write_reg_blocks_.front();
+        // Mark data as send/processed, by "deleting" them from memory
+        write_reg_blocks_.pop();
+      }
+    }
+
     try
     {
-      holding_register = modbus_client_->readHoldingRegister(INDEX_OF_FIRST_REGISTER, NUM_REGISTERS_TO_READ);
+      if (write_reg_bock)
+      {
+
+        holding_register = modbus_client_->writeReadHoldingRegister(static_cast<int>(write_reg_bock->start_idx),
+                                                                    write_reg_bock->values,
+                                                                    static_cast<int>(INDEX_OF_FIRST_REGISTER),
+                                                                    static_cast<int>(NUM_REGISTERS_TO_READ));
+
+      }
+      else
+      {
+        holding_register = modbus_client_->readHoldingRegister(static_cast<int>(INDEX_OF_FIRST_REGISTER), static_cast<int>(NUM_REGISTERS_TO_READ));
+      }
     }
     catch(ModbusExceptionDisconnect &e)
     {
@@ -126,7 +153,7 @@ void PilzModbusReadClient::run()
       break;
     }
 
-    ModbusMsgInStampedPtr msg {createDefaultModbusMsgIn(INDEX_OF_FIRST_REGISTER, holding_register)};
+    ModbusMsgInStampedPtr msg {ModbusMsgInBuilder::createDefaultModbusMsgIn(INDEX_OF_FIRST_REGISTER, holding_register)};
 
     // Publish the received data into ROS
     if(holding_register != last_holding_register)
@@ -140,7 +167,7 @@ void PilzModbusReadClient::run()
     {
       msg->header.stamp = last_update;
     }
-    modbus_pub_.publish(msg);
+    modbus_read_pub_.publish(msg);
 
     ros::spinOnce();
     rate.sleep();

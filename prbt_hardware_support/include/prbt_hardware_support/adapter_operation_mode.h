@@ -19,6 +19,7 @@
 #define ADAPTER_OPERATION_MODE_H
 
 #include <ros/ros.h>
+
 #include <prbt_hardware_support/IsBrakeTestRequired.h>
 #include <prbt_hardware_support/GetOperationMode.h>
 #include <prbt_hardware_support/OperationModes.h>
@@ -36,16 +37,27 @@ public:
   virtual ~AdapterOperationMode() = default;
 
 protected:
-  void init();
-  void updateOperationMode(int8_t operation_mode);
-  bool getOperationMode(GetOperationMode::Request&, GetOperationMode::Response& response);
+  /**
+   * @brief Stores the operation mode and initializes the operation mode
+   * service, the first time the function is called.
+   */
+  void updateOperationMode(const int8_t new_op_mode);
 
 private:
-  //! Is the node initialized?
-  bool initialized_;
+  /**
+   * @brief Initializes the operation mode service.
+   */
+  void initOperationModeService();
+
+  bool getOperationMode(GetOperationMode::Request&,
+                        GetOperationMode::Response& response);
+
+private:
+  //! Is the service advertising the operation mode initialized?
+  bool service_initialized_ {false};
 
   //! Store the current operation mode according to OperationModes.msg
-  int8_t current_operation_mode_;
+  int8_t op_mode_ {OperationModes::UNKNOWN};
 
   //! The node handle
   ros::NodeHandle& nh_;

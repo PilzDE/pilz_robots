@@ -16,9 +16,13 @@ sudo apt install ros-melodic-pilz-robots
 
 ### Build Status
 
-| Kinetic | Melodic |
-| --------|-------- |
-| [![Build Status](https://travis-ci.org/PilzDE/pilz_robots.svg?branch=kinetic-devel)](https://travis-ci.org/PilzDE/pilz_robots) | [![Build Status](https://travis-ci.org/PilzDE/pilz_robots.svg?branch=melodic-devel)](https://travis-ci.org/PilzDE/pilz_robots) |
+#### Travis
+
+|   | Kinetic | Melodic |
+| ----| --------|-------- |
+| Travis  | [![Build Status](https://travis-ci.org/PilzDE/pilz_robots.svg?branch=kinetic-devel)](https://travis-ci.org/PilzDE/pilz_robots) | [![Build Status](https://travis-ci.org/PilzDE/pilz_robots.svg?branch=melodic-devel)](https://travis-ci.org/PilzDE/pilz_robots) |
+| Buildfarm src | [![buildfarm](http://build.ros.org/buildStatus/icon?job=Ksrc_uX__pilz_robots__ubuntu_xenial__source)](http://build.ros.org/view/Ksrc_uX/job/Ksrc_uX__pilz_robots__ubuntu_xenial__source/) | [![buildfarm](http://build.ros.org/buildStatus/icon?job=Msrc_uB__pilz_robots__ubuntu_bionic__source)](http://build.ros.org/view/Msrc_uB/job/Msrc_uB__pilz_robots__ubuntu_bionic__source/) |
+| Buildfarm bin | [![buildfarm](http://build.ros.org/buildStatus/icon?job=Kbin_uX64__pilz_robots__ubuntu_xenial_amd64__binary)](http://build.ros.org/view/Kbin_uX64/job/Kbin_uX64__pilz_robots__ubuntu_xenial_amd64__binary/) | [![buildfarm](http://build.ros.org/buildStatus/icon?job=Mbin_uB64__pilz_robots__ubuntu_bionic_amd64__binary)](http://build.ros.org/view/Mbin_uB64/job/Mbin_uB64__pilz_robots__ubuntu_bionic_amd64__binary/)| 
 
 ## Package: prbt_support
 The package contains the robot description of the PRBT manipulator.
@@ -132,7 +136,7 @@ A controlled stop using a hold trajectory is performed thus stopping the manipul
 
 ## Package: prbt_hardware_support
 This package provides support for the Pilz hardware PNOZmulti and PSS4000. A configurable modbus connection is set up via
-`roslaunch prbt_hardware_support modbus_read_client.launch`. Particular features (detailed description [here](prbt_hardware_support/README.md)):
+`roslaunch prbt_hardware_support modbus_client.launch`. Particular features (detailed description [here](prbt_hardware_support/README.md)):
 - Realization of the Stop1 functionality
 - Inform about the Safe Brake Control status
 - Trigger execution of brake test

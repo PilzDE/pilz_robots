@@ -19,24 +19,24 @@
 #include <memory>
 #include <string>
 
-#include <prbt_hardware_support/pilz_modbus_read_client_exception.h>
+#include <prbt_hardware_support/pilz_modbus_client_exception.h>
 
 using namespace prbt_hardware_support;
 
-namespace pilz_modbus_read_client_exception
+namespace pilz_modbus_client_exception
 {
 
 /**
  * @brief Test message setting
  */
-TEST(PilzModbusReadClientExceptionTests, testMsgWhat)
+TEST(PilzModbusClientExceptionTests, testMsgWhat)
 {
   const std::string test_string{"TEST_STRING"};
-  std::shared_ptr<PilzModbusReadClientException> exception(new PilzModbusReadClientException(test_string));
+  std::shared_ptr<PilzModbusClientException> exception(new PilzModbusClientException(test_string));
   EXPECT_EQ(test_string, exception->what());
 }
 
-}  // namespace pilz_modbus_read_client_exception
+}  // namespace pilz_modbus_client_exception
 
 int main(int argc, char *argv[])
 {

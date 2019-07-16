@@ -16,11 +16,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <launch>
+  <arg name="debug" default="false"/>
+  <arg name="index_of_first_register_to_read" default="512"/>
+  <arg name="num_registers_to_read" default="2" />
 
-  <arg name="index_of_first_register_to_read" default="512" />
-
-  <node required="true" ns="prbt" pkg="prbt_hardware_support" type="sto_modbus_adapter_node" name="sto_modbus_adapter_node" output="screen">
+  <test pkg="prbt_hardware_support" type="unittest_modbus_adapter_sto"
+        test-name="unittest_modbus_adapter_sto">
     <param name="index_of_first_register_to_read" value="$(arg index_of_first_register_to_read)"/>
-  </node>
-
+    <param name="num_registers_to_read" value="$(arg num_registers_to_read)"/>
+  </test>
 </launch>

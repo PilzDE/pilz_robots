@@ -31,7 +31,9 @@ static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{"/prbt/manipulator_
 static constexpr double WAIT_FOR_BRAKE_TEST_SERVICE_TIMEOUT_S{5.0};
 
 /**
- * @brief Test the BrakeTest service node.
+ * @tests{Execute_BrakeTest_mechanism,
+ *  Test the BrakeTest service node.
+ * }
  *
  * Test Sequence:
  *  1. Initialize CANOpen mock, JointStatesPublisher mock and manipulator mock

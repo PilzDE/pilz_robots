@@ -13,9 +13,16 @@ notifications:
       - h.slusarek@pilz.de
       - i.martini@pilz.de
 env:
+  global:
+    - ROS_DISTRO="melodic"
+    - CATKIN_LINT=true
   matrix:
-    - ROS_DISTRO="melodic" ROS_REPO=ros CATKIN_LINT=true
-    - ROS_DISTRO="melodic" ROS_REPO=ros-shadow-fixed CATKIN_LINT=true
+    - ROS_REPO=ros
+    - ROS_REPO=ros-shadow-fixed
+matrix:
+  allow_failures:
+    - env: ROS_REPO=ros
+  fast_finish: true
 install:
   - git clone --depth=1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
 script:

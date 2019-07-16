@@ -25,10 +25,11 @@
 #include <modbus/modbus.h>
 
 #include <prbt_hardware_support/pilz_modbus_server_mock.h>
-#include <prbt_hardware_support/pilz_modbus_read_client.h>
+//#include <prbt_hardware_support/pilz_modbus_client.h>
 #include <prbt_hardware_support/GetOperationMode.h>
 #include <prbt_hardware_support/OperationModes.h>
 #include <prbt_hardware_support/ros_test_helper.h>
+#include <prbt_hardware_support/modbus_api_spec.h>
 
 namespace prbt_hardware_support
 {
@@ -51,10 +52,9 @@ protected:
  * @brief Can be used to check that a expected operation mode is eventually return by the service call
  *
  */
-::testing::AssertionResult expectOperationModeServiceCallResult
-                                             (ros::ServiceClient& service_client,
-                                              OperationModes::_value_type expectation,
-                                              uint16_t retries)
+::testing::AssertionResult expectOperationModeServiceCallResult(ros::ServiceClient& service_client,
+                                                                OperationModes::_value_type expectation,
+                                                                uint16_t retries)
 {
   prbt_hardware_support::GetOperationMode srv;
   for (int i = 0; i<= retries; i++) {
@@ -74,11 +74,15 @@ protected:
 }
 
 /**
- * @brief Send data via ModbusServerMock -> ModbusReadClient -> ModbusAdapterOperationMode connection
- * and check that the expected result is returned via the service call.
+ * @tests{Get_OperationMode_mechanism,
+ *  Test that the expected result is returned via the service call.
+ * }
  *
  * @note Due to the asynchronicity of the test each step of the sequence passed successful
  *       allows the next step to be taken. See testing::AsyncTest for details.
+ *
+ * Data send via:
+ *  ModbusServerMock -> ModbusReadClient -> ModbusAdapterOperationMode
  *
  * Test Sequence:
  *    0. Start Modbus-server in separate thread. Make sure that the nodes are up.
@@ -110,62 +114,63 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
   ASSERT_TRUE(nh_priv_.getParam("modbus_server_ip", ip));
   ASSERT_TRUE(nh_priv_.getParam("modbus_server_port", port));
 
-  int modbus_register_size, index_of_first_register_to_read;
-  ASSERT_TRUE(nh_priv_.getParam("modbus_register_size", modbus_register_size));
-  ASSERT_TRUE(nh_priv_.getParam("index_of_first_register_to_read", index_of_first_register_to_read));
+  ModbusApiSpec api_spec {nh_};
+
+  unsigned int modbus_register_size {api_spec.getMaxRegisterDefinition() + 1U};
 
   /**********
    * Step 0 *
    **********/
-  prbt_hardware_support::PilzModbusServerMock modbus_server(static_cast<unsigned int>(modbus_register_size));
+  prbt_hardware_support::PilzModbusServerMock modbus_server(modbus_register_size);
 
   std::thread modbus_server_thread( &initalizeAndRun<prbt_hardware_support::PilzModbusServerMock>,
                                     std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port) );
-	prbt_hardware_support::GetOperationMode srv;
+  prbt_hardware_support::GetOperationMode srv;
 
-  waitForNode("/pilz_modbus_read_client_node");
+  waitForNode("/pilz_modbus_client_node");
   waitForNode("/modbus_adapter_operation_mode_node");
 
   /**********
    * Step 1 *
    **********/
-  modbus_server.setHoldingRegister(std::vector<uint16_t> {MODBUS_API_VERSION_VALUE, 0, 0, 0, 0, 0},
-                                   static_cast<unsigned int>(index_of_first_register_to_read));
+  ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::VERSION));
+  unsigned int version_register = api_spec.getRegisterDefinition(modbus_api_spec::VERSION);
+
+  modbus_server.setHoldingRegister({{version_register, MODBUS_API_VERSION_VALUE}});
 
 
   ros::ServiceClient operation_mode_client =
-    nh_.serviceClient<prbt_hardware_support::GetOperationMode>(SERVICE_OPERATION_MODE);
+      nh_.serviceClient<prbt_hardware_support::GetOperationMode>(SERVICE_OPERATION_MODE);
   ros::service::waitForService(SERVICE_OPERATION_MODE, ros::Duration(10));
   ASSERT_TRUE(operation_mode_client.exists());
 
-	EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::UNKNOWN, 10));
+  EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::UNKNOWN, 10));
 
   /**********
    * Step 2 *
    **********/
-  modbus_server.setHoldingRegister(std::vector<uint16_t>{MODBUS_API_VERSION_VALUE, 0, 0, 0, 0, 1},
-                                   static_cast<unsigned int>(index_of_first_register_to_read));
+  ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::OPERATION_MODE));
+  unsigned int op_mode_register = api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE);
+
+  modbus_server.setHoldingRegister({{op_mode_register, 1}});
 	EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::T1, 10));
 
   /**********
    * Step 3 *
    **********/
-  modbus_server.setHoldingRegister(std::vector<uint16_t>{MODBUS_API_VERSION_VALUE, 0, 0, 0, 0, 2},
-                                   static_cast<unsigned int>(index_of_first_register_to_read));
+  modbus_server.setHoldingRegister({{op_mode_register, 2}});
 	EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::T2, 10));
 
   /**********
    * Step 4 *
    **********/
-  modbus_server.setHoldingRegister(std::vector<uint16_t> {MODBUS_API_VERSION_VALUE, 0, 0, 0, 0, 3},
-                                   static_cast<unsigned int>(index_of_first_register_to_read));
+  modbus_server.setHoldingRegister({{op_mode_register, 3}});
 	EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::AUTO, 10));
 
   /**********
    * Step 5 *
    **********/
-  modbus_server.setHoldingRegister(std::vector<uint16_t>{MODBUS_API_VERSION_VALUE, 0, 0, 0, 0, 99},
-                                   static_cast<unsigned int>(index_of_first_register_to_read));
+  modbus_server.setHoldingRegister({{op_mode_register, 99}});
 	EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::UNKNOWN, 10));
 
   /**********

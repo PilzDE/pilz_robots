@@ -19,23 +19,22 @@
 #define MODBUS_MSG_BRAKE_TEST_WRAPPER_EXCEPTION_H
 
 #include <string>
-#include <stdexcept>
+#include <prbt_hardware_support/modbus_msg_wrapper_exception.h>
 
 namespace prbt_hardware_support
 {
-  /**
-   * @brief Expection thrown upon construction of ModbusMsgBrakeTestWrapper
-   * of the message does not contain the required information.
-   *
-   */
-  class ModbusMsgBrakeTestWrapperException : public std::runtime_error
+/**
+ * @brief Expection thrown upon construction of ModbusMsgBrakeTestWrapper
+ * of the message does not contain the required information.
+ */
+class ModbusMsgBrakeTestWrapperException : public ModbusMsgWrapperException
+{
+public:
+  ModbusMsgBrakeTestWrapperException( const std::string& what_arg )
+    : ModbusMsgWrapperException(what_arg)
   {
-    public:
-      ModbusMsgBrakeTestWrapperException( const std::string& what_arg ):
-        std::runtime_error(what_arg)
-      {
-      }
-  };
+  }
+};
 
 }
 

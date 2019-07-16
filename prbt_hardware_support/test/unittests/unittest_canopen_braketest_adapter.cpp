@@ -70,8 +70,10 @@ protected:
 };
 
 /**
- * @brief Test increases function coverage by ensuring that all Dtor variants
+ * @tests{Execute_BrakeTest_mechanism,
+ * Test increases function coverage by ensuring that all Dtor variants
  * are called.
+ * }
  */
 TEST_F(CanOpenBraketestAdapterTest, testCANOpenBrakeTestAdapterExceptionDtor)
 {
@@ -81,7 +83,9 @@ TEST_F(CanOpenBraketestAdapterTest, testCANOpenBrakeTestAdapterExceptionDtor)
 }
 
 /**
- * @brief Test execution of brake tests without the CAN get service.
+ * @tests{Execute_BrakeTest_mechanism,
+ *  Test execution of brake tests without the CAN get service.
+ * }
  *
  * Test Sequence:
  *  1. Shutdown CAN get service mock.
@@ -102,7 +106,9 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestServiceWithoutCANGetService)
 }
 
 /**
- * @brief Test execution of brake tests without the CAN set service.
+ * @tests{Execute_BrakeTest_mechanism,
+ *  Test execution of brake tests without the CAN set service.
+ * }
  *
  * Test Sequence:
  *  1. Shutdown CAN set service mock.
@@ -123,7 +129,9 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestServiceWithoutCANSetService)
 }
 
 /**
- * @brief Test execution of brake tests without node names on the parameter server.
+ * @tests{Execute_BrakeTest_mechanism,
+ *  Test execution of brake tests without node names on the parameter server.
+ * }
  *
  * Test Sequence:
  *  1. Delete node names parameter.
@@ -158,7 +166,10 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestServiceWithoutNodeParameters)
 }
 
 /**
- * @brief Test execution of brake tests with a error type in the node braketest_required parameter
+ * @tests{Execute_BrakeTest_mechanism,
+ *  Test execution of brake tests with an error type in the node
+ *  braketest_required parameter.
+ * }
  *
  * Test Sequence:
  *  1. Modify the parameter by setting a int (bool is expected)
@@ -194,7 +205,10 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestServiceWithNodeParametersTypeEr
 }
 
 /**
- * @brief Test execution of brake tests when the service call getting the brake_test_duration object fails.
+ * @tests{Execute_BrakeTest_mechanism,
+ *  Test execution of brake tests when the service call getting
+ *  the brake_test_duration object fails.
+ * }
  *
  * This is repeated for the first and the last node and one in between.
  *
@@ -251,7 +265,10 @@ TEST_F(CanOpenBraketestAdapterTest, testGetBrakeTestDurationServiceCallFailure)
 }
 
 /**
- * @brief Test execution of brake tests when the service call getting the brake_test_duration object responds an error.
+ * @tests{Execute_BrakeTest_mechanism,
+ *  Test execution of brake tests when the service call getting
+ *  the brake_test_duration object responds an error.
+ * }
  *
  * This is repeated for the first and the last node and one in between.
  *
@@ -312,7 +329,9 @@ TEST_F(CanOpenBraketestAdapterTest, testGetBrakeTestDurationServiceResponseFailu
 
 
 /**
- * @brief Test successful execution of brake tests.
+ * @tests{Execute_BrakeTest_mechanism,
+ *  Test successful execution of brake tests.
+ * }
  *
  * This is repeated for the first and the last node and one in between.
  *
@@ -346,7 +365,10 @@ TEST_F(CanOpenBraketestAdapterTest, testStartBrakeTestServiceCallSuccess)
 }
 
 /**
- * @brief Test execution of brake tests when the service call setting the start_brake_test object fails.
+ * @tests{Execute_BrakeTest_mechanism,
+ *  Test execution of brake tests when the service call setting
+ *  the start_brake_test object fails.
+ * }
  *
  * This is repeated for the first and the last node and one in between.
  *
@@ -402,7 +424,10 @@ TEST_F(CanOpenBraketestAdapterTest, testStartBrakeTestServiceCallFailure)
 }
 
 /**
- * @brief Test execution of brake tests when the service call setting the start_brake_test object responds an error.
+ * @tests{Execute_BrakeTest_mechanism,
+ *  Test execution of brake tests when the service call setting
+ *  the start_brake_test object responds an error.
+ * }
  *
  * This is repeated for the first and the last node and one in between.
  *
@@ -461,7 +486,10 @@ TEST_F(CanOpenBraketestAdapterTest, testStartBrakeTestServiceResponseFailure)
 }
 
 /**
- * @brief Test execution of brake tests when the service call getting the brake_test_status object fails.
+ * @tests{Execute_BrakeTest_mechanism,
+ *  Test execution of brake tests when the service call getting
+ *  the brake_test_status object fails.
+ * }
  *
  * This is repeated for the first and the last node and one in between.
  *
@@ -512,7 +540,10 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusServiceCallFailure)
 }
 
 /**
- * @brief Test execution of brake tests when the service call getting the brake_test_status object responds an error.
+ * @tests{Execute_BrakeTest_mechanism,
+ *  Test execution of brake tests when the service call getting
+ *  the brake_test_status object responds an error.
+ * }
  *
  * This is repeated for the first and the last node and one in between.
  *
@@ -566,7 +597,9 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusServiceResponseFailure)
 }
 
 /**
- * @brief Test execution of brake tests when the brake_test_status is unknown.
+ * @tests{Execute_BrakeTest_mechanism,
+ *  Test execution of brake tests when the brake_test_status is unknown.
+ * }
  *
  * This is repeated for the first and the last node and one in between.
  *
@@ -621,7 +654,9 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusUnknown)
 }
 
 /**
- * @brief Test execution of brake tests when the brake_test_status is performed.
+ * @tests{Execute_BrakeTest_mechanism,
+ *  Test execution of brake tests when the brake_test_status is performed.
+ * }
  *
  * This is repeated for the first and the last node and one in between.
  *
@@ -676,7 +711,9 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusPerformed)
 }
 
 /**
- * @brief Test execution of brake tests when the brake_test_status is not successful.
+ * @tests{Execute_BrakeTest_mechanism,
+ *  Test execution of brake tests when the brake_test_status is not successful.
+ * }
  *
  * This is repeated for the first and the last node and one in between.
  *
@@ -731,7 +768,10 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusNotSuccessful)
 }
 
 /**
- * @brief Test execution of brake tests when the brake_test_status is not actively controlled.
+ * @tests{Execute_BrakeTest_mechanism,
+ *  Test execution of brake tests when the brake_test_status is
+ *  not actively controlled.
+ * }
  *
  * This is repeated for the first and the last node and one in between.
  *
