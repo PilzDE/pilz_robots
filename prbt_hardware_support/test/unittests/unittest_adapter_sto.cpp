@@ -105,6 +105,7 @@ const std::string HALT_SERVICE{AdapterSto::HALT_SERVICE};
  */
 TEST_F(AdapterStoTest, testD0estructor)
 {
+  typedef prbt_hardware_support::AdapterStoTemplated<ClientMock> AdapterSto;
   std::shared_ptr<AdapterSto> adapter_sto{new AdapterSto(std::bind(&MockFactory::create, &mock_factory_,
                                                                     std::placeholders::_1))};
 }

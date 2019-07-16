@@ -330,8 +330,10 @@ bool AdapterStoTemplated<T>::execute(Action action)
     }
     break;
   }
+  // LCOV_EXCL_START
   default:
     break;
+  // LCOV_EXCL_STOP
   }
 
   return success;

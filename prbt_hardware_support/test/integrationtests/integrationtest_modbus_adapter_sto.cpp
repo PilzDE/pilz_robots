@@ -176,15 +176,15 @@ TEST_F(ModbusAdapterStoTest, testModbusMsgStoWrapperDtor)
   std::shared_ptr<ModbusMsgStoWrapper> ex {new ModbusMsgStoWrapper(msg_const_ptr, test_api_spec)};
 }
 
-// /**
-//  * @brief Test increases function coverage by ensuring that all Dtor variants
-//  * are called.
-//  */
-// TEST_F(ModbusAdapterStoTest, testAdapterStoDtor)
-// {
-//   manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
-//   std::shared_ptr<AdapterSto> adapter {new AdapterSto(nh_)};
-// }
+/**
+ * @brief Test increases function coverage by ensuring that all Dtor variants
+ * are called.
+ */
+TEST_F(ModbusAdapterStoTest, testAdapterStoDtor)
+{
+  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
+  std::shared_ptr<AdapterSto> adapter {new AdapterSto()};
+}
 
 /**
  * @brief Test that the Setup functions properly
