@@ -22,8 +22,6 @@
 
 #include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/modbus_adapter_sto.h>
-#include <prbt_hardware_support/sto_executor.h>
-#include <prbt_hardware_support/service_client_factory.h>
 
 using namespace prbt_hardware_support;
 
@@ -33,11 +31,15 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "modbus_adapter_sto");
   ros::NodeHandle nh;
 
-  STOExecutor sto_executor{ServiceClientFactory::create<std_srvs::Trigger>};
-
   ModbusApiSpec api_spec{nh};
-  ModbusAdapterSto adapter_sto(nh, api_spec);
-  ros::spin();
+
+  {
+    ModbusAdapterSto adapter_sto(nh, api_spec);
+
+    adapter_sto.runAsync();
+
+    ros::spin();
+  }
 
   return EXIT_FAILURE;
 }

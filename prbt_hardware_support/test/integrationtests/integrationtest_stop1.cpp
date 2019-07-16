@@ -52,6 +52,7 @@ using ::testing::_;
 using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
+using ::testing::Return;
 
 static constexpr uint16_t MODBUS_API_VERSION_VALUE {2};
 
@@ -184,7 +185,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
     // Call from STO clear
     EXPECT_CALL(manipulator, holdCb(_,_)).Times(0);
     EXPECT_CALL(manipulator, haltCb(_,_)).Times(0);
-    EXPECT_CALL(manipulator, recoverCb(_,_)).Times(1);
+    EXPECT_CALL(manipulator, recoverCb(_,_)).Times(1).WillOnce(Return(true));
     EXPECT_CALL(manipulator, unholdCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("unhold_callback"));
       // Expected came true -> go on
   }
@@ -227,7 +228,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
     // Call from STO clear
     EXPECT_CALL(manipulator, holdCb(_,_)).Times(0);
     EXPECT_CALL(manipulator, haltCb(_,_)).Times(0);
-    EXPECT_CALL(manipulator, recoverCb(_,_)).Times(1);
+    EXPECT_CALL(manipulator, recoverCb(_,_)).Times(1).WillOnce(Return(true));
     EXPECT_CALL(manipulator, unholdCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("unhold_callback"));
 
   }
