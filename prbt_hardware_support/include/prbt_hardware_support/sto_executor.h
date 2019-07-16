@@ -137,7 +137,10 @@ typedef STOExecutorTemplated<> STOExecutor;
 
 template <class T>
 STOExecutorTemplated<T>::STOExecutorTemplated(std::function<T(std::string)> create_service_client)
-    : hold_srv_client_(create_service_client(HOLD_SERVICE)), unhold_srv_client_(create_service_client(UNHOLD_SERVICE)), recover_srv_client_(create_service_client(RECOVER_SERVICE)), halt_srv_client_(create_service_client(HALT_SERVICE))
+    : hold_srv_client_(create_service_client(HOLD_SERVICE)),
+      unhold_srv_client_(create_service_client(UNHOLD_SERVICE)),
+      recover_srv_client_(create_service_client(RECOVER_SERVICE)),
+      halt_srv_client_(create_service_client(HALT_SERVICE))
 {
 }
 
