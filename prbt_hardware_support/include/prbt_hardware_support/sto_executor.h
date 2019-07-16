@@ -22,6 +22,8 @@
 #include <mutex>
 #include <thread>
 
+#include <boost/optional.hpp>
+
 #include <ros/time.h>
 #include <ros/service_client.h>
 #include <std_srvs/Trigger.h>
@@ -81,10 +83,10 @@ public:
 private:
   enum Action
   {
-    HOLDING,
-    UNHOLDING,
     HALTING,
-    RECOVERING
+    RECOVERING,
+    UNHOLDING,
+    HOLDING
   };
 
   /**
@@ -97,7 +99,7 @@ private:
   /**
    * @brief Perform an automatic update of the next action depending on \p finished_action
    */
-  void autoUpdate(Action finished_action);
+  void autoUpdate(Action finished_action, bool exec_result);
 
   /**
    * @brief Specifies the time between holding the controller and disabling the driver. This allows the controller
@@ -135,10 +137,7 @@ typedef STOExecutorTemplated<> STOExecutor;
 
 template <class T>
 STOExecutorTemplated<T>::STOExecutorTemplated(std::function<T(std::string)> create_service_client)
-    : hold_srv_client_(create_service_client(HOLD_SERVICE))
-    , unhold_srv_client_(create_service_client(UNHOLD_SERVICE))
-    , recover_srv_client_(create_service_client(RECOVER_SERVICE))
-    , halt_srv_client_(create_service_client(HALT_SERVICE))
+    : hold_srv_client_(create_service_client(HOLD_SERVICE)), unhold_srv_client_(create_service_client(UNHOLD_SERVICE)), recover_srv_client_(create_service_client(RECOVER_SERVICE)), halt_srv_client_(create_service_client(HALT_SERVICE))
 {
 }
 
@@ -148,23 +147,23 @@ void STOExecutorTemplated<T>::run()
   Action current_action{Action::HALTING};
   bool execute_action{false};
 
-  // ROS_ERROR_STREAM("terminate_: " << terminate_);
-
   ros::Rate rate(10);
   while (!terminate_)
   {
-    ROS_ERROR_STREAM("inside while loop");
     {
       std::lock_guard<std::mutex> lock(action_mutex_);
-      execute_action = (current_action != next_action_);
-      current_action = next_action_;
-      // ROS_ERROR_STREAM("current_action: " << current_action);
-      // ROS_ERROR_STREAM("next_action_: " << next_action_);
+      execute_action = execute_action || (next_action_ != current_action);
+      if (execute_action)
+      {
+        current_action = next_action_;
+      }
     }
 
-    if (execute_action && execute(current_action))
+    if (execute_action)
     {
-      autoUpdate(current_action);
+      bool exec_result = execute(current_action);
+      execute_action = !exec_result;
+      autoUpdate(current_action, exec_result);
     }
 
     rate.sleep();
@@ -223,17 +222,19 @@ void STOExecutorTemplated<T>::terminate()
 }
 
 template <class T>
-void STOExecutorTemplated<T>::autoUpdate(Action finished_action)
+void STOExecutorTemplated<T>::autoUpdate(Action finished_action, bool exec_result)
 {
   std::lock_guard<std::mutex> lock(action_mutex_);
 
-  // only if there was no sto update in between
-  if (finished_action == next_action_)
+  if (next_action_ == finished_action)
   {
     switch (finished_action)
     {
     case Action::RECOVERING:
-      next_action_ = Action::UNHOLDING;
+      if (exec_result)
+      {
+        next_action_ = Action::UNHOLDING;
+      }
       break;
     case Action::HOLDING:
       next_action_ = Action::HALTING;
@@ -247,7 +248,6 @@ void STOExecutorTemplated<T>::autoUpdate(Action finished_action)
 template <class T>
 bool STOExecutorTemplated<T>::execute(Action action)
 {
-  // ROS_ERROR_STREAM("execute()");
   bool success{false};
 
   switch (action)

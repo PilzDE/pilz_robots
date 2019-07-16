@@ -75,11 +75,11 @@ STO false</panel_attributes>
     <coordinates>
       <x>560</x>
       <y>380</y>
-      <w>170</w>
+      <w>210</w>
       <h>160</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
-hold success</panel_attributes>
+auto: hold finished</panel_attributes>
     <additional_attributes>110.0;140.0;10.0;10.0</additional_attributes>
   </element>
   <element>
@@ -87,11 +87,11 @@ hold success</panel_attributes>
     <coordinates>
       <x>800</x>
       <y>200</y>
-      <w>190</w>
+      <w>240</w>
       <h>170</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
-recover success</panel_attributes>
+auto: recover success</panel_attributes>
     <additional_attributes>10.0;10.0;120.0;150.0</additional_attributes>
   </element>
   <element>
@@ -147,27 +147,25 @@ STO false</panel_attributes>
     <coordinates>
       <x>960</x>
       <y>360</y>
-      <w>180</w>
+      <w>150</w>
       <h>80</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
-hold success/
 STO true</panel_attributes>
     <additional_attributes>40.0;10.0;70.0;10.0;70.0;60.0;10.0;60.0;10.0;30.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>450</x>
+      <x>480</x>
       <y>380</y>
-      <w>140</w>
-      <h>100</h>
+      <w>80</w>
+      <h>90</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
 
-recover success/
 STO false</panel_attributes>
-    <additional_attributes>90.0;10.0;90.0;60.0;40.0;60.0;40.0;10.0</additional_attributes>
+    <additional_attributes>60.0;10.0;60.0;60.0;10.0;60.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>

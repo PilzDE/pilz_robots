@@ -37,9 +37,7 @@ void AsyncTest::barricade(std::initializer_list<std::string> clear_events)
 
   while(!clear_events_.empty())
   {
-    std::cout << "START WAITING " << *clear_events.begin() << std::endl;
     cv_.wait(lk);
-    std::cout << "NOTIFIED " << *clear_events.begin() << std::endl;
   }
 }
 
@@ -48,14 +46,12 @@ void AsyncTest::triggerClearEvent(std::string event)
   std::lock_guard<std::mutex> lk(m_);
   if (clear_events_.empty())
   {
-    std::cout << "INSERTING " << event << std::endl;
     waitlist_.insert(event);
   }
   else if (clear_events_.erase(event) < 1)
   {
     ROS_WARN_STREAM("Triggered event " << event << " despite not waiting for it.");
   }
-  std::cout << "NOTIFYING " << event << std::endl;
   cv_.notify_one();
 }
 
