@@ -58,13 +58,19 @@
  *  - The system is not allowed to complete the startup procedure until
  *    the driver halt service is available.
  *
- * @definereq{Controller_service_unhold_optional}
- *  - The system can still be started even if the controller unhold service
- *    is missing.
+ * @definereq{No_Startup_if_controller_unhold_missing}
+ *  - The system is not allowed to complete the startup procedure until
+ *    the controller unhold service is available.
  *
- * @definereq{Driver_service_recover_optional}
- *  - The system can still be started even if the driver recover service
- *    is missing.
+ * @definereq{No_Startup_if_driver_recover_missing}
+ *  - The system is not allowed to complete the startup procedure until
+ *    the driver recover service is available.
+ *
+ * @definereq{Controller_service_unhold_optional}
+ *  - If the controller unhold service fails, Stop1 can still be triggered.
+ *
+ * @definereq{Controller_service_hold_optional}
+ *  - If the controller hold service fails during Stop1, the driver can still be recovered.
  *
  *
  *

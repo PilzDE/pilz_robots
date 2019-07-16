@@ -220,40 +220,46 @@ TEST_F(ModbusAdapterStoTest, testSetupNoDisableService)
 }
 
 /**
- * @tests{Controller_service_unhold_optional,
+ * @tests{No_Startup_if_controller_unhold_missing,
  *  Test successful constructor call if unhold service for controller is missing.
  * }
  *
  * Expected: Constructor finishes successfully without unhold service
  */
-// TEST_F(ModbusAdapterStoTest, testSetupNoUnholdService)
-// {
-//   manipulator_.advertiseHoldService(nh_, HOLD_SERVICE_T);
-//   manipulator_.advertiseHaltService(nh_, HALT_SERVICE_T);
-//   manipulator_.advertiseRecoverService(nh_, RECOVER_SERVICE_T);
+TEST_F(ModbusAdapterStoTest, testSetupNoUnholdService)
+{
+  manipulator_.advertiseHoldService(nh_, HOLD_SERVICE_T);
+  manipulator_.advertiseHaltService(nh_, HALT_SERVICE_T);
+  manipulator_.advertiseRecoverService(nh_, RECOVER_SERVICE_T);
 
-//   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
+  auto t = asyncConstructor();
+  ros::Duration(1.0).sleep();
 
-//   EXPECT_EQ(1, pub_.getNumSubscribers());
-// }
+  EXPECT_EQ(0, pub_.getNumSubscribers()); // the constructor should wait, no subscription yet
+  manipulator_.advertiseUnholdService(nh_, UNHOLD_SERVICE_T);
+  t.join();
+}
 
 /**
- * @tests{Driver_service_recover_optional,
+ * @tests{No_Startup_if_driver_recover_missing,
  *  Test successful constructor call if recover service for driver is missing.
  * }
  *
  * Expected: Constructor finishes successfully without recover service
  */
-// TEST_F(ModbusAdapterStoTest, testSetupNoRecoverService)
-// {
-//   manipulator_.advertiseHoldService(nh_, HOLD_SERVICE_T);
-//   manipulator_.advertiseUnholdService(nh_, UNHOLD_SERVICE_T);
-//   manipulator_.advertiseHaltService(nh_, HALT_SERVICE_T);
+TEST_F(ModbusAdapterStoTest, testSetupNoRecoverService)
+{
+  manipulator_.advertiseHoldService(nh_, HOLD_SERVICE_T);
+  manipulator_.advertiseUnholdService(nh_, UNHOLD_SERVICE_T);
+  manipulator_.advertiseHaltService(nh_, HALT_SERVICE_T);
 
-//   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
+  auto t = asyncConstructor();
+  ros::Duration(1.0).sleep();
 
-//   EXPECT_EQ(1, pub_.getNumSubscribers());
-// }
+  EXPECT_EQ(0, pub_.getNumSubscribers()); // the constructor should wait, no subscription yet
+  manipulator_.advertiseRecoverService(nh_, RECOVER_SERVICE_T);
+  t.join();
+}
 
 /**
  * @tests{No_Startup_if_controller_hold_missing,
@@ -324,27 +330,45 @@ TEST_F(ModbusAdapterStoTest, testRemoveUnholdService)
 
   BARRIER("recover_callback");
   ros::Duration(1.0).sleep();
+
+  EXPECT_STOP1;
+
+  pub_.publish(createDefaultStoModbusMsg(STO_ACTIVE));
+
+  BARRIER("halt_callback");
 }
 
 /**
- * @tests{Driver_service_recover_optional,
- *  Test system can deal correctly with missing recover service of driver.
+ * @tests{Controller_service_hold_optional,
+ *  Test system can deal correctly with missing hold service of controller.
  * }
  */
-TEST_F(ModbusAdapterStoTest, testRemoveRecoverService)
+TEST_F(ModbusAdapterStoTest, testRemoveHoldService)
 {
   manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
 
-  EXPECT_CALL(manipulator_, unholdCb(_,_)).Times(0);
+  EXPECT_CLEARANCE;
 
   modbus_sto_adapter_->runAsync();
 
-  manipulator_.shutdownRecoverService();
+  manipulator_.shutdownHoldService();
   pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
 
+  BARRIER("unhold_callback");
+
+  EXPECT_CALL(manipulator_, haltCb(_,_)).WillRepeatedly(Return(true));
+
+  pub_.publish(createDefaultStoModbusMsg(STO_ACTIVE));
+
   ros::Duration(1.0).sleep();
+
+  EXPECT_CLEARANCE;
+
+  pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
+
+  BARRIER("unhold_callback");
 }
 
 /**

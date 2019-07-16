@@ -41,7 +41,7 @@ class ManipulatorMock
     void advertiseRecoverService(ros::NodeHandle nh, std::string recover_service_name);
 
     void shutdownUnholdService();
-    void shutdownRecoverService();
+    void shutdownUnholdService();
 
     void advertiseServices(ros::NodeHandle nh,
                              std::string hold_service_name,
@@ -83,9 +83,9 @@ void ManipulatorMock::advertiseRecoverService(ros::NodeHandle nh, std::string re
 }
 
 
-void ManipulatorMock::shutdownRecoverService()
+void ManipulatorMock::shutdownHoldService()
 {
-  recover_srv_.shutdown();
+  hold_srv_.shutdown();
 }
 
 void ManipulatorMock::shutdownUnholdService()
