@@ -30,9 +30,13 @@
  * @note STO == 1/TRUE  <-> robot is allowed to move freely
  * @note STO == 0/FALSE <-> robot is NOT allowed to move (except for stop motion)
  *
+ * @note A Stop 1 consists of holding the controller and halting the drives afterwards.
+ *
+ * @note The term "recovering" in the following section refers to a pending call on the respective service.
+ *
  * @definereq{Stop1_Trigger}
  *  - A Stop 1 is triggered, if at least one of the following cases is true:
- *    - the state of the STO changes from TRUE -> FALSE,
+ *    - the state of the STO changes from TRUE -> FALSE when the drives are not recovering,
  *    - connection to safety controller is lost,
  *    - the messages informing about the STO (coming from the
  *      safety controller) is incomplete or in any way corrupted,
@@ -40,11 +44,12 @@
  *      does not fulfill the expected specification
  *      (defined by the version of the protocol).
  *
+ * @definereq{STO_false_during_recover}
+ *  - If the state of the STO changes from TRUE -> FALSE when the drives are recovering,
+ *    the controller is not holded, instead the drives are halted directly after recovering.
+ *
  * @definereq{No_new_commands_during_STO_false}
  *  - As long as the STO is FALSE, no new motions commands are allowed.
- *
- * @definereq{Hold_driver_if_STO_false}
- *  - If the STO changes from TRUE -> FALSE the driver is halted.
  *
  * @definereq{Recover_driver_after_STO_false}
  *  - If the STO changes from FALSE -> TRUE, the driver is recovered.

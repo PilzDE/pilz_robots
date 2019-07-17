@@ -60,6 +60,7 @@ using namespace prbt_hardware_support;
 
 using ::testing::_;
 using ::testing::InSequence;
+using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 
 
@@ -375,8 +376,8 @@ TEST_F(ModbusAdapterStoTest, testRemoveHoldService)
  * @brief Tests that a message giving sto request is handled correctly.
  * Controller must be holded and driver must be disabled.
  *
- * @tests{Hold_driver_if_STO_false,
- *  Tests that a message giving sto request leads to driver halt call.
+ * @tests{Stop1_Trigger,
+ *  Test that Stop 1 is triggered if STO value changes to false.
  * }
  *
  * @tests{No_new_commands_during_STO_false,
@@ -627,6 +628,38 @@ TEST_F(ModbusAdapterStoTest, ModbusMsgExceptionCTOR)
   ModbusMsgStoWrapperException* exception = new ModbusMsgStoWrapperException("test");
 
   delete exception;
+}
+
+/**
+ * @tests{STO_false_during_recover,
+ *  Tests that the driver is halted upon completion of recover and no controller service is called
+ *  if STO changes to false during recover.
+ * }
+ */
+TEST_F(ModbusAdapterStoTest, testStoChangeDuringRecover)
+{
+  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
+
+  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
+
+  // define function for recover-invoke action
+  std::function<bool()> recover_action = [this]() {
+    this->triggerClearEvent("recover_callback");
+    this->pub_.publish(createDefaultStoModbusMsg(STO_ACTIVE));
+    return true;
+  };
+
+  EXPECT_CALL(manipulator_, holdCb(_,_)).Times(0);
+  EXPECT_CALL(manipulator_, unholdCb(_,_)).Times(0);
+  EXPECT_CALL(manipulator_, haltCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("halt_callback"));
+  EXPECT_CALL(manipulator_, recoverCb(_,_)).Times(1).WillOnce(InvokeWithoutArgs(recover_action));
+
+  modbus_sto_adapter_->runAsync();
+
+  pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
+
+  BARRIER("recover_callback");
+  BARRIER("halt_callback");
 }
 
 } // namespace prbt_hardware_support

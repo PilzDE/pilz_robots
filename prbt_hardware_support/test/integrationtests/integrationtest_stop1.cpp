@@ -123,10 +123,6 @@ Stop1IntegrationTest::Stop1IntegrationTest()
  *  Test that Stop 1 is triggered if STO value changes to false.
  * }
  *
- * @tests{Hold_driver_if_STO_false,
- *  Test that driver is halt in case of STO switch: true->false.
- * }
- *
  *
  * @note Due to the asynchronicity of the test each step of the sequence passed successful
  *       allows the next step to be taken. See testing::AsyncTest for details.
