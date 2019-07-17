@@ -111,12 +111,12 @@ Stop1IntegrationTest::Stop1IntegrationTest()
 /**
  * @brief Test that correct service calls occurs based on STO state.
  *
- * @tests{No_new_commands_during_STO_false,
- *  Test that controller is set to hold in case of STO==false.
- * }
- *
  * @tests{Recover_driver_after_STO_false,
  *  Test that drives are recovered after STO switch: false->true.
+ * }
+ *
+ * @tests{Leave_hold_after_recover,
+ *  Test that controller unhold is called after recovering.
  * }
  *
  * @tests{Stop1_Trigger,

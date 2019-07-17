@@ -290,7 +290,7 @@ TEST_F(ModbusAdapterStoTest, testSetupNoHoldService)
  *  Tests that driver is recovered in case of STO switch: false->true.
  * }
  *
- * @tests{No_new_commands_during_STO_false,
+ * @tests{Leave_hold_after_recover,
  *  Tests that new commands are accepted by controller in case of STO switch:
  *  false->true
  * }
@@ -378,10 +378,6 @@ TEST_F(ModbusAdapterStoTest, testRemoveHoldService)
  *
  * @tests{Stop1_Trigger,
  *  Test that Stop 1 is triggered if STO value changes to false.
- * }
- *
- * @tests{No_new_commands_during_STO_false,
- *  Tests that a message giving sto request leads to controller hold call.
  * }
  *
  */
