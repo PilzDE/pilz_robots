@@ -27,8 +27,8 @@
  *
  * @subsubsection sto_stop1 Safe torque off (STO) and  Stop 1
  *
- * @note STO == 1/TRUE  <-> robot is allowed to move freely
- * @note STO == 0/FALSE <-> robot is NOT allowed to move (except for stop motion)
+ * @note STO == 1/TRUE  <-> manipulator is allowed to move freely
+ * @note STO == 0/FALSE <-> manipulator is NOT allowed to move (except for stop motion)
  *
  * @note A Stop 1 consists of holding the controller and halting the drives afterwards.
  *
@@ -99,8 +99,8 @@
  * - The brake test is performed for all axes.
  * - The brake test mechanism returns a status stating if the
  *    brake test was successful xor what error occured.
- * - At the beginning of the brake test it is checked if the robot is
- *    currently moving. In case the robot is moving, the brake test is not
+ * - At the beginning of the brake test it is checked if the manipulator is
+ *    currently moving. In case the manipulator is moving, the brake test is not
  *    performed and an error is retured.
  * - As long as the brake test is performed no motion is allowed. Commands
  *    send during the execution of the brake test are rejected.
