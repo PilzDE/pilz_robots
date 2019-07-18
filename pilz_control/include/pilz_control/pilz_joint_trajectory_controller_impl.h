@@ -25,9 +25,6 @@ namespace ph = std::placeholders;
 template <class SegmentImpl, class HardwareInterface>
 PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 PilzJointTrajectoryController()
-  : active_update_strategy_(
-      std::bind(&PilzJointTrajectoryController::updateStrategyWhileHolding, this, ph::_1, ph::_2, ph::_3)
-    )
 {
 }
 
@@ -96,6 +93,16 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 handleHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response)
 {
   std::lock_guard<std::mutex> lock(sync_mutex_);
+
+  if(active_mode_ == Mode::HOLD)
+  {
+    response.message = "Already in hold mode";
+    response.success = true;
+    return true;
+  }
+
+  active_mode_ = Mode::HOLD;
+
   JointTrajectoryController::preemptActiveGoal();
   triggerMovementToHoldPosition();
 
@@ -111,8 +118,15 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 handleUnHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response)
 {
   std::lock_guard<std::mutex> lock(sync_mutex_);
-  active_update_strategy_ = std::bind(&PilzJointTrajectoryController::updateStrategyDefault, this,
-                                      ph::_1, ph::_2, ph::_3);
+
+  if(active_mode_ == Mode::UNHOLD)
+  {
+    response.message = "Already in unhold mode";
+    response.success = true;
+    return true;
+  }
+
+  active_mode_ = Mode::UNHOLD;
 
   response.message = "Default mode enabled";
   response.success = true;
@@ -132,7 +146,13 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 updateTrajectoryCommand(const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePtr gh, std::string* error_string)
 {
   std::lock_guard<std::mutex> lock(sync_mutex_);
-  return active_update_strategy_(msg, gh, error_string);
+  if(active_mode_ == Mode::HOLD)
+  {
+    return updateStrategyWhileHolding(msg, gh, error_string);
+  }
+
+  // The default case
+  return updateStrategyDefault(msg, gh, error_string);
 }
 
 template <class SegmentImpl, class HardwareInterface>

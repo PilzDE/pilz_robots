@@ -6,6 +6,7 @@ Forthcoming
 -----------
 * Minor fixes
 * integrate clang-tidy via CMake flag
+* Better handling consecutive calls on the hold service of joint trajectory controller
 * Contributors: Pilz GmbH and Co. KG
 
 0.4.11 (2019-09-11)
