@@ -19,7 +19,6 @@
 #define PRBT_HARDWARE_SUPPORT_ADAPTER_STO_H
 
 #include <atomic>
-#include <mutex>
 #include <thread>
 #include <string>
 
@@ -35,8 +34,11 @@ namespace prbt_hardware_support
 /**
  * @brief Stores the last reported STO stated and reacts to changes of the STO.
  * Reactions:
- *  - STO == false:   Perfrom Stop 1
- *  - STO == true:    unhold Controller + recover Drives
+ *  - STO == false:   perfom Stop 1
+ *  - STO == true:    recover drives + unhold controller
+ *
+ * @note Unhold the controller is skipped if STO changes during recover.
+ * This avoids the superfluous execution of a hold trajectory, which would result in a overlong stopping time.
  *
  * @note PilzStoModbusAdapterNode::DURATION_BETWEEN_HOLD_AND_DISABLE_MS
  * specifies the time between holding the controller and halting the driver.
@@ -56,27 +58,9 @@ public:
   AdapterStoTemplated(std::function<T(std::string)> create_service_client = ServiceClientFactory::create<std_srvs::Trigger>);
 
   /**
-   * @brief Terminate run-loop.
+   * @brief Trigger termination and join possible running threads.
    */
-  virtual ~AdapterStoTemplated();
-
-  /**
-  * @brief Run a loop executing next_action_ everytime it has changed.
-  *
-  * next_action_ can change either asynchronously via updateSto()
-  * or due to the autoUpdate() call after an execution finished.
-  */
-  void run();
-
-  /**
-   * @brief Call run() in separate thread.
-   */
-  void runAsync();
-
-  /**
-   * @brief Terminate the run-loop
-   */
-  void terminate();
+  ~AdapterStoTemplated();
 
 public:
   static const std::string HOLD_SERVICE;
@@ -86,30 +70,24 @@ public:
 
 protected:
   /**
-   * @brief Depending on the latest action and the \p STO determine the next action.
+   * @brief Stops the controller and halts the driver after.
+   */
+  void performStop();
+
+  /**
+   * @brief Recovers the drives and unholds controller. Returns after recover if STO has changed to false.
+   *
+   * If the recover service fails (and STO is still true), retries to recover.
+   */
+  void enable();
+
+  /**
+   * @brief Update stored STO value and react to STO changes.
+   * Reactions:
+   *  - STO == false:   call performStop()
+   *  - STO == true:    call enable() in own thread such that it can be interrupted by a new update.
    */
   void updateSto(const bool sto);
-
-private:
-  enum Action
-  {
-    HALTING,
-    RECOVERING,
-    UNHOLDING,
-    HOLDING
-  };
-
-  /**
-   * @brief Execute the given action (service call)
-   *
-   * @return True if the respective service call returned true, false otherwise
-   */
-  bool execute(Action action);
-
-  /**
-   * @brief Perform an automatic update of the next action depending on \p finished_action
-   */
-  void autoUpdate(Action finished_action, bool exec_result);
 
 private:
   //! ServiceClient attached to the controller <code>/hold</code> service
@@ -124,17 +102,11 @@ private:
   //! ServiceClient attached to the driver <code>/halt</code> service
   T halt_srv_client_;
 
-  //! termination flag for the run-loop
-  std::atomic_bool terminate_{false};
+  //! Current STO value
+  std::atomic_bool sto_{false};
 
-  //! Thread for the run-loop
-  std::thread run_thread_;
-
-  //! The next action
-  Action next_action_{Action::HALTING};
-
-  //! Mutex protecting next_action_
-  std::mutex action_mutex_;
+  //! Thread object for executing enable()
+  std::thread enable_thread_;
 
 private:
   /**
@@ -142,7 +114,7 @@ private:
    * disabling the driver. This allows the controller to perform a smooth stop
    * before a driver disable enables the breaks.
    */
-  static constexpr int DURATION_BETWEEN_HOLD_AND_DISABLE_MS {200};
+  static constexpr int DURATION_BETWEEN_HOLD_AND_DISABLE_MS{200};
 };
 
 //! Simple typedef for class like usage
@@ -170,174 +142,100 @@ AdapterStoTemplated<T>::AdapterStoTemplated(std::function<T(std::string)> create
 }
 
 template <class T>
-void AdapterStoTemplated<T>::run()
+AdapterStoTemplated<T>::~AdapterStoTemplated()
 {
-  Action current_action{Action::HALTING};
-  bool execute_action{false};
+  sto_ = false;
 
-  ros::Rate rate(10);
-  while (!terminate_)
+  if (enable_thread_.joinable())
   {
+    enable_thread_.join();
+  }
+}
+
+template <class T>
+void AdapterStoTemplated<T>::updateSto(const bool sto)
+{
+  ROS_ERROR_STREAM("UPDATING IN THREAD " << std::this_thread::get_id());
+  if (sto == sto_)
+  {
+    ROS_ERROR_STREAM("NO UPDATE");
+    return;
+  }
+
+  sto_ = sto;
+
+  if (!sto)
+  {
+    performStop();
+    return;
+  }
+
+  if (enable_thread_.joinable())
+  {
+    enable_thread_.join();
+  }
+  enable_thread_ = std::thread(&AdapterStoTemplated<T>::enable, this);
+}
+
+template <class T>
+void AdapterStoTemplated<T>::enable()
+{
+  bool recover_success{false};
+  ros::Rate rate(10);
+  while (!recover_success)
+  {
+    std_srvs::Trigger recover_trigger;
+    ROS_ERROR_STREAM("Calling Recover (Service: " << recover_srv_client_.getService() << ")");
+    recover_success = recover_srv_client_.call(recover_trigger);
+    ROS_ERROR_STREAM("Finished Recover (Service: " << recover_srv_client_.getService() << ")");
+
+    if (!recover_success)
     {
-      std::lock_guard<std::mutex> lock(action_mutex_);
-      execute_action = execute_action || (next_action_ != current_action);
-      if (execute_action)
-      {
-        current_action = next_action_;
-      }
+      ROS_ERROR_STREAM("No success calling Recover (Service: " << recover_srv_client_.getService() << ")");
     }
 
-    if (execute_action)
+    // Abort enabling. Do not leave hold mode of controller in case STO changes from TRUE -> FALSE during recover
+    if (!sto_)
     {
-      bool exec_result = execute(current_action);
-      execute_action = !exec_result;
-      autoUpdate(current_action, exec_result);
+      return;
     }
 
     rate.sleep();
   }
-}
 
-template <class T>
-AdapterStoTemplated<T>::~AdapterStoTemplated()
-{
-  terminate();
-}
+  std_srvs::Trigger unhold_trigger;
+  ROS_DEBUG_STREAM("Calling Unhold (Service: " << unhold_srv_client_.getService() << ")");
+  bool unhold_success = unhold_srv_client_.call(unhold_trigger);
 
-template <class T>
-void AdapterStoTemplated<T>::runAsync()
-{
-  run_thread_ = std::thread{[this] { this->run(); }};
-}
-
-template <class T>
-void AdapterStoTemplated<T>::updateSto(const bool STO)
-{
-  std::lock_guard<std::mutex> lock(action_mutex_);
-
-  if (STO)
+  if (!unhold_success)
   {
-    if (next_action_ == Action::HALTING)
-    {
-      next_action_ = Action::RECOVERING;
-    }
-    else if (next_action_ == Action::HOLDING)
-    {
-      next_action_ = Action::UNHOLDING;
-    }
-  }
-  else
-  {
-    if (next_action_ == Action::RECOVERING)
-    {
-      next_action_ = Action::HALTING;
-    }
-    else if (next_action_ == Action::UNHOLDING)
-    {
-      next_action_ = Action::HOLDING;
-    }
+    ROS_ERROR_STREAM("No success calling Unhold (Service: " << unhold_srv_client_.getService() << ")");
   }
 }
 
 template <class T>
-void AdapterStoTemplated<T>::terminate()
+void AdapterStoTemplated<T>::performStop()
 {
-  terminate_ = true;
-  if (run_thread_.joinable())
+  std_srvs::Trigger hold_trigger;
+  ROS_ERROR_STREAM("Calling Hold on controller (Service: " << hold_srv_client_.getService() << ")");
+  bool hold_success = hold_srv_client_.call(hold_trigger);
+
+  if (!hold_success)
   {
-    run_thread_.join();
+    ROS_ERROR_STREAM("No success calling Hold on controller (Service: " << hold_srv_client_.getService() << ")");
+  }
+  ros::Duration(DURATION_BETWEEN_HOLD_AND_DISABLE_MS / 1000.0).sleep(); // wait until hold traj is finished
+
+  std_srvs::Trigger halt_trigger;
+  ROS_ERROR_STREAM("Calling Halt on driver (Service: " << halt_srv_client_.getService() << ")");
+  bool halt_success = halt_srv_client_.call(halt_trigger);
+
+  if (!halt_success)
+  {
+    ROS_ERROR_STREAM("No success calling Halt on driver (Service: " << halt_srv_client_.getService() << ")");
   }
 }
 
-template <class T>
-void AdapterStoTemplated<T>::autoUpdate(Action finished_action, bool exec_result)
-{
-  std::lock_guard<std::mutex> lock(action_mutex_);
+} // namespace prbt_hardware_support
 
-  if (next_action_ == finished_action)
-  {
-    switch (finished_action)
-    {
-    case Action::RECOVERING:
-      if (exec_result)
-      {
-        next_action_ = Action::UNHOLDING;
-      }
-      break;
-    case Action::HOLDING:
-      next_action_ = Action::HALTING;
-      break;
-    default:
-      break;
-    }
-  }
-}
-
-template <class T>
-bool AdapterStoTemplated<T>::execute(Action action)
-{
-  bool success{false};
-
-  switch (action)
-  {
-  case Action::RECOVERING:
-  {
-    std_srvs::Trigger trigger;
-    ROS_DEBUG_STREAM("Calling Recover (Service: " << recover_srv_client_.getService() << ")");
-    success = recover_srv_client_.call(trigger);
-
-    if (!success)
-    {
-      ROS_ERROR_STREAM("No success calling Recover (Service: " << recover_srv_client_.getService() << ")");
-    }
-    break;
-  }
-  case Action::UNHOLDING:
-  {
-    std_srvs::Trigger trigger;
-    ROS_DEBUG_STREAM("Calling Unhold (Service: " << unhold_srv_client_.getService() << ")");
-    success = unhold_srv_client_.call(trigger);
-
-    if (!success)
-    {
-      ROS_ERROR_STREAM("No success calling Unhold (Service: " << unhold_srv_client_.getService() << ")");
-    }
-    break;
-  }
-  case Action::HOLDING:
-  {
-    std_srvs::Trigger trigger;
-    ROS_DEBUG_STREAM("Calling Hold on controller (Service: " << hold_srv_client_.getService() << ")");
-    success = hold_srv_client_.call(trigger);
-
-    if (!success)
-    {
-      ROS_ERROR_STREAM("No success calling Hold on controller (Service: " << hold_srv_client_.getService() << ")");
-      break;
-    }
-    ros::Duration(DURATION_BETWEEN_HOLD_AND_DISABLE_MS / 1000.0).sleep(); // wait until hold traj is finished
-    break;
-  }
-  case Action::HALTING:
-  {
-    std_srvs::Trigger trigger;
-    ROS_DEBUG_STREAM("Calling Halt on driver (Service: " << halt_srv_client_.getService() << ")");
-    success = halt_srv_client_.call(trigger);
-
-    if (!success)
-    {
-      ROS_ERROR_STREAM("No success calling Halt on driver (Service: " << halt_srv_client_.getService() << ")");
-    }
-    break;
-  }
-  // LCOV_EXCL_START
-  default:
-    break;
-  // LCOV_EXCL_STOP
-  }
-
-  return success;
-}
-
-}
 #endif // PRBT_HARDWARE_SUPPORT_ADAPTER_STO_H

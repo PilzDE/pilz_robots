@@ -15,10 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <functional>
-
 #include <ros/ros.h>
-#include <std_srvs/Trigger.h>
 
 #include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/modbus_adapter_sto.h>
@@ -33,13 +30,9 @@ int main(int argc, char **argv)
 
   ModbusApiSpec api_spec{nh};
 
-  {
-    ModbusAdapterSto adapter_sto(nh, api_spec);
+  ModbusAdapterSto adapter_sto(nh, api_spec);
 
-    adapter_sto.runAsync();
-
-    ros::spin();
-  }
+  ros::spin();
 
   return EXIT_FAILURE;
 }

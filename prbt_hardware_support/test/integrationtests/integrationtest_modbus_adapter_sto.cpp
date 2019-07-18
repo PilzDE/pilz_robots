@@ -304,8 +304,6 @@ TEST_F(ModbusAdapterStoTest, testClearMsg)
 
   EXPECT_CLEARANCE;
 
-  modbus_sto_adapter_->runAsync();
-
   pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
 
   BARRIER("unhold_callback");
@@ -323,8 +321,6 @@ TEST_F(ModbusAdapterStoTest, testRemoveUnholdService)
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
 
   EXPECT_CALL(manipulator_, recoverCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("recover_callback"));
-
-  modbus_sto_adapter_->runAsync();
 
   manipulator_.shutdownUnholdService();
   pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
@@ -352,18 +348,16 @@ TEST_F(ModbusAdapterStoTest, testRemoveHoldService)
 
   EXPECT_CLEARANCE;
 
-  modbus_sto_adapter_->runAsync();
-
   manipulator_.shutdownHoldService();
   pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
 
   BARRIER("unhold_callback");
 
-  EXPECT_CALL(manipulator_, haltCb(_,_)).WillRepeatedly(Return(true));
+  EXPECT_CALL(manipulator_, haltCb(_,_)).WillOnce(ACTION_OPEN_BARRIER("halt_callback"));
 
   pub_.publish(createDefaultStoModbusMsg(STO_ACTIVE));
 
-  ros::Duration(1.0).sleep();
+  BARRIER("halt_callback");
 
   EXPECT_CLEARANCE;
 
@@ -389,8 +383,6 @@ TEST_F(ModbusAdapterStoTest, testHoldMsg)
 
   EXPECT_CLEARANCE;
 
-  modbus_sto_adapter_->runAsync();
-
   pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
 
   BARRIER("unhold_callback");
@@ -415,8 +407,6 @@ TEST_F(ModbusAdapterStoTest, testDisconnectNoStoMsg)
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
 
   EXPECT_CLEARANCE;
-
-  modbus_sto_adapter_->runAsync();
 
   pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
 
@@ -447,8 +437,6 @@ TEST_F(ModbusAdapterStoTest, testDisconnectWithStoMsg)
 
   EXPECT_CLEARANCE;
 
-  modbus_sto_adapter_->runAsync();
-
   pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
 
   BARRIER("unhold_callback");
@@ -476,8 +464,6 @@ TEST_F(ModbusAdapterStoTest, testDisconnectPure)
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
 
   EXPECT_CLEARANCE;
-
-  modbus_sto_adapter_->runAsync();
 
   pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
 
@@ -507,8 +493,6 @@ TEST_F(ModbusAdapterStoTest, testNoVersion)
 
   EXPECT_CLEARANCE;
 
-  modbus_sto_adapter_->runAsync();
-
   pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
 
   BARRIER("unhold_callback");
@@ -535,8 +519,6 @@ TEST_F(ModbusAdapterStoTest, testWrongVersion)
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
 
   EXPECT_CLEARANCE;
-
-  modbus_sto_adapter_->runAsync();
 
   pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
 
@@ -569,8 +551,6 @@ TEST_F(ModbusAdapterStoTest, testVersion1)
 
   EXPECT_CLEARANCE;
 
-  modbus_sto_adapter_->runAsync();
-
   pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
 
   BARRIER("unhold_callback");
@@ -598,8 +578,6 @@ TEST_F(ModbusAdapterStoTest, testNoSto)
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
 
   EXPECT_CLEARANCE;
-
-  modbus_sto_adapter_->runAsync();
 
   pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
 
@@ -645,12 +623,10 @@ TEST_F(ModbusAdapterStoTest, testStoChangeDuringRecover)
     return true;
   };
 
-  EXPECT_CALL(manipulator_, holdCb(_,_)).Times(0);
+  EXPECT_CALL(manipulator_, holdCb(_,_)).Times(1);
   EXPECT_CALL(manipulator_, unholdCb(_,_)).Times(0);
   EXPECT_CALL(manipulator_, haltCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("halt_callback"));
   EXPECT_CALL(manipulator_, recoverCb(_,_)).Times(1).WillOnce(InvokeWithoutArgs(recover_action));
-
-  modbus_sto_adapter_->runAsync();
 
   pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
 
