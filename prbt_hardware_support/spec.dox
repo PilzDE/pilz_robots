@@ -48,7 +48,7 @@
  *
  * @definereq{STO_false_during_recover}
  *  - If the state of the STO changes from TRUE -> FALSE when the drives are recovering,
- *    the controller is not holded, instead the drives are halted directly after recovering.
+ *    the controller hold is kept, that is performing a stop motion is skipped.
  *
  * @definereq{Recover_driver_after_STO_false}
  *  - If the STO changes from FALSE -> TRUE, the driver is recovered.
@@ -78,6 +78,9 @@
  *
  * @definereq{Controller_service_hold_optional}
  *  - If the controller hold service fails during Stop1, the driver can still be recovered.
+ *
+ * @definereq{Controller_service_is_executing_optional}
+ *  - If the controller is_executing service fails during Stop1, the driver is still recovered after the stop motion.
  *
  *
  *

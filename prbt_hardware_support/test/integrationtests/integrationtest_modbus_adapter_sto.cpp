@@ -292,28 +292,6 @@ TEST_F(ModbusAdapterStoTest, testSetupNoHoldService)
 }
 
 /**
- * @tests{No_Startup_if_controller_is_executing_missing,
- *  Test that constructor blocks until is_executing service is available.
- * }
- *
- * Expected: Constructor blocks until the is_executing service is available.
- */
-TEST_F(ModbusAdapterStoTest, testSetupNoIsExecutingService)
-{
-  manipulator_.advertiseHoldService(nh_, HOLD_SERVICE_T);
-  manipulator_.advertiseUnholdService(nh_, UNHOLD_SERVICE_T);
-  manipulator_.advertiseHaltService(nh_, HALT_SERVICE_T);
-  manipulator_.advertiseRecoverService(nh_, RECOVER_SERVICE_T);
-
-  auto t = asyncConstructor();
-  ros::Duration(1.0).sleep();
-
-  EXPECT_EQ(0, pub_.getNumSubscribers()); // the constructor should wait, no subscription yet
-  manipulator_.advertiseIsExecutingService(nh_, IS_EXECUTING_SERVICE_T);
-  t.join();
-}
-
-/**
  * @brief Tests that a message giving sto clearance is handled correctly
  *
  * @tests{Recover_driver_after_STO_false,
@@ -387,6 +365,39 @@ TEST_F(ModbusAdapterStoTest, testRemoveHoldService)
   BARRIER("unhold_callback");
 
   EXPECT_CALL(manipulator_, isExecutingCb(_,_)).Times(1);
+  EXPECT_CALL(manipulator_, haltCb(_,_)).WillOnce(ACTION_OPEN_BARRIER("halt_callback"));
+
+  pub_.publish(createDefaultStoModbusMsg(STO_ACTIVE));
+
+  BARRIER("halt_callback");
+
+  EXPECT_CLEARANCE;
+
+  pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
+
+  BARRIER("unhold_callback");
+}
+
+/**
+ * @tests{Controller_service_is_executing_optional,
+ *  Test system can deal correctly with missing is_executing service of controller.
+ * }
+ */
+TEST_F(ModbusAdapterStoTest, testRemoveIsExecutingService)
+{
+  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T,
+                                 IS_EXECUTING_SERVICE_T);
+
+  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
+
+  EXPECT_CLEARANCE;
+
+  manipulator_.shutdownIsExecutingService();
+  pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
+
+  BARRIER("unhold_callback");
+
+  EXPECT_CALL(manipulator_, holdCb(_,_)).Times(1);
   EXPECT_CALL(manipulator_, haltCb(_,_)).WillOnce(ACTION_OPEN_BARRIER("halt_callback"));
 
   pub_.publish(createDefaultStoModbusMsg(STO_ACTIVE));

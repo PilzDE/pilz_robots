@@ -43,6 +43,7 @@ class ManipulatorMock
 
     void shutdownHoldService();
     void shutdownUnholdService();
+    void shutdownIsExecutingService();
 
     void advertiseServices(ros::NodeHandle nh,
                            std::string hold_service_name,
@@ -101,6 +102,11 @@ void ManipulatorMock::shutdownHoldService()
 void ManipulatorMock::shutdownUnholdService()
 {
   unhold_srv_.shutdown();
+}
+
+void ManipulatorMock::shutdownIsExecutingService()
+{
+  is_executing_srv_.shutdown();
 }
 
 void ManipulatorMock::advertiseServices(ros::NodeHandle nh,
