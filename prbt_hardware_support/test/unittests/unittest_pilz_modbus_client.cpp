@@ -418,7 +418,7 @@ private:
  *
  *
  * Test Sequence:
- * - 1. Choose low read frequency (f1). The last received "modbus_read" messages
+ * - 1. Choose low read frequency (f1). The last received "modbus_read" message
  *      is stored in a buffer.
  * - 2. Choose "modbus_read" topic check frequency f2, with f2 slightly bigger than f1.
  * - 3. Start a loop (running exactly for \#f1 iterations), which checks with
@@ -428,11 +428,11 @@ private:
  * Expected Results:
  * - 1. -
  * - 2. -
- * - 3. The last received "modbus_read" messges must fullfill the condition:
+ * - 3. The last received "modbus_read" message must fullfill the condition:
  *      "new_register_value = last_register_value + 1".
  *      If the condition does not hold, the read fequency could not be
  *      set properly and is probably to high.
- * - 4. Check that the number of received messages is creater than \#f1. If the
+ * - 4. Check that the number of received messages is greater than \#f1. If the
  *      condition does not hold, the read fequency is not set properly
  *      and is probably to low.
  */
@@ -476,25 +476,23 @@ TEST_F(PilzModbusClientTests, testSettingReadFrequency)
   ros::Rate rate(msg_check_frequency);
   for(unsigned int counter = 0; (counter < N_TIMEOUT) && ros::ok(); ++counter )
   {
-    rate.sleep();
+    uint16_t curr_value = buffer.get();
     if (!first_value_set)
     {
-      last = buffer.get();
+      last = curr_value;
       first_value_set = true;
-      continue;
+    }
+    else if (curr_value != last)
+    {
+      uint16_t expected_value = static_cast<uint16_t>(last + 1);
+      EXPECT_EQ(expected_value, curr_value) << "Frequency used by PilzModbusClient is probably too high";
+      last = curr_value;
     }
 
-    uint16_t curr_value = buffer.get();
-    if (curr_value == last)
-    {
-      continue;
-    }
-    uint16_t expected_value = static_cast<uint16_t>(last + 1);
-    EXPECT_EQ(expected_value, curr_value) << "Frequency used by PilzModbusClient is probably too higher";
-    last = curr_value;
+    rate.sleep();
   }
 
-  EXPECT_GE(buffer.get(), static_cast<uint16_t>(expected_read_frequency)) << "Frequency used by PilzModbusClient is probably too lower";
+  EXPECT_GE(buffer.get(), static_cast<uint16_t>(expected_read_frequency)) << "Frequency used by PilzModbusClient is probably too low";
 
   executor.stop();
   EXPECT_FALSE(client->isRunning());
