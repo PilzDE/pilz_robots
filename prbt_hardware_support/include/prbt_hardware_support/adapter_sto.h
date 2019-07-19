@@ -67,6 +67,7 @@ public:
   static const std::string UNHOLD_SERVICE;
   static const std::string RECOVER_SERVICE;
   static const std::string HALT_SERVICE;
+  static const std::string IS_EXECUTING_SERVICE;
 
 protected:
   /**
@@ -102,6 +103,9 @@ private:
   //! ServiceClient attached to the driver <code>/halt</code> service
   T halt_srv_client_;
 
+  //! ServiceClient attached to the controller <code>/is_executing</code> service
+  T is_executing_srv_client_;
+
   //! Current STO value
   std::atomic_bool sto_{false};
 
@@ -133,11 +137,15 @@ template <class T>
 const std::string AdapterStoTemplated<T>::HALT_SERVICE{"driver/halt"};
 
 template <class T>
+const std::string AdapterStoTemplated<T>::IS_EXECUTING_SERVICE{"manipulator_joint_trajectory_controller/is_executing"};
+
+template <class T>
 AdapterStoTemplated<T>::AdapterStoTemplated(std::function<T(std::string)> create_service_client)
     : hold_srv_client_(create_service_client(HOLD_SERVICE)),
       unhold_srv_client_(create_service_client(UNHOLD_SERVICE)),
       recover_srv_client_(create_service_client(RECOVER_SERVICE)),
-      halt_srv_client_(create_service_client(HALT_SERVICE))
+      halt_srv_client_(create_service_client(HALT_SERVICE)),
+      is_executing_srv_client_(create_service_client(IS_EXECUTING_SERVICE))
 {
 }
 
@@ -224,7 +232,18 @@ void AdapterStoTemplated<T>::performStop()
   {
     ROS_ERROR_STREAM("No success calling Hold on controller (Service: " << hold_srv_client_.getService() << ")");
   }
-  ros::Duration(DURATION_BETWEEN_HOLD_AND_DISABLE_MS / 1000.0).sleep(); // wait until hold traj is finished
+
+  // check if hold trajectory is executed
+  std_srvs::Trigger is_executing_trigger;
+  bool is_executing_success = is_executing_srv_client_.call(is_executing_trigger);
+  if (!is_executing_success)
+  {
+    ROS_ERROR_STREAM("No success calling service " << is_executing_srv_client_.getService());
+  }
+  if (is_executing_trigger.response.success || !is_executing_success)
+  {
+    ros::Duration(DURATION_BETWEEN_HOLD_AND_DISABLE_MS / 1000.0).sleep(); // wait until hold traj is finished
+  }
 
   std_srvs::Trigger halt_trigger;
   ROS_ERROR_STREAM("Calling Halt on driver (Service: " << halt_srv_client_.getService() << ")");

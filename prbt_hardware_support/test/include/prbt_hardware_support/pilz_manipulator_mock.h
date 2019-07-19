@@ -39,27 +39,31 @@ class ManipulatorMock
     void advertiseUnholdService(ros::NodeHandle nh, std::string unhold_service_name);
     void advertiseHaltService(ros::NodeHandle nh, std::string halt_service_name);
     void advertiseRecoverService(ros::NodeHandle nh, std::string recover_service_name);
+    void advertiseIsExecutingService(ros::NodeHandle nh, std::string is_executing_service_name);
 
     void shutdownHoldService();
     void shutdownUnholdService();
 
     void advertiseServices(ros::NodeHandle nh,
-                             std::string hold_service_name,
-                             std::string unhold_service_name,
-                             std::string halt_service_name,
-                             std::string recover_service_name);
+                           std::string hold_service_name,
+                           std::string unhold_service_name,
+                           std::string halt_service_name,
+                           std::string recover_service_name,
+                           std::string is_executing_service_name);
 
 
-    MOCK_METHOD2(holdCb,    bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
-    MOCK_METHOD2(unholdCb,  bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
-    MOCK_METHOD2(haltCb,    bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
-    MOCK_METHOD2(recoverCb, bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
+    MOCK_METHOD2(holdCb,        bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
+    MOCK_METHOD2(unholdCb,      bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
+    MOCK_METHOD2(haltCb,        bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
+    MOCK_METHOD2(recoverCb,     bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
+    MOCK_METHOD2(isExecutingCb, bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
 
   private:
     ros::ServiceServer hold_srv_;
     ros::ServiceServer unhold_srv_;
     ros::ServiceServer halt_srv_;
     ros::ServiceServer recover_srv_;
+    ros::ServiceServer is_executing_srv_;
 
 };
 
@@ -77,9 +81,15 @@ void ManipulatorMock::advertiseHaltService(ros::NodeHandle nh, std::string halt_
 {
   halt_srv_ = nh.advertiseService(halt_service_name, &ManipulatorMock::haltCb, this);
 }
+
 void ManipulatorMock::advertiseRecoverService(ros::NodeHandle nh, std::string recover_service_name)
 {
   recover_srv_ = nh.advertiseService(recover_service_name, &ManipulatorMock::recoverCb, this);
+}
+
+void ManipulatorMock::advertiseIsExecutingService(ros::NodeHandle nh, std::string is_executing_service_name)
+{
+  is_executing_srv_ = nh.advertiseService(is_executing_service_name, &ManipulatorMock::isExecutingCb, this);
 }
 
 
@@ -94,15 +104,17 @@ void ManipulatorMock::shutdownUnholdService()
 }
 
 void ManipulatorMock::advertiseServices(ros::NodeHandle nh,
-                                          std::string hold_service_name,
-                                          std::string unhold_service_name,
-                                          std::string halt_service_name,
-                                          std::string recover_service_name)
+                                        std::string hold_service_name,
+                                        std::string unhold_service_name,
+                                        std::string halt_service_name,
+                                        std::string recover_service_name,
+                                        std::string is_executing_service_name)
 {
   advertiseHoldService(nh, hold_service_name);
   advertiseUnholdService(nh, unhold_service_name);
   advertiseHaltService(nh, halt_service_name);
   advertiseRecoverService(nh, recover_service_name);
+  advertiseIsExecutingService(nh, is_executing_service_name);
 }
 
 #endif // PRBT_HARDWARE_SUPPORT_PILZ_MANIPULATOR_MOCK_H
