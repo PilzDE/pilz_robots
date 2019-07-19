@@ -22,6 +22,10 @@
 #include <std_srvs/Trigger.h>
 
 #include <prbt_hardware_support/BrakeTest.h>
+#include <prbt_hardware_support/ModbusRegisterBlock.h>
+#include <prbt_hardware_support/WriteModbusRegister.h>
+#include <prbt_hardware_support/WriteModbusRegisterRequest.h>
+#include <prbt_hardware_support/WriteModbusRegisterResponse.h>
 
 #include <prbt_hardware_support/brake_test_executor.h>
 #include <prbt_hardware_support/brake_test_utils.h>
@@ -37,6 +41,9 @@ static const std::string BRAKETEST_ADAPTER_SERVICE_NAME{"/prbt/braketest_adapter
 
 static const std::string CONTROLLER_HOLD_MODE_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/hold"};
 static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/unhold"};
+static const std::string MODBUS_WRITE_SERVICE_NAME{"/pilz_modbus_client_node/modbus_write"};
+
+static const uint MODBUS_REGISTER_BRAKETEST_RESULT{982};  // TODO: Read from conf
 
 BrakeTestExecutor::BrakeTestExecutor(ros::NodeHandle& nh)
   :nh_(nh)
@@ -53,9 +60,13 @@ BrakeTestExecutor::BrakeTestExecutor(ros::NodeHandle& nh)
   waitForService(CONTROLLER_HOLD_MODE_SERVICE_NAME);
   controller_hold_client_ = nh_.serviceClient<std_srvs::Trigger>(CONTROLLER_HOLD_MODE_SERVICE_NAME);
 
-  // setup unhold service client
+  // set up unhold service client
   waitForService(CONTROLLER_UNHOLD_MODE_SERVICE_NAME);
   controller_unhold_client_ = nh_.serviceClient<std_srvs::Trigger>(CONTROLLER_UNHOLD_MODE_SERVICE_NAME);
+
+  // set up modbus write service client
+  waitForService(MODBUS_WRITE_SERVICE_NAME);
+  modbus_write_client_ = nh_.serviceClient<WriteModbusRegister>(MODBUS_WRITE_SERVICE_NAME);
 }
 
 bool BrakeTestExecutor::executeBrakeTest(BrakeTest::Request&,
@@ -92,6 +103,24 @@ bool BrakeTestExecutor::executeBrakeTest(BrakeTest::Request&,
   if (!controller_unhold_client_.call(trigger_srv))
   {
     ROS_WARN_STREAM("Failed to trigger unhold via service " << controller_unhold_client_.getService());
+  }
+
+  if(response.success)
+  {
+    WriteModbusRegister srv;
+    srv.request.holding_register_block.start_idx = MODBUS_REGISTER_BRAKETEST_RESULT;
+    srv.request.holding_register_block.values = {0, 0};
+    modbus_write_client_.call(srv);
+    if(!srv.response.success){
+      ROS_ERROR_STREAM("Failed to send brake test result to FS control"); //TODO: how to handel error best?
+      return true;
+    }
+    srv.request.holding_register_block.values = {1, 1};
+    modbus_write_client_.call(srv);
+    if(!srv.response.success){
+      ROS_ERROR_STREAM("Failed to send brake test result to FS control"); //TODO: how to handel error best?
+      return true;
+    }
   }
 
   return true;
