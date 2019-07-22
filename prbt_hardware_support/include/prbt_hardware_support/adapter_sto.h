@@ -205,6 +205,7 @@ void AdapterStoTemplated<T>::enable()
     // Abort enabling. Do not leave hold mode of controller in case STO changes from TRUE -> FALSE during recover
     if (!sto_)
     {
+      ROS_WARN("Lost STO Clearance during recover. Keeping controller in hold mode!");
       return;
     }
 
