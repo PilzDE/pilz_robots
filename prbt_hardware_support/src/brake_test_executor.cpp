@@ -109,16 +109,16 @@ bool BrakeTestExecutor::executeBrakeTest(BrakeTest::Request&,
   {
     WriteModbusRegister srv;
     srv.request.holding_register_block.start_idx = MODBUS_REGISTER_BRAKETEST_RESULT;
-    srv.request.holding_register_block.values = {0, 0};
+    srv.request.holding_register_block.values = {0, 0};  // Note: The FS controller needs a positive edge, so we first send 0s.
     modbus_write_client_.call(srv);
     if(!srv.response.success){
-      ROS_ERROR_STREAM("Failed to send brake test result to FS control"); //TODO: how to handel error best?
+      ROS_ERROR_STREAM("Failed to send brake test result to FS control");
       return true;
     }
     srv.request.holding_register_block.values = {1, 1};
     modbus_write_client_.call(srv);
     if(!srv.response.success){
-      ROS_ERROR_STREAM("Failed to send brake test result to FS control"); //TODO: how to handel error best?
+      ROS_ERROR_STREAM("Failed to send brake test result to FS control");
       return true;
     }
   }
