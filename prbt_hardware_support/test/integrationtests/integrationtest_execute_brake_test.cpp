@@ -45,7 +45,7 @@ static constexpr double WAIT_FOR_BRAKE_TEST_SERVICE_TIMEOUT_S{5.0};
  *  2. Service is available
  *  3. Service call is successful
  */
-TEST(IntegrationtestTriggerBrakeTest, testBrakeTestService)
+TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
 {
   using namespace prbt_hardware_support;
   ros::NodeHandle nh;

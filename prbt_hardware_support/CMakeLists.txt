@@ -348,17 +348,17 @@ if(CATKIN_ENABLE_TESTING)
  add_dependencies(integrationtest_operation_mode ${catkin_EXPORTED_TARGETS})
  #----------------------------------
 
-  # --- Trigger brake test integration test ---
-  add_rostest_gmock(integrationtest_trigger_brake_test
-    test/integrationtests/integrationtest_trigger_brake_test.test
-    test/integrationtests/integrationtest_trigger_brake_test.cpp
+  # --- Execute brake test integration test ---
+  add_rostest_gmock(integrationtest_execute_brake_test
+    test/integrationtests/integrationtest_execute_brake_test.test
+    test/integrationtests/integrationtest_execute_brake_test.cpp
     test/unittests/joint_states_publisher_mock.cpp
     test/unittests/canopen_chain_node_mock.cpp
   )
-  target_link_libraries(integrationtest_trigger_brake_test
+  target_link_libraries(integrationtest_execute_brake_test
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
   )
-  add_dependencies(integrationtest_trigger_brake_test ${catkin_EXPORTED_TARGETS})
+  add_dependencies(integrationtest_execute_brake_test ${catkin_EXPORTED_TARGETS})
 
   #--- SystemInfo unit test ---
   add_rostest_gmock(unittest_system_info
