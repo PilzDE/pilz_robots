@@ -25,7 +25,6 @@
 #include <modbus/modbus.h>
 
 #include <prbt_hardware_support/pilz_modbus_server_mock.h>
-//#include <prbt_hardware_support/pilz_modbus_client.h>
 #include <prbt_hardware_support/GetOperationMode.h>
 #include <prbt_hardware_support/OperationModes.h>
 #include <prbt_hardware_support/ros_test_helper.h>

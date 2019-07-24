@@ -322,10 +322,10 @@ if(CATKIN_ENABLE_TESTING)
 
   # --- Brake test required integration test ---
   add_rostest_gmock(integrationtest_brake_test_required
-     test/integrationtests/integrationtest_brake_test_required.test
-     test/integrationtests/integrationtest_brake_test_required.cpp
-     test/unittests/pilz_modbus_server_mock.cpp
-     src/libmodbus_client.cpp
+    test/integrationtests/integrationtest_brake_test_required.test
+    test/integrationtests/integrationtest_brake_test_required.cpp
+    test/unittests/pilz_modbus_server_mock.cpp
+    src/libmodbus_client.cpp
   )
   target_link_libraries(integrationtest_brake_test_required
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
@@ -334,29 +334,32 @@ if(CATKIN_ENABLE_TESTING)
   add_dependencies(integrationtest_brake_test_required ${catkin_EXPORTED_TARGETS})
   #----------------------------------
 
-  # --- Brake test required integration test ---
+  # --- Operation mode integration test ---
   add_rostest_gmock(integrationtest_operation_mode
     test/integrationtests/integrationtest_operation_mode.test
     test/integrationtests/integrationtest_operation_mode.cpp
     test/unittests/pilz_modbus_server_mock.cpp
     src/libmodbus_client.cpp
- )
- target_link_libraries(integrationtest_operation_mode
-   ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
-   modbus
- )
- add_dependencies(integrationtest_operation_mode ${catkin_EXPORTED_TARGETS})
- #----------------------------------
+  )
+  target_link_libraries(integrationtest_operation_mode
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+    modbus
+  )
+  add_dependencies(integrationtest_operation_mode ${catkin_EXPORTED_TARGETS})
+  #----------------------------------
 
   # --- Execute brake test integration test ---
   add_rostest_gmock(integrationtest_execute_brake_test
     test/integrationtests/integrationtest_execute_brake_test.test
     test/integrationtests/integrationtest_execute_brake_test.cpp
     test/unittests/joint_states_publisher_mock.cpp
+    test/unittests/pilz_modbus_server_mock.cpp
     test/unittests/canopen_chain_node_mock.cpp
+    src/libmodbus_client.cpp
   )
   target_link_libraries(integrationtest_execute_brake_test
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+    modbus
   )
   add_dependencies(integrationtest_execute_brake_test ${catkin_EXPORTED_TARGETS})
 
