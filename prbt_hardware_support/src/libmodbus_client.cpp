@@ -39,7 +39,7 @@ bool LibModbusClient::init(const char* ip, unsigned int port)
 
   if (modbus_connect(modbus_connection_) == -1)
   {
-    ROS_ERROR_STREAM("Could not establish modbus connection." << modbus_strerror(errno));
+    ROS_ERROR_STREAM_NAMED("LibModbusClient", "Could not establish modbus connection." << modbus_strerror(errno));
     modbus_free(modbus_connection_);
     modbus_connection_ = nullptr;
     return false;
@@ -75,7 +75,10 @@ RegCont LibModbusClient::readHoldingRegister(int addr, int nb)
   rc = modbus_read_registers(modbus_connection_, addr, nb, tab_reg.data());
   if (rc == -1)
   {
-    throw ModbusExceptionDisconnect("Modbus disconnected!");
+    std::string err = "Failed to read modbus registers! ";
+    err.append(modbus_strerror(errno));
+    ROS_ERROR_STREAM_NAMED("LibModbusClient", err);
+    throw ModbusExceptionDisconnect(err);
   }
 
   return tab_reg;
@@ -105,11 +108,14 @@ RegCont LibModbusClient::writeReadHoldingRegister(const int write_addr,
   rc = modbus_write_and_read_registers(modbus_connection_,
                                        write_addr, static_cast<int>(write_reg.size()), write_reg.data(),
                                        read_addr, read_nb, read_reg.data());
+  ROS_DEBUG_NAMED("LibModbusClient", "modbus_write_and_read_registers: writing from %i %i registers\
+                                      and reading from %i %i registers",
+                                      write_addr, static_cast<int>(write_reg.size()), read_addr, read_nb);
   if (rc == -1)
   {
     std::string err = "Failed to write and read modbus registers";
     err.append(modbus_strerror(errno));
-    ROS_ERROR_STREAM(err);
+    ROS_ERROR_STREAM_NAMED("LibModbusClient", err);
     throw ModbusExceptionDisconnect(err);
   }
 
