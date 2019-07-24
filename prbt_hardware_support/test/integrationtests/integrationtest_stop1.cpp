@@ -66,7 +66,6 @@ class Stop1IntegrationTest : public testing::Test, public testing::AsyncTest
 {
 
 public:
-  Stop1IntegrationTest();
   void SetUp();
   void TearDown();
 
@@ -100,11 +99,6 @@ void Stop1IntegrationTest::SetUp()
 
 void Stop1IntegrationTest::TearDown()
 {
-}
-
-Stop1IntegrationTest::Stop1IntegrationTest()
-{
-  EXPECT_GE(std::thread::hardware_concurrency(), 2) << "Hardware does not support enough threads";
 }
 
 /**
