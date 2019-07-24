@@ -28,7 +28,9 @@
 #include <prbt_hardware_support/WriteModbusRegisterResponse.h>
 
 #include <prbt_hardware_support/brake_test_executor.h>
+#include <prbt_hardware_support/brake_test_executor_exception.h>
 #include <prbt_hardware_support/brake_test_utils.h>
+#include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/wait_for_service.h>
 
 namespace prbt_hardware_support
@@ -42,8 +44,6 @@ static const std::string BRAKETEST_ADAPTER_SERVICE_NAME{"/prbt/braketest_adapter
 static const std::string CONTROLLER_HOLD_MODE_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/hold"};
 static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/unhold"};
 static const std::string MODBUS_WRITE_SERVICE_NAME{"/pilz_modbus_client_node/modbus_write"};
-
-static const uint MODBUS_REGISTER_BRAKETEST_RESULT{982};  // TODO: Read from conf
 
 BrakeTestExecutor::BrakeTestExecutor(ros::NodeHandle& nh)
   :nh_(nh)
@@ -67,6 +67,19 @@ BrakeTestExecutor::BrakeTestExecutor(ros::NodeHandle& nh)
   // set up modbus write service client
   waitForService(MODBUS_WRITE_SERVICE_NAME);
   modbus_write_client_ = nh_.serviceClient<WriteModbusRegister>(MODBUS_WRITE_SERVICE_NAME);
+
+  // get brake test result register numbers
+  ModbusApiSpec api_spec {nh_};
+  if(!api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED))
+    throw BrakeTestExecutorException("failed to read API spec for BRAKETEST_PERFORMED");
+  short unsigned int brake_test_performed_modbus_register_ = static_cast<short unsigned int>(api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED));
+  if(!api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT))
+    throw BrakeTestExecutorException("failed to read API spec for BRAKETEST_RESULT");
+  short unsigned int brake_test_result_modbus_register_ = static_cast<short unsigned int>(api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT));
+  if(abs(brake_test_performed_modbus_register_ - brake_test_result_modbus_register_) != 1)
+    throw BrakeTestExecutorException("registers of BRAKETEST_PERFORMED and BRAKETEST_RESULT need to be 1 apart");
+  // starting from the lowest register of the two
+  brake_test_modbus_register_low_ = std::min(brake_test_performed_modbus_register_, brake_test_result_modbus_register_);
 }
 
 bool BrakeTestExecutor::executeBrakeTest(BrakeTest::Request&,
@@ -108,7 +121,7 @@ bool BrakeTestExecutor::executeBrakeTest(BrakeTest::Request&,
   if(response.success)
   {
     WriteModbusRegister srv;
-    srv.request.holding_register_block.start_idx = MODBUS_REGISTER_BRAKETEST_RESULT;
+    srv.request.holding_register_block.start_idx = brake_test_modbus_register_low_;
     srv.request.holding_register_block.values = {0, 0};  // Note: The FS controller needs a positive edge, so we first send 0s.
     modbus_write_client_.call(srv);
     if(!srv.response.success){
