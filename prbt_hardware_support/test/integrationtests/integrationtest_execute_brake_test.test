@@ -20,9 +20,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   <arg name="modbus_server_ip" default="127.0.0.1"/>
   <arg name="modbus_server_port" default="20701"/>
   <arg name="safety_hw" default="pss4000" />
+  <rosparam ns="/prbt/api_spec" command="load" file="$(find prbt_hardware_support)/config/modbus_api_spec_$(arg safety_hw).yaml" />
 
   <group ns="prbt">
-    <rosparam ns="api_spec" command="load" file="$(find prbt_hardware_support)/config/modbus_api_spec_$(arg safety_hw).yaml" />
     <rosparam ns="driver/" command="load"
               file="$(find prbt_hardware_support)/test/config/prbt_manipulator_driver_nodes.yaml">
     </rosparam>
@@ -32,11 +32,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       <param name="modbus_server_ip" value="$(arg modbus_server_ip)"/>
       <param name="modbus_server_port" value="$(arg modbus_server_port)"/>
     </node>
+    <test test-name="integrationtest_execute_brake_test" pkg="prbt_hardware_support" type="integrationtest_execute_brake_test">
+      <param name="modbus_server_ip" value="$(arg modbus_server_ip)"/>
+      <param name="modbus_server_port" value="$(arg modbus_server_port)"/>
+    </test>
   </group>
 
-  <test test-name="integrationtest_execute_brake_test" pkg="prbt_hardware_support" type="integrationtest_execute_brake_test">
-    <param name="modbus_server_ip" value="$(arg modbus_server_ip)"/>
-    <param name="modbus_server_port" value="$(arg modbus_server_port)"/>
-  </test>
 
 </launch>

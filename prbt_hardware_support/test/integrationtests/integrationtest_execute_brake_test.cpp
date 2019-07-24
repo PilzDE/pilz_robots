@@ -58,11 +58,31 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
 {
   using namespace prbt_hardware_support;
   ros::NodeHandle nh;
-  ros::Duration(30).sleep();
+  ros::NodeHandle nh_private("~");
+  ros::Duration(1).sleep();
 
   /**********
    * Step 0 *
    **********/
+  std::string ip;
+  int port;
+
+  ASSERT_TRUE(nh_private.getParam("modbus_server_ip", ip));
+  ASSERT_TRUE(nh_private.getParam("modbus_server_port", port));
+
+  ModbusApiSpec api_spec {nh};
+
+  unsigned int modbus_register_size {api_spec.getMaxRegisterDefinition() + 1U};
+
+  prbt_hardware_support::PilzModbusServerMock modbus_server(modbus_register_size);
+  std::thread modbus_server_thread( &initalizeAndRun<prbt_hardware_support::PilzModbusServerMock>,
+                                    std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port) );
+  ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED));
+  unsigned int register_perf = api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED);
+  ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT));
+  unsigned int register_res = api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT);
+  modbus_server.setHoldingRegister({{register_perf, MODBUS_BRAKE_TEST_PREPARE_VALUE}});
+  modbus_server.setHoldingRegister({{register_res, MODBUS_BRAKE_TEST_PREPARE_VALUE}});
 
   /**********
    * Step 1 *
@@ -85,42 +105,23 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
   /**********
    * Step 3 *
    **********/
-  std::string ip;
-  int port;
-  ASSERT_TRUE(nh.getParam("modbus_server_ip", ip));
-  ASSERT_TRUE(nh.getParam("modbus_server_port", port));
-
-  ModbusApiSpec api_spec {nh};
-
-  unsigned int modbus_register_size {api_spec.getMaxRegisterDefinition() + 1U};
-
-  prbt_hardware_support::PilzModbusServerMock modbus_server(modbus_register_size);
-
-  std::thread modbus_server_thread( &initalizeAndRun<prbt_hardware_support::PilzModbusServerMock>,
-                                    std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port) );
-  ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED));
-  unsigned int register_perf = api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED);
-  ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT));
-  unsigned int register_res = api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT);
-
-  modbus_server.setHoldingRegister({{register_perf, MODBUS_BRAKE_TEST_PREPARE_VALUE}});
-  modbus_server.setHoldingRegister({{register_res, MODBUS_BRAKE_TEST_PREPARE_VALUE}});
   BrakeTest srv;
   EXPECT_TRUE(brake_test_srv_client_.call(srv));
 
   /**********
    * Step 4 *
    **********/
-//  RegCont res1 = modbus_server.readHoldingRegister(register_perf, 1);
-//  EXPECT_TRUE(res1[0] == MODBUS_BRAKE_TEST_EXPECTED_VALUE);
-//  RegCont res2 = modbus_server.readHoldingRegister(register_res, 1);
-//  EXPECT_TRUE(res2[0] == MODBUS_BRAKE_TEST_EXPECTED_VALUE);
+  ros::Duration(.1).sleep();
+  RegCont content_perf = modbus_server.readHoldingRegister(register_perf, 1);
+  EXPECT_EQ(content_perf[0], MODBUS_BRAKE_TEST_EXPECTED_VALUE);
+  RegCont content_res = modbus_server.readHoldingRegister(register_res, 1);
+  EXPECT_EQ(content_res[0], MODBUS_BRAKE_TEST_EXPECTED_VALUE);
 
   /**********
-   * Step 6 *
+   * Step 5 *
    **********/
-//  modbus_server.terminate();
-//  modbus_server_thread.join();
+  modbus_server.terminate();
+  modbus_server_thread.join();
 }
 
 int main(int argc, char *argv[])
