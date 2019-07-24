@@ -46,34 +46,34 @@ static constexpr uint16_t MODBUS_BRAKE_TEST_EXPECTED_VALUE {1};
  *  0. Preparing modbus mock
  *  1. Initialize CANOpen mock, JointStatesPublisher mock and manipulator mock
  *  2. Wait for BrakeTest service
- *  3. Make a service call
+ *  3. Make the service call
+ *  4. Check contents of relevant modbus registers
+ *  5. Shutdown of modbus mock
  *
  * Expected Results:
  *  0. -
  *  1. -
  *  2. Service is available
  *  3. Service call is successful
+ *  4. Brake test success was set in modbus
+ *  5. -
  */
 TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
 {
   using namespace prbt_hardware_support;
   ros::NodeHandle nh;
   ros::NodeHandle nh_private("~");
-  ros::Duration(1).sleep();
 
   /**********
    * Step 0 *
    **********/
   std::string ip;
   int port;
-
   ASSERT_TRUE(nh_private.getParam("modbus_server_ip", ip));
   ASSERT_TRUE(nh_private.getParam("modbus_server_port", port));
 
   ModbusApiSpec api_spec {nh};
-
   unsigned int modbus_register_size {api_spec.getMaxRegisterDefinition() + 1U};
-
   prbt_hardware_support::PilzModbusServerMock modbus_server(modbus_register_size);
   std::thread modbus_server_thread( &initalizeAndRun<prbt_hardware_support::PilzModbusServerMock>,
                                     std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port) );
@@ -81,6 +81,7 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
   unsigned int register_perf = api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED);
   ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT));
   unsigned int register_res = api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT);
+
   modbus_server.setHoldingRegister({{register_perf, MODBUS_BRAKE_TEST_PREPARE_VALUE}});
   modbus_server.setHoldingRegister({{register_res, MODBUS_BRAKE_TEST_PREPARE_VALUE}});
 
@@ -107,11 +108,11 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
    **********/
   BrakeTest srv;
   EXPECT_TRUE(brake_test_srv_client_.call(srv));
+  ros::Duration(.1).sleep(); // make sure values are set in modbus mock
 
   /**********
    * Step 4 *
    **********/
-  ros::Duration(.1).sleep();
   RegCont content_perf = modbus_server.readHoldingRegister(register_perf, 1);
   EXPECT_EQ(content_perf[0], MODBUS_BRAKE_TEST_EXPECTED_VALUE);
   RegCont content_res = modbus_server.readHoldingRegister(register_res, 1);
