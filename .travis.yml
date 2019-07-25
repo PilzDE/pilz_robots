@@ -17,6 +17,7 @@ env:
     - ROS_DISTRO="melodic"
     - CATKIN_LINT=true
     - CATKIN_PARALLEL_TEST_JOBS="-p1"
+    - DOCKER_RUN_OPTS='-e ROSCONSOLE_FORMAT=[${severity}][${time}-${thread}[${file}:${line}]${message}'
     - BEFORE_SCRIPT="mkdir /config
                      && echo 'log4j.logger.ros.prbt_hardware_support=DEBUG' > /config/rosconsole.config"
   matrix:
