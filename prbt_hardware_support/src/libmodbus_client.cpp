@@ -64,7 +64,6 @@ unsigned long LibModbusClient::getResponseTimeoutInMs()
 
 RegCont LibModbusClient::readHoldingRegister(int addr, int nb)
 {
-  ROS_ERROR("readHoldingRegister");
   if(modbus_connection_ == nullptr)
   {
     throw ModbusExceptionDisconnect("Modbus disconnected!");
@@ -76,12 +75,10 @@ RegCont LibModbusClient::readHoldingRegister(int addr, int nb)
   rc = modbus_read_registers(modbus_connection_, addr, nb, tab_reg.data());
   if (rc == -1)
   {
-    std::ostringstream errStream;
-    errStream << "Failed to read " << nb;
-    errStream << " registers starting from " << addr;
-    errStream << " with err: " << modbus_strerror(errno);
-    ROS_ERROR_STREAM_NAMED("LibModbusClient", errStream.str());
-    throw ModbusExceptionDisconnect(errStream.str());
+    std::string err = "Failed to read modbus registers! ";
+    err.append(modbus_strerror(errno));
+    ROS_ERROR_STREAM_NAMED("LibModbusClient", err);
+    throw ModbusExceptionDisconnect(err);
   }
 
   return tab_reg;

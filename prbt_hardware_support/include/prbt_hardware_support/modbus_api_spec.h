@@ -29,7 +29,6 @@
 
 namespace prbt_hardware_support
 {
-static const std::string API_SPEC_PARAM_NAME {"/api_spec/"};
 
 namespace modbus_api_spec
 {
@@ -64,7 +63,7 @@ class ModbusApiSpecTemplated
 {
 public:
 
-  ModbusApiSpecTemplated(std::initializer_list< std::pair<std::string, unsigned short> > reg_list)
+  ModbusApiSpecTemplated(std::initializer_list< std::pair<std::string, unsigned int> > reg_list)
   {
     for(auto entry : reg_list){
       setRegisterDefinition(entry.first, entry.second);
@@ -87,15 +86,15 @@ public:
   ModbusApiSpecTemplated(T &nh)
   {
     XmlRpc::XmlRpcValue rpc;
-    if (!nh.getParam(API_SPEC_PARAM_NAME, rpc))
+    if (!nh.getParam("api_spec/", rpc))
     {
-      throw ModbusApiSpecException("No api specified. (Expected at " + nh.getNamespace() + API_SPEC_PARAM_NAME + ")");
+      throw ModbusApiSpecException("No api specified. (Expected at " + nh.getNamespace() + "/api_spec/");
     }
 
     for (auto rpci = rpc.begin(); rpci != rpc.end(); ++rpci)
     {
       int value = rpci->second;
-      setRegisterDefinition(rpci->first.c_str(), static_cast<unsigned short>(value));
+      setRegisterDefinition(rpci->first.c_str(), static_cast<unsigned int>(value));
     }
   }
 
@@ -104,12 +103,12 @@ public:
     return register_mapping_.find(key) != register_mapping_.end();
   }
 
-  inline void setRegisterDefinition(const std::string &key, unsigned short value)
+  inline void setRegisterDefinition(const std::string &key, unsigned int value)
   {
     register_mapping_[key] = value;
   }
 
-  inline unsigned short getRegisterDefinition(const std::string &key) const
+  inline unsigned int getRegisterDefinition(const std::string &key) const
   {
     try
     {
@@ -120,14 +119,14 @@ public:
       throw ModbusApiSpecException(e.what());
     }
   }
-  inline unsigned short getMinRegisterDefinition() const
+  inline unsigned int getMinRegisterDefinition() const
   {
     if (register_mapping_.empty())
     {
       throw ModbusApiSpecException("Cannot read values. Api spec is empty.");
     }
 
-    typedef std::pair<std::string, unsigned short> RegisterMappingEntry;
+    typedef std::pair<std::string, unsigned int> RegisterMappingEntry;
     // The following is excluded because lambda functions are not marked properly with gcc-7
     // see https://github.com/gcc-mirror/gcc/commit/7de708f
     // LCOV_EXCL_START
@@ -138,14 +137,14 @@ public:
     return it->second;
   }
 
-  inline unsigned short getMaxRegisterDefinition() const
+  inline unsigned int getMaxRegisterDefinition() const
   {
     if (register_mapping_.empty())
     {
       throw ModbusApiSpecException("Cannot read values. Api spec is empty.");
     }
 
-    typedef std::pair<std::string, unsigned short> RegisterMappingEntry;
+    typedef std::pair<std::string, unsigned int> RegisterMappingEntry;
     // The following is excluded because lambda functions are not marked properly with gcc-7
     // see https://github.com/gcc-mirror/gcc/commit/7de708f
     // LCOV_EXCL_START
@@ -156,15 +155,8 @@ public:
     return it->second;
   }
 
-  inline void getAllDefinedRegisters(std::vector<unsigned short> &registers) {
-    for(auto it = register_mapping_.begin(); it != register_mapping_.end(); ++it){
-      registers.push_back(it->second);
-      std::sort(registers.begin(), registers.end());
-    }
-  }
-
 private:
-  std::map<std::string, unsigned short> register_mapping_;
+  std::map<std::string, unsigned int> register_mapping_;
 };
 
 //! Simple typedef for class like usage
