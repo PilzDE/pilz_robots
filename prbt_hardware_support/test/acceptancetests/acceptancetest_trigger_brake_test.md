@@ -19,12 +19,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 These acceptance tests check that the real robot system reacts to a BrakeTest service call properly.
 
 ## Prerequisites
-  - Properly connect and startup the robot and power cabinet containing the PNoz-Multi.
+  - Properly connect and startup the robot and power cabinet containing the PSS4000.
     Make sure an emergency stop is within reach.
 
 ### Test Sequence
   1. Press the acknowledge button. Make sure the green light on the power cabinet is on.
-     Run `roslaunch prbt_moveit_config moveit_planning_execution.launch sim:=False pipeline:=pilz_command_planner`
+  Run `roslaunch prbt_moveit_config moveit_planning_execution.launch sim:=False pipeline:=pilz_command_planner sto:=pss4000 has_braketest_support:=true`
   2. Run `rosservice call /prbt/brake_test_required`
   3. Run `rosservice call /prbt/execute_braketest`
   4. Try to perform a robot motion via Rviz during the braketest execution
