@@ -204,6 +204,7 @@ void PilzModbusServerMock::run()
     } // End reading loop
 
     close(socket_);
+    usleep(50); // Avoid issues with modbus_tcp_listen since socket not closed
     ROS_DEBUG_NAMED("ServerMock", "Socket closed");
     socket_ = -1;
   } // End connect to client loop
