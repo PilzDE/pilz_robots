@@ -60,6 +60,12 @@ class ManipulatorMock
     MOCK_METHOD2(isExecutingCb, bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
 
   private:
+    bool holdCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp);
+    bool unholdCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp);
+    bool haltCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp);
+    bool recoverCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp);
+    bool isExecutingCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp);
+
     ros::ServiceServer hold_srv_;
     ros::ServiceServer unhold_srv_;
     ros::ServiceServer halt_srv_;
@@ -70,43 +76,80 @@ class ManipulatorMock
 
 void ManipulatorMock::advertiseHoldService(ros::NodeHandle nh, std::string hold_service_name)
 {
-  hold_srv_ = nh.advertiseService(hold_service_name, &ManipulatorMock::holdCb, this);
+  hold_srv_ = nh.advertiseService(hold_service_name, &ManipulatorMock::holdCb_internal, this);
+  ROS_DEBUG_NAMED("ManipulatorMock", "Advertised %s", hold_srv_.getService().c_str());
 }
 
 void ManipulatorMock::advertiseUnholdService(ros::NodeHandle nh, std::string unhold_service_name)
 {
-  unhold_srv_ = nh.advertiseService(unhold_service_name, &ManipulatorMock::unholdCb, this);
+  unhold_srv_ = nh.advertiseService(unhold_service_name, &ManipulatorMock::unholdCb_internal, this);
+  ROS_DEBUG_NAMED("ManipulatorMock", "Advertised %s", unhold_srv_.getService().c_str());
 }
 
 void ManipulatorMock::advertiseHaltService(ros::NodeHandle nh, std::string halt_service_name)
 {
-  halt_srv_ = nh.advertiseService(halt_service_name, &ManipulatorMock::haltCb, this);
+  halt_srv_ = nh.advertiseService(halt_service_name, &ManipulatorMock::haltCb_internal, this);
+  ROS_DEBUG_NAMED("ManipulatorMock", "Advertised %s", halt_srv_.getService().c_str());
 }
 
 void ManipulatorMock::advertiseRecoverService(ros::NodeHandle nh, std::string recover_service_name)
 {
-  recover_srv_ = nh.advertiseService(recover_service_name, &ManipulatorMock::recoverCb, this);
+  recover_srv_ = nh.advertiseService(recover_service_name, &ManipulatorMock::recoverCb_internal, this);
+  ROS_DEBUG_NAMED("ManipulatorMock", "Advertised %s", recover_srv_.getService().c_str());
 }
 
 void ManipulatorMock::advertiseIsExecutingService(ros::NodeHandle nh, std::string is_executing_service_name)
 {
-  is_executing_srv_ = nh.advertiseService(is_executing_service_name, &ManipulatorMock::isExecutingCb, this);
+  is_executing_srv_ = nh.advertiseService(is_executing_service_name, &ManipulatorMock::isExecutingCb_internal, this);
+  ROS_DEBUG_NAMED("ManipulatorMock", "Advertised %s", is_executing_srv_.getService().c_str());
 }
 
+bool ManipulatorMock::holdCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp)
+{
+  ROS_DEBUG_NAMED("ManipulatorMock", "Call to %s", hold_srv_.getService().c_str());
+  return holdCb(req, resp);
+}
+
+bool ManipulatorMock::unholdCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp)
+{
+  ROS_DEBUG_NAMED("ManipulatorMock", "Call to %s", unhold_srv_.getService().c_str());
+  return unholdCb(req, resp);
+}
+
+bool ManipulatorMock::haltCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp)
+{
+  ROS_DEBUG_NAMED("ManipulatorMock", "Call to %s", halt_srv_.getService().c_str());
+  return haltCb(req, resp);
+}
+
+bool ManipulatorMock::recoverCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp)
+{
+  ROS_DEBUG_NAMED("ManipulatorMock", "Call to %s", recover_srv_.getService().c_str());
+  return recoverCb(req, resp);
+}
+
+bool ManipulatorMock::isExecutingCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp)
+{
+  ROS_DEBUG_NAMED("ManipulatorMock", "Call to %s", is_executing_srv_.getService().c_str());
+  return isExecutingCb(req, resp);
+}
 
 void ManipulatorMock::shutdownHoldService()
 {
   hold_srv_.shutdown();
+  ROS_DEBUG_NAMED("ManipulatorMock", "Shut down service %s", hold_srv_.getService().c_str());
 }
 
 void ManipulatorMock::shutdownUnholdService()
 {
   unhold_srv_.shutdown();
+  ROS_DEBUG_NAMED("ManipulatorMock", "Shut down service %s", unhold_srv_.getService().c_str());
 }
 
 void ManipulatorMock::shutdownIsExecutingService()
 {
   is_executing_srv_.shutdown();
+  ROS_DEBUG_NAMED("ManipulatorMock", "Shut down service %s", is_executing_srv_.getService().c_str());
 }
 
 void ManipulatorMock::advertiseServices(ros::NodeHandle nh,
