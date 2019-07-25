@@ -117,8 +117,6 @@ protected:
  */
 TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
 {
-  EXPECT_GE(std::thread::hardware_concurrency(), 2) << "Hardware does not support enough threads";
-
   /**********
    * Setup *
    **********/
