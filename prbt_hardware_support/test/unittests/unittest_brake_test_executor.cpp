@@ -45,6 +45,8 @@ static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{"/prbt/manipulator_
 static const std::string MODBUS_SERVICE_NAME{"/pilz_modbus_client_node/modbus_write"};
 
 static const std::string API_SPEC_PARAM_NAME{"/api_spec"};
+static const std::string BRAKETEST_PERFORMED_PARAM_NAME{"/BRAKETEST_PERFORMED"};
+static const std::string BRAKETEST_RESULT_PARAM_NAME{"/BRAKETEST_RESULT"};
 
 class BrakeTestExecutorTest : public Test
 {
@@ -350,26 +352,26 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringWrongApiDef){
   /**********
    * Step 1 *
    **********/
-  nh_.deleteParam(API_SPEC_PARAM_NAME+"/BRAKETEST_PERFORMED");
+  nh_.deleteParam(API_SPEC_PARAM_NAME+BRAKETEST_PERFORMED_PARAM_NAME);
   ASSERT_THROW(BrakeTestExecutor bte_no_perf(nh_), BrakeTestExecutorException);
 
   /**********
    * Step 2 *
    **********/
-  nh_.setParam(API_SPEC_PARAM_NAME+"/BRAKETEST_PERFORMED", 100);
-  nh_.deleteParam(API_SPEC_PARAM_NAME+"/BRAKETEST_RESULT");
-  ASSERT_THROW(BrakeTestExecutor bte_no_api_def(nh_), BrakeTestExecutorException);
+  nh_.setParam(API_SPEC_PARAM_NAME+BRAKETEST_PERFORMED_PARAM_NAME, 100);
+  nh_.deleteParam(API_SPEC_PARAM_NAME+BRAKETEST_RESULT_PARAM_NAME);
+  ASSERT_THROW(BrakeTestExecutor bte_no_res(nh_), BrakeTestExecutorException);
 
   /**********
    * Step 3 *
    **********/
-  nh_.setParam(API_SPEC_PARAM_NAME+"/BRAKETEST_RESULT", 99);
+  nh_.setParam(API_SPEC_PARAM_NAME+BRAKETEST_RESULT_PARAM_NAME, 99);
   ASSERT_NO_THROW(BrakeTestExecutor bte_one_apart(nh_));
 
   /**********
    * Step 4 *
    **********/
-  nh_.setParam(API_SPEC_PARAM_NAME+"/BRAKETEST_RESULT", 98);
+  nh_.setParam(API_SPEC_PARAM_NAME+BRAKETEST_RESULT_PARAM_NAME, 98);
   ASSERT_THROW(BrakeTestExecutor bte_two_apart(nh_), BrakeTestExecutorException);
 
   /**********
