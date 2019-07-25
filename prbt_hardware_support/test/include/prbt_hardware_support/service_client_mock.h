@@ -44,6 +44,7 @@ public:
 
   bool call(S &s)
   {
+    ROS_DEBUG_NAMED("Mock", "Received call to %s", name_.c_str());
     return call_callback_(name_, s);
   }
 
