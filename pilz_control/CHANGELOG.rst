@@ -5,6 +5,7 @@ Changelog for package pilz_control
 Forthcoming
 -----------
 * Add is_executing service to joint trajectory controller
+* Better handling consecutive calls on the hold service of joint trajectory controller
 * Contributors: Pilz GmbH and Co. KG
 
 0.5.6 (2019-06-12)

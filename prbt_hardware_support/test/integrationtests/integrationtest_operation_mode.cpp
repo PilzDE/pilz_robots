@@ -103,8 +103,6 @@ protected:
  */
 TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
 {
-  EXPECT_GE(std::thread::hardware_concurrency(), 2) << "Hardware does not support enough threads";
-
   /**********
    * Setup *
    **********/
