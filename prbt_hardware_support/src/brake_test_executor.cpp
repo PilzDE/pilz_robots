@@ -122,17 +122,13 @@ bool BrakeTestExecutor::executeBrakeTest(BrakeTest::Request&,
   {
     WriteModbusRegister srv;
     srv.request.holding_register_block.start_idx = brake_test_modbus_register_low_;
-    srv.request.holding_register_block.values = {0, 0};  // Note: The FS controller needs a positive edge, so we first send 0s.
-    modbus_write_client_.call(srv);
-    if(!srv.response.success){
-      ROS_ERROR_STREAM("Failed to send brake test result to FS control");
-      return true;
-    }
-    srv.request.holding_register_block.values = {1, 1};
-    modbus_write_client_.call(srv);
-    if(!srv.response.success){
-      ROS_ERROR_STREAM("Failed to send brake test result to FS control");
-      return true;
+    std::vector<unsigned short> values_to_set = {0, 1}; // Note: The FS controller needs a positive edge, so we first send 0s.
+    for(auto it = values_to_set.begin(); it != values_to_set.end(); ++it){
+      srv.request.holding_register_block.values = {*it, *it};
+      modbus_write_client_.call(srv);
+      if(!srv.response.success){
+        ROS_ERROR_STREAM("Failed to send brake test result to FS control");
+      }
     }
   }
 
