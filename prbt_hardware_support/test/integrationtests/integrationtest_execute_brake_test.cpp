@@ -108,7 +108,7 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
    **********/
   BrakeTest srv;
   EXPECT_TRUE(brake_test_srv_client_.call(srv));
-  ros::Duration(.5).sleep(); // make sure values are set in modbus mock
+  ros::Duration(1).sleep(); // make sure values are set in modbus mock
 
   /**********
    * Step 4 *
@@ -122,7 +122,7 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
       content_perf[0] == MODBUS_BRAKE_TEST_EXPECTED_VALUE &&
       content_res[0] == MODBUS_BRAKE_TEST_EXPECTED_VALUE)
       break; // expected result
-    ros::Duration(.5).sleep();
+    ros::Duration(1).sleep();
   }
   EXPECT_EQ(content_res[0], MODBUS_BRAKE_TEST_EXPECTED_VALUE);
   EXPECT_EQ(content_res[0], MODBUS_BRAKE_TEST_EXPECTED_VALUE);
