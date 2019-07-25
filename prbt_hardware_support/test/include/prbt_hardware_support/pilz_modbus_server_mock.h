@@ -141,11 +141,14 @@ private:
 
 inline void PilzModbusServerMock::terminate()
 {
+  ROS_INFO_NAMED("ServerMock", "Terminate called on ServerMock.");
   terminate_ = true;
 
   if(thread_.joinable())
   {
+    ROS_DEBUG_NAMED("ServerMock", "Waiting for worker Thread of ServerMock to be joined.");
     thread_.join();
+    ROS_DEBUG_NAMED("ServerMock", "Waiting for worker Thread of ServerMock joined.");
   }
 }
 
