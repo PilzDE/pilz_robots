@@ -41,7 +41,7 @@ PilzModbusClient::PilzModbusClient(ros::NodeHandle& nh,
                                                &PilzModbusClient::modbus_write_service_cb,
                                                this) )
 {
-  ROS_ERROR_STREAM("PilzModbusClient Constructor");
+  ROS_DEBUG_STREAM("PilzModbusClient Constructor");
 }
 
 
@@ -73,7 +73,7 @@ bool PilzModbusClient::init(const char* ip, unsigned int port)
   State expectedState {State::not_initialized};
   if (!state_.compare_exchange_strong(expectedState, State::initializing))
   {
-    ROS_ERROR_STREAM("(A) Modbus-client not in correct state: " << state_ << "expected:" << expectedState);
+    ROS_ERROR_STREAM("Modbus-client not in correct state: " << state_ << "expected:" << State::initializing);
     state_ = State::not_initialized;
     return false;
   }
@@ -88,7 +88,7 @@ bool PilzModbusClient::init(const char* ip, unsigned int port)
   modbus_client_->setResponseTimeoutInMs(RESPONSE_TIMEOUT_MS);
 
   state_ = State::initialized;
-  ROS_ERROR_STREAM("Connection to " << ip << ":" << port << " established");
+  ROS_DEBUG_STREAM("init - Connection to " << ip << ":" << port << " established");
   return true;
 }
 
@@ -103,11 +103,11 @@ void PilzModbusClient::sendDisconnectMsg()
 
 void PilzModbusClient::run()
 {
-  ROS_ERROR_STREAM("PilzModbusClient::run");
+  ROS_DEBUG("PilzModbusClient::run");
   State expectedState {State::initialized};
   if (!state_.compare_exchange_strong(expectedState, State::running))
   {
-    ROS_ERROR_STREAM("(B) Modbus-client not in correct state: " << state_ << "expected:" << expectedState);
+    ROS_DEBUG_STREAM("Modbus-client not in correct state: " << state_ << "expected:" << State::running);
     throw PilzModbusClientException("Modbus-client not in correct state.");
   }
 
@@ -134,24 +134,23 @@ void PilzModbusClient::run()
     std::vector<std::vector<unsigned short>> blocks;
     split_into_blocks(blocks, REGISTERS_TO_READ);
     for(auto &reg : REGISTERS_TO_READ)
-      ROS_ERROR("- %d", reg);
+      ROS_DEBUG("- %d", reg);
 
     unsigned short index_of_first_register = *std::min_element(REGISTERS_TO_READ.begin(), REGISTERS_TO_READ.end());
-    int num_registers = *std::max_element(REGISTERS_TO_READ.begin(), REGISTERS_TO_READ.end()) - index_of_first_register;
+    int num_registers = *std::max_element(REGISTERS_TO_READ.begin(), REGISTERS_TO_READ.end()) - index_of_first_register + 1;
     holding_register = RegCont(num_registers, 0);
-    ROS_ERROR("holding_register = RegCont(num_registers, 0);");
 
-    ROS_ERROR("blocks.size() %d", blocks.size());
-    ROS_ERROR("blocks[0].size() %d", blocks[0].size());
-    for(auto &block : blocks){
-      ROS_ERROR("block.size() %d", block.size());
-      unsigned short index_of_first_register_block = *(block.begin());
-      unsigned long num_registers_block = block.size();
-      RegCont block_holding_register;
-      try
-      {
-        ROS_ERROR("index_of_first_register_block: %d", index_of_first_register_block);
-        ROS_ERROR("num_registers_block: %d", num_registers_block);
+    ROS_DEBUG("blocks.size() %d", blocks.size());
+    ROS_DEBUG("blocks[0].size() %d", blocks[0].size());
+    try
+    {
+      for(auto &block : blocks){
+        ROS_DEBUG("block.size() %d", block.size());
+        unsigned short index_of_first_register_block = *(block.begin());
+        unsigned long num_registers_block = block.size();
+        RegCont block_holding_register;
+        ROS_DEBUG("index_of_first_register_block: %d", index_of_first_register_block);
+        ROS_DEBUG("num_registers_block: %d", num_registers_block);
         if (write_reg_bock)
         {
           block_holding_register = modbus_client_->writeReadHoldingRegister(static_cast<int>(write_reg_bock->start_idx),
@@ -163,25 +162,27 @@ void PilzModbusClient::run()
         }
         else
         {
+          ROS_DEBUG(">> will call modbus_client_->readHoldingRegister");
           block_holding_register = modbus_client_->readHoldingRegister(static_cast<int>(index_of_first_register_block), static_cast<int>(num_registers_block));
-          ROS_ERROR("modbus_client_->readHoldingRegister");
+          ROS_DEBUG("<< called modbus_client_->readHoldingRegister");
         }
         for(uint i = 0; i < num_registers_block; i++){
-          ROS_ERROR("i: %d, index_of_first_register: %d, block_holding_register[i] %d",
+          ROS_DEBUG("i: %d, index_of_first_register_block: %d, block_holding_register[i] %d",
                     i,
-                    index_of_first_register,
+                    index_of_first_register_block,
                     block_holding_register[i]);
-          holding_register[i+index_of_first_register] = block_holding_register[i];
+          holding_register[i+index_of_first_register_block-index_of_first_register] = block_holding_register[i];
         }
       }
-      catch(ModbusExceptionDisconnect &e)
-      {
-        ROS_ERROR_STREAM(e.what());
-        sendDisconnectMsg();
-        break;
-      }
     }
-    ROS_ERROR("for(auto &block : blocks){");
+    catch(ModbusExceptionDisconnect &e)
+    {
+      ROS_ERROR_STREAM("Modbus disconnect: " << e.what());
+      sendDisconnectMsg();
+      break;
+    }
+    for(auto & hr : holding_register)
+      ROS_DEBUG("> %d", hr);
 
     ModbusMsgInStampedPtr msg {
       ModbusMsgInBuilder::createDefaultModbusMsgIn(index_of_first_register, holding_register)
@@ -213,7 +214,7 @@ void PilzModbusClient::split_into_blocks(std::vector<std::vector<unsigned short>
   unsigned short prev{0};
   std::vector<unsigned short> current_block;
   for (auto & reg : in){
-    ROS_ERROR("reg: %d, prev: %d", reg, prev);
+    ROS_DEBUG("reg: %d, prev: %d", reg, prev);
     if(reg <= prev){
       throw PilzModbusClientException("List must be sorted.");
     }

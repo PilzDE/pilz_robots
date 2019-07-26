@@ -260,11 +260,9 @@ TEST_F(PilzModbusClientTests, properReadingAndDisconnect)
 
   {
     InSequence s;
-
     EXPECT_CALL(*mock, init(_,_))
         .Times(1)
         .WillOnce(Return(true));
-
     EXPECT_CALL(*mock, readHoldingRegister(_,_))
         .WillOnce(Return(std::vector<uint16_t>{1, 2}))
         .WillOnce(Return(std::vector<uint16_t>{1, 2}))
@@ -275,10 +273,8 @@ TEST_F(PilzModbusClientTests, properReadingAndDisconnect)
     InSequence s;
     EXPECT_CALL(*this, modbus_read_cb(IsSuccessfullRead(std::vector<uint16_t>{1, 2})))
         .Times(2);
-
     EXPECT_CALL(*this, modbus_read_cb(IsSuccessfullRead(std::vector<uint16_t>{3, 4})))
         .Times(1);
-
     EXPECT_CALL(*this, modbus_read_cb(IsDisconnect()))
         .Times(1)
         .WillOnce(ACTION_OPEN_BARRIER_VOID("disconnected"));
