@@ -29,7 +29,7 @@
 
 namespace prbt_hardware_support
 {
-static const std::string API_SPEC_PARAM_NAME {"api_spec/"};
+static const std::string READ_API_SPEC_PARAM_NAME {"read_api_spec/"};
 
 namespace modbus_api_spec
 {
@@ -76,20 +76,36 @@ public:
    *
    * The parameters are expected to be provided as
    * @code
-   * /[nodehandle_namespace]/api_spec/[key1]
-   * /[nodehandle_namespace]/api_spec/[key2]
+   * /[nodehandle_namespace]/read_api_spec/[key1]
+   * /[nodehandle_namespace]/read_api_spec/[key2]
    * ...
    * @endcode
    * with the values beeing of type <b>int</b>.
    *
    * @param nh NodeHandle to read the parameters from
    */
-  ModbusApiSpecTemplated(T &nh)
+  ModbusApiSpecTemplated(T &nh):ModbusApiSpecTemplated(nh, READ_API_SPEC_PARAM_NAME){}
+
+  /**
+   * @brief Construct a new Modbus Api Spec Templated object.
+   *
+   * The parameters are expected to be provided as
+   * @code
+   * /[nodehandle_namespace]/[param_name]/[key1]
+   * /[nodehandle_namespace]/[param_name]/[key2]
+   * ...
+   * @endcode
+   * with the values beeing of type <b>int</b>.
+   *
+   * @param nh NodeHandle to read the parameters from
+   * @param_name the name on the rosparam server to read from
+   */
+  ModbusApiSpecTemplated(T &nh, const std::string &param_name)
   {
     XmlRpc::XmlRpcValue rpc;
-    if (!nh.getParam(API_SPEC_PARAM_NAME, rpc))
+    if (!nh.getParam(param_name, rpc))
     {
-      throw ModbusApiSpecException("No api specified. (Expected at " + nh.getNamespace() + "/" + API_SPEC_PARAM_NAME + ")");
+      throw ModbusApiSpecException("No api specified. (Expected at " + nh.getNamespace() + "/" + param_name + ")");
     }
 
     for (auto rpci = rpc.begin(); rpci != rpc.end(); ++rpci)
@@ -97,6 +113,7 @@ public:
       int value = rpci->second;
       setRegisterDefinition(rpci->first.c_str(), static_cast<unsigned short>(value));
     }
+
   }
 
   inline bool hasRegisterDefinition(const std::string &key) const

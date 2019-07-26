@@ -44,7 +44,7 @@ static const std::string CONTROLLER_HOLD_MODE_SERVICE_NAME{"/prbt/manipulator_jo
 static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/unhold"};
 static const std::string MODBUS_SERVICE_NAME{"/pilz_modbus_client_node/modbus_write"};
 
-static const std::string API_SPEC_PARAM_NAME{"/api_spec"};
+static const std::string API_SPEC_PARAM_NAME{"/write_api_spec"};
 static const std::string BRAKETEST_PERFORMED_PARAM_NAME{"/BRAKETEST_PERFORMED"};
 static const std::string BRAKETEST_RESULT_PARAM_NAME{"/BRAKETEST_RESULT"};
 

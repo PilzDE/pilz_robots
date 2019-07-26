@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <arg name="modbus_server_port" default="20701"/>
 <arg name="safety_hw" default="pss4000" />
 
-<rosparam ns="api_spec" command="load" file="$(find prbt_hardware_support)/config/modbus_api_spec_$(arg safety_hw).yaml" />
+<rosparam ns="read_api_spec" command="load" file="$(find prbt_hardware_support)/config/modbus_read_api_spec_$(arg safety_hw).yaml" />
 
 <node name="pilz_modbus_client_node" pkg="prbt_hardware_support" type="pilz_modbus_client_node">
   <param name="modbus_server_ip" value="$(arg modbus_server_ip)"/>
