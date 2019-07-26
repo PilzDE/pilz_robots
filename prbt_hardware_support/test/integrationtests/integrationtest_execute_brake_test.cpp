@@ -72,15 +72,15 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
   ASSERT_TRUE(nh_private.getParam("modbus_server_ip", ip));
   ASSERT_TRUE(nh_private.getParam("modbus_server_port", port));
 
-  ModbusApiSpec api_spec {nh};
-  unsigned int modbus_register_size {api_spec.getMaxRegisterDefinition() + 1U};
+  ModbusApiSpec write_api_spec {nh, "write_api_spec/"};
+  unsigned int modbus_register_size {write_api_spec.getMaxRegisterDefinition() + 1U};
   prbt_hardware_support::PilzModbusServerMock modbus_server(modbus_register_size);
   std::thread modbus_server_thread( &initalizeAndRun<prbt_hardware_support::PilzModbusServerMock>,
                                     std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port) );
-  ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED));
-  unsigned int register_perf = api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED);
-  ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT));
-  unsigned int register_res = api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT);
+  ASSERT_TRUE(write_api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED));
+  unsigned int register_perf = write_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED);
+  ASSERT_TRUE(write_api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT));
+  unsigned int register_res = write_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT);
 
   modbus_server.setHoldingRegister({{register_perf, MODBUS_BRAKE_TEST_PREPARE_VALUE}});
   modbus_server.setHoldingRegister({{register_res, MODBUS_BRAKE_TEST_PREPARE_VALUE}});

@@ -45,6 +45,8 @@ static const std::string CONTROLLER_HOLD_MODE_SERVICE_NAME{"/prbt/manipulator_jo
 static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/unhold"};
 static const std::string MODBUS_WRITE_SERVICE_NAME{"/pilz_modbus_client_node/modbus_write"};
 
+static const std::string API_SPEC_READ_PARAM_NAME("write_api_spec/");
+
 BrakeTestExecutor::BrakeTestExecutor(ros::NodeHandle& nh)
   :nh_(nh)
 {
@@ -69,13 +71,13 @@ BrakeTestExecutor::BrakeTestExecutor(ros::NodeHandle& nh)
   modbus_write_client_ = nh_.serviceClient<WriteModbusRegister>(MODBUS_WRITE_SERVICE_NAME);
 
   // get brake test result register numbers
-  ModbusApiSpec api_spec {nh_};
-  if(!api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED))
+  ModbusApiSpec read_api_spec {nh_, API_SPEC_READ_PARAM_NAME};
+  if(!read_api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED))
     throw BrakeTestExecutorException("failed to read API spec for BRAKETEST_PERFORMED");
-  short unsigned int brake_test_performed_modbus_register_ = static_cast<short unsigned int>(api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED));
-  if(!api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT))
+  short unsigned int brake_test_performed_modbus_register_ = static_cast<short unsigned int>(read_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED));
+  if(!read_api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT))
     throw BrakeTestExecutorException("failed to read API spec for BRAKETEST_RESULT");
-  short unsigned int brake_test_result_modbus_register_ = static_cast<short unsigned int>(api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT));
+  short unsigned int brake_test_result_modbus_register_ = static_cast<short unsigned int>(read_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT));
   if(abs(brake_test_performed_modbus_register_ - brake_test_result_modbus_register_) != 1)
     throw BrakeTestExecutorException("registers of BRAKETEST_PERFORMED and BRAKETEST_RESULT need to be 1 apart");
   // starting from the lowest register of the two

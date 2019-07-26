@@ -44,7 +44,7 @@ static const std::string CONTROLLER_HOLD_MODE_SERVICE_NAME{"/prbt/manipulator_jo
 static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/unhold"};
 static const std::string MODBUS_SERVICE_NAME{"/pilz_modbus_client_node/modbus_write"};
 
-static const std::string API_SPEC_PARAM_NAME{"/api_spec"};
+static const std::string API_SPEC_PARAM_NAME{"/write_api_spec"};
 static const std::string BRAKETEST_PERFORMED_PARAM_NAME{"/BRAKETEST_PERFORMED"};
 static const std::string BRAKETEST_RESULT_PARAM_NAME{"/BRAKETEST_RESULT"};
 
@@ -65,6 +65,15 @@ BrakeTestExecutorTest::BrakeTestExecutorTest()
 {
   manipulator_.advertiseHoldService(nh_, CONTROLLER_HOLD_MODE_SERVICE_NAME);
   manipulator_.advertiseUnholdService(nh_, CONTROLLER_UNHOLD_MODE_SERVICE_NAME);
+}
+
+/**
+ * @brief Test increases function coverage by ensuring that all Dtor variants
+ * are called.
+ */
+TEST(ModbusApiSpecTest, testModbusApiSpecExceptionDtor)
+{
+  std::shared_ptr<BrakeTestExecutorException> ex {new BrakeTestExecutorException("Test msg")};
 }
 
 /**
@@ -137,7 +146,7 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
 
 /**
  * @tests{Execute_BrakeTest_mechanism,
- *  Test execution of brake tests whNO_ile robot is moving.
+ *  Test execution of brake tests while robot is moving.
  * }
  *
  * Test Sequence:

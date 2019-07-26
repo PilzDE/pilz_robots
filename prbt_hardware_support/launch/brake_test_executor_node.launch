@@ -16,8 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <launch>
-
+  <arg name="write_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_write_api_spec_pss4000.yaml" />
+  <rosparam ns="/prbt/brake_test_executor_node/write_api_spec" command="load" file="$(arg write_api_spec_file)" />
   <node required="true" ns="prbt" pkg="prbt_hardware_support" type="brake_test_executor_node" name="brake_test_executor_node" output="screen">
   </node>
-
 </launch>

@@ -43,7 +43,7 @@ private:
   //! Service which can be called by the user to execute brake tests for all joints.
   ros::ServiceServer brake_test_srv_;
 
-  //! Service cleints required for operation.
+  //! Service clients required for operation.
   ros::ServiceClient trigger_braketest_client_;
   ros::ServiceClient controller_hold_client_;
   ros::ServiceClient controller_unhold_client_;
