@@ -68,6 +68,15 @@ BrakeTestExecutorTest::BrakeTestExecutorTest()
 }
 
 /**
+ * @brief Test increases function coverage by ensuring that all Dtor variants
+ * are called.
+ */
+TEST(ModbusApiSpecTest, testModbusApiSpecExceptionDtor)
+{
+  std::shared_ptr<BrakeTestExecutorException> ex {new BrakeTestExecutorException("Test msg")};
+}
+
+/**
  * @tests{Execute_BrakeTest_mechanism,
  * Test execution of brake tests while robot is not moving.
  * }
