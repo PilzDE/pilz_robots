@@ -29,7 +29,7 @@
 
 namespace prbt_hardware_support
 {
-static const std::string API_SPEC_PARAM_NAME {"/api_spec/"};
+static const std::string API_SPEC_PARAM_NAME {"api_spec/"};
 
 namespace modbus_api_spec
 {
@@ -89,7 +89,7 @@ public:
     XmlRpc::XmlRpcValue rpc;
     if (!nh.getParam(API_SPEC_PARAM_NAME, rpc))
     {
-      throw ModbusApiSpecException("No api specified. (Expected at " + nh.getNamespace() + API_SPEC_PARAM_NAME + ")");
+      throw ModbusApiSpecException("No api specified. (Expected at " + nh.getNamespace() + "/" + API_SPEC_PARAM_NAME + ")");
     }
 
     for (auto rpci = rpc.begin(); rpci != rpc.end(); ++rpci)
