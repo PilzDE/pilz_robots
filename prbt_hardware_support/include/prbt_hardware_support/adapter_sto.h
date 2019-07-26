@@ -163,10 +163,8 @@ AdapterStoTemplated<T>::~AdapterStoTemplated()
 template <class T>
 void AdapterStoTemplated<T>::updateSto(const bool sto)
 {
-  ROS_ERROR_STREAM("UPDATING IN THREAD " << std::this_thread::get_id());
   if (sto == sto_)
   {
-    ROS_ERROR_STREAM("NO UPDATE");
     return;
   }
 
