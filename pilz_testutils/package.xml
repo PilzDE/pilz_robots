@@ -17,5 +17,6 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <build_depend>clang-tidy</build_depend>
   <build_depend>roscpp</build_depend>
 </package>
