@@ -137,7 +137,7 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
 
 /**
  * @tests{Execute_BrakeTest_mechanism,
- *  Test execution of brake tests whNO_ile robot is moving.
+ *  Test execution of brake tests while robot is moving.
  * }
  *
  * Test Sequence:

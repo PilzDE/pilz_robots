@@ -95,7 +95,6 @@
  *    send during the execution of the brake test are rejected.
  * - Brake tests are only performed for drives which define that they require
  *    a brake test (configurable via config file or parameter server).
- *
  * - (New) After the brake test is performed the result of the brake test is
  *    reported back to the safety controller. The result is also reported back
  *    to the safety controller if the brake test was not required by the
