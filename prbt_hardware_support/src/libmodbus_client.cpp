@@ -65,7 +65,6 @@ unsigned long LibModbusClient::getResponseTimeoutInMs()
 
 RegCont LibModbusClient::readHoldingRegister(int addr, int nb)
 {
-  ROS_DEBUG("readHoldingRegister()");
   if(modbus_connection_ == nullptr)
   {
     throw ModbusExceptionDisconnect("Modbus disconnected!");
