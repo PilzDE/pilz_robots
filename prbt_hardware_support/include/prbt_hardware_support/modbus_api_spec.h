@@ -37,8 +37,6 @@ namespace modbus_api_spec
   static const std::string VERSION {"VERSION"};
   static const std::string BRAKETEST_REQUEST {"BRAKETEST_REQUEST"};
   static const std::string OPERATION_MODE {"OPERATION_MODE"};
-  static const std::string BRAKETEST_PERFORMED {"BRAKETEST_PERFORMED"};
-  static const std::string BRAKETEST_RESULT {"BRAKETEST_RESULT"};
 }
 
 /**
