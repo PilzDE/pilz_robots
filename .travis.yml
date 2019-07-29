@@ -17,6 +17,8 @@ env:
     - ROS_DISTRO="melodic"
     - CATKIN_LINT=true
     - CATKIN_PARALLEL_TEST_JOBS="-p1"
+    - BEFORE_SCRIPT="mkdir /config
+                     && echo 'log4j.logger.ros.prbt_hardware_support=DEBUG' > /config/rosconsole.config"
   matrix:
     - ROS_REPO=ros
     - ROS_REPO=ros-shadow-fixed
@@ -24,6 +26,7 @@ matrix:
   allow_failures:
     - env: ROS_REPO=ros
   fast_finish: true
+
 install:
   - git clone --depth=1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
 script:
