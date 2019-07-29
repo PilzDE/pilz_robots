@@ -10,7 +10,8 @@
   <!-- safe-torque-off-input from the safety controller is read to do a stop1 -->
   <!-- The signal is read via modbus and you can configure the modbus server ip -->
   <arg name="sto" default="pnoz"/>
-  <arg name="api_spec_file" default="$(find prbt_hardware_support)/config/modbus_api_spec_$(arg sto).yaml" />
+  <arg name="read_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_read_api_spec_$(arg sto).yaml" />
+  <arg name="write_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_write_api_spec_$(arg sto).yaml" />
   <arg name="sto_modbus_server_ip" default="$(eval '192.168.0.10' if sto=='pss4000' else '169.254.60.1')" />
 
   <!-- Set braketest usage -->
@@ -62,14 +63,17 @@
   <!-- Initialize controllers and start STO-processing (if configured) -->
   <group unless="$(eval sto == 'none')" >
     <!-- Load api spec for all nodes -->
-    <rosparam ns="/prbt/api_spec" command="load" file="$(arg api_spec_file)" />
+    <rosparam ns="/prbt/read_api_spec" command="load" file="$(arg read_api_spec_file)" />
+    <rosparam ns="/prbt/write_api_spec" command="load" file="$(arg write_api_spec_file)" if="$(arg has_operation_mode_support)" />
 
     <node pkg="rosservice" type="rosservice" name="robot_init" args="call --wait /prbt/driver/init"/>
     <include file="$(find prbt_hardware_support)/launch/modbus_client.launch">
       <arg name="modbus_server_ip" value="$(arg sto_modbus_server_ip)" />
     </include>
     <include file="$(find prbt_hardware_support)/launch/modbus_adapter_sto_node.launch" />
-    <include if="$(arg has_braketest_support)" file="$(find prbt_hardware_support)/launch/brake_test.launch" />
+    <include if="$(arg has_braketest_support)" file="$(find prbt_hardware_support)/launch/brake_test.launch">
+      <arg name="write_api_spec_file" value="$(arg write_api_spec_file)" />
+    </include>
 
     <include if="$(arg has_operation_mode_support)" file="$(find prbt_hardware_support)/launch/operation_mode_adapter.launch" />
   </group>
@@ -82,5 +86,3 @@
         type="system_info_node" output="screen" />
 
 </launch>
-
-
