@@ -22,6 +22,10 @@
 #include <thread>
 #include <string>
 
+#include <boost/msm/front/functor_row.hpp>
+#include <boost/msm/front/state_machine_def.hpp>
+#include <boost/msm/back/state_machine.hpp>
+
 #include <ros/time.h>
 #include <ros/service_client.h>
 #include <std_srvs/Trigger.h>
@@ -30,6 +34,10 @@
 
 namespace prbt_hardware_support
 {
+
+namespace msm = boost::msm;
+namespace mpl = boost::mpl;
+using namespace msm::front;
 
 /**
  * @brief Stores the last reported STO stated and reacts to changes of the STO.
@@ -49,7 +57,7 @@ namespace prbt_hardware_support
  * it can be used by AdapterSto
  */
 template <class T = ros::ServiceClient>
-class AdapterStoTemplated
+class AdapterStoTemplated : public msm::front::state_machine_def<AdapterStoTemplated<T>>
 {
 public:
   /**
@@ -68,6 +76,41 @@ public:
   static const std::string RECOVER_SERVICE;
   static const std::string HALT_SERVICE;
   static const std::string IS_EXECUTING_SERVICE;
+
+  // state machine
+
+  // events
+  struct sto_changed {};
+  struct recover_done {};
+  struct unhold_done {};
+
+  // actions
+  struct recover {};
+  struct unhold {};
+
+  // guards
+  struct sto_true {};
+  struct recover_success {};
+
+  // states
+  struct Idle : public msm::front::state<>
+  {};
+
+  struct Recovering : public msm::front::state<>
+  {};
+
+  struct Unholding : public msm::front::state<>
+  {};
+
+  // transitions
+  struct transition_table : mpl::vector<
+  //    Start       Event            Target      Action       Guard
+  // +-----------+----------------+-----------+--------------+-----------------+
+  Row< Idle      , sto_changed    , Recovering, recover      , sto_true        >,
+  Row< Recovering, recover_done   , Unholding , unhold       , recover_success >,
+  Row< Unholding , unhold_done    , Idle      , none         , none            >
+  // +-----------+----------------+-----------+--------------+-----------------+
+  > {};
 
 protected:
   /**
@@ -253,6 +296,9 @@ void AdapterStoTemplated<T>::performStop()
     ROS_ERROR_STREAM("No success calling Halt on driver (Service: " << halt_srv_client_.getService() << ")");
   }
 }
+
+typedef msm::back::state_machine<AdapterSto> AdapterStoBackEnd;
+
 
 } // namespace prbt_hardware_support
 
