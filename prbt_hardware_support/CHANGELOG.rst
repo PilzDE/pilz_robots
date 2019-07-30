@@ -9,6 +9,7 @@ Forthcoming
 * automatically determine range for reading modbus registers
 * only read modbus registers that are explicitly configured (not in a single block)
 * separate api definitions for read and write
+* brake test result can be sent to FS controller
 * Contributors: Pilz GmbH and Co. KG
 
 0.5.6 (2019-06-12)
