@@ -65,6 +65,6 @@ private:
   modbus_t *modbus_connection_ {nullptr};
 };
 
-}
+} // namespace prbt_hardware_support
 
 #endif // LIBMODBUS_CLIENT_H
