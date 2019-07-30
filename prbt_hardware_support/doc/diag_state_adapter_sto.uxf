@@ -3,130 +3,85 @@
   <element>
     <id>UMLState</id>
     <coordinates>
-      <x>660</x>
-      <y>390</y>
-      <w>90</w>
+      <x>400</x>
+      <y>360</y>
+      <w>110</w>
       <h>40</h>
     </coordinates>
-    <panel_attributes>Idle</panel_attributes>
+    <panel_attributes>RobotInactive</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>300</x>
+      <y>370</y>
+      <w>120</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;100.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLSpecialState</id>
+    <coordinates>
+      <x>300</x>
+      <y>370</y>
+      <w>20</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes>type=initial</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLState</id>
     <coordinates>
-      <x>650</x>
-      <y>610</y>
-      <w>110</w>
+      <x>620</x>
+      <y>230</y>
+      <w>90</w>
       <h>40</h>
     </coordinates>
     <panel_attributes>Recovering</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
-    <id>UMLState</id>
+    <id>Relation</id>
     <coordinates>
       <x>460</x>
-      <y>390</y>
-      <w>90</w>
-      <h>40</h>
-    </coordinates>
-    <panel_attributes>Unholding</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>UMLState</id>
-    <coordinates>
-      <x>910</x>
-      <y>610</y>
-      <w>240</w>
-      <h>40</h>
-    </coordinates>
-    <panel_attributes>Stop_requested_during_recover</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>690</x>
-      <y>420</y>
-      <w>120</w>
-      <h>210</h>
-    </coordinates>
-    <panel_attributes>lt=-&gt;
-sto_changed
-[sto_true]</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;190.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>500</x>
-      <y>420</y>
-      <w>190</w>
-      <h>230</h>
-    </coordinates>
-    <panel_attributes>lt=-&gt;
-recover_done</panel_attributes>
-    <additional_attributes>150.0;210.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>540</x>
-      <y>390</y>
-      <w>140</w>
-      <h>40</h>
-    </coordinates>
-    <panel_attributes>lt=-&gt;
-unhold_done</panel_attributes>
-    <additional_attributes>10.0;20.0;120.0;20.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>750</x>
-      <y>610</y>
+      <y>240</y>
       <w>180</w>
-      <h>50</h>
+      <h>140</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
 sto_changed
-[sto_false]</panel_attributes>
-    <additional_attributes>10.0;20.0;160.0;20.0</additional_attributes>
+/update_sto
+/start_recover</panel_attributes>
+    <additional_attributes>10.0;120.0;160.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>650</x>
-      <y>640</y>
-      <w>110</w>
-      <h>90</h>
+      <x>680</x>
+      <y>260</y>
+      <w>150</w>
+      <h>260</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
 
-sto_changed
-[sto_true]</panel_attributes>
-    <additional_attributes>80.0;10.0;80.0;50.0;20.0;50.0;20.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>400</x>
-      <y>400</y>
-      <w>110</w>
-      <h>100</h>
-    </coordinates>
-    <panel_attributes>lt=-&gt;
 
-sto_changed
-[sto_true]</panel_attributes>
-    <additional_attributes>80.0;30.0;80.0;60.0;20.0;60.0;20.0;10.0;60.0;10.0</additional_attributes>
+
+
+
+recover_done
+[stop_requested]
+/start_halt</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;240.0</additional_attributes>
   </element>
   <element>
     <id>UMLState</id>
     <coordinates>
-      <x>930</x>
-      <y>390</y>
+      <x>620</x>
+      <y>500</y>
       <w>90</w>
       <h>40</h>
     </coordinates>
@@ -136,20 +91,46 @@ sto_changed
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>970</x>
-      <y>420</y>
-      <w>120</w>
-      <h>210</h>
+      <x>460</x>
+      <y>390</y>
+      <w>180</w>
+      <h>150</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
-recover_done</panel_attributes>
-    <additional_attributes>10.0;190.0;10.0;10.0</additional_attributes>
+halt_done
+[sto_false]</panel_attributes>
+    <additional_attributes>160.0;130.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>700</x>
+      <y>230</y>
+      <w>220</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+recover_done
+[no_stop_requested]
+/start_unhold</panel_attributes>
+    <additional_attributes>10.0;20.0;200.0;20.0</additional_attributes>
   </element>
   <element>
     <id>UMLState</id>
     <coordinates>
-      <x>660</x>
-      <y>200</y>
+      <x>900</x>
+      <y>230</y>
+      <w>90</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>Unholding</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLState</id>
+    <coordinates>
+      <x>900</x>
+      <y>500</y>
       <w>90</w>
       <h>40</h>
     </coordinates>
@@ -159,163 +140,141 @@ recover_done</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>740</x>
-      <y>390</y>
-      <w>210</w>
+      <x>700</x>
+      <y>500</y>
+      <w>220</w>
       <h>50</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
-halt_done
-[sto_false]</panel_attributes>
-    <additional_attributes>190.0;20.0;10.0;20.0</additional_attributes>
+hold_done
+/start_halt</panel_attributes>
+    <additional_attributes>200.0;20.0;10.0;20.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>740</x>
-      <y>420</y>
-      <w>220</w>
-      <h>210</h>
+      <x>930</x>
+      <y>260</y>
+      <w>150</w>
+      <h>260</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
-halt_done
-[sto_true]</panel_attributes>
-    <additional_attributes>200.0;10.0;10.0;190.0</additional_attributes>
+unhold_done
+[stop_requested]
+/start_hold</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;240.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>990</x>
-      <y>350</y>
-      <w>180</w>
-      <h>80</h>
-    </coordinates>
-    <panel_attributes>lt=-&gt;
-sto_changed</panel_attributes>
-    <additional_attributes>30.0;60.0;70.0;60.0;70.0;10.0;10.0;10.0;10.0;40.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>690</x>
-      <y>230</y>
-      <w>120</w>
-      <h>180</h>
+      <x>980</x>
+      <y>390</y>
+      <w>190</w>
+      <h>150</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
 sto_changed
-[sto_false]</panel_attributes>
-    <additional_attributes>10.0;160.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>740</x>
-      <y>210</y>
-      <w>230</w>
-      <h>200</h>
-    </coordinates>
-    <panel_attributes>lt=-&gt;
-hold_done</panel_attributes>
-    <additional_attributes>10.0;10.0;210.0;180.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>660</x>
-      <y>140</y>
-      <w>100</w>
-      <h>80</h>
-    </coordinates>
-    <panel_attributes>lt=-&gt;
-sto_changed
-
+/update_sto
+/start_hold
 </panel_attributes>
-    <additional_attributes>20.0;60.0;20.0;20.0;70.0;20.0;70.0;60.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>490</x>
-      <y>230</y>
-      <w>120</w>
-      <h>180</h>
-    </coordinates>
-    <panel_attributes>lt=-&gt;
-sto_changed
-[sto_false]</panel_attributes>
-    <additional_attributes>10.0;160.0;10.0;10.0</additional_attributes>
+    <additional_attributes>170.0;10.0;10.0;130.0</additional_attributes>
   </element>
   <element>
     <id>UMLState</id>
     <coordinates>
-      <x>320</x>
-      <y>200</y>
-      <w>240</w>
+      <x>1120</x>
+      <y>360</y>
+      <w>100</w>
       <h>40</h>
     </coordinates>
-    <panel_attributes>Stop_requested_during_unhold</panel_attributes>
+    <panel_attributes>RobotActive</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>550</x>
-      <y>200</y>
-      <w>130</w>
-      <h>40</h>
+      <x>980</x>
+      <y>240</y>
+      <w>190</w>
+      <h>140</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
-unhold_done</panel_attributes>
-    <additional_attributes>10.0;20.0;110.0;20.0</additional_attributes>
+unhold_done
+[no_stop_requested]
+</panel_attributes>
+    <additional_attributes>10.0;10.0;170.0;120.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>380</x>
-      <y>140</y>
-      <w>100</w>
-      <h>80</h>
+      <x>630</x>
+      <y>260</y>
+      <w>130</w>
+      <h>260</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
-sto_changed
+halt_done
+[sto_true]
+/start_recover
+
+
+
 
 </panel_attributes>
-    <additional_attributes>20.0;60.0;20.0;20.0;70.0;20.0;70.0;60.0</additional_attributes>
+    <additional_attributes>10.0;240.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1000</x>
-      <y>640</y>
+      <x>610</x>
+      <y>530</y>
+      <w>110</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+
+sto_changed
+/update_sto</panel_attributes>
+    <additional_attributes>70.0;10.0;70.0;50.0;30.0;50.0;30.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>890</x>
+      <y>530</y>
+      <w>110</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+
+sto_changed
+/update_sto</panel_attributes>
+    <additional_attributes>70.0;10.0;70.0;50.0;30.0;50.0;30.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>610</x>
+      <y>170</y>
       <w>110</w>
       <h>80</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
-
-sto_changed</panel_attributes>
-    <additional_attributes>80.0;10.0;80.0;50.0;20.0;50.0;20.0;10.0</additional_attributes>
+sto_changed
+/update_sto</panel_attributes>
+    <additional_attributes>70.0;60.0;70.0;20.0;30.0;20.0;30.0;60.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>610</x>
-      <y>420</y>
-      <w>80</w>
-      <h>70</h>
+      <x>890</x>
+      <y>170</y>
+      <w>110</w>
+      <h>80</h>
     </coordinates>
-    <panel_attributes>lt=-&gt;</panel_attributes>
-    <additional_attributes>10.0;50.0;60.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLSpecialState</id>
-    <coordinates>
-      <x>610</x>
-      <y>460</y>
-      <w>20</w>
-      <h>20</h>
-    </coordinates>
-    <panel_attributes>type=initial</panel_attributes>
-    <additional_attributes/>
+    <panel_attributes>lt=-&gt;
+sto_changed
+/update_sto</panel_attributes>
+    <additional_attributes>70.0;60.0;70.0;20.0;30.0;20.0;30.0;60.0</additional_attributes>
   </element>
 </diagram>
