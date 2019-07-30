@@ -33,6 +33,7 @@ ModbusAdapterSto::ModbusAdapterSto(ros::NodeHandle& nh,
   , api_spec_(api_spec)
   , filter_pipeline_(new FilterPipeline(nh, std::bind(&ModbusAdapterSto::modbusMsgCallback, this, _1 )) )
 {
+  start();
 }
 
 void ModbusAdapterSto::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw)

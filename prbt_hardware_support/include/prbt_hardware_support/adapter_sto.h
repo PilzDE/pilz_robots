@@ -57,18 +57,18 @@ using namespace msm::front;
  * it can be used by AdapterSto
  */
 template <class T = ros::ServiceClient>
-class AdapterStoTemplated : public msm::front::state_machine_def<AdapterStoTemplated<T>>
+class AdapterStoTemplated_ : public msm::front::state_machine_def<AdapterStoTemplated_<T>>
 {
 public:
   /**
    * @brief Connect to services.
    */
-  AdapterStoTemplated(std::function<T(std::string)> create_service_client = ServiceClientFactory::create<std_srvs::Trigger>);
+  AdapterStoTemplated_(std::function<T(std::string)> create_service_client = ServiceClientFactory::create<std_srvs::Trigger>);
 
   /**
    * @brief Trigger termination and join possible running threads.
    */
-  ~AdapterStoTemplated();
+  ~AdapterStoTemplated_();
 
 public:
   static const std::string HOLD_SERVICE;
@@ -84,30 +84,68 @@ public:
   struct recover_done {};
   struct unhold_done {};
 
-  // actions
-  struct recover {};
-  struct unhold {};
-
   // guards
-  struct sto_true {};
-  struct recover_success {};
+  struct sto_true
+  {
+    template <class EVT, class FSM, class SourceState, class TargetState>
+    bool operator()(EVT const& evt, FSM&, SourceState&, TargetState&)
+    {
+      return true;
+    }
+  };
 
   // states
   struct Idle : public msm::front::state<>
-  {};
+  {
+    template <class Event, class FSM>
+    void on_entry(Event const&, FSM&)
+    {
+      std::cout << "entering: Idle" << std::endl;
+    }
+    template <class Event, class FSM>
+    void on_exit(Event const&, FSM&)
+    {
+      std::cout << "leaving: Idle" << std::endl;
+    }
+  };
 
   struct Recovering : public msm::front::state<>
-  {};
+  {
+    template <class Event, class FSM>
+    void on_entry(Event const&, FSM&)
+    {
+      std::cout << "entering: Recovering" << std::endl;
+    }
+    template <class Event, class FSM>
+    void on_exit(Event const&, FSM&)
+    {
+      std::cout << "leaving: Recovering" << std::endl;
+    }
+  };
 
   struct Unholding : public msm::front::state<>
-  {};
+  {
+    template <class Event, class FSM>
+    void on_entry(Event const&, FSM&)
+    {
+      std::cout << "entering: Unholding" << std::endl;
+    }
+    template <class Event, class FSM>
+    void on_exit(Event const&, FSM&)
+    {
+      std::cout << "leaving: Unholding" << std::endl;
+    }
+  };
+
+  // initial state
+  typedef Idle initial_state;
 
   // transitions
   struct transition_table : mpl::vector<
   //    Start       Event            Target      Action       Guard
   // +-----------+----------------+-----------+--------------+-----------------+
-  Row< Idle      , sto_changed    , Recovering, recover      , sto_true        >,
-  Row< Recovering, recover_done   , Unholding , unhold       , recover_success >,
+  Row< Idle      , sto_changed    , Recovering, none         , sto_true        >,
+  Row< Recovering, recover_done   , Unholding , none         , none            >,
   Row< Unholding , unhold_done    , Idle      , none         , none            >
   // +-----------+----------------+-----------+--------------+-----------------+
   > {};
@@ -164,26 +202,28 @@ private:
   static constexpr int DURATION_BETWEEN_HOLD_AND_DISABLE_MS{200};
 };
 
-//! Simple typedef for class like usage
-typedef AdapterStoTemplated<> AdapterSto;
+//! Definition of back ends
+template <class T>
+using AdapterStoTemplated = msm::back::state_machine<AdapterStoTemplated_<T>>;
+using AdapterSto = msm::back::state_machine<AdapterStoTemplated_<>>;
 
 template <class T>
-const std::string AdapterStoTemplated<T>::HOLD_SERVICE{"manipulator_joint_trajectory_controller/hold"};
+const std::string AdapterStoTemplated_<T>::HOLD_SERVICE{"manipulator_joint_trajectory_controller/hold"};
 
 template <class T>
-const std::string AdapterStoTemplated<T>::UNHOLD_SERVICE{"manipulator_joint_trajectory_controller/unhold"};
+const std::string AdapterStoTemplated_<T>::UNHOLD_SERVICE{"manipulator_joint_trajectory_controller/unhold"};
 
 template <class T>
-const std::string AdapterStoTemplated<T>::RECOVER_SERVICE{"driver/recover"};
+const std::string AdapterStoTemplated_<T>::RECOVER_SERVICE{"driver/recover"};
 
 template <class T>
-const std::string AdapterStoTemplated<T>::HALT_SERVICE{"driver/halt"};
+const std::string AdapterStoTemplated_<T>::HALT_SERVICE{"driver/halt"};
 
 template <class T>
-const std::string AdapterStoTemplated<T>::IS_EXECUTING_SERVICE{"manipulator_joint_trajectory_controller/is_executing"};
+const std::string AdapterStoTemplated_<T>::IS_EXECUTING_SERVICE{"manipulator_joint_trajectory_controller/is_executing"};
 
 template <class T>
-AdapterStoTemplated<T>::AdapterStoTemplated(std::function<T(std::string)> create_service_client)
+AdapterStoTemplated_<T>::AdapterStoTemplated_(std::function<T(std::string)> create_service_client)
     : hold_srv_client_(create_service_client(HOLD_SERVICE)),
       unhold_srv_client_(create_service_client(UNHOLD_SERVICE)),
       recover_srv_client_(create_service_client(RECOVER_SERVICE)),
@@ -193,7 +233,7 @@ AdapterStoTemplated<T>::AdapterStoTemplated(std::function<T(std::string)> create
 }
 
 template <class T>
-AdapterStoTemplated<T>::~AdapterStoTemplated()
+AdapterStoTemplated_<T>::~AdapterStoTemplated_()
 {
   sto_ = false;
 
@@ -204,7 +244,7 @@ AdapterStoTemplated<T>::~AdapterStoTemplated()
 }
 
 template <class T>
-void AdapterStoTemplated<T>::updateSto(const bool sto)
+void AdapterStoTemplated_<T>::updateSto(const bool sto)
 {
   if (sto == sto_)
   {
@@ -223,22 +263,22 @@ void AdapterStoTemplated<T>::updateSto(const bool sto)
   {
     enable_thread_.join();
   }
-  enable_thread_ = std::thread(&AdapterStoTemplated<T>::enable, this);
+  enable_thread_ = std::thread(&AdapterStoTemplated_<T>::enable, this);
 }
 
 template <class T>
-void AdapterStoTemplated<T>::enable()
+void AdapterStoTemplated_<T>::enable()
 {
-  bool recover_success{false};
+  bool recover_done{false};
   ros::Rate rate(10);
-  while (!recover_success)
+  while (!recover_done)
   {
     std_srvs::Trigger recover_trigger;
     ROS_ERROR_STREAM("Calling Recover (Service: " << recover_srv_client_.getService() << ")");
-    recover_success = recover_srv_client_.call(recover_trigger);
+    recover_done = recover_srv_client_.call(recover_trigger);
     ROS_ERROR_STREAM("Finished Recover (Service: " << recover_srv_client_.getService() << ")");
 
-    if (!recover_success)
+    if (!recover_done)
     {
       ROS_ERROR_STREAM("No success calling Recover (Service: " << recover_srv_client_.getService() << ")");
     }
@@ -264,7 +304,7 @@ void AdapterStoTemplated<T>::enable()
 }
 
 template <class T>
-void AdapterStoTemplated<T>::performStop()
+void AdapterStoTemplated_<T>::performStop()
 {
   std_srvs::Trigger hold_trigger;
   ROS_ERROR_STREAM("Calling Hold on controller (Service: " << hold_srv_client_.getService() << ")");
@@ -296,9 +336,6 @@ void AdapterStoTemplated<T>::performStop()
     ROS_ERROR_STREAM("No success calling Halt on driver (Service: " << halt_srv_client_.getService() << ")");
   }
 }
-
-typedef msm::back::state_machine<AdapterSto> AdapterStoBackEnd;
-
 
 } // namespace prbt_hardware_support
 
