@@ -24,9 +24,11 @@
 #include <ros/ros.h>
 
 #include <prbt_hardware_support/brake_test_executor.h>
+#include <prbt_hardware_support/brake_test_executor_exception.h>
 #include <prbt_hardware_support/BrakeTestErrorCodes.h>
 #include <prbt_hardware_support/joint_states_publisher_mock.h>
 #include <prbt_hardware_support/pilz_manipulator_mock.h>
+#include <prbt_hardware_support/WriteModbusRegister.h>
 
 namespace brake_test_executor_test
 {
@@ -40,6 +42,11 @@ static const std::string BRAKETEST_ADAPTER_SERVICE_NAME{"/prbt/braketest_adapter
 
 static const std::string CONTROLLER_HOLD_MODE_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/hold"};
 static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/unhold"};
+static const std::string MODBUS_SERVICE_NAME{"/pilz_modbus_client_node/modbus_write"};
+
+static const std::string API_SPEC_PARAM_NAME{"/write_api_spec"};
+static const std::string BRAKETEST_PERFORMED_PARAM_NAME{"/BRAKETEST_PERFORMED"};
+static const std::string BRAKETEST_RESULT_PARAM_NAME{"/BRAKETEST_RESULT"};
 
 class BrakeTestExecutorTest : public Test
 {
@@ -47,6 +54,7 @@ public:
   BrakeTestExecutorTest();
 
   MOCK_METHOD2(triggerBrakeTest, bool(BrakeTest::Request &, BrakeTest::Response &));
+  MOCK_METHOD2(modbusWrite, bool(WriteModbusRegister::Request &, WriteModbusRegister::Response &));
 
 protected:
   ros::NodeHandle nh_;
@@ -57,6 +65,15 @@ BrakeTestExecutorTest::BrakeTestExecutorTest()
 {
   manipulator_.advertiseHoldService(nh_, CONTROLLER_HOLD_MODE_SERVICE_NAME);
   manipulator_.advertiseUnholdService(nh_, CONTROLLER_UNHOLD_MODE_SERVICE_NAME);
+}
+
+/**
+ * @brief Test increases function coverage by ensuring that all Dtor variants
+ * are called.
+ */
+TEST(ModbusApiSpecTest, testModbusApiSpecExceptionDtor)
+{
+  std::shared_ptr<BrakeTestExecutorException> ex {new BrakeTestExecutorException("Test msg")};
 }
 
 /**
@@ -84,8 +101,10 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
   /**********
    * Step 0 *
    **********/
-  ros::ServiceServer service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>
+  ros::ServiceServer brake_test_service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>
           (BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
+  ros::ServiceServer modbus_service = nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>
+          (MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
 
   BrakeTestExecutor brake_test_executor(this->nh_);
 
@@ -146,6 +165,8 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestServiceWithRobotMotion)
 {
   ros::ServiceServer service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>
           (BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
+  ros::ServiceServer modbus_service = nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>
+          (MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
 
   BrakeTestExecutor brake_test_executor(this->nh_);
 
@@ -197,6 +218,8 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestServiceTriggerFails)
    **********/
   ros::ServiceServer service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>
           (BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
+  ros::ServiceServer modbus_service = nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>
+          (MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
 
   BrakeTestExecutor brake_test_executor(this->nh_);
 
@@ -261,6 +284,8 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringHoldFailing)
    **********/
   ros::ServiceServer service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>
           (BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
+  ros::ServiceServer modbus_service = nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>
+          (MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
 
   BrakeTestExecutor brake_test_executor(this->nh_);
 
@@ -298,6 +323,71 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringHoldFailing)
   BrakeTest srv;
   EXPECT_TRUE(brake_test_srv_client_.call(srv)) << "Failed to call brake test service.";
   EXPECT_TRUE(srv.response.success) << "Brake tests failed unexpectedly. Message: " << srv.response.error_msg;
+}
+
+/**
+ * @tests{Execute_BrakeTest_exceptions,
+ *  Test execution of brake tests when there is a problem in the api definition.
+ * }
+ *
+ * Test Sequence:
+ *  0. Prepare required service mocks and backup current api spec
+ *  1. Execute a brake test with missing definition for BRAKETEST_PERFORMED
+ *  2. Execute a brake test with missing definition for BRAKETEST_RESULT
+ *  3. Execute a brake test with both values defined 1 apart
+ *  4. Execute a brake test with both values defined 2 apart
+ *  5. Set api spec back to backed up values
+ *
+ * Expected Results:
+ *  0. -
+ *  1. A BrakeTestExecutorException is thown
+ *  2. A BrakeTestExecutorException is thown
+ *  3. No Exception is thrown
+ *  4. A BrakeTestExecutorException is thown
+ *  5. -
+ */
+TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringWrongApiDef){
+  /**********
+   * Step 0 *
+   **********/
+  ros::ServiceServer brake_test_service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>
+          (BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
+  ros::ServiceServer modbus_service = nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>
+          (MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
+  ASSERT_NO_THROW(BrakeTestExecutor bte_default_params(nh_));
+  XmlRpc::XmlRpcValue api_spec_backup;
+  nh_.getParam(API_SPEC_PARAM_NAME, api_spec_backup);
+
+  /**********
+   * Step 1 *
+   **********/
+  nh_.deleteParam(API_SPEC_PARAM_NAME+BRAKETEST_PERFORMED_PARAM_NAME);
+  ASSERT_THROW(BrakeTestExecutor bte_no_perf(nh_), BrakeTestExecutorException);
+
+  /**********
+   * Step 2 *
+   **********/
+  nh_.setParam(API_SPEC_PARAM_NAME+BRAKETEST_PERFORMED_PARAM_NAME, 100);
+  nh_.deleteParam(API_SPEC_PARAM_NAME+BRAKETEST_RESULT_PARAM_NAME);
+  ASSERT_THROW(BrakeTestExecutor bte_no_res(nh_), BrakeTestExecutorException);
+
+  /**********
+   * Step 3 *
+   **********/
+  nh_.setParam(API_SPEC_PARAM_NAME+BRAKETEST_RESULT_PARAM_NAME, 99);
+  ASSERT_NO_THROW(BrakeTestExecutor bte_one_apart(nh_));
+
+  /**********
+   * Step 4 *
+   **********/
+  nh_.setParam(API_SPEC_PARAM_NAME+BRAKETEST_RESULT_PARAM_NAME, 98);
+  ASSERT_THROW(BrakeTestExecutor bte_two_apart(nh_), BrakeTestExecutorException);
+
+  /**********
+   * Step 5 *
+   **********/
+  nh_.setParam(API_SPEC_PARAM_NAME, api_spec_backup);
+
 }
 
 } // namespace brake_test_executor_test
