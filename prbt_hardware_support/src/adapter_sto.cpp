@@ -125,4 +125,4 @@ void AdapterSto::updateSto(const bool sto)
 }
 
 
-}  // prbt_hardware_support
+}  // namespace prbt_hardware_support
