@@ -74,4 +74,4 @@ ModbusMsgInStampedPtr ModbusMsgInBuilder::createDefaultModbusMsgIn(const std_msg
   return msg;
 }
 
-}
+} // namespace prbt_hardware_support
