@@ -71,4 +71,4 @@ void ModbusAdapterBrakeTest::modbusMsgCallback(const ModbusMsgInStampedConstPtr&
   updateBrakeTestRequiredState(msg.isBrakeTestRequired());
 }
 
-}
+} // namespace prbt_hardware_support

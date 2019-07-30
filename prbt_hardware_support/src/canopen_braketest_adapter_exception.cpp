@@ -27,4 +27,4 @@ CANOpenBrakeTestAdapterException::CANOpenBrakeTestAdapterException(const std::st
 {
 }
 
-} // prbt_hardware_support
+} // namespace prbt_hardware_support

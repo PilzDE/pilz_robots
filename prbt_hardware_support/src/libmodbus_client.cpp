@@ -17,6 +17,7 @@
 
 #include <ros/ros.h>
 
+#include <cstddef>
 #include <vector>
 #include <errno.h>
 #include <limits>
@@ -132,4 +133,4 @@ void LibModbusClient::close()
   }
 }
 
-}
+} // namespace prbt_hardware_support
