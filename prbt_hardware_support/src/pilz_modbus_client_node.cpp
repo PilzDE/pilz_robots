@@ -55,8 +55,8 @@ int main(int argc, char **argv)
     try
     {
       ModbusApiSpec api_spec(nh);
-      index_of_first_register = api_spec.getMinRegisterDefinition();
-      num_registers_to_read = api_spec.getMaxRegisterDefinition() - index_of_first_register + 1;
+      index_of_first_register = static_cast<int>(api_spec.getMinRegisterDefinition());
+      num_registers_to_read = static_cast<int>(api_spec.getMaxRegisterDefinition()) - static_cast<int>(index_of_first_register) + 1;
     }
     // LCOV_EXCL_START Can be ignored here, exceptions of ModbusApiSpec are tested in unittest_modbus_api_spec
     catch (const ModbusApiSpecException &ex)

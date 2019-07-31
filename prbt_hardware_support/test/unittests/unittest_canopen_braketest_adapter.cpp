@@ -51,7 +51,6 @@ static const std::string BRAKE_TEST_STATUS_OBJECT_INDEX{"2060sub3"};
 static const std::string NODE_NAMES_PARAMETER_NAME{"/prbt/driver/nodes"};
 static const std::string BRAKETEST_REQUIRED_NAME{"braketest_required"};
 static const std::string NODE_NAMES_PREFIX{"prbt_joint_"};
-static constexpr int NODE_COUNT{6};
 static const std::vector<size_t> NODE_TEST_SET{{0, 2, 5}};
 
 #define DEFAULT_SETUP \

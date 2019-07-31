@@ -30,8 +30,6 @@
 namespace prbt_hardware_support
 {
 
-static constexpr double WAIT_FOR_SERVICE_TIMEOUT_S{5.0};
-
 static const std::string EXECUTE_BRAKETEST_SERVICE_NAME{"/prbt/execute_braketest"};
 static const std::string BRAKETEST_ADAPTER_SERVICE_NAME{"/prbt/braketest_adapter_node/trigger_braketest"};
 
