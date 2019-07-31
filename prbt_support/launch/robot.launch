@@ -60,7 +60,7 @@
         args="$(arg spawn_controllers)" />
 
   <!-- Initialize controllers and start STO-processing (if configured) -->
-  <group unless="$(eval sto == 'none')" >
+  <group unless="$(eval sto.lower() == 'none')" >
     <!-- Load api spec for all nodes -->
     <rosparam ns="/prbt/api_spec" command="load" file="$(arg api_spec_file)" />
 
@@ -74,7 +74,7 @@
     <include if="$(arg has_operation_mode_support)" file="$(find prbt_hardware_support)/launch/operation_mode_adapter.launch" />
   </group>
 
-  <group if="$(eval sto == 'none')" >
+  <group if="$(eval sto.lower() == 'none')" >
     <node pkg="rosservice" type="rosservice" name="robot_init" args="call --wait /prbt/driver/init"/>
   </group>
 
