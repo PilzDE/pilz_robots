@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
+
 project(prbt_hardware_support)
 
 find_package(catkin REQUIRED COMPONENTS
@@ -19,6 +20,20 @@ add_definitions(-std=c++11)
 add_definitions(-Wconversion) # At least this line needs to be below find_package to keep
                               #  the flag away from the gmock build
 add_definitions(-Wpedantic)
+
+# To switch compiler see: https://stackoverflow.com/questions/7031126/switching-between-gcc-and-clang-llvm-using-cmake/12843988#12843988
+
+# Works with g++ and clang compiler (Do not forget to build with "-DCMAKE_BUILD_TYPE=DEBUG" flag)
+#set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+#set (CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_STATIC_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+
+# Only works with clang compiler (Do not forget to build with "-DCMAKE_BUILD_TYPE=DEBUG" flag)
+#set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=memory -fsanitize-memory-track-origins")
+#set (CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_STATIC_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=memory -fsanitize-memory-track-origins")
+
+# Only works with clang compiler (Do not forget to build with "-DCMAKE_BUILD_TYPE=DEBUG" flag)
+#set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=undefined")
+#set (CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_STATIC_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=undefined")
 
 # message generation
 add_message_files(
