@@ -66,8 +66,8 @@ class Stop1IntegrationTest : public testing::Test, public testing::AsyncTest
 {
 
 public:
-  void SetUp();
-  void TearDown();
+  void SetUp() override;
+  void TearDown() override;
 
   // Serves both the controller (/hold + /unhold) and the driver (/halt + /recover) services
   ManipulatorMock manipulator;
@@ -259,8 +259,8 @@ int main(int argc, char *argv[])
   ros::init(argc, argv, "integrationtest_stop1");
   ros::NodeHandle nh;
 
-  ros::AsyncSpinner spinner_{1};
-  spinner_.start();
+  ros::AsyncSpinner spinner{1};
+  spinner.start();
 
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

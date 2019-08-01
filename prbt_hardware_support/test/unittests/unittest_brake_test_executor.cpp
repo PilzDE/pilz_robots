@@ -89,8 +89,8 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
 
   BrakeTestExecutor brake_test_executor(this->nh_);
 
-  ros::ServiceClient brake_test_srv_client_ = nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);
-  ASSERT_TRUE(brake_test_srv_client_.exists()) << "Brake test service not available.";
+  ros::ServiceClient brake_test_srv_client = nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);
+  ASSERT_TRUE(brake_test_srv_client.exists()) << "Brake test service not available.";
 
   /**********
    * Step 1 *
@@ -121,7 +121,7 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
   //  * Step 3 *
   //  **********/
   BrakeTest srv;
-  EXPECT_TRUE(brake_test_srv_client_.call(srv)) << "Failed to call brake test service.";
+  EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test service.";
   EXPECT_TRUE(srv.response.success) << "Brake tests failed unexpectedly. Message: " << srv.response.error_msg;
 }
 
@@ -149,8 +149,8 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestServiceWithRobotMotion)
 
   BrakeTestExecutor brake_test_executor(this->nh_);
 
-  ros::ServiceClient brake_test_srv_client_ = nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);
-  ASSERT_TRUE(brake_test_srv_client_.exists()) << "Brake test service not available.";
+  ros::ServiceClient brake_test_srv_client = nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);
+  ASSERT_TRUE(brake_test_srv_client.exists()) << "Brake test service not available.";
   /**********
    * Step 1 *
    **********/
@@ -165,7 +165,7 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestServiceWithRobotMotion)
    * Step 3 *
    **********/
   BrakeTest srv;
-  EXPECT_TRUE(brake_test_srv_client_.call(srv)) << "Failed to call brake test service.";
+  EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test service.";
   EXPECT_FALSE(srv.response.success);
   EXPECT_EQ(BrakeTestErrorCodes::ROBOT_MOTION_DETECTED, srv.response.error_code.value);
 }
@@ -200,8 +200,8 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestServiceTriggerFails)
 
   BrakeTestExecutor brake_test_executor(this->nh_);
 
-  ros::ServiceClient brake_test_srv_client_ = nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);
-  ASSERT_TRUE(brake_test_srv_client_.exists()) << "Brake test service not available.";
+  ros::ServiceClient brake_test_srv_client = nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);
+  ASSERT_TRUE(brake_test_srv_client.exists()) << "Brake test service not available.";
 
   /**********
    * Step 1 *
@@ -228,7 +228,7 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestServiceTriggerFails)
    * Step 3 *
    **********/
   BrakeTest srv;
-  EXPECT_TRUE(brake_test_srv_client_.call(srv)) << "Failed to call brake test service.";
+  EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test service.";
   EXPECT_FALSE(srv.response.success) << "Brake tests succeded unexpectedly.";
   EXPECT_EQ(BrakeTestErrorCodes::TRIGGER_BRAKETEST_SERVICE_FAILURE, srv.response.error_code.value);
 }
@@ -264,8 +264,8 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringHoldFailing)
 
   BrakeTestExecutor brake_test_executor(this->nh_);
 
-  ros::ServiceClient brake_test_srv_client_ = nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);
-  ASSERT_TRUE(brake_test_srv_client_.exists()) << "Brake test service not available.";
+  ros::ServiceClient brake_test_srv_client = nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);
+  ASSERT_TRUE(brake_test_srv_client.exists()) << "Brake test service not available.";
 
   /**********
    * Step 1 *
@@ -296,7 +296,7 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringHoldFailing)
    * Step 3 *
    **********/
   BrakeTest srv;
-  EXPECT_TRUE(brake_test_srv_client_.call(srv)) << "Failed to call brake test service.";
+  EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test service.";
   EXPECT_TRUE(srv.response.success) << "Brake tests failed unexpectedly. Message: " << srv.response.error_msg;
 }
 

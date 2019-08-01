@@ -121,14 +121,14 @@ void PilzModbusClientExecutor::stop()
 class PilzModbusClientTests : public testing::Test, public testing::AsyncTest
 {
 public:
-  virtual void SetUp();
+  void SetUp() override;
 
 protected:
   ros::Subscriber subscriber_;
   ros::AsyncSpinner spinner_{2};
   ros::NodeHandle nh_;
 
-  MOCK_METHOD1(modbus_read_cb,  void(ModbusMsgInStamped msg));
+  MOCK_METHOD1(modbus_read_cb,  void(const ModbusMsgInStampedConstPtr& msg));
 
 };
 
@@ -138,8 +138,8 @@ void PilzModbusClientTests::SetUp()
   spinner_.start();
 }
 
-MATCHER_P(IsSuccessfullRead, vec, "") { return arg.holding_registers.data == vec; }
-MATCHER(IsDisconnect, "") { return arg.disconnect.data; }
+MATCHER_P(IsSuccessfullRead, vec, "") { return arg->holding_registers.data == vec; }
+MATCHER(IsDisconnect, "") { return arg->disconnect.data; }
 
 
 /**
@@ -391,10 +391,10 @@ private:
 class RegisterBuffer
 {
 public:
-  void add(ModbusMsgInStamped msg)
+  void add(const ModbusMsgInStampedConstPtr& msg)
   {
     std::unique_lock<std::mutex> lk(m_);
-    buffer_ = msg.holding_registers.data.at(0);
+    buffer_ = msg->holding_registers.data.at(0);
   }
 
   uint16_t get()
@@ -470,11 +470,11 @@ TEST_F(PilzModbusClientTests, testSettingReadFrequency)
   const double msg_check_frequency {1.2*expected_read_frequency};
   // The timeout indirectly defines how many messages are checked
   // for "correctness".
-  const unsigned int N_TIMEOUT { static_cast<unsigned int>(msg_check_frequency) + 1u };
+  const unsigned int n_timeout { static_cast<unsigned int>(msg_check_frequency) + 1u };
   uint16_t last {0};
   bool first_value_set {false};
   ros::Rate rate(msg_check_frequency);
-  for(unsigned int counter = 0; (counter < N_TIMEOUT) && ros::ok(); ++counter )
+  for(unsigned int counter = 0; (counter < n_timeout) && ros::ok(); ++counter )
   {
     uint16_t curr_value = buffer.get();
     if (!first_value_set)
