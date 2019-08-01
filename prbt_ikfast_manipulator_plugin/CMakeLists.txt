@@ -8,6 +8,20 @@ add_compile_options(-Wno-unused-parameter)
 add_compile_options(-Wno-unused-variable)
 add_compile_options(-Werror)
 
+# To switch compiler see: https://stackoverflow.com/questions/7031126/switching-between-gcc-and-clang-llvm-using-cmake/12843988#12843988
+
+# Works with g++ and clang compiler (Do not forget to build with "-DCMAKE_BUILD_TYPE=DEBUG" flag)
+#set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+#set (CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_STATIC_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+
+# Only works with clang compiler (Do not forget to build with "-DCMAKE_BUILD_TYPE=DEBUG" flag)
+#set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=memory -fsanitize-memory-track-origins")
+#set (CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_STATIC_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=memory -fsanitize-memory-track-origins")
+
+# Only works with clang compiler (Do not forget to build with "-DCMAKE_BUILD_TYPE=DEBUG" flag)
+#set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=undefined")
+#set (CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_STATIC_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=undefined")
+
 # enable aligned new in gcc7+
 if(CMAKE_COMPILER_IS_GNUCXX)
   if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.0)
