@@ -18,26 +18,24 @@
 #ifndef PRBT_HARDWARE_SUPPORT_ADAPTER_STO_H
 #define PRBT_HARDWARE_SUPPORT_ADAPTER_STO_H
 
+#include <atomic>
+#include <condition_variable>
 #include <mutex>
 #include <thread>
 #include <string>
+#include <queue>
 
-#include <boost/msm/back/state_machine.hpp>
-#include <boost/msm/front/functor_row.hpp>
-#include <boost/msm/front/state_machine_def.hpp>
+#include <boost/variant.hpp>
 
-#include <ros/time.h>
+#include <ros/ros.h>
 #include <ros/service_client.h>
 #include <std_srvs/Trigger.h>
 
 #include <prbt_hardware_support/service_client_factory.h>
+#include <prbt_hardware_support/sto_state_machine.h>
 
 namespace prbt_hardware_support
 {
-
-namespace msm = boost::msm;
-namespace mpl = boost::mpl;
-using namespace msm::front;
 
 /**
  * @brief Stores the last reported STO stated and reacts to changes of the STO.
@@ -57,18 +55,44 @@ using namespace msm::front;
  * it can be used by AdapterSto
  */
 template <class T = ros::ServiceClient>
-struct AdapterStoTemplated_ : public msm::front::state_machine_def<AdapterStoTemplated_<T>>
+class AdapterStoTemplated
 {
 public:
-  /**
-   * @brief Connect to services.
-   */
-  AdapterStoTemplated_(std::function<T(std::string)> create_service_client = ServiceClientFactory::create<std_srvs::Trigger>);
+  typedef StoStateMachine<AdapterStoTemplated<T>> StateMachine;
+  typedef boost::variant<typename StateMachine::recover_done,
+                         typename StateMachine::halt_done,
+                         typename StateMachine::hold_done,
+                         typename StateMachine::unhold_done> CompletionEvent;
 
-  /**
-   * @brief Trigger termination and join possible running threads.
-   */
-  ~AdapterStoTemplated_();
+  class Task
+  {
+  public:
+    Task(std::function<void(AdapterStoTemplated<T>*)> &op, CompletionEvent &evt)
+        : operation_(op),
+          completion_event_(evt)
+    {
+    }
+
+    CompletionEvent operator()(AdapterStoTemplated<T> *adapter)
+    {
+      operation_(adapter);
+      return completion_event_;
+    }
+
+  private:
+    std::function<void(AdapterStoTemplated<T>*)> operation_;
+
+    CompletionEvent completion_event_;
+  };
+
+  typedef std::queue<Task> TaskQueue;
+
+public:
+  AdapterStoTemplated(std::function<T(std::string)> create_service_client = ServiceClientFactory::create<std_srvs::Trigger>);
+
+  ~AdapterStoTemplated();
+
+  void updateSto(bool sto);
 
   void call_recover();
 
@@ -85,277 +109,22 @@ public:
   static const std::string HALT_SERVICE;
   static const std::string IS_EXECUTING_SERVICE;
 
-  bool sto_{false};
-  bool stop_requested_{false};
-  std::mutex event_mutex_;
-
-//######################################################################################################################
-
-  ////////////
-  // States //
-  ////////////
-
-  struct RobotInactive : public msm::front::state<>
-  {
-    template <class Event, class FSM>
-    void on_entry(Event const&, FSM&)
-    {
-      std::cout << "entering: RobotInactive" << std::endl;
-    }
-    template <class Event, class FSM>
-    void on_exit(Event const&, FSM&)
-    {
-      std::cout << "leaving: RobotInactive" << std::endl;
-    }
-  };
-  struct RobotActive : public msm::front::state<>
-  {
-    template <class Event, class FSM>
-    void on_entry(Event const&, FSM&)
-    {
-      std::cout << "entering: RobotActive" << std::endl;
-    }
-    template <class Event, class FSM>
-    void on_exit(Event const&, FSM&)
-    {
-      std::cout << "leaving: RobotActive" << std::endl;
-    }
-  };
-
-  struct Recovering : public msm::front::state<>
-  {
-    template <class Event, class FSM>
-    void on_entry(Event const&, FSM&)
-    {
-      std::cout << "entering: Recovering" << std::endl;
-    }
-    template <class Event, class FSM>
-    void on_exit(Event const&, FSM&)
-    {
-      std::cout << "leaving: Recovering" << std::endl;
-    }
-  };
-
-  struct Halting : public msm::front::state<>
-  {
-    template <class Event, class FSM>
-    void on_entry(Event const&, FSM&)
-    {
-      std::cout << "entering: Halting" << std::endl;
-    }
-    template <class Event, class FSM>
-    void on_exit(Event const&, FSM&)
-    {
-      std::cout << "leaving: Halting" << std::endl;
-    }
-  };
-
-  struct Holding : public msm::front::state<>
-  {
-    template <class Event, class FSM>
-    void on_entry(Event const&, FSM&)
-    {
-      std::cout << "entering: Holding" << std::endl;
-    }
-    template <class Event, class FSM>
-    void on_exit(Event const&, FSM&)
-    {
-      std::cout << "leaving: Holding" << std::endl;
-    }
-  };
-
-  struct Unholding : public msm::front::state<>
-  {
-    template <class Event, class FSM>
-    void on_entry(Event const&, FSM&)
-    {
-      std::cout << "entering: Unholding" << std::endl;
-    }
-    template <class Event, class FSM>
-    void on_exit(Event const&, FSM&)
-    {
-      std::cout << "leaving: Unholding" << std::endl;
-    }
-  };
-
-  // initial state
-  typedef RobotInactive initial_state;
-
-  ////////////
-  // Events //
-  ////////////
-
-  struct sto_changed
-  {
-    sto_changed(bool sto)
-      : sto_(sto)
-    {};
-
-    bool sto_;
-  };
-  struct recover_done {};
-  struct unhold_done {};
-  struct hold_done {};
-  struct halt_done {};
-
-  ////////////
-  // Guards //
-  ////////////
-
-  struct sto_true
-  {
-    template <class EVT, class FSM, class SourceState, class TargetState>
-    bool operator()(EVT const&, FSM& fsm, SourceState&, TargetState&)
-    {
-      return fsm.sto_;
-    }
-  };
-
-  struct sto_false
-  {
-    template <class EVT, class FSM, class SourceState, class TargetState>
-    bool operator()(EVT const&, FSM& fsm, SourceState&, TargetState&)
-    {
-      return !fsm.sto_;
-    }
-  };
-
-  struct stop_requested
-  {
-    template <class EVT, class FSM, class SourceState, class TargetState>
-    bool operator()(EVT const&, FSM& fsm, SourceState&, TargetState&)
-    {
-      return fsm.stop_requested_;
-    }
-  };
-
-  struct no_stop_requested
-  {
-    template <class EVT, class FSM, class SourceState, class TargetState>
-    bool operator()(EVT const&, FSM& fsm, SourceState&, TargetState&)
-    {
-      return !fsm.stop_requested_;
-    }
-  };
-
-  /////////////
-  // Actions //
-  /////////////
-
-  struct update_sto
-  {
-    template <class EVT, class FSM, class SourceState, class TargetState>
-    void operator()(EVT const& evt, FSM& fsm, SourceState&, TargetState&)
-    {
-      std::cout << "update_sto" << std::endl;
-      fsm.sto_ = evt.sto_;
-      fsm.stop_requested_ = fsm.stop_requested_ || !evt.sto_;
-    }
-  };
-
-  struct start_recover
-  {
-    template <class EVT, class FSM, class SourceState, class TargetState>
-    void operator()(EVT const&, FSM& fsm, SourceState&, TargetState&)
-    {
-      std::cout << "start_recover" << std::endl;
-      fsm.stop_requested_ = false;
-
-      std::thread recover_thread(
-        [&fsm]()
-        {
-          fsm.call_recover();
-          std::lock_guard<std::mutex> lock(fsm.event_mutex_);
-          fsm.process_event(recover_done());
-        });
-
-      recover_thread.detach();
-    }
-  };
-
-  struct start_halt
-  {
-    template <class EVT, class FSM, class SourceState, class TargetState>
-    void operator()(EVT const&, FSM& fsm, SourceState&, TargetState&)
-    {
-      std::cout << "start_halt" << std::endl;
-
-      std::thread halt_thread(
-        [&fsm]()
-        {
-          fsm.call_halt();
-          std::lock_guard<std::mutex> lock(fsm.event_mutex_);
-          fsm.process_event(halt_done());
-        });
-
-      halt_thread.detach();
-    }
-  };
-
-  struct start_hold
-  {
-    template <class EVT, class FSM, class SourceState, class TargetState>
-    void operator()(EVT const&, FSM& fsm, SourceState&, TargetState&)
-    {
-      std::cout << "start_hold" << std::endl;
-
-      std::thread hold_thread(
-        [&fsm]()
-        {
-          fsm.call_hold();
-          std::lock_guard<std::mutex> lock(fsm.event_mutex_);
-          fsm.process_event(hold_done());
-        });
-
-      hold_thread.detach();
-    }
-  };
-
-  struct start_unhold
-  {
-    template <class EVT, class FSM, class SourceState, class TargetState>
-    void operator()(EVT const&, FSM& fsm, SourceState&, TargetState&)
-    {
-      std::cout << "start_unhold" << std::endl;
-
-      std::thread unhold_thread(
-        [&fsm]()
-        {
-          fsm.call_unhold();
-          std::lock_guard<std::mutex> lock(fsm.event_mutex_);
-          fsm.process_event(unhold_done());
-        });
-
-      unhold_thread.detach();
-    }
-  };
-
-  /////////////////
-  // Transitions //
-  /////////////////
-
-  struct transition_table : mpl::vector<
-  //  Start          Event            Target         Action                           Guard
-  // +--------------+----------------+--------------+--------------------------------+------------------+
-  Row< RobotInactive, sto_changed    , Recovering   , ActionSequence_<mpl::vector<
-                                                        update_sto, start_recover> > , none             >,
-  Row< Recovering   , sto_changed    , none         , update_sto                     , none             >,
-  Row< Recovering   , recover_done   , Unholding    , start_unhold                   , no_stop_requested>,
-  Row< Recovering   , recover_done   , Halting      , start_halt                     , stop_requested   >,
-  Row< Unholding    , sto_changed    , none         , update_sto                     , none             >,
-  Row< Unholding    , unhold_done    , RobotActive  , none                           , no_stop_requested>,
-  Row< Unholding    , unhold_done    , Holding      , start_hold                     , stop_requested   >,
-  Row< RobotActive  , sto_changed    , Holding      , ActionSequence_<mpl::vector<
-                                                        update_sto, start_hold> >    , none             >,
-  Row< Holding      , sto_changed    , none         , update_sto                     , none             >,
-  Row< Holding      , hold_done      , Halting      , start_halt                     , none             >,
-  Row< Halting      , sto_changed    , none         , update_sto                     , none             >,
-  Row< Halting      , halt_done      , Recovering   , start_recover                  , sto_true         >,
-  Row< Halting      , halt_done      , RobotInactive, none                           , sto_false        >
-  // +--------------+----------------+--------------+--------------------------------+------------------+
-  > {};
+private:
+  void workerThreadFun();
 
 private:
+  //! Task queue consists of single task
+  std::shared_ptr<TaskQueue> task_queue_{std::make_shared<TaskQueue>()};
+
+  //! State machine
+  StateMachine state_machine_;
+
+  std::atomic_bool terminate_{false};
+  std::mutex sm_mutex_;
+  std::mutex task_mutex_;
+  std::condition_variable worker_cv_;
+  std::thread worker_thread_;
+
   //! ServiceClient attached to the controller <code>/hold</code> service
   T hold_srv_client_;
 
@@ -371,7 +140,6 @@ private:
   //! ServiceClient attached to the controller <code>/is_executing</code> service
   T is_executing_srv_client_;
 
-private:
   /**
    * @brief Specifies the time between holding the controller and
    * disabling the driver. This allows the controller to perform a smooth stop
@@ -380,44 +148,83 @@ private:
   static constexpr int DURATION_BETWEEN_HOLD_AND_DISABLE_MS{200};
 };
 
-// AdapterSto = state machine back end
-template <class T = ros::ServiceClient>
-using AdapterStoTemplated = msm::back::state_machine<AdapterStoTemplated_<T>>;
-
+//! typedef for simple usage
 using AdapterSto = AdapterStoTemplated<>;
 
 template <class T>
-const std::string AdapterStoTemplated_<T>::HOLD_SERVICE{"manipulator_joint_trajectory_controller/hold"};
+const std::string AdapterStoTemplated<T>::HOLD_SERVICE{"manipulator_joint_trajectory_controller/hold"};
 
 template <class T>
-const std::string AdapterStoTemplated_<T>::UNHOLD_SERVICE{"manipulator_joint_trajectory_controller/unhold"};
+const std::string AdapterStoTemplated<T>::UNHOLD_SERVICE{"manipulator_joint_trajectory_controller/unhold"};
 
 template <class T>
-const std::string AdapterStoTemplated_<T>::RECOVER_SERVICE{"driver/recover"};
+const std::string AdapterStoTemplated<T>::RECOVER_SERVICE{"driver/recover"};
 
 template <class T>
-const std::string AdapterStoTemplated_<T>::HALT_SERVICE{"driver/halt"};
+const std::string AdapterStoTemplated<T>::HALT_SERVICE{"driver/halt"};
 
 template <class T>
-const std::string AdapterStoTemplated_<T>::IS_EXECUTING_SERVICE{"manipulator_joint_trajectory_controller/is_executing"};
+const std::string AdapterStoTemplated<T>::IS_EXECUTING_SERVICE{"manipulator_joint_trajectory_controller/is_executing"};
 
 template <class T>
-AdapterStoTemplated_<T>::AdapterStoTemplated_(std::function<T(std::string)> create_service_client)
-    : hold_srv_client_(create_service_client(HOLD_SERVICE)),
+AdapterStoTemplated<T>::AdapterStoTemplated(std::function<T(std::string)> create_service_client)
+    : state_machine_(task_queue_),
+      hold_srv_client_(create_service_client(HOLD_SERVICE)),
       unhold_srv_client_(create_service_client(UNHOLD_SERVICE)),
       recover_srv_client_(create_service_client(RECOVER_SERVICE)),
       halt_srv_client_(create_service_client(HALT_SERVICE)),
       is_executing_srv_client_(create_service_client(IS_EXECUTING_SERVICE))
 {
+  worker_thread_ = std::thread(&AdapterStoTemplated<T>::workerThreadFun, this);
+
+  std::cout << "start state machine" << std::endl;
+  state_machine_.start();
 }
 
 template <class T>
-AdapterStoTemplated_<T>::~AdapterStoTemplated_()
+AdapterStoTemplated<T>::~AdapterStoTemplated()
 {
+  std::cout << "stop state machine" << std::endl;
+  state_machine_.stop();
+
+  if (worker_thread_.joinable())
+  {
+    terminate_ = true;
+    worker_thread_.join();
+  }
 }
 
 template <class T>
-void AdapterStoTemplated_<T>::call_recover()
+void AdapterStoTemplated<T>::updateSto(bool sto)
+{
+  {
+    std::lock_guard<std::mutex> lock(sm_mutex_);
+    state_machine_.process_event(typename StateMachine::sto_updated(sto));
+  }
+  worker_cv_.notify_one();
+}
+
+template <class T>
+void AdapterStoTemplated<T>::workerThreadFun()
+{
+  std::unique_lock<std::mutex> sm_lock(sm_mutex_);
+  while (!terminate_)
+  {
+    // wait for notification if there is no task to perform
+    worker_cv_.wait(sm_lock, [this]() { return (!this->task_queue.empty()); });
+    Task task = task_queue_.pop();
+
+    // release lock during execution
+    sm_lock.unlock();
+    CompletionEvent event = task();
+    sm_lock.lock();
+
+    state_machine_.process_event(event);
+  }
+}
+
+template <class T>
+void AdapterStoTemplated<T>::call_recover()
 {
   std_srvs::Trigger recover_trigger;
   ROS_ERROR_STREAM("Calling Recover (Service: " << recover_srv_client_.getService() << ")");
@@ -426,12 +233,12 @@ void AdapterStoTemplated_<T>::call_recover()
 
   if (!recover_success)
   {
-      ROS_ERROR_STREAM("No success calling Recover (Service: " << recover_srv_client_.getService() << ")");
+    ROS_ERROR_STREAM("No success calling Recover (Service: " << recover_srv_client_.getService() << ")");
   }
 }
 
 template <class T>
-void AdapterStoTemplated_<T>::call_unhold()
+void AdapterStoTemplated<T>::call_unhold()
 {
   std_srvs::Trigger unhold_trigger;
   ROS_DEBUG_STREAM("Calling Unhold (Service: " << unhold_srv_client_.getService() << ")");
@@ -444,7 +251,7 @@ void AdapterStoTemplated_<T>::call_unhold()
 }
 
 template <class T>
-void AdapterStoTemplated_<T>::call_hold()
+void AdapterStoTemplated<T>::call_hold()
 {
   std_srvs::Trigger hold_trigger;
   ROS_ERROR_STREAM("Calling Hold on controller (Service: " << hold_srv_client_.getService() << ")");
@@ -469,7 +276,7 @@ void AdapterStoTemplated_<T>::call_hold()
 }
 
 template <class T>
-void AdapterStoTemplated_<T>::call_halt()
+void AdapterStoTemplated<T>::call_halt()
 {
   std_srvs::Trigger halt_trigger;
   ROS_ERROR_STREAM("Calling Halt on driver (Service: " << halt_srv_client_.getService() << ")");

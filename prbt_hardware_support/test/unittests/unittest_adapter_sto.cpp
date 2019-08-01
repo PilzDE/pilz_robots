@@ -124,7 +124,7 @@ TEST_F(AdapterStoTest, testD0estructor)
  * @brief Test enabling
  *
  * Test Sequence:
- *  1. Run the sto adapter and call process_event(AdapterSto::sto_changed(true)),
+ *  1. Run the sto adapter and call updateSto(true)),
  *     let recover service return success
  *
  * Expected Results:
@@ -140,7 +140,7 @@ TEST_F(AdapterStoTest, testEnable)
 
   AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
 
-  adapter_sto.process_event(AdapterSto::sto_changed(true));
+  adapter_sto.updateSto(true);
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 }
@@ -149,11 +149,11 @@ TEST_F(AdapterStoTest, testEnable)
  * @brief Test enabling, stopping and enabling again
  *
  * Test Sequence:
- *  1. Run the sto adapter and call process_event(AdapterSto::sto_changed(true)),
+ *  1. Run the sto adapter and call updateSto(true)),
  *     let recover and unhold services return success
- *  2. Call process_event(AdapterSto::sto_changed(false)),
+ *  2. Call updateSto(false)),
  *     let hold, is_executing and halt services return success
- *  3. Call process_event(AdapterSto::sto_changed(true)),
+ *  3. Call updateSto(true)),
  *     let recover service return success
  *
  * Expected Results:
@@ -174,7 +174,7 @@ TEST_F(AdapterStoTest, testEnableStopEnable)
 
   AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
 
-  adapter_sto.process_event(AdapterSto::sto_changed(true));
+  adapter_sto.updateSto(true);
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -188,7 +188,7 @@ TEST_F(AdapterStoTest, testEnableStopEnable)
     EXPECT_HALT;
   }
 
-  adapter_sto.process_event(AdapterSto::sto_changed(false));
+  adapter_sto.updateSto(false);
 
   BARRIER2({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 
@@ -201,7 +201,7 @@ TEST_F(AdapterStoTest, testEnableStopEnable)
     EXPECT_UNHOLD;
   }
 
-  adapter_sto.process_event(AdapterSto::sto_changed(true));
+  adapter_sto.updateSto(true);
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 }
@@ -210,9 +210,9 @@ TEST_F(AdapterStoTest, testEnableStopEnable)
  * @brief Test spaming enable plus subsequent stop
  *
  * Test Sequence:
- *  1. Run the sto adapter and call process_event(AdapterSto::sto_changed(true)) repeatedly,
+ *  1. Run the sto adapter and call updateSto(true)) repeatedly,
  *     let recover and unhold services return success
- *  2. Call process_event(AdapterSto::sto_changed(false)),
+ *  2. Call updateSto(false)),
  *     let hold, is_executing and halt services return success
  *
  * Expected Results:
@@ -233,7 +233,7 @@ TEST_F(AdapterStoTest, testSpamEnablePlusStop)
   AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
 
   std::atomic_bool keep_spamming{true};
-  std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto.process_event(AdapterSto::sto_changed(true)); } }};
+  std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto.updateSto(true); } }};
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -250,7 +250,7 @@ TEST_F(AdapterStoTest, testSpamEnablePlusStop)
     EXPECT_HALT;
   }
 
-  adapter_sto.process_event(AdapterSto::sto_changed(false));
+  adapter_sto.updateSto(false);
 
   BARRIER2({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 }
@@ -259,11 +259,11 @@ TEST_F(AdapterStoTest, testSpamEnablePlusStop)
  * @brief Test spamming STO=true plus subsequent enable
  *
  * Test Sequence:
- *  1. Run the sto adapter and call process_event(AdapterSto::sto_changed(true)),
+ *  1. Run the sto adapter and call updateSto(true)),
  *     let recover and unhold services return success
- *  2. Call process_event(AdapterSto::sto_changed(false)) repeatedly,
+ *  2. Call updateSto(false)) repeatedly,
  *     let hold, is_executing and halt services return success
- *  3. Call process_event(AdapterSto::sto_changed(true)),
+ *  3. Call updateSto(true)),
  *     let recover and unhold services return success
  *
  * Expected Results:
@@ -284,7 +284,7 @@ TEST_F(AdapterStoTest, testSpamStoActivePlusEnable)
 
   AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
 
-  adapter_sto.process_event(AdapterSto::sto_changed(true));
+  adapter_sto.updateSto(true);
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -299,7 +299,7 @@ TEST_F(AdapterStoTest, testSpamStoActivePlusEnable)
   }
 
   std::atomic_bool keep_spamming{true};
-  std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto.process_event(AdapterSto::sto_changed(false)); } }};
+  std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto.updateSto(false); } }};
 
   BARRIER2({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 
@@ -315,7 +315,7 @@ TEST_F(AdapterStoTest, testSpamStoActivePlusEnable)
     EXPECT_UNHOLD;
   }
 
-  adapter_sto.process_event(AdapterSto::sto_changed(true));
+  adapter_sto.updateSto(true);
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 }
@@ -324,10 +324,10 @@ TEST_F(AdapterStoTest, testSpamStoActivePlusEnable)
  * @brief Test skipping hold when sto changes to false during recover. Test also a following enabling.
  *
  * Test Sequence:
- *  1. Run the sto adapter and call process_event(AdapterSto::sto_changed(true)),
- *     call process_event(AdapterSto::sto_changed(false)) during recover service call and return success,
+ *  1. Run the sto adapter and call updateSto(true)),
+ *     call updateSto(false)) during recover service call and return success,
  *     let hold, is_executing and halt services return success, is_exeuting response is "not executing"
- *  2. Call process_event(AdapterSto::sto_changed(true)),
+ *  2. Call updateSto(true)),
  *     let recover and unhold services return success
  *
  * Expected Results:
@@ -341,7 +341,7 @@ TEST_F(AdapterStoTest, testSkippingHoldPlusEnable)
   // define function for recover-invoke action
   std::function<bool()> recover_action = [this, &adapter_sto]() {
     this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT);
-    adapter_sto.process_event(AdapterSto::sto_changed(false));
+    adapter_sto.updateSto(false);
     return true;
   };
 
@@ -364,7 +364,7 @@ TEST_F(AdapterStoTest, testSkippingHoldPlusEnable)
     EXPECT_HALT;
   }
 
-  adapter_sto.process_event(AdapterSto::sto_changed(true));
+  adapter_sto.updateSto(true);
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 
@@ -377,7 +377,7 @@ TEST_F(AdapterStoTest, testSkippingHoldPlusEnable)
     EXPECT_UNHOLD;
   }
 
-  adapter_sto.process_event(AdapterSto::sto_changed(true));
+  adapter_sto.updateSto(true);
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 }
@@ -386,9 +386,9 @@ TEST_F(AdapterStoTest, testSkippingHoldPlusEnable)
  * @brief Test enabling with failing recover service and retry (stop plus enable).
  *
  * Test Sequence:
- *  1. Run the sto adapter and call process_event(AdapterSto::sto_changed(true)),
+ *  1. Run the sto adapter and call updateSto(true)),
  *     let recover service fail repeatedly
- *  2. Call process_event(AdapterSto::sto_changed(false)) and process_event(AdapterSto::sto_changed(true)),
+ *  2. Call updateSto(false)) and updateSto(true)),
  *     let hold, is_executing, halt and recover service return success, is_executing response is "not executing"
  *
  * Expected Results:
@@ -406,7 +406,7 @@ TEST_F(AdapterStoTest, testRecoverFailPlusRetry)
 
   AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
 
-  adapter_sto.process_event(AdapterSto::sto_changed(true));
+  adapter_sto.updateSto(true);
 
   BARRIER(RECOVER_SRV_CALLED_EVENT);
 
@@ -428,8 +428,8 @@ TEST_F(AdapterStoTest, testRecoverFailPlusRetry)
     EXPECT_UNHOLD;
   }
 
-  adapter_sto.process_event(AdapterSto::sto_changed(false));
-  adapter_sto.process_event(AdapterSto::sto_changed(true));
+  adapter_sto.updateSto(false);
+  adapter_sto.updateSto(true);
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 }
@@ -438,9 +438,9 @@ TEST_F(AdapterStoTest, testRecoverFailPlusRetry)
  * @brief Test if a stop is possible after unhold failed.
  *
  * Test Sequence:
- *  1. Run the sto adapter and call process_event(AdapterSto::sto_changed(true)),
+ *  1. Run the sto adapter and call updateSto(true)),
  *     let recover service return success and unhold service fail repeatedly
- *  2. Call process_event(AdapterSto::sto_changed(false)),
+ *  2. Call updateSto(false)),
  *     let hold, is_executing and halt services return success
  *
  * Expected Results:
@@ -464,7 +464,7 @@ TEST_F(AdapterStoTest, testUnholdFail)
 
   AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
 
-  adapter_sto.process_event(AdapterSto::sto_changed(true));
+  adapter_sto.updateSto(true);
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -479,7 +479,7 @@ TEST_F(AdapterStoTest, testUnholdFail)
     EXPECT_HALT;
   }
 
-  adapter_sto.process_event(AdapterSto::sto_changed(false));
+  adapter_sto.updateSto(false);
 
   BARRIER2({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 }
@@ -488,9 +488,9 @@ TEST_F(AdapterStoTest, testUnholdFail)
  * @brief Test if stop is continued with halt despite failing hold service
  *
  * Test Sequence:
- *  1. Run the sto adapter and call process_event(AdapterSto::sto_changed(true)),
+ *  1. Run the sto adapter and call updateSto(true)),
  *     let recover and unhold services return success
- *  2. Call process_event(AdapterSto::sto_changed(false)),
+ *  2. Call updateSto(false)),
  *     let is_executing service return success, let hold service fail (halt service fail too for full coverage)
  *
  * Expected Results:
@@ -510,7 +510,7 @@ TEST_F(AdapterStoTest, testHoldFail)
 
   AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
 
-  adapter_sto.process_event(AdapterSto::sto_changed(true));
+  adapter_sto.updateSto(true);
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -532,7 +532,7 @@ TEST_F(AdapterStoTest, testHoldFail)
         .WillRepeatedly(Return(false));
   }
 
-  adapter_sto.process_event(AdapterSto::sto_changed(false));
+  adapter_sto.updateSto(false);
 
   BARRIER2({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 }
@@ -541,9 +541,9 @@ TEST_F(AdapterStoTest, testHoldFail)
  * @brief Test if stop is continued with halt despite failing is_executing service
  *
  * Test Sequence:
- *  1. Run the sto adapter and call process_event(AdapterSto::sto_changed(true)),
+ *  1. Run the sto adapter and call updateSto(true)),
  *     let recover and unhold services return success
- *  2. Call process_event(AdapterSto::sto_changed(false)),
+ *  2. Call updateSto(false)),
  *     let hald and halt service return success, let is_executing service fail
  *
  * Expected Results:
@@ -563,7 +563,7 @@ TEST_F(AdapterStoTest, testIsExecutingFail)
 
   AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
 
-  adapter_sto.process_event(AdapterSto::sto_changed(true));
+  adapter_sto.updateSto(true);
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -579,7 +579,7 @@ TEST_F(AdapterStoTest, testIsExecutingFail)
     EXPECT_HALT;
   }
 
-  adapter_sto.process_event(AdapterSto::sto_changed(false));
+  adapter_sto.updateSto(false);
 
   BARRIER2({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 }

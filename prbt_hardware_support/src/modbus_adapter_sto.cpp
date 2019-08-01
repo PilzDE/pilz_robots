@@ -42,7 +42,7 @@ void ModbusAdapterSto::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_r
   if(msg.isDisconnect())
   {
     ROS_ERROR("A disconnect from the modbus server happend.");
-    process_event(sto_changed(false));
+    updateSto(false);
     return;
   }
 
@@ -53,7 +53,7 @@ void ModbusAdapterSto::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_r
   catch(const ModbusMsgWrapperException &e)
   {
     ROS_ERROR_STREAM(e.what());
-    process_event(sto_changed(false));
+    updateSto(false);
     return;
   }
 
@@ -64,11 +64,11 @@ void ModbusAdapterSto::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_r
        << msg.getVersion()
        << ", required Version: " << MODBUS_API_VERSION_REQUIRED;
     ROS_ERROR_STREAM(os.str());
-    process_event(sto_changed(false));
+    updateSto(false);
     return;
   }
 
-  process_event(sto_changed(msg.getSTO()));
+  updateSto(msg.getSTO());
 }
 
 
