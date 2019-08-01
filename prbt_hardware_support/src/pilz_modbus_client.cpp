@@ -47,7 +47,7 @@ PilzModbusClient::PilzModbusClient(ros::NodeHandle& nh,
 
 
 bool PilzModbusClient::init(const char* ip, unsigned int port,
-                            unsigned int retries, ros::Duration timeout)
+                            unsigned int retries, const ros::Duration& timeout)
 {
   for(size_t retry_n = 0; retry_n < retries; ++retry_n)
   {
@@ -71,8 +71,8 @@ bool PilzModbusClient::init(const char* ip, unsigned int port,
 
 bool PilzModbusClient::init(const char* ip, unsigned int port)
 {
-  State expectedState {State::not_initialized};
-  if (!state_.compare_exchange_strong(expectedState, State::initializing))
+  State expected_state {State::not_initialized};
+  if (!state_.compare_exchange_strong(expected_state, State::initializing))
   {
     ROS_ERROR_STREAM("Modbus-client not in correct state." << state_);
     state_ = State::not_initialized;
@@ -104,8 +104,8 @@ void PilzModbusClient::sendDisconnectMsg()
 
 void PilzModbusClient::run()
 {
-  State expectedState {State::initialized};
-  if (!state_.compare_exchange_strong(expectedState, State::running))
+  State expected_state {State::initialized};
+  if (!state_.compare_exchange_strong(expected_state, State::running))
   {
     throw PilzModbusClientException("Modbus-client not in correct state.");
   }

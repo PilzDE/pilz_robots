@@ -56,7 +56,7 @@ void AdapterOperationMode::updateOperationMode(const int8_t new_op_mode)
   }
 }
 
-bool AdapterOperationMode::getOperationMode(GetOperationMode::Request&,
+bool AdapterOperationMode::getOperationMode(GetOperationMode::Request& /*req*/,
                                             GetOperationMode::Response& res)
 {
   res.mode.value = op_mode_;

@@ -31,11 +31,11 @@ int main(int argc, char **argv)
 
   prbt_hardware_support::SystemInfo system_info(nh);
   FirmwareCont versions {system_info.getFirmwareVersions()};
-  for (const auto& currElem : versions)
+  for (const auto& curr_elem : versions)
   {
     ROS_INFO("Firmware version [%s]: %s",
-             currElem.first.c_str(),
-             currElem.second.c_str());
+             curr_elem.first.c_str(),
+             curr_elem.second.c_str());
   }
   return EXIT_SUCCESS;
 }

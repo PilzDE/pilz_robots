@@ -78,7 +78,7 @@ public:
    * @param timeout_ms between retries
    * @return True if a connection is established, false otherwise.
    */
-  bool init(const char* ip, unsigned int port, unsigned int retries, ros::Duration timeout_ms);
+  bool init(const char* ip, unsigned int port, unsigned int retries, const ros::Duration &timeout_ms);
 
   /**
    * @brief Publishes the register values as messages.

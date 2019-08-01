@@ -21,7 +21,7 @@
 namespace testing
 {
 
-void AsyncTest::barricade(std::string clear_event)
+void AsyncTest::barricade(const std::string& clear_event)
 {
   barricade({clear_event});
 }
@@ -38,7 +38,7 @@ void AsyncTest::barricade(std::initializer_list<std::string> clear_events)
   }
 }
 
-void AsyncTest::triggerClearEvent(std::string event)
+void AsyncTest::triggerClearEvent(const std::string& event)
 {
   std::lock_guard<std::mutex> lk(m_);
   if (clear_events_.empty())

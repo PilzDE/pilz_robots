@@ -36,7 +36,7 @@ LibModbusClient::~LibModbusClient()
 
 bool LibModbusClient::init(const char* ip, unsigned int port)
 {
-  modbus_connection_ = modbus_new_tcp(ip, port);
+  modbus_connection_ = modbus_new_tcp(ip, static_cast<int>(port));
 
   if (modbus_connect(modbus_connection_) == -1)
   {
@@ -60,7 +60,7 @@ unsigned long LibModbusClient::getResponseTimeoutInMs()
 {
   struct timeval response_timeout;
   modbus_get_response_timeout(modbus_connection_, &response_timeout);
-  return response_timeout.tv_sec * 1000L + (response_timeout.tv_usec  / 1000L);
+  return static_cast<unsigned long>(response_timeout.tv_sec * 1000L + (response_timeout.tv_usec  / 1000L));
 }
 
 RegCont LibModbusClient::readHoldingRegister(int addr, int nb)

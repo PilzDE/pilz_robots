@@ -30,8 +30,6 @@
 namespace prbt_hardware_support
 {
 
-static constexpr double WAIT_FOR_SERVICE_TIMEOUT_S{5.0};
-
 static const std::string EXECUTE_BRAKETEST_SERVICE_NAME{"/prbt/execute_braketest"};
 static const std::string BRAKETEST_ADAPTER_SERVICE_NAME{"/prbt/braketest_adapter_node/trigger_braketest"};
 
@@ -58,7 +56,7 @@ BrakeTestExecutor::BrakeTestExecutor(ros::NodeHandle& nh)
   controller_unhold_client_ = nh_.serviceClient<std_srvs::Trigger>(CONTROLLER_UNHOLD_MODE_SERVICE_NAME);
 }
 
-bool BrakeTestExecutor::executeBrakeTest(BrakeTest::Request&,
+bool BrakeTestExecutor::executeBrakeTest(BrakeTest::Request& /*req*/,
                                          BrakeTest::Response& response)
 {
   if (BrakeTestUtils::detectRobotMotion())
