@@ -19,7 +19,7 @@ env:
     - CATKIN_PARALLEL_TEST_JOBS="-p1"
   matrix:
     - ROS_REPO=ros
-    - ROS_REPO=ros-shadow-fixed
+    - ROS_REPO=testing
 matrix:
   allow_failures:
     - env: ROS_REPO=ros
