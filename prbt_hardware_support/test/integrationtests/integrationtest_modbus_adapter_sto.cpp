@@ -217,12 +217,12 @@ TEST_F(ModbusAdapterStoTest, testSetupNoDisableService)
   manipulator_.advertiseIsExecutingService(nh_, IS_EXECUTING_SERVICE_T);
   manipulator_.advertiseRecoverService(nh_, RECOVER_SERVICE_T);
 
-  auto t = asyncConstructor();
+  auto adapter_thread = asyncConstructor();
   ros::Duration(1.0).sleep();
 
   EXPECT_EQ(0, pub_.getNumSubscribers()); // the constructor should wait, no subscription yet
   manipulator_.advertiseHaltService(nh_, HALT_SERVICE_T);
-  t.join();
+  adapter_thread.join();
 }
 
 /**
@@ -239,12 +239,12 @@ TEST_F(ModbusAdapterStoTest, testSetupNoUnholdService)
   manipulator_.advertiseHaltService(nh_, HALT_SERVICE_T);
   manipulator_.advertiseRecoverService(nh_, RECOVER_SERVICE_T);
 
-  auto t = asyncConstructor();
+  auto adapter_thread = asyncConstructor();
   ros::Duration(1.0).sleep();
 
   EXPECT_EQ(0, pub_.getNumSubscribers()); // the constructor should wait, no subscription yet
   manipulator_.advertiseUnholdService(nh_, UNHOLD_SERVICE_T);
-  t.join();
+  adapter_thread.join();
 }
 
 /**
@@ -261,12 +261,12 @@ TEST_F(ModbusAdapterStoTest, testSetupNoRecoverService)
   manipulator_.advertiseIsExecutingService(nh_, IS_EXECUTING_SERVICE_T);
   manipulator_.advertiseHaltService(nh_, HALT_SERVICE_T);
 
-  auto t = asyncConstructor();
+  auto adapter_thread = asyncConstructor();
   ros::Duration(1.0).sleep();
 
   EXPECT_EQ(0, pub_.getNumSubscribers()); // the constructor should wait, no subscription yet
   manipulator_.advertiseRecoverService(nh_, RECOVER_SERVICE_T);
-  t.join();
+  adapter_thread.join();
 }
 
 /**
@@ -283,12 +283,12 @@ TEST_F(ModbusAdapterStoTest, testSetupNoHoldService)
   manipulator_.advertiseHaltService(nh_, HALT_SERVICE_T);
   manipulator_.advertiseRecoverService(nh_, RECOVER_SERVICE_T);
 
-  auto t = asyncConstructor();
+  auto adapter_thread = asyncConstructor();
   ros::Duration(1.0).sleep();
 
   EXPECT_EQ(0, pub_.getNumSubscribers()); // the constructor should wait, no subscription yet
   manipulator_.advertiseHoldService(nh_, HOLD_SERVICE_T);
-  t.join();
+  adapter_thread.join();
 }
 
 /**
