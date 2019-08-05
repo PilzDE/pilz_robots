@@ -48,6 +48,8 @@ namespace prbt_hardware_support
  * @note Unhold the controller is skipped if STO changes during recover.
  * This avoids the superfluous execution of a hold trajectory, which would result in an overlong stopping time.
  *
+ * @note If a service call fails, the execution is always continued in order to make a Stop1 or a recover-retry possible.
+ *
  * @remark this class is templated for easier mocking. However for usability
  * it can be used by AdapterSto
  */
