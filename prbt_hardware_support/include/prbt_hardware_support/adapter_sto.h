@@ -18,6 +18,10 @@
 #ifndef PRBT_HARDWARE_SUPPORT_ADAPTER_STO_H
 #define PRBT_HARDWARE_SUPPORT_ADAPTER_STO_H
 
+#define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
+#define BOOST_MPL_LIMIT_VECTOR_SIZE 30 //or whatever you need
+#define BOOST_MPL_LIMIT_MAP_SIZE 30 //or whatever you need
+
 #include <atomic>
 #include <condition_variable>
 #include <mutex>
