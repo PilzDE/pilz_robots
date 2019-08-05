@@ -21,11 +21,8 @@
 #include <atomic>
 #include <condition_variable>
 #include <mutex>
-#include <thread>
 #include <string>
-#include <queue>
-
-#include <boost/variant.hpp>
+#include <thread>
 
 #include <ros/ros.h>
 #include <ros/service_client.h>
@@ -58,48 +55,48 @@ template <class T = ros::ServiceClient>
 class AdapterStoTemplated
 {
 public:
-  typedef StoStateMachine<AdapterStoTemplated<T>> StateMachine;
-  typedef boost::variant<typename StateMachine::recover_done,
-                         typename StateMachine::halt_done,
-                         typename StateMachine::hold_done,
-                         typename StateMachine::unhold_done> CompletionEvent;
+  /**
+   * @brief Create required service clients and state machine; start worker-thread and state machine.
+   *
+   * @param create_service_client Returns a service client. Can be used to return a mock class in tests.
+   */
+  AdapterStoTemplated(const std::function<T(std::string)> &create_service_client = ServiceClientFactory::create<std_srvs::Trigger>);
 
-  class Task
-  {
-  public:
-    Task(std::function<void(AdapterStoTemplated<T>*)> &op, CompletionEvent &evt)
-        : operation_(op),
-          completion_event_(evt)
-    {
-    }
-
-    CompletionEvent operator()(AdapterStoTemplated<T> *adapter)
-    {
-      operation_(adapter);
-      return completion_event_;
-    }
-
-  private:
-    std::function<void(AdapterStoTemplated<T>*)> operation_;
-
-    CompletionEvent completion_event_;
-  };
-
-  typedef std::queue<Task> TaskQueue;
-
-public:
-  AdapterStoTemplated(std::function<T(std::string)> create_service_client = ServiceClientFactory::create<std_srvs::Trigger>);
-
+  /**
+   * @brief Stop state machine and terminate worker-thread.
+   */
   ~AdapterStoTemplated();
 
-  void updateSto(bool sto);
+  /**
+   * @brief This is called everytime an updated sto value is obtained.
+   *
+   * Process sto_updated event and notify worker-thread in case it is waiting for new required tasks.
+   *
+   * @note
+   * Access to the state machine is protected for thread-safety.
+   *
+   * @param sto The updated sto value.
+   */
+  void updateSto(const bool sto);
 
+  /**
+   * @brief Call the service triggering recover of the drives.
+   */
   void call_recover();
 
+  /**
+   * @brief Call the service triggering halt of the drives.
+   */
   void call_halt();
 
+  /**
+   * @brief Call the service triggering hold of the controller. Wait until execution of the hold trajectory finished.
+   */
   void call_hold();
 
+  /**
+   * @brief Call the service triggering unhold of the controller.
+   */
   void call_unhold();
 
 public:
@@ -110,19 +107,33 @@ public:
   static const std::string IS_EXECUTING_SERVICE;
 
 private:
+
+  /**
+   * @brief This is executed in the worker-thread and allows asynchronous handling of sto updates.
+   *
+   * Wait for notification if the task queue of the state machine is empty. Once a task is present, execute it and signal
+   * its completion.
+   *
+   * @note
+   * Access to the state machine is protected for thread-safety. It is assumed that task execution does not access
+   * the state machine, whereas the completion signalling does.
+   */
   void workerThreadFun();
 
 private:
-  //! Task queue consists of single task
-  std::shared_ptr<TaskQueue> task_queue_{std::make_shared<TaskQueue>()};
-
   //! State machine
-  StateMachine state_machine_;
+  std::unique_ptr<StoStateMachine> state_machine_;
 
+  //! Flag indicating if the worker-thread should terminate
   std::atomic_bool terminate_{false};
+
+  //! Mutex for protecting access to the state machine
   std::mutex sm_mutex_;
-  std::mutex task_mutex_;
+
+  //! Condition variable for notifying a waiting worker-thread
   std::condition_variable worker_cv_;
+
+  //! Worker-thread
   std::thread worker_thread_;
 
   //! ServiceClient attached to the controller <code>/hold</code> service
@@ -140,12 +151,14 @@ private:
   //! ServiceClient attached to the controller <code>/is_executing</code> service
   T is_executing_srv_client_;
 
+  //! Rate for calling the is_executing service of the controller during hold
+  static constexpr int WAIT_FOR_IS_EXECUTING_RATE{100};
+
   /**
-   * @brief Specifies the time between holding the controller and
-   * disabling the driver. This allows the controller to perform a smooth stop
-   * before a driver disable enables the breaks.
+   * @brief Specifies when to abort waiting for the execution of a hold trajectory. This should not be smaller
+   * than the duration of the hold trajectory, such that in any case the driver halt is not called too early.
    */
-  static constexpr int DURATION_BETWEEN_HOLD_AND_DISABLE_MS{200};
+  static constexpr int WAIT_FOR_IS_EXECUTING_TIMEOUT_MS{200};
 };
 
 //! typedef for simple usage
@@ -167,59 +180,76 @@ template <class T>
 const std::string AdapterStoTemplated<T>::IS_EXECUTING_SERVICE{"manipulator_joint_trajectory_controller/is_executing"};
 
 template <class T>
-AdapterStoTemplated<T>::AdapterStoTemplated(std::function<T(std::string)> create_service_client)
-    : state_machine_(task_queue_),
-      hold_srv_client_(create_service_client(HOLD_SERVICE)),
+AdapterStoTemplated<T>::AdapterStoTemplated(const std::function<T(std::string)> &create_service_client)
+    : hold_srv_client_(create_service_client(HOLD_SERVICE)),
       unhold_srv_client_(create_service_client(UNHOLD_SERVICE)),
       recover_srv_client_(create_service_client(RECOVER_SERVICE)),
       halt_srv_client_(create_service_client(HALT_SERVICE)),
       is_executing_srv_client_(create_service_client(IS_EXECUTING_SERVICE))
 {
+  state_machine_ = std::unique_ptr<StoStateMachine>(new StoStateMachine(
+    std::bind(&AdapterStoTemplated<T>::call_recover, this),
+    std::bind(&AdapterStoTemplated<T>::call_halt, this),
+    std::bind(&AdapterStoTemplated<T>::call_hold, this),
+    std::bind(&AdapterStoTemplated<T>::call_unhold, this)));
+
+  ROS_DEBUG("Start worker-thread");
   worker_thread_ = std::thread(&AdapterStoTemplated<T>::workerThreadFun, this);
 
-  std::cout << "start state machine" << std::endl;
-  state_machine_.start();
+  ROS_DEBUG("Start state machine");
+  state_machine_->start();
 }
 
 template <class T>
 AdapterStoTemplated<T>::~AdapterStoTemplated()
 {
-  std::cout << "stop state machine" << std::endl;
-  state_machine_.stop();
+  ROS_DEBUG("Stop state machine");
+  state_machine_->stop();
 
   if (worker_thread_.joinable())
   {
+    ROS_DEBUG("Join worker thread");
     terminate_ = true;
+    worker_cv_.notify_one();
     worker_thread_.join();
   }
 }
 
 template <class T>
-void AdapterStoTemplated<T>::updateSto(bool sto)
+void AdapterStoTemplated<T>::updateSto(const bool sto)
 {
+  ROS_DEBUG("updateSto called");
   {
     std::lock_guard<std::mutex> lock(sm_mutex_);
-    state_machine_.process_event(typename StateMachine::sto_updated(sto));
+    ROS_DEBUG("trigger sto_updated");
+    state_machine_->process_event(typename StoStateMachine::sto_updated(sto));
   }
   worker_cv_.notify_one();
 }
-
 template <class T>
 void AdapterStoTemplated<T>::workerThreadFun()
 {
   std::unique_lock<std::mutex> sm_lock(sm_mutex_);
   while (!terminate_)
   {
-    // wait for notification if there is no task to perform
-    worker_cv_.wait(sm_lock, [this]() { return (!this->task_queue.empty()); });
-    Task task = task_queue_.pop();
+    ROS_DEBUG("Wait for task or termination");
+    worker_cv_.wait(sm_lock, [this]() { return (!this->state_machine_->task_queue_.empty() || this->terminate_); });
+    if (terminate_)
+    {
+      break;
+    }
 
-    // release lock during execution
+    ROS_DEBUG("Obtain task");
+    AsyncStoTask task = state_machine_->task_queue_.front();
+    state_machine_->task_queue_.pop();
+
     sm_lock.unlock();
-    CompletionEvent event = task();
-    sm_lock.lock();
+    ROS_DEBUG("Execute task");
+    task.execute();
 
-    state_machine_.process_event(event);
+    sm_lock.lock();
+    ROS_DEBUG("trigger completion event");
+    task.signalCompletion();
   }
 }
 
@@ -227,9 +257,9 @@ template <class T>
 void AdapterStoTemplated<T>::call_recover()
 {
   std_srvs::Trigger recover_trigger;
-  ROS_ERROR_STREAM("Calling Recover (Service: " << recover_srv_client_.getService() << ")");
+  ROS_DEBUG_STREAM("Calling Recover (Service: " << recover_srv_client_.getService() << ")");
   bool recover_success = recover_srv_client_.call(recover_trigger);
-  ROS_ERROR_STREAM("Finished Recover (Service: " << recover_srv_client_.getService() << ")");
+  ROS_DEBUG_STREAM("Finished Recover (Service: " << recover_srv_client_.getService() << ")");
 
   if (!recover_success)
   {
@@ -254,7 +284,7 @@ template <class T>
 void AdapterStoTemplated<T>::call_hold()
 {
   std_srvs::Trigger hold_trigger;
-  ROS_ERROR_STREAM("Calling Hold on controller (Service: " << hold_srv_client_.getService() << ")");
+  ROS_DEBUG_STREAM("Calling Hold on controller (Service: " << hold_srv_client_.getService() << ")");
   bool hold_success = hold_srv_client_.call(hold_trigger);
 
   if (!hold_success)
@@ -262,16 +292,48 @@ void AdapterStoTemplated<T>::call_hold()
     ROS_ERROR_STREAM("No success calling Hold on controller (Service: " << hold_srv_client_.getService() << ")");
   }
 
-  // check if hold trajectory is executed
-  std_srvs::Trigger is_executing_trigger;
-  bool is_executing_success = is_executing_srv_client_.call(is_executing_trigger);
-  if (!is_executing_success)
+  bool is_executing{false};
+  ros::Rate rate{WAIT_FOR_IS_EXECUTING_RATE};
+  ros::Time start_waiting{ros::Time::now()};
+
+  // wait for execution of hold trajectory to begin
+  while (!is_executing && !terminate_)
   {
-    ROS_ERROR_STREAM("No success calling service " << is_executing_srv_client_.getService());
+    if (start_waiting - ros::Time::now() > ros::Duration(WAIT_FOR_IS_EXECUTING_TIMEOUT_MS))
+    {
+      ROS_ERROR("No hold trajectory executed.");
+      return;
+    }
+
+    std_srvs::Trigger is_executing_trigger;
+    bool is_executing_success = is_executing_srv_client_.call(is_executing_trigger);
+    if (!is_executing_success)
+    {
+      ROS_ERROR_STREAM("No success calling service " << is_executing_srv_client_.getService());
+    }
+    else
+    {
+      is_executing = is_executing_trigger.response.success;
+    }
+
+    rate.sleep();
   }
-  if (is_executing_trigger.response.success || !is_executing_success)
+
+  // wait for execution of hold trajectory to end
+  while (is_executing && !terminate_)
   {
-    ros::Duration(DURATION_BETWEEN_HOLD_AND_DISABLE_MS / 1000.0).sleep(); // wait until hold traj is finished
+    std_srvs::Trigger is_executing_trigger;
+    bool is_executing_success = is_executing_srv_client_.call(is_executing_trigger);
+    if (!is_executing_success)
+    {
+      ROS_ERROR_STREAM("No success calling service " << is_executing_srv_client_.getService());
+    }
+    else
+    {
+      is_executing = is_executing_trigger.response.success;
+    }
+
+    rate.sleep();
   }
 }
 
@@ -279,7 +341,7 @@ template <class T>
 void AdapterStoTemplated<T>::call_halt()
 {
   std_srvs::Trigger halt_trigger;
-  ROS_ERROR_STREAM("Calling Halt on driver (Service: " << halt_srv_client_.getService() << ")");
+  ROS_DEBUG_STREAM("Calling Halt on driver (Service: " << halt_srv_client_.getService() << ")");
   bool halt_success = halt_srv_client_.call(halt_trigger);
 
   if (!halt_success)

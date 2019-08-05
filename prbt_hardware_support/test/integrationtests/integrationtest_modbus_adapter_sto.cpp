@@ -677,8 +677,8 @@ TEST_F(ModbusAdapterStoTest, testStoChangeDuringRecover)
     return true;
   };
 
-  EXPECT_CALL(manipulator_, holdCb(_,_)).Times(1);
-  EXPECT_CALL(manipulator_, isExecutingCb(_,_)).Times(1);
+  EXPECT_CALL(manipulator_, holdCb(_,_)).Times(0);
+  EXPECT_CALL(manipulator_, isExecutingCb(_,_)).Times(0);
   EXPECT_CALL(manipulator_, unholdCb(_,_)).Times(0);
   EXPECT_CALL(manipulator_, haltCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("halt_callback"));
   EXPECT_CALL(manipulator_, recoverCb(_,_)).Times(1).WillOnce(InvokeWithoutArgs(recover_action));
