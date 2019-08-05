@@ -154,13 +154,13 @@ TEST_F(AdapterStoTest, testEnable)
  *  1. Run the sto adapter and call updateSto(true)),
  *     let recover and unhold services return success
  *  2. Call updateSto(false)),
- *     let hold, is_executing and halt services return success
+ *     let hold and halt services return success, let is_executing service return "executing" first and then "not executing"
  *  3. Call updateSto(true)),
  *     let recover service return success
  *
  * Expected Results:
  *  1. Recover and unhold services are called successively
- *  2. Hold, is_executing and halt services are called successively
+ *  2. Hold, is_executing (at least twice) and halt services are called successively
  *  3. Recover and unhold services are called successively
  */
 TEST_F(AdapterStoTest, testEnableStopEnable)
@@ -215,11 +215,11 @@ TEST_F(AdapterStoTest, testEnableStopEnable)
  *  1. Run the sto adapter and call updateSto(true)) repeatedly,
  *     let recover and unhold services return success
  *  2. Call updateSto(false)),
- *     let hold, is_executing and halt services return success
+ *     let hold and halt services return success, let is_executing service return "executing" first and then "not executing"
  *
  * Expected Results:
  *  1. Recover and unhold services are called successively
- *  2. Hold, is_executing and halt services are called successively
+ *  2. Hold, is_executing (at least twice) and halt services are called successively
  */
 TEST_F(AdapterStoTest, testSpamEnablePlusStop)
 {
@@ -264,13 +264,13 @@ TEST_F(AdapterStoTest, testSpamEnablePlusStop)
  *  1. Run the sto adapter and call updateSto(true)),
  *     let recover and unhold services return success
  *  2. Call updateSto(false)) repeatedly,
- *     let hold, is_executing and halt services return success
+ *     let hold and halt services return success, let is_executing service return "executing" first and then "not executing"
  *  3. Call updateSto(true)),
  *     let recover and unhold services return success
  *
  * Expected Results:
  *  1. Recover and unhold services are called successively
- *  2. Hold, is_exeuting and halt services are called successively
+ *  2. Hold, is_exeuting (at least twice) and halt services are called successively
  *  3. Recover and unhold services are called successively
  */
 TEST_F(AdapterStoTest, testSpamStoActivePlusEnable)
@@ -327,8 +327,7 @@ TEST_F(AdapterStoTest, testSpamStoActivePlusEnable)
  *
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)),
- *     call updateSto(false)) during recover service call and return success,
- *     let hold, is_executing and halt services return success, is_exeuting response is "not executing"
+ *     call updateSto(false)) during recover service call and return success, let halt service return success
  *  2. Call updateSto(true)),
  *     let recover and unhold services return success
  *
@@ -355,13 +354,6 @@ TEST_F(AdapterStoTest, testSkippingHoldPlusEnable)
 
     EXPECT_CALL(mock_factory_, call_named(RECOVER_SERVICE, _))
         .WillOnce(InvokeWithoutArgs(recover_action));
-
-    // hold is optional here
-    EXPECT_CALL(mock_factory_, call_named(HOLD_SERVICE, _))
-        .WillRepeatedly(Return(true));
-
-    EXPECT_CALL(mock_factory_, call_named(IS_EXECUTING_SERVICE, _))
-        .WillRepeatedly(Invoke(isExecutingInvokeAction(false)));
 
     EXPECT_HALT;
   }
@@ -391,11 +383,11 @@ TEST_F(AdapterStoTest, testSkippingHoldPlusEnable)
  *  1. Run the sto adapter and call updateSto(true)),
  *     let recover service fail repeatedly
  *  2. Call updateSto(false)) and updateSto(true)),
- *     let hold, is_executing, halt and recover service return success, is_executing response is "not executing"
+ *     let unhold, hold, halt and recover service return success, let is_executing service return "not executing"
  *
  * Expected Results:
  *  1. Recover service is called at least once
- *  2. Halt, recover and unhold services are called successively.
+ *  2. Recover and unhold services are called successively.
  */
 TEST_F(AdapterStoTest, testRecoverFailPlusRetry)
 {
@@ -418,14 +410,19 @@ TEST_F(AdapterStoTest, testRecoverFailPlusRetry)
   {
     InSequence dummy;
 
-    // hold is optional here
+    // hold, is_executing and halt is optional here
+    EXPECT_CALL(mock_factory_, call_named(UNHOLD_SERVICE, _))
+        .WillRepeatedly(Return(true));
+
     EXPECT_CALL(mock_factory_, call_named(HOLD_SERVICE, _))
         .WillRepeatedly(Return(true));
 
     EXPECT_CALL(mock_factory_, call_named(IS_EXECUTING_SERVICE, _))
         .WillRepeatedly(Invoke(isExecutingInvokeAction(false)));
 
-    EXPECT_HALT;
+    EXPECT_CALL(mock_factory_, call_named(HALT_SERVICE, _))
+        .WillRepeatedly(Return(true));
+
     EXPECT_RECOVER;
     EXPECT_UNHOLD;
   }
@@ -443,11 +440,11 @@ TEST_F(AdapterStoTest, testRecoverFailPlusRetry)
  *  1. Run the sto adapter and call updateSto(true)),
  *     let recover service return success and unhold service fail repeatedly
  *  2. Call updateSto(false)),
- *     let hold, is_executing and halt services return success
+ *     let hold and halt services return success, let is_executing service return "executing" first and then "not executing"
  *
  * Expected Results:
  *  1. Recover and unhold services are called successively, the latter one at least once
- *  2. Hold, is_executing and halt services are called successively.
+ *  2. Hold, is_executing (at least twice) and halt services are called successively.
  */
 TEST_F(AdapterStoTest, testUnholdFail)
 {
@@ -487,13 +484,14 @@ TEST_F(AdapterStoTest, testUnholdFail)
 }
 
 /**
- * @brief Test if stop is continued with halt despite failing hold service
+ * @brief Test if stop is continued properly despite failing hold service
  *
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)),
  *     let recover and unhold services return success
  *  2. Call updateSto(false)),
- *     let is_executing service return success, let hold service fail (halt service fail too for full coverage)
+ *     let hold service fail, let is_executing service return "not executing",
+ *     let halt service fail (for full coverage)
  *
  * Expected Results:
  *  1. Recover and unhold services are called successively
@@ -527,6 +525,7 @@ TEST_F(AdapterStoTest, testHoldFail)
         .WillRepeatedly(Return(false));
 
     EXPECT_CALL(mock_factory_, call_named(IS_EXECUTING_SERVICE, _))
+        .WillOnce(Return(false))
         .WillRepeatedly(Invoke(isExecutingInvokeAction(false)));
 
     EXPECT_CALL(mock_factory_, call_named(HALT_SERVICE, _))
@@ -546,7 +545,7 @@ TEST_F(AdapterStoTest, testHoldFail)
  *  1. Run the sto adapter and call updateSto(true)),
  *     let recover and unhold services return success
  *  2. Call updateSto(false)),
- *     let hald and halt service return success, let is_executing service fail
+ *     let hold and halt service return success, let is_executing service fail
  *
  * Expected Results:
  *  1. Recover and unhold services are called successively
