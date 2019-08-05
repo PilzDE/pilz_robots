@@ -702,6 +702,46 @@ TEST_F(AdapterStoTest, testHoldImmediatelyAfterUnhold)
 }
 
 /**
+ * @brief Test stopping the state machine in state Enabling.
+ *
+ * @note This test exists mainly for full function coverage.
+ *
+ * Test Sequence:
+ *  1. Run the sto adapter and call updateSto(true)),
+ *     call stopStateMachine() during recover service call and return success,
+ *     let unhold service return success
+ *
+ * Expected Results:
+ *  1. Recover service is called
+ */
+TEST_F(AdapterStoTest, testExitInStateEnabling)
+{
+  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
+
+  // define function for unhold-invoke action
+  std::function<bool()> recover_action = [this, &adapter_sto]() {
+    adapter_sto.stopStateMachine();
+    this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT);
+    return true;
+  };
+
+  {
+    InSequence dummy;
+
+    EXPECT_CALL(mock_factory_, call_named(RECOVER_SERVICE, _))
+        .WillOnce(InvokeWithoutArgs(recover_action));
+
+    // do not exclude other service calls as stopping the state machine does not prevent further actions
+    EXPECT_CALL(mock_factory_, call_named(UNHOLD_SERVICE, _))
+        .WillRepeatedly(Return(true));
+  }
+
+  adapter_sto.updateSto(true);
+
+  BARRIER(RECOVER_SRV_CALLED_EVENT);
+}
+
+/**
  * @brief Test stopping the state machine in state StopRequestedDuringRecover.
  *
  * @note This test exists mainly for full function coverage.
