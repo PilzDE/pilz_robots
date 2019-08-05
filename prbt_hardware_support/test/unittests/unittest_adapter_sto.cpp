@@ -598,6 +598,53 @@ TEST_F(AdapterStoTest, testIsExecutingFail)
   BARRIER2({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 }
 
+/**
+ * @brief Let is_executing service fail when it is called the second time. For full line coverage.
+ *
+ * Test Sequence:
+ *  1. Run the sto adapter and call updateSto(true)),
+ *     let recover and unhold services return success
+ *  2. Call updateSto(false)),
+ *     let hold and halt service return success, let is_executing service return "executing" once and then fail
+ *
+ * Expected Results:
+ *  1. Recover and unhold services are called successively
+ *  2. Hold, is_executing and halt services are called successively
+ */
+TEST_F(AdapterStoTest, testIsExecutingDelayedFail)
+{
+  /**********
+   * Step 1 *
+   **********/
+  {
+    InSequence dummy;
+    EXPECT_RECOVER;
+    EXPECT_UNHOLD;
+  }
+
+  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
+
+  adapter_sto.updateSto(true);
+
+  BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+
+  /**********
+   * Step 2 *
+   **********/
+  {
+    InSequence dummy;
+    EXPECT_HOLD;
+    EXPECT_CALL(mock_factory_, call_named(IS_EXECUTING_SERVICE, _))
+        .WillOnce(Invoke(isExecutingInvokeAction(true)))
+        .WillRepeatedly(Return(false));
+    EXPECT_HALT;
+  }
+
+  adapter_sto.updateSto(false);
+
+  BARRIER2({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
+}
+
 } // namespace prbt_hardware_support_tests
 
 int main(int argc, char **argv)
