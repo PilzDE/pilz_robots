@@ -381,9 +381,9 @@ TEST_F(AdapterStoTest, testSkippingHoldPlusEnable)
  *
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)),
- *     let recover service fail repeatedly
+ *     let recover service fail repeatedly, let unhold service return success
  *  2. Call updateSto(false)) and updateSto(true)),
- *     let unhold, hold, halt and recover service return success, let is_executing service return "not executing"
+ *     let hold, halt, recover and unhold service return success, let is_executing service return "not executing"
  *
  * Expected Results:
  *  1. Recover service is called at least once
@@ -398,6 +398,10 @@ TEST_F(AdapterStoTest, testRecoverFailPlusRetry)
       .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(RECOVER_SRV_CALLED_EVENT), Return(false)))
       .WillRepeatedly(Return(false));
 
+  // unhold is optional here
+  EXPECT_CALL(mock_factory_, call_named(UNHOLD_SERVICE, _))
+      .WillRepeatedly(Return(true));
+
   AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
 
   adapter_sto.updateSto(true);
@@ -411,9 +415,6 @@ TEST_F(AdapterStoTest, testRecoverFailPlusRetry)
     InSequence dummy;
 
     // hold, is_executing and halt is optional here
-    EXPECT_CALL(mock_factory_, call_named(UNHOLD_SERVICE, _))
-        .WillRepeatedly(Return(true));
-
     EXPECT_CALL(mock_factory_, call_named(HOLD_SERVICE, _))
         .WillRepeatedly(Return(true));
 
