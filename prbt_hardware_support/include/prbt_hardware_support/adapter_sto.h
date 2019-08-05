@@ -158,7 +158,7 @@ private:
    * @brief Specifies when to abort waiting for the execution of a hold trajectory. This should not be smaller
    * than the duration of the hold trajectory, such that in any case the driver halt is not called too early.
    */
-  static constexpr int WAIT_FOR_IS_EXECUTING_TIMEOUT_MS{200};
+  static constexpr double WAIT_FOR_IS_EXECUTING_TIMEOUT_S{0.2};
 };
 
 //! typedef for simple usage
@@ -299,7 +299,7 @@ void AdapterStoTemplated<T>::call_hold()
   // wait for execution of hold trajectory to begin
   while (!is_executing && !terminate_)
   {
-    if (start_waiting - ros::Time::now() > ros::Duration(WAIT_FOR_IS_EXECUTING_TIMEOUT_MS))
+    if (ros::Time::now() - start_waiting > ros::Duration(WAIT_FOR_IS_EXECUTING_TIMEOUT_S))
     {
       ROS_ERROR("No hold trajectory executed.");
       return;
@@ -319,6 +319,7 @@ void AdapterStoTemplated<T>::call_hold()
     rate.sleep();
   }
 
+  start_waiting = ros::Time::now();
   // wait for execution of hold trajectory to end
   while (is_executing && !terminate_)
   {
@@ -327,6 +328,11 @@ void AdapterStoTemplated<T>::call_hold()
     if (!is_executing_success)
     {
       ROS_ERROR_STREAM("No success calling service " << is_executing_srv_client_.getService());
+      // In case the service call fails, make sure to return eventually
+      if (ros::Time::now() - start_waiting > ros::Duration(WAIT_FOR_IS_EXECUTING_TIMEOUT_S))
+      {
+        return;
+      }
     }
     else
     {

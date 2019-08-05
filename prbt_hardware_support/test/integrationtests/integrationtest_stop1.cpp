@@ -49,6 +49,7 @@ namespace prbt_hardware_support
 {
 
 using ::testing::_;
+using ::testing::AtLeast;
 using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
@@ -206,7 +207,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
     EXPECT_CALL(manipulator, unholdCb(_,_)).Times(0);
     EXPECT_CALL(manipulator, recoverCb(_,_)).Times(0);
     EXPECT_CALL(manipulator, holdCb(_,_)).Times(1);
-    EXPECT_CALL(manipulator, isExecutingCb(_,_)).Times(1);
+    EXPECT_CALL(manipulator, isExecutingCb(_,_)).Times(AtLeast(1));
     EXPECT_CALL(manipulator, haltCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("halt_callback"));
   }
 
@@ -239,7 +240,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
 
     // Call from Disconnect
     EXPECT_CALL(manipulator, holdCb(_,_)).Times(1);
-    EXPECT_CALL(manipulator, isExecutingCb(_,_)).Times(1);
+    EXPECT_CALL(manipulator, isExecutingCb(_,_)).Times(AtLeast(1));
     EXPECT_CALL(manipulator, unholdCb(_,_)).Times(0);
     EXPECT_CALL(manipulator, recoverCb(_,_)).Times(0);
     EXPECT_CALL(manipulator, haltCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("halt_callback"));

@@ -59,6 +59,7 @@ static constexpr int MODBUS_API_VERSION_FOR_TESTING {2};
 using namespace prbt_hardware_support;
 
 using ::testing::_;
+using ::testing::AtLeast;
 using ::testing::InSequence;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
@@ -69,7 +70,7 @@ using ::testing::Return;
   EXPECT_CALL(manipulator_, unholdCb(_,_)).Times(0);\
   EXPECT_CALL(manipulator_, recoverCb(_,_)).Times(0);\
   EXPECT_CALL(manipulator_, holdCb(_,_)).Times(1);\
-  EXPECT_CALL(manipulator_, isExecutingCb(_,_)).Times(1);\
+  EXPECT_CALL(manipulator_, isExecutingCb(_,_)).Times(AtLeast(1));\
   EXPECT_CALL(manipulator_, haltCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("halt_callback")); }\
   while(false)
 
@@ -364,7 +365,7 @@ TEST_F(ModbusAdapterStoTest, testRemoveHoldService)
 
   BARRIER("unhold_callback");
 
-  EXPECT_CALL(manipulator_, isExecutingCb(_,_)).Times(1);
+  EXPECT_CALL(manipulator_, isExecutingCb(_,_)).Times(AtLeast(1));
   EXPECT_CALL(manipulator_, haltCb(_,_)).WillOnce(ACTION_OPEN_BARRIER("halt_callback"));
 
   pub_.publish(createDefaultStoModbusMsg(STO_ACTIVE));

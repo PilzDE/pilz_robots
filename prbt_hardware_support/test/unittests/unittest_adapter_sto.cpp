@@ -46,7 +46,8 @@
 
 #define EXPECT_IS_EXECUTING                                  \
   EXPECT_CALL(mock_factory_, call_named(IS_EXECUTING_SERVICE, _)) \
-      .WillOnce(Invoke(isExecutingInvokeAction(true)))
+      .WillOnce(Invoke(isExecutingInvokeAction(true))) \
+      .WillOnce(Invoke(isExecutingInvokeAction(false)))
 
 namespace prbt_hardware_support_tests
 {
