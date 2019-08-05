@@ -35,18 +35,18 @@ namespace prbt_hardware_support
 {
 
 /**
- * @brief Stores the last reported STO stated and reacts to changes of the STO.
- * Reactions:
- *  - STO == false:   perfom Stop 1
+ * @brief Performs service calls for Stop1 and the respective reversal, that is enabling the manipulator. Incoming
+ * updates of the STO state are handled asynchronously.
+ *
+ * In order to handle the asynchrony of events, a state machine is used to represent the current state. The state machine
+ * manages a task queue for the currently required service call.
+ *
+ * General behaviour:
+ *  - STO == false:   perfom Stop1 (hold controller + halt drives)
  *  - STO == true:    recover drives + unhold controller
  *
  * @note Unhold the controller is skipped if STO changes during recover.
- * This avoids the superfluous execution of a hold trajectory, which would result in a overlong stopping time.
- *
- * @note PilzStoModbusAdapterNode::DURATION_BETWEEN_HOLD_AND_DISABLE_MS
- * specifies the time between holding the controller and halting the driver.
- * This allows the controller to perform a smooth stop before a driver disable
- * enables the breaks.
+ * This avoids the superfluous execution of a hold trajectory, which would result in an overlong stopping time.
  *
  * @remark this class is templated for easier mocking. However for usability
  * it can be used by AdapterSto
