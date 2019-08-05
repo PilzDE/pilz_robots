@@ -16,6 +16,7 @@
  */
 
 #include <atomic>
+#include <chrono>
 #include <functional>
 #include <memory>
 #include <thread>
@@ -127,7 +128,7 @@ TEST_F(AdapterStoTest, testD0estructor)
  *
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)),
- *     let recover service return success
+ *     let recover and unhold services return success
  *
  * Expected Results:
  *  1. Recover and unhold services are called successively
@@ -154,7 +155,7 @@ TEST_F(AdapterStoTest, testEnable)
  *  1. Run the sto adapter and call updateSto(true)),
  *     let recover and unhold services return success
  *  2. Call updateSto(false)),
- *     let hold and halt services return success, let is_executing service return "executing" first and then "not executing"
+ *     let hold and halt services return success, let is_executing service return "executing" once and then "not executing"
  *  3. Call updateSto(true)),
  *     let recover service return success
  *
@@ -214,12 +215,14 @@ TEST_F(AdapterStoTest, testEnableStopEnable)
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)) repeatedly,
  *     let recover and unhold services return success
- *  2. Call updateSto(false)),
- *     let hold and halt services return success, let is_executing service return "executing" first and then "not executing"
+ *  2. Call updateSto(true) once more (this is certainly after unhold and needed for full coverage)
+ *  3. Call updateSto(false)),
+ *     let hold and halt services return success, let is_executing service return "executing" once and then "not executing"
  *
  * Expected Results:
  *  1. Recover and unhold services are called successively
- *  2. Hold, is_executing (at least twice) and halt services are called successively
+ *  2. -
+ *  3. Hold, is_executing (at least twice) and halt services are called successively
  */
 TEST_F(AdapterStoTest, testSpamEnablePlusStop)
 {
@@ -245,6 +248,12 @@ TEST_F(AdapterStoTest, testSpamEnablePlusStop)
   /**********
    * Step 2 *
    **********/
+
+  adapter_sto.updateSto(true);
+
+  /**********
+   * Step 3 *
+   **********/
   {
     InSequence dummy;
     EXPECT_HOLD;
@@ -264,7 +273,7 @@ TEST_F(AdapterStoTest, testSpamEnablePlusStop)
  *  1. Run the sto adapter and call updateSto(true)),
  *     let recover and unhold services return success
  *  2. Call updateSto(false)) repeatedly,
- *     let hold and halt services return success, let is_executing service return "executing" first and then "not executing"
+ *     let hold and halt services return success, let is_executing service return "executing" once and then "not executing"
  *  3. Call updateSto(true)),
  *     let recover and unhold services return success
  *
@@ -453,7 +462,7 @@ TEST_F(AdapterStoTest, testRecoverFailPlusRetry)
  *  1. Run the sto adapter and call updateSto(true)),
  *     let recover service return success and unhold service fail repeatedly
  *  2. Call updateSto(false)),
- *     let hold and halt services return success, let is_executing service return "executing" first and then "not executing"
+ *     let hold and halt services return success, let is_executing service return "executing" once and then "not executing"
  *
  * Expected Results:
  *  1. Recover and unhold services are called successively, the latter one at least once
@@ -599,7 +608,9 @@ TEST_F(AdapterStoTest, testIsExecutingFail)
 }
 
 /**
- * @brief Let is_executing service fail when it is called the second time. For full line coverage.
+ * @brief Let is_executing service fail when it is called the second time.
+ *
+ * @note This test exists mainly for full line coverage.
  *
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)),
@@ -643,6 +654,102 @@ TEST_F(AdapterStoTest, testIsExecutingDelayedFail)
   adapter_sto.updateSto(false);
 
   BARRIER2({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
+}
+
+/**
+ * @brief Test hold immediately when sto changes to false during unhold.
+ *
+ * @note This test exists mainly for full function coverage.
+ *
+ * Test Sequence:
+ *  1. Run the sto adapter and call updateSto(true)),
+ *     call updateSto(false)) during unhold service call and return success,
+ *     let hold and halt services return success, let is_executing service return "executing" once and then "not executing"
+ *
+ * Expected Results:
+ *  1. Recover, unhold, hold, is_executing (at least twice) and halt services are called successively
+ */
+TEST_F(AdapterStoTest, testHoldImmediatelyAfterUnhold)
+{
+  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
+
+  // define function for unhold-invoke action
+  std::function<bool()> unhold_action = [this, &adapter_sto]() {
+    this->triggerClearEvent(UNHOLD_SRV_CALLED_EVENT);
+    adapter_sto.updateSto(false);
+    return true;
+  };
+
+  /**********
+   * Step 1 *
+   **********/
+  {
+    InSequence dummy;
+
+    EXPECT_RECOVER;
+
+    EXPECT_CALL(mock_factory_, call_named(UNHOLD_SERVICE, _))
+        .WillOnce(InvokeWithoutArgs(unhold_action));
+
+    EXPECT_HOLD;
+    EXPECT_IS_EXECUTING;
+    EXPECT_HALT;
+  }
+
+  adapter_sto.updateSto(true);
+
+  barricade({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT, HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
+}
+
+/**
+ * @brief Test stopping the state machine in state StopRequestedDuringRecover.
+ *
+ * @note This test exists mainly for full function coverage.
+ *
+ * Test Sequence:
+ *  1. Run the sto adapter and call updateSto(true)),
+ *     call updateSto(false)) and stopStateMachine() during unhold service call and return success,
+ *     let hold and halt services return success, let is_executing service return "not executing"
+ *
+ * Expected Results:
+ *  1. Recover and unhold services are called successively
+ */
+TEST_F(AdapterStoTest, testExitInStateStopRequestedDuringRecover)
+{
+  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
+
+  // define function for unhold-invoke action
+  std::function<bool()> unhold_action = [this, &adapter_sto]() {
+    adapter_sto.updateSto(false);
+    adapter_sto.stopStateMachine();
+    this->triggerClearEvent(UNHOLD_SRV_CALLED_EVENT);
+    return true;
+  };
+
+  /**********
+   * Step 1 *
+   **********/
+  {
+    InSequence dummy;
+
+    EXPECT_RECOVER;
+    EXPECT_CALL(mock_factory_, call_named(UNHOLD_SERVICE, _))
+        .WillOnce(InvokeWithoutArgs(unhold_action));
+
+    // do not exclude other service calls as stopping the state machine does not prevent further actions
+    EXPECT_CALL(mock_factory_, call_named(HOLD_SERVICE, _))
+        .WillRepeatedly(Return(true));
+
+    EXPECT_CALL(mock_factory_, call_named(IS_EXECUTING_SERVICE, _))
+        .WillRepeatedly(Invoke(isExecutingInvokeAction(false)));
+
+    EXPECT_CALL(mock_factory_, call_named(HALT_SERVICE, _))
+        .WillRepeatedly(Return(true));
+  }
+
+  adapter_sto.updateSto(true);
+
+  BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 }
 
 } // namespace prbt_hardware_support_tests

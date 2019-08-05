@@ -70,6 +70,11 @@ public:
   ~AdapterStoTemplated();
 
   /**
+   * @brief Stop the state machine. Mainly for testing.
+   */
+  void stopStateMachine();
+
+  /**
    * @brief This is called everytime an updated sto value is obtained.
    *
    * Process sto_updated event and notify worker-thread in case it is waiting for new required tasks.
@@ -205,9 +210,6 @@ AdapterStoTemplated<T>::AdapterStoTemplated(const std::function<T(std::string)> 
 template <class T>
 AdapterStoTemplated<T>::~AdapterStoTemplated()
 {
-  ROS_DEBUG("Stop state machine");
-  state_machine_->stop();
-
   if (worker_thread_.joinable())
   {
     ROS_DEBUG("Join worker thread");
@@ -215,6 +217,15 @@ AdapterStoTemplated<T>::~AdapterStoTemplated()
     worker_cv_.notify_one();
     worker_thread_.join();
   }
+
+  stopStateMachine();
+}
+
+template <class T>
+void AdapterStoTemplated<T>::stopStateMachine()
+{
+  ROS_DEBUG("Stop state machine");
+  state_machine_->stop();
 }
 
 template <class T>
