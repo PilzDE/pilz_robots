@@ -36,9 +36,6 @@ bool dummyServiceCallback(std_srvs::EmptyRequest &req, std_srvs::EmptyResponse &
  */
 TEST(ServiceClientFactoryIntegrationTest, testCreate)
 {
-  ros::AsyncSpinner spinner {1};
-  spinner.start();
-
   using namespace prbt_hardware_support;
   std::string service_name{"/test_service"};
 
