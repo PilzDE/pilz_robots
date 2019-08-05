@@ -65,23 +65,4 @@ void AsyncTest::triggerClearEvent(std::string event)
   cv_.notify_one();
 }
 
-void AsyncTest::printAsyncEvents()
-{
-  std::lock_guard<std::mutex> lk(m_);
-
-  std::cout << "Async events waited for: ";
-  for (auto event : clear_events_)
-  {
-    std::cout << event << ", ";
-  }
-  std::cout << std::endl;
-
-  std::cout << "Async events triggered: ";
-  for (auto event : waitlist_)
-  {
-    std::cout << event << ", ";
-  }
-  std::cout << std::endl;
-}
-
 }
