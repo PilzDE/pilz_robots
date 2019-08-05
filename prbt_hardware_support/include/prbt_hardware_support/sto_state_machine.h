@@ -18,10 +18,6 @@
 #ifndef PRBT_HARDWARE_SUPPORT_STO_STATE_MACHINE_H
 #define PRBT_HARDWARE_SUPPORT_STO_STATE_MACHINE_H
 
-#define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
-#define BOOST_MPL_LIMIT_VECTOR_SIZE 30 //or whatever you need
-#define BOOST_MPL_LIMIT_MAP_SIZE 30 //or whatever you need
-
 #include <queue>
 #include <string>
 
@@ -178,34 +174,6 @@ public:
     }
   };
 
-  struct EnableRequestedDuringStop : public msm::front::state<>
-  {
-    template <class Event, class FSM>
-    void on_entry(Event const &, FSM &)
-    {
-      ROS_DEBUG("entering: EnableRequestedDuringHalt");
-    }
-    template <class Event, class FSM>
-    void on_exit(Event const &, FSM &)
-    {
-      ROS_DEBUG("leaving: EnableRequestedDuringHalt");
-    }
-  };
-
-  struct StopPlusEnableRequestedDuringEnable : public msm::front::state<>
-  {
-    template <class Event, class FSM>
-    void on_entry(Event const &, FSM &)
-    {
-      ROS_DEBUG("entering: StopPlusEnableRequestedDuringEnable");
-    }
-    template <class Event, class FSM>
-    void on_exit(Event const &, FSM &)
-    {
-      ROS_DEBUG("leaving: StopPlusEnableRequestedDuringEnable");
-    }
-  };
-
   //! Initial state
   typedef RobotInactive initial_state;
 
@@ -339,24 +307,14 @@ public:
   Row< Enabling                  , sto_updated  , StopRequestedDuringEnable , none         , sto_false>,
   Row< Enabling                  , recover_done , none                      , unhold_start , none     >,
   Row< Enabling                  , unhold_done  , RobotActive               , none         , none     >,
-  Row< StopRequestedDuringEnable , sto_updated  , none                      , none         , sto_false     >,
-  Row< StopRequestedDuringEnable , sto_updated  , StopPlusEnableRequestedDuringEnable                      , none         , sto_true     >,
+  Row< StopRequestedDuringEnable , sto_updated  , none                      , none         , none     >,
   Row< StopRequestedDuringEnable , recover_done , Stopping                  , halt_start   , none     >,
   Row< StopRequestedDuringEnable , unhold_done  , Stopping                  , hold_start   , none     >,
-  Row< StopPlusEnableRequestedDuringEnable, sto_updated, StopRequestedDuringEnable, none, sto_false >,
-  Row< StopPlusEnableRequestedDuringEnable, sto_updated, none, none, sto_true >,
-  Row< StopPlusEnableRequestedDuringEnable, recover_done, EnableRequestedDuringStop, halt_start, none >,
-  Row< StopPlusEnableRequestedDuringEnable, unhold_done, EnableRequestedDuringStop, hold_start, none >,
   Row< RobotActive               , sto_updated  , none                      , none         , sto_true >,
   Row< RobotActive               , sto_updated  , Stopping                  , hold_start   , sto_false>,
-  Row< Stopping                  , sto_updated  , EnableRequestedDuringStop , none         , sto_true >,
-  Row< Stopping                  , sto_updated  , none                      , none         , sto_false>,
+  Row< Stopping                  , sto_updated  , none                      , none         , none     >,
   Row< Stopping                  , hold_done    , none                      , halt_start   , none     >,
-  Row< Stopping                  , halt_done    , RobotInactive             , none         , none     >,
-  Row< EnableRequestedDuringStop , sto_updated  , none                      , none         , sto_true >,
-  Row< EnableRequestedDuringStop , sto_updated  , Stopping                  , none         , sto_false>,
-  Row< EnableRequestedDuringStop , hold_done    , Enabling                  , recover_start, none     >,
-  Row< EnableRequestedDuringStop , halt_done    , Enabling                  , recover_start, none     >
+  Row< Stopping                  , halt_done    , RobotInactive             , none         , none     >
   // +---------------------------+--------------+---------------------------+--------------+----------+
   > {};
 

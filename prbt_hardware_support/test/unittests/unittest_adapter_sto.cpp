@@ -15,10 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
-#define BOOST_MPL_LIMIT_VECTOR_SIZE 30 //or whatever you need
-#define BOOST_MPL_LIMIT_MAP_SIZE 30 //or whatever you need
-
 #include <atomic>
 #include <functional>
 #include <memory>
@@ -386,12 +382,15 @@ TEST_F(AdapterStoTest, testSkippingHoldPlusEnable)
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)),
  *     let recover service fail repeatedly, let unhold service return success
- *  2. Call updateSto(false)) and updateSto(true)),
- *     let hold, halt, recover and unhold service return success, let is_executing service return "not executing"
+ *  2. Call updateSto(false)),
+ *     let hold and halt service return success, let is_executing service return "not executing"
+ *  3. Call updateSto(true)),
+ *     recover and unhold service return success
  *
  * Expected Results:
  *  1. Recover service is called at least once
- *  2. Recover and unhold services are called successively.
+ *  2. Halt service is called
+ *  2. Recover and unhold services are called successively
  */
 TEST_F(AdapterStoTest, testRecoverFailPlusRetry)
 {
@@ -418,21 +417,30 @@ TEST_F(AdapterStoTest, testRecoverFailPlusRetry)
   {
     InSequence dummy;
 
-    // hold, is_executing and halt is optional here
+    // hold and is_executing and is optional here
     EXPECT_CALL(mock_factory_, call_named(HOLD_SERVICE, _))
         .WillRepeatedly(Return(true));
 
     EXPECT_CALL(mock_factory_, call_named(IS_EXECUTING_SERVICE, _))
         .WillRepeatedly(Invoke(isExecutingInvokeAction(false)));
 
-    EXPECT_CALL(mock_factory_, call_named(HALT_SERVICE, _))
-        .WillRepeatedly(Return(true));
+    EXPECT_HALT;
+  }
+
+  adapter_sto.updateSto(false);
+
+  BARRIER(HALT_SRV_CALLED_EVENT);
+
+  /**********
+   * Step 3 *
+   **********/
+  {
+    InSequence dummy;
 
     EXPECT_RECOVER;
     EXPECT_UNHOLD;
   }
 
-  adapter_sto.updateSto(false);
   adapter_sto.updateSto(true);
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
