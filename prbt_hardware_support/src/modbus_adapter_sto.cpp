@@ -72,4 +72,4 @@ void ModbusAdapterSto::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_r
 }
 
 
-}
+} // namespace prbt_hardware_support

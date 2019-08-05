@@ -65,4 +65,4 @@ void AsyncTest::triggerClearEvent(std::string event)
   cv_.notify_one();
 }
 
-}
+} // namespace testing

@@ -97,4 +97,4 @@ bool BrakeTestExecutor::executeBrakeTest(BrakeTest::Request&,
   return true;
 }
 
-}
+} // namespace prbt_hardware_support
