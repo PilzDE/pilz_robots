@@ -15,15 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PRBT_HARDWARE_SUPPORT_SERVICE_CLIENT_MOCK_H
-#define PRBT_HARDWARE_SUPPORT_SERVICE_CLIENT_MOCK_H
+#ifndef PILZ_TESTUTILS_SERVICE_CLIENT_MOCK_H
+#define PILZ_TESTUTILS_SERVICE_CLIENT_MOCK_H
 
 #include <functional>
 #include <string>
 
 #include <gmock/gmock.h>
 
-namespace prbt_hardware_support_tests
+namespace pilz_testutils
 {
 
 /**
@@ -88,6 +88,6 @@ public:
   MOCK_CONST_METHOD2_T(call_named, bool(const std::string &name, S& s));
 };
 
-}  // namespace prbt_hardware_support_tests
+}  // namespace pilz_testutils
 
-#endif // PRBT_HARDWARE_SUPPORT_SERVICE_CLIENT_MOCK_H
+#endif // PILZ_TESTUTILS_SERVICE_CLIENT_MOCK_H

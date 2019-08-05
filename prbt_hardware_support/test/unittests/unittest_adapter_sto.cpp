@@ -24,9 +24,9 @@
 #include <std_srvs/Trigger.h>
 
 #include <pilz_testutils/async_test.h>
+#include <pilz_testutils/service_client_mock.h>
 
 #include <prbt_hardware_support/adapter_sto.h>
-#include <prbt_hardware_support/service_client_mock.h>
 
 #define EXPECT_RECOVER                                       \
   EXPECT_CALL(mock_factory_, call_named(RECOVER_SERVICE, _)) \
@@ -52,6 +52,7 @@ namespace prbt_hardware_support_tests
 {
 
 using namespace prbt_hardware_support;
+using namespace pilz_testutils;
 
 using ::testing::_;
 using ::testing::DoAll;
