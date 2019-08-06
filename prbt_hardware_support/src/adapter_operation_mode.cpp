@@ -63,4 +63,4 @@ bool AdapterOperationMode::getOperationMode(GetOperationMode::Request&,
   return true;
 }
 
-}
+} // namespace prbt_hardware_support
