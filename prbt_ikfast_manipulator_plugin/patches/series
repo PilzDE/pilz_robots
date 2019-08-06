@@ -1,0 +1,3 @@
+compiler-flags.patch
+add-unittests.patch
+drop-lapack.patch
