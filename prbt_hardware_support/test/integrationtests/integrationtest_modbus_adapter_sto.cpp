@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <atomic>
 #include <string>
 #include <vector>
 #include <stdexcept>
@@ -50,6 +51,8 @@ static const std::string STO_ADAPTER_NODE_NAME {"/modbus_adapter_sto_node"};
 
 static constexpr bool STO_CLEAR {true};
 static constexpr bool STO_ACTIVE {false};
+
+static constexpr int STO_CLEAR_PUBLISHING_RATE {10};
 
 static const ModbusApiSpec test_api_spec{ {modbus_api_spec::VERSION, 513},
                                           {modbus_api_spec::STO, 512} };
@@ -374,9 +377,20 @@ TEST_F(ModbusAdapterStoTest, testRemoveHoldService)
 
   EXPECT_CLEARANCE;
 
-  pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
+  std::atomic_bool keep_publishing{true};
+  std::thread pub_thread = std::thread([this, &keep_publishing](){
+    ros::Rate rate(STO_CLEAR_PUBLISHING_RATE);
+    while (keep_publishing)
+    {
+      this->pub_.publish(this->createDefaultStoModbusMsg(STO_CLEAR));
+      rate.sleep();
+    }
+    });
 
   BARRIER("unhold_callback");
+
+  keep_publishing = false;
+  pub_thread.join();
 }
 
 /**
@@ -407,9 +421,20 @@ TEST_F(ModbusAdapterStoTest, testRemoveIsExecutingService)
 
   EXPECT_CLEARANCE;
 
-  pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
+  std::atomic_bool keep_publishing{true};
+  std::thread pub_thread = std::thread([this, &keep_publishing](){
+    ros::Rate rate(STO_CLEAR_PUBLISHING_RATE);
+    while (keep_publishing)
+    {
+      this->pub_.publish(this->createDefaultStoModbusMsg(STO_CLEAR));
+      rate.sleep();
+    }
+    });
 
   BARRIER("unhold_callback");
+
+  keep_publishing = false;
+  pub_thread.join();
 }
 
 /**

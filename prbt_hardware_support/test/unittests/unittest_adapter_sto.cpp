@@ -93,16 +93,8 @@ public:
   {
   }
 
-  FRIEND_TEST(AdapterStoTest, testEnable);
-  FRIEND_TEST(AdapterStoTest, testEnableStopEnable);
-  FRIEND_TEST(AdapterStoTest, testSpamEnablePlusStop);
-  FRIEND_TEST(AdapterStoTest, testSpamStoActivePlusEnable);
-  FRIEND_TEST(AdapterStoTest, testSkippingHoldPlusEnable);
-  FRIEND_TEST(AdapterStoTest, testRecoverFailPlusRetry);
-  FRIEND_TEST(AdapterStoTest, testUnholdFail);
-  FRIEND_TEST(AdapterStoTest, testHoldFail);
-  FRIEND_TEST(AdapterStoTest, testHaltFail);
-  FRIEND_TEST(AdapterStoTest, testIsExecutingFail);
+  FRIEND_TEST(AdapterStoTest, testExitInStateEnabling);
+  FRIEND_TEST(AdapterStoTest, testExitInStateStopRequestedDuringRecover);
 };
 
 const std::string RECOVER_SERVICE{AdapterSto::RECOVER_SERVICE};
@@ -156,8 +148,8 @@ TEST_F(AdapterStoTest, testEnable)
  *     let recover and unhold services return success
  *  2. Call updateSto(false)),
  *     let hold and halt services return success, let is_executing service return "executing" once and then "not executing"
- *  3. Call updateSto(true)),
- *     let recover service return success
+ *  3. Call updateSto(true)) repeatedly,
+ *     let recover and unhold service return success
  *
  * Expected Results:
  *  1. Recover and unhold services are called successively
@@ -204,9 +196,13 @@ TEST_F(AdapterStoTest, testEnableStopEnable)
     EXPECT_UNHOLD;
   }
 
-  adapter_sto.updateSto(true);
+  std::atomic_bool keep_spamming{true};
+  std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto.updateSto(true); } }};
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+
+  keep_spamming = false;
+  spam_enable.join();
 }
 
 /**
@@ -267,14 +263,14 @@ TEST_F(AdapterStoTest, testSpamEnablePlusStop)
 }
 
 /**
- * @brief Test spamming STO=true plus subsequent enable
+ * @brief Test spamming STO=false plus subsequent enable
  *
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)),
  *     let recover and unhold services return success
  *  2. Call updateSto(false)) repeatedly,
  *     let hold and halt services return success, let is_executing service return "executing" once and then "not executing"
- *  3. Call updateSto(true)),
+ *  3. Call updateSto(true)) repeatedly,
  *     let recover and unhold services return success
  *
  * Expected Results:
@@ -310,12 +306,12 @@ TEST_F(AdapterStoTest, testSpamStoActivePlusEnable)
   }
 
   std::atomic_bool keep_spamming{true};
-  std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto.updateSto(false); } }};
+  std::thread spam_disable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto.updateSto(false); } }};
 
   BARRIER2({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 
   keep_spamming = false;
-  spam_enable.join();
+  spam_disable.join();
 
   /**********
    * Step 3 *
@@ -326,9 +322,13 @@ TEST_F(AdapterStoTest, testSpamStoActivePlusEnable)
     EXPECT_UNHOLD;
   }
 
-  adapter_sto.updateSto(true);
+  keep_spamming = true;
+  std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto.updateSto(true); } }};
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+
+  keep_spamming = false;
+  spam_enable.join();
 }
 
 /**
@@ -380,9 +380,13 @@ TEST_F(AdapterStoTest, testSkippingHoldPlusEnable)
     EXPECT_UNHOLD;
   }
 
-  adapter_sto.updateSto(true);
+  std::atomic_bool keep_spamming{true};
+  std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto.updateSto(true); } }};
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+
+  keep_spamming = false;
+  spam_enable.join();
 }
 
 /**
@@ -393,7 +397,7 @@ TEST_F(AdapterStoTest, testSkippingHoldPlusEnable)
  *     let recover service fail repeatedly, let unhold service return success
  *  2. Call updateSto(false)),
  *     let hold and halt service return success, let is_executing service return "not executing"
- *  3. Call updateSto(true)),
+ *  3. Call updateSto(true)) repeatedly,
  *     recover and unhold service return success
  *
  * Expected Results:
@@ -450,9 +454,13 @@ TEST_F(AdapterStoTest, testRecoverFailPlusRetry)
     EXPECT_UNHOLD;
   }
 
-  adapter_sto.updateSto(true);
+  std::atomic_bool keep_spamming{true};
+  std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto.updateSto(true); } }};
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+
+  keep_spamming = false;
+  spam_enable.join();
 }
 
 /**

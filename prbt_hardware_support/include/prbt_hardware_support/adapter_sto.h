@@ -70,11 +70,6 @@ public:
   ~AdapterStoTemplated();
 
   /**
-   * @brief Stop the state machine. Mainly for testing.
-   */
-  void stopStateMachine();
-
-  /**
    * @brief This is called everytime an updated sto value is obtained.
    *
    * Process sto_updated event and notify worker-thread in case it is waiting for new required tasks.
@@ -112,6 +107,15 @@ public:
   static const std::string RECOVER_SERVICE;
   static const std::string HALT_SERVICE;
   static const std::string IS_EXECUTING_SERVICE;
+
+protected:
+
+  /**
+   * @brief Stop the state machine.
+   *
+   * @note This is only used in tests.
+   */
+  void stopStateMachine();
 
 private:
 
@@ -219,13 +223,6 @@ AdapterStoTemplated<T>::~AdapterStoTemplated()
   }
 
   stopStateMachine();
-}
-
-template <class T>
-void AdapterStoTemplated<T>::stopStateMachine()
-{
-  ROS_DEBUG("Stop state machine");
-  state_machine_->stop();
 }
 
 template <class T>
@@ -367,6 +364,13 @@ void AdapterStoTemplated<T>::call_halt()
   {
     ROS_ERROR_STREAM("No success calling Halt on driver (Service: " << halt_srv_client_.getService() << ")");
   }
+}
+
+template <class T>
+void AdapterStoTemplated<T>::stopStateMachine()
+{
+  ROS_DEBUG("Stop state machine");
+  state_machine_->stop();
 }
 
 } // namespace prbt_hardware_support
