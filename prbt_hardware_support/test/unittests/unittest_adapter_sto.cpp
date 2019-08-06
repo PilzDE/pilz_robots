@@ -88,7 +88,7 @@ protected:
 class AdapterSto : public AdapterStoTemplated<ClientMock>
 {
 public:
-  AdapterSto(std::function<ClientMock(std::string)> create_service_client)
+  AdapterSto(const std::function<ClientMock(std::string)> &create_service_client)
     : AdapterStoTemplated<ClientMock>(create_service_client)
   {
   }
