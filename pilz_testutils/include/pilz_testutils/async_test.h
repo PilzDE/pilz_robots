@@ -22,8 +22,6 @@
 
 #include <gtest/gtest.h>
 
-#include <ros/console.h>
-
 namespace testing
 {
 

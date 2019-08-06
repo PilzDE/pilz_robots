@@ -29,9 +29,7 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
 
   ModbusApiSpec api_spec{nh};
-
   ModbusAdapterSto adapter_sto(nh, api_spec);
-
   ros::spin();
 
   return EXIT_FAILURE;
