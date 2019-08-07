@@ -594,11 +594,22 @@ TEST_F(PilzModbusClientTests, testWritingOfHoldingRegister)
  * @brief Tests the split_into_blocks method
  */
 TEST_F(PilzModbusClientTests, testSplitIntoBlocksFcn){
-  // unsorted list will throw exception
-  std::vector<std::vector<unsigned short>> out;
-  std::vector<unsigned short> in = {5, 4, 2};
-  ASSERT_THROW(PilzModbusClient::split_into_blocks(out, in),
+  // lists with same elements will throw exception
+  std::vector<unsigned short> in_throw = {1, 2, 1};
+  ASSERT_THROW(PilzModbusClient::split_into_blocks(in_throw),
                PilzModbusClientException);
+
+  // properly splitting into blocks
+  std::vector<unsigned short> in_split = {1, 2, 4, 5};
+  std::vector<std::vector<unsigned short>> out_split = PilzModbusClient::split_into_blocks(in_split);
+  std::vector<std::vector<unsigned short>> expected_out_split = {{1, 2}, {4, 5}};
+  EXPECT_EQ(out_split, expected_out_split);
+
+  // not splitting already consecutive blocks
+  std::vector<unsigned short> in_nosplit = {1, 2, 3};
+  std::vector<std::vector<unsigned short>> out_nosplit = PilzModbusClient::split_into_blocks(in_nosplit);
+  std::vector<std::vector<unsigned short>> expected_out_nosplit = {{1, 2, 3}};
+  EXPECT_EQ(out_nosplit, expected_out_nosplit);
 }
 }  // namespace pilz_modbus_client_test
 

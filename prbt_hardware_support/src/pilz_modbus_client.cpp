@@ -32,7 +32,7 @@ PilzModbusClient::PilzModbusClient(ros::NodeHandle& nh,
                                    const std::string& modbus_read_topic_name,
                                    const std::string& modbus_write_service_name,
                                    double read_frequency_hz)
-  : REGISTERS_TO_READ(registers_to_read)
+  : registers_to_read(registers_to_read)
   , RESPONSE_TIMEOUT_MS(response_timeout_ms)
   , READ_FREQUENCY_HZ(read_frequency_hz)
   , modbus_client_(std::move(modbus_client))
@@ -129,11 +129,10 @@ void PilzModbusClient::run()
       }
     }
 
-    std::vector<std::vector<unsigned short>> blocks;
-    split_into_blocks(blocks, REGISTERS_TO_READ);
+    std::vector<std::vector<unsigned short>> blocks = split_into_blocks(registers_to_read);
 
-    unsigned short index_of_first_register = *std::min_element(REGISTERS_TO_READ.begin(), REGISTERS_TO_READ.end());
-    int num_registers = *std::max_element(REGISTERS_TO_READ.begin(), REGISTERS_TO_READ.end()) - index_of_first_register + 1;
+    unsigned short index_of_first_register = *std::min_element(registers_to_read.begin(), registers_to_read.end());
+    int num_registers = *std::max_element(registers_to_read.begin(), registers_to_read.end()) - index_of_first_register + 1;
     holding_register = RegCont(num_registers, 0);
 
     ROS_DEBUG("blocks.size() %d", blocks.size());
@@ -194,28 +193,33 @@ void PilzModbusClient::run()
   state_ = State::not_initialized;
 }
 
-void PilzModbusClient::split_into_blocks(std::vector<std::vector<unsigned short>> &out, const std::vector<unsigned short> &in){
+std::vector<std::vector<unsigned short>> PilzModbusClient::split_into_blocks(std::vector<unsigned short> &in){
+  std::vector<std::vector<unsigned short>> out;
+  std::sort(in.begin(), in.end()); // sort just in case to be more user-friendly
   unsigned short prev{0};
   std::vector<unsigned short> current_block;
   for (auto & reg : in){
-    if(reg <= prev){
-      throw PilzModbusClientException("List must be sorted.");
+    if(reg == prev){
+      throw PilzModbusClientException("List elemts must be unique.");
     }
     else if(reg == prev + 1) {
       current_block.push_back(reg);
     }
     else { // *it >= prev + 1
       std::vector<unsigned short> to_out(current_block);
-      if(to_out.size() > 0)
+      if(to_out.size() > 0) {
         out.push_back(to_out);
+      }
       current_block.clear();
       current_block.push_back(reg);
     }
     prev = reg;
   }
   std::vector<unsigned short> to_out(current_block);
-  if(to_out.size() > 0)
+  if(to_out.size() > 0) {
     out.push_back(to_out);
+  }
+  return out;
 }
 
 }  // namespace prbt_hardware_support

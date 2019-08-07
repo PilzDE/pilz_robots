@@ -104,7 +104,7 @@ public:
   /**
    * @brief Splits a vector of integers into a vector of vectors with consecutive groups
    */
-  void static split_into_blocks(std::vector<std::vector<unsigned short> > &out, const std::vector<unsigned short> &in);
+  std::vector<std::vector<unsigned short>> static split_into_blocks(std::vector<unsigned short> &in);
 
 private:
   void sendDisconnectMsg();
@@ -122,14 +122,14 @@ private:
      */
   enum State
   {
-    not_initialized, // 0
-    initializing, // 1
-    initialized, // 2
-    running, // 3
+    not_initialized,
+    initializing,
+    initialized,
+    running,
   };
 
   //! Registers which have to be read.
-  const std::vector<unsigned short> REGISTERS_TO_READ;
+  std::vector<unsigned short> registers_to_read;
 
   //! Defines how long we wait for a response from the Modbus-server.
   const unsigned int RESPONSE_TIMEOUT_MS;
