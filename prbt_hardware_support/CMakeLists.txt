@@ -188,16 +188,16 @@ if(CATKIN_ENABLE_TESTING)
   )
   add_dependencies(unittest_update_filter ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-#  catkin_add_gtest(unittest_libmodbus_client
-#      test/unittests/unittest_libmodbus_client.cpp
-#      test/unittests/pilz_modbus_server_mock.cpp
-#      src/libmodbus_client.cpp
-#  )
-#  target_link_libraries(unittest_libmodbus_client
-#    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
-#    modbus
-#  )
-#  add_dependencies(unittest_libmodbus_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
+  catkin_add_gtest(unittest_libmodbus_client
+      test/unittests/unittest_libmodbus_client.cpp
+      test/unittests/pilz_modbus_server_mock.cpp
+      src/libmodbus_client.cpp
+  )
+  target_link_libraries(unittest_libmodbus_client
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+    modbus
+  )
+  add_dependencies(unittest_libmodbus_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
   catkin_add_gmock(unittest_modbus_api_spec
   test/unittests/unittest_modbus_api_spec.cpp
