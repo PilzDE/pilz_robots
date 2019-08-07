@@ -108,7 +108,6 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
    **********/
   BrakeTest srv;
   EXPECT_TRUE(brake_test_srv_client_.call(srv));
-  ros::Duration(1).sleep(); // make sure values are set in modbus mock
 
   /**********
    * Step 4 *
