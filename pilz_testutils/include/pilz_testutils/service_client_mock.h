@@ -36,11 +36,20 @@ class ServiceClientMock
 {
 public:
   typedef std::function<bool(const std::string &, S &)> CallFunction;
+  typedef std::function<bool(const std::string &)> LogicalOperatorFunction;
 
-  ServiceClientMock(const std::string &name, const CallFunction& call_callback)
+  ServiceClientMock(const std::string &name,
+                    const CallFunction& call_callback,
+                    const LogicalOperatorFunction& negation_operator_callback)
         : name_(name)
         , call_callback_(call_callback)
+        , negation_operator_callback_(negation_operator_callback)
   {}
+
+  bool operator!() const
+  {
+    return negation_operator_callback_(name_);
+  }
 
   bool call(S &s)
   {
@@ -56,6 +65,7 @@ public:
 private:
   std::string name_;
   CallFunction call_callback_;
+  LogicalOperatorFunction negation_operator_callback_;
 };
 
 /**
@@ -76,16 +86,19 @@ public:
   * @endcode
   *
   * @param name the service name
+  * @param persistent not used by the mock
   */
-  ServiceClientMock<S> create(const std::string &name)
+  ServiceClientMock<S> create(const std::string &name, bool /*persistent*/)
   {
     using std::placeholders::_1;
     using std::placeholders::_2;
-    return ServiceClientMock<S>(name, std::bind(&ServiceClientMockFactory::call_named, this, _1, _2));
+    return ServiceClientMock<S>(name, std::bind(&ServiceClientMockFactory::call_named, this, _1, _2),
+                                      std::bind(&ServiceClientMockFactory::handle_invalid_named, this, _1));
   }
 
   // service call mock method
   MOCK_CONST_METHOD2_T(call_named, bool(const std::string &name, S& s));
+  MOCK_CONST_METHOD1_T(handle_invalid_named, bool(const std::string &name));
 };
 
 }  // namespace pilz_testutils

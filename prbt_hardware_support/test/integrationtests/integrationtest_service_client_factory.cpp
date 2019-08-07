@@ -39,7 +39,7 @@ TEST(ServiceClientFactoryIntegrationTest, testCreate)
   using namespace prbt_hardware_support;
   std::string service_name{"/test_service"};
 
-  auto create_future = std::async(ServiceClientFactory::create<std_srvs::Empty>, service_name);
+  auto create_future = std::async(ServiceClientFactory::create<std_srvs::Empty>, service_name, false);
 
   ros::NodeHandle nh;
   ros::ServiceServer server = nh.advertiseService(service_name, dummyServiceCallback);
@@ -48,6 +48,38 @@ TEST(ServiceClientFactoryIntegrationTest, testCreate)
 
   ros::ServiceClient client {create_future.get()};
   EXPECT_TRUE(client.exists());
+  EXPECT_EQ(service_name, client.getService());
+
+  client.shutdown();
+  server.shutdown();
+}
+
+/**
+ * @brief Tests that a persistent service client can be created via ServiceClientFactory::create.
+ *
+ * Test Sequence:
+ *  1. Call ServiceClientFactory::create with persistent=true without service being advertised
+ *  2. Advertise service and create persistent client
+ *
+ * Expected Results:
+ *  1. Service client handle is not valid.
+ *  2. Service client handle is valid and the connection is persistent.
+ */
+TEST(ServiceClientFactoryIntegrationTest, testCreatePersistent)
+{
+  using namespace prbt_hardware_support;
+  std::string service_name{"/test_service"};
+
+  ros::ServiceClient client = ServiceClientFactory::create<std_srvs::Empty>(service_name, true);
+  EXPECT_FALSE(client.isValid());
+
+  ros::NodeHandle nh;
+  ros::ServiceServer server = nh.advertiseService(service_name, dummyServiceCallback);
+
+  client = ServiceClientFactory::create<std_srvs::Empty>(service_name, true);
+
+  EXPECT_TRUE(client.isValid());
+  EXPECT_TRUE(client.isPersistent());
   EXPECT_EQ(service_name, client.getService());
 
   client.shutdown();

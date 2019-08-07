@@ -33,13 +33,17 @@ public:
    * @brief Waits for a service to exist and creates a ServiceClient.
    *
    * @param name Name of the service, to be resolved in the node namespace
+   * @param persistent If true the waiting is skipped and a persistent ServiceClient is created
    * @return The ServiceClient
    */
   template <typename Service>
-  inline static ros::ServiceClient create(const std::string &name)
+  inline static ros::ServiceClient create(const std::string &name, bool persistent = false)
   {
-    waitForService(name);
-    return ros::service::createClient<Service>(name);
+    if (!persistent)
+    {
+      waitForService(name);
+    }
+    return ros::service::createClient<Service>(name, persistent);
   }
 };
 

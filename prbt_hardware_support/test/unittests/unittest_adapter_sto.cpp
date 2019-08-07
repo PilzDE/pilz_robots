@@ -88,7 +88,7 @@ protected:
 class AdapterSto : public AdapterStoTemplated<ClientMock>
 {
 public:
-  AdapterSto(const std::function<ClientMock(std::string)> &create_service_client)
+  AdapterSto(const std::function<ClientMock(std::string, bool)> &create_service_client)
     : AdapterStoTemplated<ClientMock>(create_service_client)
   {
   }
@@ -111,8 +111,10 @@ const std::string IS_EXECUTING_SERVICE{AdapterSto::IS_EXECUTING_SERVICE};
 TEST_F(AdapterStoTest, testD0estructor)
 {
   typedef prbt_hardware_support::AdapterStoTemplated<ClientMock> AdapterSto;
-  std::shared_ptr<AdapterSto> adapter_sto{new AdapterSto(std::bind(&MockFactory::create, &mock_factory_,
-                                                                    std::placeholders::_1))};
+  std::shared_ptr<AdapterSto> adapter_sto{new AdapterSto(std::bind(&MockFactory::create,
+                                                                   &mock_factory_,
+                                                                   std::placeholders::_1,
+                                                                   std::placeholders::_2))};
 }
 
 /**
@@ -133,7 +135,8 @@ TEST_F(AdapterStoTest, testEnable)
     EXPECT_UNHOLD;
   }
 
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
+  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
+                                                                       , std::placeholders::_2)};
 
   adapter_sto.updateSto(true);
 
@@ -167,7 +170,8 @@ TEST_F(AdapterStoTest, testEnableStopEnable)
     EXPECT_UNHOLD;
   }
 
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
+  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
+                                                                       , std::placeholders::_2)};
 
   adapter_sto.updateSto(true);
 
@@ -231,7 +235,8 @@ TEST_F(AdapterStoTest, testSpamEnablePlusStop)
     EXPECT_UNHOLD;
   }
 
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
+  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
+                                                                       , std::placeholders::_2)};
 
   std::atomic_bool keep_spamming{true};
   std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto.updateSto(true); } }};
@@ -289,7 +294,8 @@ TEST_F(AdapterStoTest, testSpamStoActivePlusEnable)
     EXPECT_UNHOLD;
   }
 
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
+  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
+                                                                       , std::placeholders::_2)};
 
   adapter_sto.updateSto(true);
 
@@ -346,7 +352,8 @@ TEST_F(AdapterStoTest, testSpamStoActivePlusEnable)
  */
 TEST_F(AdapterStoTest, testSkippingHoldPlusEnable)
 {
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
+  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
+                                                                       , std::placeholders::_2)};
 
   // define function for recover-invoke action
   std::function<bool()> recover_action = [this, &adapter_sto]() {
@@ -418,7 +425,8 @@ TEST_F(AdapterStoTest, testRecoverFailPlusRetry)
   EXPECT_CALL(mock_factory_, call_named(UNHOLD_SERVICE, _))
       .WillRepeatedly(Return(true));
 
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
+  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
+                                                                       , std::placeholders::_2)};
 
   adapter_sto.updateSto(true);
 
@@ -491,7 +499,8 @@ TEST_F(AdapterStoTest, testUnholdFail)
         .WillRepeatedly(Return(false));
   }
 
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
+  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
+                                                                       , std::placeholders::_2)};
 
   adapter_sto.updateSto(true);
 
@@ -538,7 +547,8 @@ TEST_F(AdapterStoTest, testHoldFail)
     EXPECT_UNHOLD;
   }
 
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
+  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
+                                                                       , std::placeholders::_2)};
 
   adapter_sto.updateSto(true);
 
@@ -592,7 +602,8 @@ TEST_F(AdapterStoTest, testIsExecutingFail)
     EXPECT_UNHOLD;
   }
 
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
+  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
+                                                                       , std::placeholders::_2)};
 
   adapter_sto.updateSto(true);
 
@@ -641,7 +652,8 @@ TEST_F(AdapterStoTest, testIsExecutingDelayedFail)
     EXPECT_UNHOLD;
   }
 
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
+  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
+                                                                       , std::placeholders::_2)};
 
   adapter_sto.updateSto(true);
 
@@ -679,7 +691,8 @@ TEST_F(AdapterStoTest, testIsExecutingDelayedFail)
  */
 TEST_F(AdapterStoTest, testHoldImmediatelyAfterUnhold)
 {
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
+  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
+                                                                       , std::placeholders::_2)};
 
   // define function for unhold-invoke action
   std::function<bool()> unhold_action = [this, &adapter_sto]() {
@@ -724,9 +737,10 @@ TEST_F(AdapterStoTest, testHoldImmediatelyAfterUnhold)
  */
 TEST_F(AdapterStoTest, testExitInStateEnabling)
 {
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
+  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
+                                                                       , std::placeholders::_2)};
 
-  // define function for unhold-invoke action
+  // define function for recover-invoke action
   std::function<bool()> recover_action = [this, &adapter_sto]() {
     adapter_sto.stopStateMachine();
     this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT);
@@ -764,7 +778,8 @@ TEST_F(AdapterStoTest, testExitInStateEnabling)
  */
 TEST_F(AdapterStoTest, testExitInStateStopRequestedDuringRecover)
 {
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1)};
+  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
+                                                                       , std::placeholders::_2)};
 
   // define function for unhold-invoke action
   std::function<bool()> unhold_action = [this, &adapter_sto]() {
