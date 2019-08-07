@@ -73,13 +73,20 @@ BrakeTestExecutor::BrakeTestExecutor(ros::NodeHandle& nh)
   // get brake test result register numbers
   ModbusApiSpec read_api_spec {nh_, API_SPEC_READ_PARAM_NAME};
   if(!read_api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED))
+  {
     throw BrakeTestExecutorException("failed to read API spec for BRAKETEST_PERFORMED");
+  }
   short unsigned int brake_test_performed_modbus_register_ = static_cast<short unsigned int>(read_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED));
   if(!read_api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT))
+  {
     throw BrakeTestExecutorException("failed to read API spec for BRAKETEST_RESULT");
+  }
   short unsigned int brake_test_result_modbus_register_ = static_cast<short unsigned int>(read_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT));
   if(abs(brake_test_performed_modbus_register_ - brake_test_result_modbus_register_) != 1)
+  {
+    // Both registers need to be one apart, so that we can write them in one cycle
     throw BrakeTestExecutorException("registers of BRAKETEST_PERFORMED and BRAKETEST_RESULT need to be 1 apart");
+  }
   // starting from the lowest register of the two
   brake_test_modbus_register_low_ = std::min(brake_test_performed_modbus_register_, brake_test_result_modbus_register_);
 }
@@ -125,8 +132,9 @@ bool BrakeTestExecutor::executeBrakeTest(BrakeTest::Request&,
     WriteModbusRegister srv;
     srv.request.holding_register_block.start_idx = brake_test_modbus_register_low_;
     std::vector<unsigned short> values_to_set = {0, 1}; // Note: The FS controller needs a positive edge, so we first send 0s.
-    for(auto it = values_to_set.begin(); it != values_to_set.end(); ++it){
-      srv.request.holding_register_block.values = {*it, *it};
+    for(const auto &v : values_to_set)
+    {
+      srv.request.holding_register_block.values = {v, v};
       modbus_write_client_.call(srv);
       if(!srv.response.success){
         ROS_ERROR_STREAM("Failed to send brake test result to FS control");
