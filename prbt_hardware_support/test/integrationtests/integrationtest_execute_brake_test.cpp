@@ -37,6 +37,30 @@ static constexpr double WAIT_FOR_BRAKE_TEST_SERVICE_TIMEOUT_S{5.0};
 static constexpr uint16_t MODBUS_BRAKE_TEST_PREPARE_VALUE {0};
 static constexpr uint16_t MODBUS_BRAKE_TEST_EXPECTED_VALUE {1};
 
+namespace prbt_hardware_support {
+
+bool brakeTestRegisterSetOnServer(
+    PilzModbusServerMock &server,
+    unsigned short register_perf,
+    unsigned short register_res,
+    uint16_t expectation,
+    float sleep_per_try_s,
+    unsigned short retries)
+{
+   RegCont content_perf, content_res;
+   for(int i = 0; i <= retries; i++){
+     ROS_INFO("Retry %d, waited for %.1fs so far", i, sleep_per_try_s * static_cast<float>(i));
+     content_perf = server.readHoldingRegister(register_perf, 1);
+     content_res = server.readHoldingRegister(register_res, 1);
+     if(
+       content_perf[0] == expectation &&
+       content_res[0] == expectation)
+       return true; // expected result
+     ros::Duration(sleep_per_try_s).sleep();
+   }
+   return false;
+}
+
 /**
  * @tests{Execute_BrakeTest_mechanism,
  *  Test the BrakeTest service node.
@@ -60,7 +84,6 @@ static constexpr uint16_t MODBUS_BRAKE_TEST_EXPECTED_VALUE {1};
  */
 TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
 {
-  using namespace prbt_hardware_support;
   ros::NodeHandle nh;
   ros::NodeHandle nh_private("~");
 
@@ -78,9 +101,9 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
   std::thread modbus_server_thread( &initalizeAndRun<prbt_hardware_support::PilzModbusServerMock>,
                                     std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port) );
   ASSERT_TRUE(write_api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED));
-  unsigned int register_perf = write_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED);
+  unsigned short register_perf = write_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED);
   ASSERT_TRUE(write_api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT));
-  unsigned int register_res = write_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT);
+  unsigned short register_res = write_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT);
 
   modbus_server.setHoldingRegister({{register_perf, MODBUS_BRAKE_TEST_PREPARE_VALUE}});
   modbus_server.setHoldingRegister({{register_res, MODBUS_BRAKE_TEST_PREPARE_VALUE}});
@@ -112,19 +135,14 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
   /**********
    * Step 4 *
    **********/
-  RegCont content_perf, content_res;
-  for(int retry = 0; retry <= 10; retry++){
-    ROS_INFO_STREAM("Retry " << retry);
-    content_perf = modbus_server.readHoldingRegister(register_perf, 1);
-    content_res = modbus_server.readHoldingRegister(register_res, 1);
-    if(
-      content_perf[0] == MODBUS_BRAKE_TEST_EXPECTED_VALUE &&
-      content_res[0] == MODBUS_BRAKE_TEST_EXPECTED_VALUE)
-      break; // expected result
-    ros::Duration(1).sleep();
-  }
-  EXPECT_EQ(content_res[0], MODBUS_BRAKE_TEST_EXPECTED_VALUE);
-  EXPECT_EQ(content_res[0], MODBUS_BRAKE_TEST_EXPECTED_VALUE);
+  EXPECT_TRUE(brakeTestRegisterSetOnServer(
+    modbus_server,
+    register_perf,
+    register_res,
+    MODBUS_BRAKE_TEST_EXPECTED_VALUE,
+    1,
+    10
+  ));
 
   /**********
    * Step 5 *
@@ -132,6 +150,8 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
   modbus_server.terminate();
   modbus_server_thread.join();
 }
+
+} // namespace prbt_hardware_support
 
 int main(int argc, char *argv[])
 {
