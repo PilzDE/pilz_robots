@@ -54,6 +54,10 @@ using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 
 static constexpr uint16_t MODBUS_API_VERSION_VALUE {2};
+static const std::string RECOVER_SERVICE_NAME {"recover"};
+static const std::string HALT_SERVICE_NAME {"halt"};
+static const std::string HOLD_SERVICE_NAME {"hold"};
+static const std::string UNHOLD_SERVICE_NAME {"unhold"};
 
 /**
  * @brief Stop1IntegrationTest checks if the chain
@@ -78,23 +82,11 @@ public:
 
 void Stop1IntegrationTest::SetUp()
 {
-  std::string hold_service_name;
-  ASSERT_TRUE(nh_priv_.getParam("hold_service_name", hold_service_name));
-
-  std::string unhold_service_name;
-  ASSERT_TRUE(nh_priv_.getParam("unhold_service_name", unhold_service_name));
-
-  std::string halt_service_name;
-  ASSERT_TRUE(nh_priv_.getParam("halt_service_name", halt_service_name));
-
-  std::string recover_service_name;
-  ASSERT_TRUE(nh_priv_.getParam("recover_service_name", recover_service_name));
-
   manipulator.advertiseServices(nh_,
-                                hold_service_name,
-                                unhold_service_name,
-                                halt_service_name,
-                                recover_service_name);
+                                HOLD_SERVICE_NAME,
+                                UNHOLD_SERVICE_NAME,
+                                HALT_SERVICE_NAME,
+                                RECOVER_SERVICE_NAME);
 }
 
 void Stop1IntegrationTest::TearDown()

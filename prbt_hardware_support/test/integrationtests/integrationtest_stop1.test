@@ -41,10 +41,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <test test-name="integrationtest_stop1" pkg="prbt_hardware_support" type="integrationtest_stop1">
   <param name="modbus_server_ip" value="$(arg modbus_server_ip)"/>
   <param name="modbus_server_port" value="$(arg modbus_server_port)"/>
-  <param name="recover_service_name" value="$(arg recover_service_name)"/>
-  <param name="halt_service_name" value="$(arg halt_service_name)"/>
-  <param name="hold_service_name" value="$(arg hold_service_name)"/>
-  <param name="unhold_service_name" value="$(arg unhold_service_name)"/>
+  <remap from="recover" to="$(arg recover_service_name)"/>
+  <remap from="halt" to="$(arg halt_service_name)"/>
+  <remap from="hold" to="$(arg hold_service_name)"/>
+  <remap from="unhold" to="$(arg unhold_service_name)"/>
 </test>
 
 </launch>
