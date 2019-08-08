@@ -20,6 +20,9 @@
 
 using namespace prbt_hardware_support;
 
+static const std::string REFERENCE_FRAME_PARAM_NAME{"reference_frame"};
+static const std::string REFERENCE_FRAME_PARAM_DEFAULT{"prbt_base_link"};
+
 /**
  * @brief Read requested parameters, start and initialize the prbt_hardware_support::SpeedObserver
  */
@@ -28,8 +31,16 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "speed_observer");
 
   ros::NodeHandle nh {"~"};
+  std::string reference_frame;
+  nh.param<std::string>(REFERENCE_FRAME_PARAM_NAME, reference_frame, REFERENCE_FRAME_PARAM_DEFAULT);
 
-  prbt_hardware_support::SpeedObserver observer(nh);
+  std::vector<std::string> frames_to_observe = std::vector<std::string>({"prbt_tcp"});
+
+  prbt_hardware_support::SpeedObserver observer(
+    nh,
+    reference_frame,
+    frames_to_observe
+  );
   observer.startObserving(10);
 
   ros::spin();

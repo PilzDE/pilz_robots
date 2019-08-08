@@ -25,17 +25,18 @@ add_definitions(-Wpedantic)
 add_message_files(
   FILES
   BrakeTestErrorCodes.msg
+  FrameSpeeds.msg
   ModbusMsgInStamped.msg
-  OperationModes.msg
   ModbusRegisterBlock.msg
+  OperationModes.msg
 )
 
 # action generation
 add_service_files(
   FILES
   BrakeTest.srv
-  IsBrakeTestRequired.srv
   GetOperationMode.srv
+  IsBrakeTestRequired.srv
   WriteModbusRegister.srv
 )
 

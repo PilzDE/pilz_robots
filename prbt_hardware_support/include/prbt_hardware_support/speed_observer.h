@@ -19,6 +19,9 @@
 #define SPEED_OBSERVER_H
 
 #include <ros/node_handle.h>
+#include <geometry_msgs/Twist.h>
+
+#include <prbt_hardware_support/FrameSpeeds.h>
 
 namespace prbt_hardware_support
 {
@@ -26,11 +29,21 @@ namespace prbt_hardware_support
 class SpeedObserver
 {
 public:
-  SpeedObserver(ros::NodeHandle& nh);
-  void startObserving(double frequency) const;
+  SpeedObserver(
+      ros::NodeHandle& nh,
+      std::string& reference_frame,
+      std::vector<std::string>& frames_to_observe
+      );
+  void startObserving(double frequency);
 
 private:
   ros::NodeHandle nh_;
+  ros::Publisher frame_speeds_pub;
+  uint32_t seq{0};
+  const std::string reference_frame_;
+  const std::vector<std::string> frames_to_observe_;
+
+  FrameSpeeds makeFrameSpeedsMessage(std::vector<geometry_msgs::Vector3> velocities);
 
 };
 

@@ -15,31 +15,35 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <prbt_hardware_support/speed_observer.h>
 #include <tf/transform_listener.h>
+
+#include <prbt_hardware_support/speed_observer.h>
 
 namespace prbt_hardware_support
 {
 
-SpeedObserver::SpeedObserver(ros::NodeHandle& nh)
-  : nh_(nh)
-{
+static const std::string FRAME_SPEEDS_TOPIC_NAME{"frame_speeds"};
+static const uint32_t FRAME_SPEEDS_QUEUE_SIZE{10};
 
+SpeedObserver::SpeedObserver(ros::NodeHandle& nh,
+                             std::string& reference_frame,
+                             std::vector<std::string>& frames_to_observe)
+  : nh_(nh)
+  , reference_frame_(reference_frame)
+  , frames_to_observe_(frames_to_observe)
+{
+  frame_speeds_pub = nh.advertise<FrameSpeeds>(FRAME_SPEEDS_TOPIC_NAME, FRAME_SPEEDS_QUEUE_SIZE);
 }
 
-void SpeedObserver::startObserving(double frequency) const
+void SpeedObserver::startObserving(double frequency)
 {
-  std::string tracking_frame = "prbt_tcp";
-  std::string observation_frame = "prbt_link_1";
-
-
   ros::Rate r(frequency); // 10 hz
   tf::TransformListener listener;
 
   while (ros::ok())
   {
     ros::spinOnce();
-    if(!listener.canTransform(tracking_frame, observation_frame, ros::Time(0)))
+    if(!listener.canTransform(reference_frame_, frames_to_observe_[0], ros::Time(0)))
     {
       ROS_ERROR("Cannot transform!");
       continue;
@@ -48,8 +52,9 @@ void SpeedObserver::startObserving(double frequency) const
     try
     {
       geometry_msgs::Twist twist;
-      listener.lookupTwist("prbt_tcp", "prbt_link_1", ros::Time(0), ros::Duration(0.1), twist);
-      ROS_ERROR_STREAM(twist);
+      listener.lookupTwist(reference_frame_, frames_to_observe_[0], ros::Time(0), ros::Duration(0.1), twist);
+      std::vector<geometry_msgs::Vector3> speeds = std::vector<geometry_msgs::Vector3>({twist.linear});
+      frame_speeds_pub.publish(makeFrameSpeedsMessage(speeds));
     }
     catch(const tf2::ExtrapolationException &ex)
     {
@@ -62,4 +67,23 @@ void SpeedObserver::startObserving(double frequency) const
   }
 }
 
+FrameSpeeds SpeedObserver::makeFrameSpeedsMessage(std::vector<geometry_msgs::Vector3> velocities)
+{
+  FrameSpeeds msg;
+  msg.header.frame_id = reference_frame_;
+  msg.header.seq = seq++;
+  msg.header.stamp = ros::Time::now();
+
+  for(auto & n : frames_to_observe_){
+    msg.name.push_back(n);
+  }
+
+  for(auto & v : velocities){
+    msg.speed.push_back(v.x);  // TODO: https://eigen.tuxfamily.org/dox/classEigen_1_1MatrixBase.html#a196c4ec3c8ffdf5bda45d0f617154975
+  }
+
+  return msg;
 }
+
+} // namespace prbt_hardware_support
+

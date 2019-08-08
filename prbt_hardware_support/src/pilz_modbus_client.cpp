@@ -132,7 +132,7 @@ void PilzModbusClient::run()
     std::vector<std::vector<unsigned short>> blocks = split_into_blocks(registers_to_read);
 
     unsigned short index_of_first_register = *std::min_element(registers_to_read.begin(), registers_to_read.end());
-    int num_registers = *std::max_element(registers_to_read.begin(), registers_to_read.end()) - index_of_first_register + 1;
+    unsigned long num_registers = *std::max_element(registers_to_read.begin(), registers_to_read.end()) - index_of_first_register + 1;
     holding_register = RegCont(num_registers, 0);
 
     ROS_DEBUG("blocks.size() %d", blocks.size());
