@@ -700,6 +700,7 @@ TEST_F(ModbusAdapterStoTest, testStoChangeDuringRecover)
   std::function<bool()> recover_action = [this]() {
     this->triggerClearEvent("recover_callback");
     this->pub_.publish(createDefaultStoModbusMsg(STO_ACTIVE));
+    ros::spinOnce();
     return true;
   };
 
