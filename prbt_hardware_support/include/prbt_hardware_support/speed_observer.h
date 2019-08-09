@@ -43,7 +43,8 @@ private:
   const std::string reference_frame_;
   const std::vector<std::string> frames_to_observe_;
 
-  FrameSpeeds makeFrameSpeedsMessage(std::vector<geometry_msgs::Vector3> velocities);
+  FrameSpeeds makeFrameSpeedsMessage(std::vector<double> speeds);
+  static double speedFromVelocityVector(const geometry_msgs::Vector3 v);
 
 };
 

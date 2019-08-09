@@ -16,6 +16,7 @@
  */
 
 #include <tf/transform_listener.h>
+#include <eigen3/Eigen/Geometry>
 
 #include <prbt_hardware_support/speed_observer.h>
 
@@ -53,7 +54,10 @@ void SpeedObserver::startObserving(double frequency)
     {
       geometry_msgs::Twist twist;
       listener.lookupTwist(reference_frame_, frames_to_observe_[0], ros::Time(0), ros::Duration(0.1), twist);
-      std::vector<geometry_msgs::Vector3> speeds = std::vector<geometry_msgs::Vector3>({twist.linear});
+      std::vector<geometry_msgs::Vector3> velocities = std::vector<geometry_msgs::Vector3>({twist.linear});
+      std::vector<double> speeds;
+      speeds.resize(velocities.size());
+      std::transform(velocities.begin(), velocities.end(), speeds.begin(), SpeedObserver::speedFromVelocityVector);
       frame_speeds_pub.publish(makeFrameSpeedsMessage(speeds));
     }
     catch(const tf2::ExtrapolationException &ex)
@@ -67,22 +71,25 @@ void SpeedObserver::startObserving(double frequency)
   }
 }
 
-FrameSpeeds SpeedObserver::makeFrameSpeedsMessage(std::vector<geometry_msgs::Vector3> velocities)
+FrameSpeeds SpeedObserver::makeFrameSpeedsMessage(std::vector<double> speeds)
 {
   FrameSpeeds msg;
   msg.header.frame_id = reference_frame_;
   msg.header.seq = seq++;
   msg.header.stamp = ros::Time::now();
-
   for(auto & n : frames_to_observe_){
     msg.name.push_back(n);
   }
-
-  for(auto & v : velocities){
-    msg.speed.push_back(v.x);  // TODO: https://eigen.tuxfamily.org/dox/classEigen_1_1MatrixBase.html#a196c4ec3c8ffdf5bda45d0f617154975
+  for(auto & s : speeds){
+    msg.speed.push_back(s);
   }
-
   return msg;
+}
+
+double SpeedObserver::speedFromVelocityVector(const geometry_msgs::Vector3 v)
+{
+  Eigen::Vector3d v_eigen(v.x, v.y, v.z);
+  return v_eigen.norm();
 }
 
 } // namespace prbt_hardware_support
