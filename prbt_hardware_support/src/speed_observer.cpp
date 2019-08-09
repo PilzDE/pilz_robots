@@ -16,7 +16,6 @@
  */
 
 #include <tf/transform_listener.h>
-#include <eigen3/Eigen/Geometry>
 
 #include <prbt_hardware_support/speed_observer.h>
 
@@ -38,14 +37,16 @@ SpeedObserver::SpeedObserver(ros::NodeHandle& nh,
 
 void SpeedObserver::startObserving(double frequency)
 {
-  ros::Rate r(frequency); // 10 hz
+  ros::Rate r(frequency);
   tf::TransformListener listener;
 
-  ros::spinOnce();
-  while(!listener.canTransform(reference_frame_, frames_to_observe_[0], ros::Time(0)))
-  {
-    ROS_ERROR("Cannot transform!");
-    ros::Duration(1).sleep();
+  for(auto & frame : frames_to_observe_){
+    ros::spinOnce();
+    while(!listener.canTransform(reference_frame_, frame, ros::Time(0)))
+    {
+      ROS_WARN("Waiting for transform %s -> %s", reference_frame_.c_str(), frame.c_str());
+      ros::Duration(1).sleep();
+    }
   }
 
   while (ros::ok())
@@ -90,8 +91,18 @@ FrameSpeeds SpeedObserver::makeFrameSpeedsMessage(std::vector<double> speeds)
 
 double SpeedObserver::speedFromVelocityVector(const geometry_msgs::Vector3 v)
 {
-  Eigen::Vector3d v_eigen(v.x, v.y, v.z);
-  return v_eigen.norm();
+//  ros::Time start1 = ros::Time::now();
+//  Eigen::Vector3d v_eigen(v.x, v.y, v.z);
+//  double abs = v_eigen.norm();
+//  ros::Time end1 = ros::Time::now();
+
+//  ros::Time start2 = ros::Time::now();
+  double abs2 = sqrt(pow(v.x, 2) + pow(v.y, 2) + pow(v.z, 2));
+//  ros::Time end2 = ros::Time::now();
+
+//  ROS_ERROR("eigen: %f, sqrt: %f, t_eigen: %fs, t_sqrt: %fs", abs, abs2, (end1-start1).toSec(), (end2-start2).toSec());
+
+  return abs2;
 }
 
 } // namespace prbt_hardware_support

@@ -10,7 +10,6 @@ find_package(catkin REQUIRED COMPONENTS
   std_srvs
   sensor_msgs
   tf
-  Eigen3
 )
 
 add_definitions(-Wall)
@@ -76,7 +75,6 @@ endif()
 include_directories(
   include
   test/include
-  ${EIGEN3_INCLUDE_DIR}
 )
 include_directories(SYSTEM ${catkin_INCLUDE_DIRS}) #Must be declared SYSTEM to avoid Warnings from ros system includes
 
@@ -156,7 +154,7 @@ add_executable(
   src/speed_observer.cpp
 )
 add_dependencies(speed_observer_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
-target_link_libraries(speed_observer_node ${catkin_LIBRARIES} ${Eigen3_LIBRARIES})
+target_link_libraries(speed_observer_node ${catkin_LIBRARIES})
 
 #############
 ## Install ##
