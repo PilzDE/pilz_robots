@@ -24,6 +24,7 @@ namespace prbt_hardware_support
 
 static const std::string FRAME_SPEEDS_TOPIC_NAME{"frame_speeds"};
 static const uint32_t FRAME_SPEEDS_QUEUE_SIZE{10};
+static const uint32_t WAITING_TIME_FOR_TRANSFORM_S{1};
 
 SpeedObserver::SpeedObserver(ros::NodeHandle& nh,
                              std::string& reference_frame,
@@ -43,13 +44,13 @@ void SpeedObserver::startObserving(double frequency)
   tf::TransformListener listener;
 
   for(auto & frame : frames_to_observe_){
-    ros::spinOnce();
     while(!listener.canTransform(reference_frame_, frame, ros::Time(0)))
     {
       ROS_WARN("Waiting for transform %s -> %s", reference_frame_.c_str(), frame.c_str());
-      ros::Duration(1).sleep();
+      ros::Duration(WAITING_TIME_FOR_TRANSFORM_S).sleep();
     }
   }
+  ROS_INFO("Observing with %.1fHz", frequency);
 
   while (ros::ok())
   {
@@ -57,6 +58,7 @@ void SpeedObserver::startObserving(double frequency)
     {
       velocities.clear();
       speeds.clear();
+      speeds.resize(frames_to_observe_.size());
       geometry_msgs::Twist twist;
 
       for(auto & frame : frames_to_observe_){

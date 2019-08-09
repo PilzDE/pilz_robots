@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_srvs
   sensor_msgs
   tf
+  urdf
 )
 
 add_definitions(-Wall)

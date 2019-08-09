@@ -17,11 +17,14 @@
 
 #include <ros/ros.h>
 #include <prbt_hardware_support/speed_observer.h>
+#include <urdf/model.h>
 
 using namespace prbt_hardware_support;
 
 static const std::string REFERENCE_FRAME_PARAM_NAME{"reference_frame"};
 static const std::string REFERENCE_FRAME_PARAM_DEFAULT{"prbt_base_link"};
+static const std::string ADDITIONAL_FRAMES_PARAM_NAME{"additional_frames"};
+static const std::string ROBOT_DESCRIPTION_PARAM_NAME{"robot_description"};
 
 /**
  * @brief Read requested parameters, start and initialize the prbt_hardware_support::SpeedObserver
@@ -29,29 +32,37 @@ static const std::string REFERENCE_FRAME_PARAM_DEFAULT{"prbt_base_link"};
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "speed_observer");
+  ros::NodeHandle pnh {"~"};
 
-  ros::NodeHandle nh {"~"};
-  std::string reference_frame;
-  nh.param<std::string>(REFERENCE_FRAME_PARAM_NAME, reference_frame, REFERENCE_FRAME_PARAM_DEFAULT);
-
-  std::vector<std::string> frames_to_observe = std::vector<std::string>({
-        "prbt_link_1",
-        "prbt_link_2",
-        "prbt_link_3",
-        "prbt_link_4",
-        "prbt_link_5",
-        "prbt_flange",
-        "prbt_tcp",
-        });
+  urdf::Model m;
+  m.initParam(ROBOT_DESCRIPTION_PARAM_NAME);
+  ROS_DEBUG_STREAM("reference_frame: " << m.getRoot()->name);
+  std::string reference_frame =  m.getRoot()->name;
+  std::vector<urdf::LinkSharedPtr > links;
+  std::vector<std::string> frames_to_observe;
+  m.getLinks(links);
+  ROS_DEBUG_STREAM("frames_to_observe (from urdf):");
+  for( auto l : links){
+    if(l->name != reference_frame)  // no need to monitor the ref frame
+    {
+      ROS_DEBUG_STREAM(" - " << l->name);
+      frames_to_observe.push_back(l->name);
+    }
+  }
+  std::vector<std::string> additional_frames;
+  pnh.getParam(ADDITIONAL_FRAMES_PARAM_NAME, additional_frames);
+  ROS_DEBUG_STREAM("frames_to_observe (additional_frames): ");
+  for( auto f : additional_frames){
+    ROS_DEBUG_STREAM(" - " << f);
+  }
+  frames_to_observe.insert(frames_to_observe.end(), additional_frames.begin(), additional_frames.end());
 
   prbt_hardware_support::SpeedObserver observer(
-    nh,
+    pnh,
     reference_frame,
     frames_to_observe
   );
   observer.startObserving(10);
-
-  ros::spin();
 
   return EXIT_SUCCESS;
 
