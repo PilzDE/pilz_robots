@@ -89,20 +89,9 @@ FrameSpeeds SpeedObserver::makeFrameSpeedsMessage(std::vector<double> speeds)
   return msg;
 }
 
-double SpeedObserver::speedFromVelocityVector(const geometry_msgs::Vector3 v)
+double SpeedObserver::speedFromVelocityVector(const geometry_msgs::Vector3& v)
 {
-//  ros::Time start1 = ros::Time::now();
-//  Eigen::Vector3d v_eigen(v.x, v.y, v.z);
-//  double abs = v_eigen.norm();
-//  ros::Time end1 = ros::Time::now();
-
-//  ros::Time start2 = ros::Time::now();
-  double abs2 = sqrt(pow(v.x, 2) + pow(v.y, 2) + pow(v.z, 2));
-//  ros::Time end2 = ros::Time::now();
-
-//  ROS_ERROR("eigen: %f, sqrt: %f, t_eigen: %fs, t_sqrt: %fs", abs, abs2, (end1-start1).toSec(), (end2-start2).toSec());
-
-  return abs2;
+  return sqrt(pow(v.x, 2) + pow(v.y, 2) + pow(v.z, 2));
 }
 
 } // namespace prbt_hardware_support
