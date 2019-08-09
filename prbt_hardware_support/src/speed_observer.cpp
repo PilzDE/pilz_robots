@@ -41,20 +41,24 @@ void SpeedObserver::startObserving(double frequency)
   ros::Rate r(frequency); // 10 hz
   tf::TransformListener listener;
 
+  ros::spinOnce();
+  while(!listener.canTransform(reference_frame_, frames_to_observe_[0], ros::Time(0)))
+  {
+    ROS_ERROR("Cannot transform!");
+    ros::Duration(1).sleep();
+  }
+
   while (ros::ok())
   {
-    ros::spinOnce();
-    if(!listener.canTransform(reference_frame_, frames_to_observe_[0], ros::Time(0)))
-    {
-      ROS_ERROR("Cannot transform!");
-      continue;
-    }
-
     try
     {
-      geometry_msgs::Twist twist;
-      listener.lookupTwist(reference_frame_, frames_to_observe_[0], ros::Time(0), ros::Duration(0.1), twist);
-      std::vector<geometry_msgs::Vector3> velocities = std::vector<geometry_msgs::Vector3>({twist.linear});
+      std::vector<geometry_msgs::Vector3> velocities = std::vector<geometry_msgs::Vector3>();
+      for(auto & frame : frames_to_observe_){
+        geometry_msgs::Twist twist;
+        // Look up the twist, averaging over the observation cycle
+        listener.lookupTwist(reference_frame_, frame, ros::Time(0), ros::Duration(1 / frequency), twist);
+        velocities.push_back(twist.linear);
+      }
       std::vector<double> speeds;
       speeds.resize(velocities.size());
       std::transform(velocities.begin(), velocities.end(), speeds.begin(), SpeedObserver::speedFromVelocityVector);
@@ -64,8 +68,6 @@ void SpeedObserver::startObserving(double frequency)
     {
       ROS_ERROR_STREAM(ex.what());
     }
-
-
 
     r.sleep();
   }

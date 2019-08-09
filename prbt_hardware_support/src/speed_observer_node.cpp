@@ -34,7 +34,15 @@ int main(int argc, char **argv)
   std::string reference_frame;
   nh.param<std::string>(REFERENCE_FRAME_PARAM_NAME, reference_frame, REFERENCE_FRAME_PARAM_DEFAULT);
 
-  std::vector<std::string> frames_to_observe = std::vector<std::string>({"prbt_tcp"});
+  std::vector<std::string> frames_to_observe = std::vector<std::string>({
+        "prbt_link_1",
+        "prbt_link_2",
+        "prbt_link_3",
+        "prbt_link_4",
+        "prbt_link_5",
+        "prbt_flange",
+        "prbt_tcp",
+        });
 
   prbt_hardware_support::SpeedObserver observer(
     nh,
