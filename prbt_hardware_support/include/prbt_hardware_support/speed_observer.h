@@ -42,8 +42,10 @@ private:
   uint32_t seq{0};
   const std::string reference_frame_;
   const std::vector<std::string> frames_to_observe_;
+  std::vector<geometry_msgs::Vector3> velocities;
+  std::vector<double> speeds;
 
-  FrameSpeeds makeFrameSpeedsMessage(std::vector<double> speeds);
+  FrameSpeeds makeFrameSpeedsMessage(std::vector<double>& speeds);
   static double speedFromVelocityVector(const geometry_msgs::Vector3& v);
 
 };

@@ -33,6 +33,8 @@ SpeedObserver::SpeedObserver(ros::NodeHandle& nh,
   , frames_to_observe_(frames_to_observe)
 {
   frame_speeds_pub = nh.advertise<FrameSpeeds>(FRAME_SPEEDS_TOPIC_NAME, FRAME_SPEEDS_QUEUE_SIZE);
+  velocities = std::vector<geometry_msgs::Vector3>(frames_to_observe.size());
+  speeds = std::vector<double>(frames_to_observe.size());
 }
 
 void SpeedObserver::startObserving(double frequency)
@@ -53,28 +55,29 @@ void SpeedObserver::startObserving(double frequency)
   {
     try
     {
-      std::vector<geometry_msgs::Vector3> velocities = std::vector<geometry_msgs::Vector3>();
+      velocities.clear();
+      speeds.clear();
+      geometry_msgs::Twist twist;
+
       for(auto & frame : frames_to_observe_){
-        geometry_msgs::Twist twist;
         // Look up the twist, averaging over the observation cycle
         listener.lookupTwist(reference_frame_, frame, ros::Time(0), ros::Duration(1 / frequency), twist);
         velocities.push_back(twist.linear);
       }
-      std::vector<double> speeds;
-      speeds.resize(velocities.size());
       std::transform(velocities.begin(), velocities.end(), speeds.begin(), SpeedObserver::speedFromVelocityVector);
       frame_speeds_pub.publish(makeFrameSpeedsMessage(speeds));
     }
     catch(const tf2::ExtrapolationException &ex)
     {
       ROS_ERROR_STREAM(ex.what());
+      return;
     }
 
     r.sleep();
   }
 }
 
-FrameSpeeds SpeedObserver::makeFrameSpeedsMessage(std::vector<double> speeds)
+FrameSpeeds SpeedObserver::makeFrameSpeedsMessage(std::vector<double>& speeds)
 {
   FrameSpeeds msg;
   msg.header.frame_id = reference_frame_;
