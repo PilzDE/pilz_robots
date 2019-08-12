@@ -260,13 +260,13 @@ void AdapterStoTemplated<T>::workerThreadFun()
     AsyncStoTask task = state_machine_->task_queue_.front();
     state_machine_->task_queue_.pop();
 
-    sm_lock.unlock();
-    ROS_DEBUG("Execute task");
-    task.execute();
-
-    sm_lock.lock();
+    sm_lock.unlock();               // | This is the part is executed async from
+    ROS_DEBUG("Execute task");      // | the state machine since new sto updates need to be handled
+    task.execute();                 // | during service calls.
+                                    // |
+    sm_lock.lock();                 // |
     ROS_DEBUG("trigger completion event");
-    task.signalCompletion();
+    task.signalCompletion();  //Could add Task to Queue
   }
 }
 
