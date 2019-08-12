@@ -26,9 +26,17 @@
 #include <boost/msm/back/state_machine.hpp>
 #include <boost/msm/front/functor_row.hpp>
 #include <boost/msm/front/state_machine_def.hpp>
+#include <boost/core/demangle.hpp>
 
 namespace prbt_hardware_support
 {
+
+#define STATE_ENTER_OUTPUT ROS_DEBUG_STREAM("Event: " << boost::core::demangle(typeid(ev).name()) \
+                                            << " - Entering: " << boost::core::demangle(typeid(*this).name()));
+#define STATE_EXIT_OUTPUT ROS_DEBUG_STREAM("Event: " << boost::core::demangle(typeid(ev).name()) \
+                                            << " - Leaving: " << boost::core::demangle(typeid(*this).name()));
+#define ACTION_OUTPUT ROS_DEBUG_STREAM("Event: " << boost::core::demangle(typeid(ev).name()) \
+                                        << " - Action: " << boost::core::demangle(typeid(*this).name()));
 
 /**
  * @brief An AsyncStoTask is represented by a task execution and a completion signalling.
@@ -108,69 +116,69 @@ public:
   struct RobotInactive : public msm::front::state<>
   {
     template <class Event, class FSM>
-    void on_entry(Event const &, FSM &)
+    void on_entry(Event const &ev, FSM &)
     {
-      ROS_DEBUG("entering: RobotInactive");
+      STATE_ENTER_OUTPUT
     }
     template <class Event, class FSM>
-    void on_exit(Event const &, FSM &)
+    void on_exit(Event const &ev, FSM &)
     {
-      ROS_DEBUG("leaving: RobotInactive");
+      STATE_EXIT_OUTPUT
     }
   };
   struct RobotActive : public msm::front::state<>
   {
     template <class Event, class FSM>
-    void on_entry(Event const &, FSM &)
+    void on_entry(Event const &ev, FSM &)
     {
-      ROS_DEBUG("entering: RobotActive");
+      STATE_ENTER_OUTPUT
     }
     template <class Event, class FSM>
-    void on_exit(Event const &, FSM &)
+    void on_exit(Event const &ev, FSM &)
     {
-      ROS_DEBUG("leaving: RobotActive");
+      STATE_EXIT_OUTPUT
     }
   };
 
   struct Enabling : public msm::front::state<>
   {
     template <class Event, class FSM>
-    void on_entry(Event const &, FSM &)
+    void on_entry(Event const &ev, FSM &)
     {
-      ROS_DEBUG("entering: Enabling");
+      STATE_ENTER_OUTPUT
     }
     template <class Event, class FSM>
-    void on_exit(Event const &, FSM &)
+    void on_exit(Event const &ev, FSM &)
     {
-      ROS_DEBUG("leaving: Enabling");
+      STATE_EXIT_OUTPUT
     }
   };
 
   struct Stopping : public msm::front::state<>
   {
     template <class Event, class FSM>
-    void on_entry(Event const &, FSM &)
+    void on_entry(Event const &ev, FSM &)
     {
-      ROS_DEBUG("entering: Stopping");
+      STATE_ENTER_OUTPUT
     }
     template <class Event, class FSM>
-    void on_exit(Event const &, FSM &)
+    void on_exit(Event const &ev, FSM &)
     {
-      ROS_DEBUG("leaving: Stopping");
+      STATE_EXIT_OUTPUT
     }
   };
 
   struct StopRequestedDuringEnable : public msm::front::state<>
   {
     template <class Event, class FSM>
-    void on_entry(Event const &, FSM &)
+    void on_entry(Event const &ev, FSM &)
     {
-      ROS_DEBUG("entering: StopRequestedDuringEnable");
+      STATE_ENTER_OUTPUT
     }
     template <class Event, class FSM>
-    void on_exit(Event const &, FSM &)
+    void on_exit(Event const &ev, FSM &)
     {
-      ROS_DEBUG("leaving: StopRequestedDuringEnable");
+      STATE_EXIT_OUTPUT
     }
   };
 
@@ -238,9 +246,9 @@ public:
   struct recover_start
   {
     template <class EVT, class FSM, class SourceState, class TargetState>
-    void operator()(EVT const &, FSM &fsm, SourceState &, TargetState &)
+    void operator()(EVT const &ev, FSM &fsm, SourceState &, TargetState &)
     {
-      ROS_DEBUG("recover_start");
+      ACTION_OUTPUT
 
       fsm.task_queue_.push(AsyncStoTask(fsm.recover_op_, [&fsm]() { fsm.process_event(recover_done()); }));
     }
@@ -254,9 +262,9 @@ public:
   struct halt_start
   {
     template <class EVT, class FSM, class SourceState, class TargetState>
-    void operator()(EVT const &, FSM &fsm, SourceState &, TargetState &)
+    void operator()(EVT const &ev, FSM &fsm, SourceState &, TargetState &)
     {
-      ROS_DEBUG("halt_start");
+      ACTION_OUTPUT
 
       fsm.task_queue_.push(AsyncStoTask(fsm.halt_op_, [&fsm]() { fsm.process_event(halt_done()); }));
     }
@@ -270,9 +278,9 @@ public:
   struct hold_start
   {
     template <class EVT, class FSM, class SourceState, class TargetState>
-    void operator()(EVT const &, FSM &fsm, SourceState &, TargetState &)
+    void operator()(EVT const &ev, FSM &fsm, SourceState &, TargetState &)
     {
-      ROS_DEBUG("hold_start");
+      ACTION_OUTPUT
 
       fsm.task_queue_.push(AsyncStoTask(fsm.hold_op_, [&fsm]() { fsm.process_event(hold_done()); }));
     }
@@ -286,9 +294,9 @@ public:
   struct unhold_start
   {
     template <class EVT, class FSM, class SourceState, class TargetState>
-    void operator()(EVT const &, FSM &fsm, SourceState &, TargetState &)
+    void operator()(EVT const &ev, FSM &fsm, SourceState &, TargetState &)
     {
-      ROS_DEBUG("unhold_start");
+      ACTION_OUTPUT
 
       fsm.task_queue_.push(AsyncStoTask(fsm.unhold_op_, [&fsm]() { fsm.process_event(unhold_done()); }));
     }
