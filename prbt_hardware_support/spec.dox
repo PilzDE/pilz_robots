@@ -38,7 +38,8 @@
  *
  * @definereq{Stop1_Trigger}
  *  - A Stop 1 is triggered, if at least one of the following cases is true:
- *    - the state of the STO changes from TRUE -> FALSE when the drives are not recovering,
+ *    - the state of the STO changes from TRUE -> FALSE when the drives are not
+ *      recovering (Otherwise see \refspec{STO_false_during_recover}),
  *    - connection to safety controller is lost,
  *    - the messages informing about the STO (coming from the
  *      safety controller) is incomplete or in any way corrupted,
