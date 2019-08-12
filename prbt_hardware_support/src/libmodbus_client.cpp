@@ -76,10 +76,12 @@ RegCont LibModbusClient::readHoldingRegister(int addr, int nb)
   rc = modbus_read_registers(modbus_connection_, addr, nb, tab_reg.data());
   if (rc == -1)
   {
-    std::string err = "Failed to read modbus registers! ";
-    err.append(modbus_strerror(errno));
-    ROS_ERROR_STREAM_NAMED("LibModbusClient", err);
-    throw ModbusExceptionDisconnect(err);
+    std::ostringstream err_stream;
+    err_stream << "Failed to read " << nb;
+    err_stream << " registers starting from " << addr;
+    err_stream << " with err: " << modbus_strerror(errno);
+    ROS_ERROR_STREAM_NAMED("LibModbusClient", err_stream.str());
+    throw ModbusExceptionDisconnect(err_stream.str());
   }
 
   return tab_reg;

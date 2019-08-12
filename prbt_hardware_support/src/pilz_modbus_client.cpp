@@ -26,15 +26,13 @@ namespace prbt_hardware_support
 {
 
 PilzModbusClient::PilzModbusClient(ros::NodeHandle& nh,
-                                   const unsigned int num_registers_to_read,
-                                   const unsigned int index_of_first_register,
+                                   const std::vector<unsigned short>& registers_to_read,
                                    ModbusClientUniquePtr modbus_client,
                                    unsigned int response_timeout_ms,
                                    const std::string& modbus_read_topic_name,
                                    const std::string& modbus_write_service_name,
                                    double read_frequency_hz)
-  : NUM_REGISTERS_TO_READ(num_registers_to_read)
-  , INDEX_OF_FIRST_REGISTER(index_of_first_register)
+  : registers_to_read(registers_to_read)
   , RESPONSE_TIMEOUT_MS(response_timeout_ms)
   , READ_FREQUENCY_HZ(read_frequency_hz)
   , modbus_client_(std::move(modbus_client))
@@ -74,7 +72,7 @@ bool PilzModbusClient::init(const char* ip, unsigned int port)
   State expected_state {State::not_initialized};
   if (!state_.compare_exchange_strong(expected_state, State::initializing))
   {
-    ROS_ERROR_STREAM("Modbus-client not in correct state." << state_);
+    ROS_ERROR_STREAM("Modbus-client not in correct state: " << state_ << "expected:" << State::initializing);
     state_ = State::not_initialized;
     return false;
   }
@@ -89,7 +87,7 @@ bool PilzModbusClient::init(const char* ip, unsigned int port)
   modbus_client_->setResponseTimeoutInMs(RESPONSE_TIMEOUT_MS);
 
   state_ = State::initialized;
-  ROS_DEBUG_STREAM("Connection to " << ip << ":" << port << " establised");
+  ROS_DEBUG_STREAM("Connection to " << ip << ":" << port << " established");
   return true;
 }
 
@@ -107,6 +105,7 @@ void PilzModbusClient::run()
   State expected_state {State::initialized};
   if (!state_.compare_exchange_strong(expected_state, State::running))
   {
+    ROS_ERROR_STREAM("Modbus-client not in correct state: " << state_ << "expected:" << State::running);
     throw PilzModbusClientException("Modbus-client not in correct state.");
   }
 
@@ -130,30 +129,47 @@ void PilzModbusClient::run()
       }
     }
 
+    std::vector<std::vector<unsigned short>> blocks = splitIntoBlocks(registers_to_read);
+
+    unsigned short index_of_first_register = *std::min_element(registers_to_read.begin(), registers_to_read.end());
+    int num_registers = *std::max_element(registers_to_read.begin(), registers_to_read.end()) - index_of_first_register + 1;
+    holding_register = RegCont(static_cast<unsigned long>(num_registers), 0);
+
+    ROS_DEBUG("blocks.size() %zu", blocks.size());
     try
     {
-      if (write_reg_bock)
-      {
-
-        holding_register = modbus_client_->writeReadHoldingRegister(static_cast<int>(write_reg_bock->start_idx),
-                                                                    write_reg_bock->values,
-                                                                    static_cast<int>(INDEX_OF_FIRST_REGISTER),
-                                                                    static_cast<int>(NUM_REGISTERS_TO_READ));
-
-      }
-      else
-      {
-        holding_register = modbus_client_->readHoldingRegister(static_cast<int>(INDEX_OF_FIRST_REGISTER), static_cast<int>(NUM_REGISTERS_TO_READ));
+      for(auto &block : blocks){
+        ROS_DEBUG("block.size() %zu", block.size());
+        unsigned short index_of_first_register_block = *(block.begin());
+        unsigned long num_registers_block = block.size();
+        RegCont block_holding_register;
+        if (write_reg_bock)
+        {
+          block_holding_register = modbus_client_->writeReadHoldingRegister(static_cast<int>(write_reg_bock->start_idx),
+                                                                      write_reg_bock->values,
+                                                                      static_cast<int>(index_of_first_register_block),
+                                                                      static_cast<int>(num_registers_block));
+          // write only once:
+          write_reg_bock = boost::none;
+        }
+        else
+        {
+          block_holding_register = modbus_client_->readHoldingRegister(static_cast<int>(index_of_first_register_block), static_cast<int>(num_registers_block));
+        }
+        for(uint i = 0; i < num_registers_block; i++)
+          holding_register[i+index_of_first_register_block-index_of_first_register] = block_holding_register[i];
       }
     }
     catch(ModbusExceptionDisconnect &e)
     {
-      ROS_ERROR_STREAM(e.what());
+      ROS_ERROR_STREAM("Modbus disconnect: " << e.what());
       sendDisconnectMsg();
       break;
     }
 
-    ModbusMsgInStampedPtr msg {ModbusMsgInBuilder::createDefaultModbusMsgIn(INDEX_OF_FIRST_REGISTER, holding_register)};
+    ModbusMsgInStampedPtr msg {
+      ModbusMsgInBuilder::createDefaultModbusMsgIn(index_of_first_register, holding_register)
+    };
 
     // Publish the received data into ROS
     if(holding_register != last_holding_register)
@@ -175,6 +191,37 @@ void PilzModbusClient::run()
 
   stop_run_ = false;
   state_ = State::not_initialized;
+}
+
+std::vector<std::vector<unsigned short>> PilzModbusClient::splitIntoBlocks(std::vector<unsigned short> &in){
+  std::vector<std::vector<unsigned short>> out;
+  std::sort(in.begin(), in.end()); // sort just in case to be more user-friendly
+  unsigned short prev{0};
+  std::vector<unsigned short> current_block;
+  for (auto & reg : in){
+    if(reg == prev){
+      throw PilzModbusClientException("List elemts must be unique.");
+    }
+    else if(reg == prev + 1) {
+      current_block.push_back(reg);
+    }
+    else { // *it >= prev + 1
+      std::vector<unsigned short> to_out(current_block);
+      if(!to_out.empty())
+      {
+        out.push_back(to_out);
+      }
+      current_block.clear();
+      current_block.push_back(reg);
+    }
+    prev = reg;
+  }
+  std::vector<unsigned short> to_out(current_block);
+  if(!to_out.empty())
+  {
+    out.push_back(to_out);
+  }
+  return out;
 }
 
 }  // namespace prbt_hardware_support
