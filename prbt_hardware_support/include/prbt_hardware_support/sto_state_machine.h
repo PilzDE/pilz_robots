@@ -80,7 +80,7 @@ using namespace msm::front;
  * @note
  * This code is not thread-safe.
  */
-class StoStateMachine_ : public msm::front::state_machine_def<StoStateMachine_>
+class StoStateMachine_ : public msm::front::state_machine_def<StoStateMachine_>  // CRTP
 {
 public:
   /**
