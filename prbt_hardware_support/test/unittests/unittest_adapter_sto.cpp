@@ -50,6 +50,10 @@
       .WillOnce(Invoke(isExecutingInvokeAction(true))) \
       .WillOnce(Invoke(isExecutingInvokeAction(false)))
 
+#define EXPECT_CHECK_FOR_MISSING_IS_EXECUTING_SERVICE \
+  EXPECT_CALL(mock_factory_, handle_invalid_named(IS_EXECUTING_SERVICE)) \
+      .WillOnce(Return(false)) // Service exists
+
 namespace prbt_hardware_support_tests
 {
 
@@ -183,6 +187,7 @@ TEST_F(AdapterStoTest, testEnableStopEnable)
   {
     InSequence dummy;
     EXPECT_HOLD;
+    EXPECT_CHECK_FOR_MISSING_IS_EXECUTING_SERVICE;
     EXPECT_IS_EXECUTING;
     EXPECT_HALT;
   }
@@ -258,6 +263,7 @@ TEST_F(AdapterStoTest, testSpamEnablePlusStop)
   {
     InSequence dummy;
     EXPECT_HOLD;
+    EXPECT_CHECK_FOR_MISSING_IS_EXECUTING_SERVICE;
     EXPECT_IS_EXECUTING;
     EXPECT_HALT;
   }
@@ -307,6 +313,7 @@ TEST_F(AdapterStoTest, testSpamStoActivePlusEnable)
   {
     InSequence dummy;
     EXPECT_HOLD;
+    EXPECT_CHECK_FOR_MISSING_IS_EXECUTING_SERVICE;
     EXPECT_IS_EXECUTING;
     EXPECT_HALT;
   }
@@ -513,6 +520,7 @@ TEST_F(AdapterStoTest, testUnholdFail)
     InSequence dummy;
 
     EXPECT_HOLD;
+    EXPECT_CHECK_FOR_MISSING_IS_EXECUTING_SERVICE;
     EXPECT_IS_EXECUTING;
     EXPECT_HALT;
   }
@@ -563,6 +571,7 @@ TEST_F(AdapterStoTest, testHoldFail)
     EXPECT_CALL(mock_factory_, call_named(HOLD_SERVICE, _))
         .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(HOLD_SRV_CALLED_EVENT), Return(false)))
         .WillRepeatedly(Return(false));
+    EXPECT_CHECK_FOR_MISSING_IS_EXECUTING_SERVICE;
 
     EXPECT_CALL(mock_factory_, call_named(IS_EXECUTING_SERVICE, _))
         .WillOnce(Return(false))
@@ -615,6 +624,7 @@ TEST_F(AdapterStoTest, testIsExecutingFail)
   {
     InSequence dummy;
     EXPECT_HOLD;
+    EXPECT_CHECK_FOR_MISSING_IS_EXECUTING_SERVICE;
     EXPECT_CALL(mock_factory_, call_named(IS_EXECUTING_SERVICE, _))
         .WillOnce(Return(false))
         .WillRepeatedly(Return(false));
@@ -665,6 +675,7 @@ TEST_F(AdapterStoTest, testIsExecutingDelayedFail)
   {
     InSequence dummy;
     EXPECT_HOLD;
+    EXPECT_CHECK_FOR_MISSING_IS_EXECUTING_SERVICE;
     EXPECT_CALL(mock_factory_, call_named(IS_EXECUTING_SERVICE, _))
         .WillOnce(Invoke(isExecutingInvokeAction(true)))
         .WillRepeatedly(Return(false));
@@ -713,6 +724,7 @@ TEST_F(AdapterStoTest, testHoldImmediatelyAfterUnhold)
         .WillOnce(InvokeWithoutArgs(unhold_action));
 
     EXPECT_HOLD;
+    EXPECT_CHECK_FOR_MISSING_IS_EXECUTING_SERVICE;
     EXPECT_IS_EXECUTING;
     EXPECT_HALT;
   }
@@ -802,6 +814,8 @@ TEST_F(AdapterStoTest, testExitInStateStopRequestedDuringRecover)
     // do not exclude other service calls as stopping the state machine does not prevent further actions
     EXPECT_CALL(mock_factory_, call_named(HOLD_SERVICE, _))
         .WillRepeatedly(Return(true));
+
+    EXPECT_CHECK_FOR_MISSING_IS_EXECUTING_SERVICE;
 
     EXPECT_CALL(mock_factory_, call_named(IS_EXECUTING_SERVICE, _))
         .WillRepeatedly(Invoke(isExecutingInvokeAction(false)));
