@@ -16,9 +16,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <launch>
-  <node name="speed_observer_node" pkg="prbt_hardware_support" type="speed_observer_node" output="screen" >
-      <rosparam param="additional_frames">["world"]</rosparam>.
-  </node>
+    <arg name="testing_frame" value="another_frame" doc="a user defindes frame to test how it is handled" />
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+        <param name="/use_gui" value="false"/>
+        <param name="/rate" value="100"/>
+        <rosparam param="/source_list">[fake_controller_joint_states]</rosparam>
+    </node>
+    <param name="robot_description"
+      command="$(find xacro)/xacro --inorder '$(find prbt_support)/urdf/prbt.xacro'" />
 
-  <node pkg="tf" type="static_transform_publisher" name="static_transform_publisher" args="99 0 0 0 1.57 0 /world /table 100"/>
+    <node name="speed_observer_node" pkg="prbt_hardware_support" type="speed_observer_node" output="screen" >
+        <rosparam param="additional_frames" subst_value="True">["$(arg testing_frame)"]</rosparam>
+    </node>
+
+    <node pkg="tf" type="static_transform_publisher" name="test_transform_publisher" args="99 0 0 0 1.57 0 /world /$(arg testing_frame) 100"/>
 </launch>

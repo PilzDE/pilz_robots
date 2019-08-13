@@ -20,6 +20,7 @@
 
 #include <ros/node_handle.h>
 #include <geometry_msgs/Twist.h>
+#include <tf/tf.h>
 
 #include <prbt_hardware_support/FrameSpeeds.h>
 
@@ -44,9 +45,11 @@ private:
   const std::string reference_frame_;
   const std::vector<std::string> frames_to_observe_;
   std::vector<double> speeds;
+  std::map<std::string, tf::Vector3> previous_poses;
 
   FrameSpeeds makeFrameSpeedsMessage(std::vector<double>& speeds);
-  static double speedFromVelocityVector(const geometry_msgs::Vector3& v);
+//  static double speedFromVelocityVector(const geometry_msgs::Vector3& v);
+  static double speedFromTwoPoses(tf::Vector3 a, tf::Vector3 b, double t);
   static bool isWithinLimits(const double& speed);
 };
 
