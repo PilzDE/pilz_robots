@@ -45,46 +45,46 @@ void SpeedObserver::startObserving(double frequency)
 {
   ros::Rate r(frequency);
   tf::TransformListener listener;
+  tf::StampedTransform transform;
   double cycle_time = 1 / frequency;
 
   for(auto & frame : frames_to_observe_)
   {
-    bool success = false;
+    bool success = listener.canTransform(reference_frame_, frame, ros::Time(0));
     while(!success) {
+      ROS_WARN("Waiting for transform %s -> %s", reference_frame_.c_str(), frame.c_str());
+      ros::Duration(WAITING_TIME_FOR_TRANSFORM_S).sleep();
       try {
-        success = listener.canTransform(reference_frame_, frame, ros::Time(0) - ros::Duration(cycle_time));
+        success = listener.canTransform(reference_frame_, frame, ros::Time(0));
       }
       catch (std::runtime_error &re) {
         ROS_WARN_STREAM(re.what());
       }
-      ROS_WARN("Waiting for transform %s -> %s", reference_frame_.c_str(), frame.c_str());
-      ros::Duration(WAITING_TIME_FOR_TRANSFORM_S).sleep();
     }
+    listener.lookupTransform(reference_frame_, frame, ros::Time(0), transform);
+    previous_poses[frame] = tf::Vector3(transform.getOrigin());
   }
   ROS_INFO("Observing at %.1fHz", frequency);
 
   while (ros::ok()){
+    ros::Time now = ros::Time::now();
     try{
       speeds.clear();
-      tf::StampedTransform transform_latest, transform_prev;
       for(auto & frame : frames_to_observe_){
-        // Look up the twist, averaging over the observation cycle
-        ros::Time latest = ros::Time(0);
-        listener.lookupTransform(frame, reference_frame_, latest, transform_latest);
-        listener.lookupTransform(frame, reference_frame_, latest - ros::Duration(cycle_time), transform_prev);
-//        ROS_DEBUG_STREAM("frame, reference_frame_:\nx " << transform.getOrigin().x() <<
-//                         "\ny " << transform.getOrigin().y() <<
-//                         "\nz " << transform.getOrigin().z());
+        listener.waitForTransform(reference_frame_, frame, now, ros::Duration(cycle_time));
+        listener.lookupTransform(reference_frame_, frame, now, transform);
         double speed = speedFromTwoPoses(
-              transform_prev.getOrigin(),
-              transform_latest.getOrigin(),
-              cycle_time);
+              previous_poses[frame],
+              transform.getOrigin(),
+              (now - previous_t).toSec());
+        previous_poses[frame] = tf::Vector3(transform.getOrigin());
         if(!isWithinLimits(speed)){
           ROS_ERROR("Speed %.2f m/s of frame >%s< exceeds limit of %.2f m/s", speed, frame.c_str(), SPEED_LIMIT);
           stop_pub.publish(std_msgs::Empty());
         }
         speeds.push_back(speed);
       }
+      previous_t = now;
       frame_speeds_pub.publish(makeFrameSpeedsMessage(speeds));
     }
     catch(const tf2::ExtrapolationException &ex){
@@ -116,7 +116,8 @@ FrameSpeeds SpeedObserver::makeFrameSpeedsMessage(std::vector<double>& speeds){
 
 double SpeedObserver::speedFromTwoPoses(tf::Vector3 a, tf::Vector3 b, double t)
 {
-  return sqrt(pow(a.x() - b.x(), 2) + pow(a.y() - b.y(), 2) + pow(a.z() - b.z(), 2)) / t;
+  tfScalar d = tf::tfDistance(a, b);
+  return d / t;
 }
 
 bool SpeedObserver::isWithinLimits(const double& speed)

@@ -46,9 +46,9 @@ private:
   const std::vector<std::string> frames_to_observe_;
   std::vector<double> speeds;
   std::map<std::string, tf::Vector3> previous_poses;
+  ros::Time previous_t;
 
   FrameSpeeds makeFrameSpeedsMessage(std::vector<double>& speeds);
-//  static double speedFromVelocityVector(const geometry_msgs::Vector3& v);
   static double speedFromTwoPoses(tf::Vector3 a, tf::Vector3 b, double t);
   static bool isWithinLimits(const double& speed);
 };
