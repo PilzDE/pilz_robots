@@ -98,7 +98,7 @@ public:
   }
 
   FRIEND_TEST(AdapterStoTest, testExitInStateEnabling);
-  FRIEND_TEST(AdapterStoTest, testExitInStateStopRequestedDuringRecover);
+  FRIEND_TEST(AdapterStoTest, testExitInStateStopRequestedDuringEnable);
 };
 
 const std::string RECOVER_SERVICE{AdapterSto::RECOVER_SERVICE};
@@ -788,7 +788,7 @@ TEST_F(AdapterStoTest, testExitInStateEnabling)
  * Expected Results:
  *  1. Recover and unhold services are called successively
  */
-TEST_F(AdapterStoTest, testExitInStateStopRequestedDuringRecover)
+TEST_F(AdapterStoTest, testExitInStateStopRequestedDuringEnable)
 {
   AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
                                                                        , std::placeholders::_2)};
