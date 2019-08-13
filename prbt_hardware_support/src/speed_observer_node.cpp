@@ -33,6 +33,7 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "speed_observer");
   ros::NodeHandle pnh {"~"};
+  ros::NodeHandle nh;
 
   urdf::Model m;
   m.initParam(ROBOT_DESCRIPTION_PARAM_NAME);
@@ -42,7 +43,7 @@ int main(int argc, char **argv)
   std::vector<std::string> frames_to_observe;
   m.getLinks(links);
   ROS_DEBUG_STREAM("frames_to_observe (from urdf):");
-  for( auto l : links){
+  for( const auto &l : links){
     if(l->name != reference_frame)  // no need to monitor the ref frame
     {
       ROS_DEBUG_STREAM(" - " << l->name);
@@ -52,13 +53,13 @@ int main(int argc, char **argv)
   std::vector<std::string> additional_frames;
   pnh.getParam(ADDITIONAL_FRAMES_PARAM_NAME, additional_frames);
   ROS_DEBUG_STREAM("frames_to_observe (additional_frames): ");
-  for( auto f : additional_frames){
+  for( const auto &f : additional_frames){
     ROS_DEBUG_STREAM(" - " << f);
   }
   frames_to_observe.insert(frames_to_observe.end(), additional_frames.begin(), additional_frames.end());
 
   prbt_hardware_support::SpeedObserver observer(
-    pnh,
+    nh,
     reference_frame,
     frames_to_observe
   );

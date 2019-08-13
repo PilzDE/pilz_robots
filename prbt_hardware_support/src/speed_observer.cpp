@@ -16,6 +16,7 @@
  */
 
 #include <tf/transform_listener.h>
+#include <std_msgs/Empty.h>
 
 #include <prbt_hardware_support/speed_observer.h>
 
@@ -23,8 +24,10 @@ namespace prbt_hardware_support
 {
 
 static const std::string FRAME_SPEEDS_TOPIC_NAME{"frame_speeds"};
-static const uint32_t FRAME_SPEEDS_QUEUE_SIZE{10};
+static const std::string STOP_TOPIC_NAME{"stop"};
+static const uint32_t DEFAULT_QUEUE_SIZE{10};
 static const uint32_t WAITING_TIME_FOR_TRANSFORM_S{1};
+static const double SPEED_LIMIT{.25};
 
 SpeedObserver::SpeedObserver(ros::NodeHandle& nh,
                              std::string& reference_frame,
@@ -33,8 +36,8 @@ SpeedObserver::SpeedObserver(ros::NodeHandle& nh,
   , reference_frame_(reference_frame)
   , frames_to_observe_(frames_to_observe)
 {
-  frame_speeds_pub = nh.advertise<FrameSpeeds>(FRAME_SPEEDS_TOPIC_NAME, FRAME_SPEEDS_QUEUE_SIZE);
-  velocities = std::vector<geometry_msgs::Vector3>(frames_to_observe.size());
+  frame_speeds_pub = nh.advertise<FrameSpeeds>(FRAME_SPEEDS_TOPIC_NAME, DEFAULT_QUEUE_SIZE);
+  stop_pub = nh.advertise<std_msgs::Empty>(STOP_TOPIC_NAME, DEFAULT_QUEUE_SIZE);
   speeds = std::vector<double>(frames_to_observe.size());
 }
 
@@ -50,23 +53,26 @@ void SpeedObserver::startObserving(double frequency)
       ros::Duration(WAITING_TIME_FOR_TRANSFORM_S).sleep();
     }
   }
-  ROS_INFO("Observing with %.1fHz", frequency);
+  ROS_INFO("Observing at %.1fHz", frequency);
 
   while (ros::ok())
   {
     try
     {
-      velocities.clear();
       speeds.clear();
       speeds.resize(frames_to_observe_.size());
       geometry_msgs::Twist twist;
-
-      for(auto & frame : frames_to_observe_){
-        // Look up the twist, averaging over the observation cycle
+      for(auto & frame : frames_to_observe_)
+      { // Look up the twist, averaging over the observation cycle
         listener.lookupTwist(reference_frame_, frame, ros::Time(0), ros::Duration(1 / frequency), twist);
-        velocities.push_back(twist.linear);
+        double speed = speedFromVelocityVector(twist.linear);
+        if(!isWithinLimits(speed))
+        {
+          ROS_ERROR("Speed %.2f m/s of frame >%s< exceeds limit of %.2f m/s", speed, frame.c_str(), SPEED_LIMIT);
+          stop_pub.publish(std_msgs::Empty());
+        }
+        speeds.push_back(speed);
       }
-      std::transform(velocities.begin(), velocities.end(), speeds.begin(), SpeedObserver::speedFromVelocityVector);
       frame_speeds_pub.publish(makeFrameSpeedsMessage(speeds));
     }
     catch(const tf2::ExtrapolationException &ex)
@@ -97,6 +103,11 @@ FrameSpeeds SpeedObserver::makeFrameSpeedsMessage(std::vector<double>& speeds)
 double SpeedObserver::speedFromVelocityVector(const geometry_msgs::Vector3& v)
 {
   return sqrt(pow(v.x, 2) + pow(v.y, 2) + pow(v.z, 2));
+}
+
+bool SpeedObserver::isWithinLimits(const double& speed)
+{
+  return speed < SPEED_LIMIT;
 }
 
 } // namespace prbt_hardware_support
