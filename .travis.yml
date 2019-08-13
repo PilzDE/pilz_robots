@@ -16,7 +16,6 @@ env:
   global:
     - ROS_DISTRO="melodic"
     - CATKIN_LINT=true
-    - CATKIN_PARALLEL_TEST_JOBS="-p1"
   matrix:
     - ROS_REPO=ros
     - ROS_REPO=ros-shadow-fixed

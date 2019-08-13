@@ -26,10 +26,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <!-- Modbus config -->
 <arg name="modbus_server_ip" default="127.0.0.1"/>
-<arg name="modbus_server_port" default="20702"/>
+<arg name="modbus_server_port" default="20704"/>
 
 <arg name="safety_hw" default="pnoz" />
-<rosparam ns="api_spec" command="load" file="$(find prbt_hardware_support)/config/modbus_api_spec_$(arg safety_hw).yaml" />
+<rosparam ns="read_api_spec" command="load" file="$(find prbt_hardware_support)/config/modbus_read_api_spec_$(arg safety_hw).yaml" />
 
 <node name="pilz_modbus_client_node" pkg="prbt_hardware_support" type="pilz_modbus_client_node">
   <param name="modbus_server_ip" value="$(arg modbus_server_ip)"/>
@@ -42,11 +42,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <test test-name="integrationtest_stop1" pkg="prbt_hardware_support" type="integrationtest_stop1">
   <param name="modbus_server_ip" value="$(arg modbus_server_ip)"/>
   <param name="modbus_server_port" value="$(arg modbus_server_port)"/>
-  <param name="recover_service_name" value="$(arg recover_service_name)"/>
-  <param name="halt_service_name" value="$(arg halt_service_name)"/>
-  <param name="hold_service_name" value="$(arg hold_service_name)"/>
-  <param name="unhold_service_name" value="$(arg unhold_service_name)"/>
-  <param name="is_executing_service_name" value="$(arg is_executing_service_name)"/>
+  <remap from="recover" to="$(arg recover_service_name)"/>
+  <remap from="halt" to="$(arg halt_service_name)"/>
+  <remap from="hold" to="$(arg hold_service_name)"/>
+  <remap from="unhold" to="$(arg unhold_service_name)"/>
+  <remap from="is_executing" to="$(arg is_executing_service_name)"/>
 </test>
 
 </launch>

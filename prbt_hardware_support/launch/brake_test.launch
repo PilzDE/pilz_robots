@@ -16,10 +16,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <launch>
+  <arg name="write_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_write_api_spec_pss4000.yaml" />
 
   <include file="$(find prbt_hardware_support)/launch/modbus_adapter_brake_test_node.launch" />
-
   <include file="$(find prbt_hardware_support)/launch/canopen_braketest_adapter_node.launch" />
-  <include file="$(find prbt_hardware_support)/launch/brake_test_executor_node.launch" />
+  <include file="$(find prbt_hardware_support)/launch/brake_test_executor_node.launch">
+    <arg name="write_api_spec_file" value="$(arg write_api_spec_file)" />
+  </include>
 
 </launch>

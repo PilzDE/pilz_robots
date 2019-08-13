@@ -26,6 +26,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   <arg name="index_of_first_register_to_read" default="" />
   <arg name="num_registers_to_read" default="" />
 
+<arg name="safety_hw" default="pss4000" />
+
+<rosparam ns="api_spec" command="load" file="$(find prbt_hardware_support)/config/modbus_read_api_spec_$(arg safety_hw).yaml" />
   <arg name="has_register_range_parameters"
        value="$(eval arg('index_of_first_register_to_read')!='' and arg('num_registers_to_read')!='')" />
 
