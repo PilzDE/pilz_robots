@@ -9,7 +9,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   std_srvs
   sensor_msgs
-  tf
+  tf2
+  tf2_ros
   urdf
 )
 

@@ -19,8 +19,8 @@
 #define SPEED_OBSERVER_H
 
 #include <ros/node_handle.h>
-#include <geometry_msgs/Twist.h>
-#include <tf/tf.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_ros/transform_listener.h>
 
 #include <prbt_hardware_support/FrameSpeeds.h>
 
@@ -39,19 +39,21 @@ public:
 
 private:
   ros::NodeHandle nh_;
+  const std::string reference_frame_;
+  const std::vector<std::string> frames_to_observe_;
+  tf2_ros::Buffer tf_buffer;
   ros::Publisher frame_speeds_pub;
   ros::Publisher stop_pub;
   uint32_t seq{0};
-  const std::string reference_frame_;
-  const std::vector<std::string> frames_to_observe_;
   std::vector<double> speeds;
-  std::map<std::string, tf::Vector3> previous_poses;
+  std::map<std::string, tf2::Vector3> previous_poses;
   ros::Time previous_t;
 
   FrameSpeeds makeFrameSpeedsMessage(std::vector<double>& speeds);
-  static double speedFromTwoPoses(tf::Vector3 a, tf::Vector3 b, double t);
+  static double speedFromTwoPoses(tf2::Vector3 a, tf2::Vector3 b, double t);
   static bool isWithinLimits(const double& speed);
 };
 
 } // namespace prbt_hardware_support
+
 #endif // SPEED_OBSERVER_H
