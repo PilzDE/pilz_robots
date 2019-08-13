@@ -31,12 +31,17 @@
 namespace prbt_hardware_support
 {
 
-#define STATE_ENTER_OUTPUT ROS_DEBUG_STREAM("Event: " << boost::core::demangle(typeid(ev).name()) \
-                                            << " - Entering: " << boost::core::demangle(typeid(*this).name()));
-#define STATE_EXIT_OUTPUT ROS_DEBUG_STREAM("Event: " << boost::core::demangle(typeid(ev).name()) \
-                                            << " - Leaving: " << boost::core::demangle(typeid(*this).name()));
-#define ACTION_OUTPUT ROS_DEBUG_STREAM("Event: " << boost::core::demangle(typeid(ev).name()) \
-                                        << " - Action: " << boost::core::demangle(typeid(*this).name()));
+inline std::string className(std::string fullName)
+{
+  return fullName.substr(fullName.rfind("::") + 2);
+}
+
+#define STATE_ENTER_OUTPUT ROS_DEBUG_STREAM_NAMED("STOStateMachine", "Event: " << className(boost::core::demangle(typeid(ev).name())) \
+                                            << " - Entering: " << className(boost::core::demangle(typeid(*this).name())));
+#define STATE_EXIT_OUTPUT ROS_DEBUG_STREAM_NAMED("STOStateMachine", "Event: " << className(boost::core::demangle(typeid(ev).name())) \
+                                            << " - Leaving: " << className(boost::core::demangle(typeid(*this).name())));
+#define ACTION_OUTPUT ROS_DEBUG_STREAM_NAMED("STOStateMachine", "Event: " << className(boost::core::demangle(typeid(ev).name())) \
+                                        << " - Action: " << className(boost::core::demangle(typeid(*this).name())));
 
 /**
  * @brief An AsyncStoTask is represented by a task execution and a completion signalling.
