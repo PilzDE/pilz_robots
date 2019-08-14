@@ -84,22 +84,22 @@ public:
   /**
    * @brief Call the service triggering recover of the drives.
    */
-  void call_recover();
+  void callRecoverService();
 
   /**
    * @brief Call the service triggering halt of the drives.
    */
-  void call_halt();
+  void callHaltService();
 
   /**
    * @brief Call the service triggering hold of the controller. Wait until execution of the hold trajectory finished.
    */
-  void call_hold();
+  void callHoldServiceAndWait();
 
   /**
    * @brief Call the service triggering unhold of the controller.
    */
-  void call_unhold();
+  void callUnholdService();
 
 public:
   static const std::string HOLD_SERVICE;
@@ -113,7 +113,7 @@ protected:
   /**
    * @brief Stop the state machine.
    *
-   * @note This is only used in tests.
+   * @note The access modifier protected allows this method to be used in tests.
    */
   void stopStateMachine();
 
@@ -145,7 +145,7 @@ private:
   //! Flag indicating if the worker-thread should terminate
   std::atomic_bool terminate_{false};
 
-  //! Mutex for protecting access to the state machine
+  //! Mutex for protecting access to the state machine, needs to be owned when triggering an event of the state machine
   std::mutex sm_mutex_;
 
   //! Condition variable for notifying a waiting worker-thread
@@ -206,16 +206,16 @@ AdapterStoTemplated<T>::AdapterStoTemplated(const std::function<T(std::string, b
       create_service_client_(create_service_client)
 {
   state_machine_ = std::unique_ptr<StoStateMachine>(new StoStateMachine(
-    std::bind(&AdapterStoTemplated<T>::call_recover, this),
-    std::bind(&AdapterStoTemplated<T>::call_halt, this),
-    std::bind(&AdapterStoTemplated<T>::call_hold, this),
-    std::bind(&AdapterStoTemplated<T>::call_unhold, this)));
-
-  ROS_DEBUG("Start worker-thread");
-  worker_thread_ = std::thread(&AdapterStoTemplated<T>::workerThreadFun, this);
+    std::bind(&AdapterStoTemplated<T>::callRecoverService, this),
+    std::bind(&AdapterStoTemplated<T>::callHaltService, this),
+    std::bind(&AdapterStoTemplated<T>::callHoldServiceAndWait, this),
+    std::bind(&AdapterStoTemplated<T>::callUnholdService, this)));
 
   ROS_DEBUG("Start state machine");
   state_machine_->start();
+
+  ROS_DEBUG("Start worker-thread");
+  worker_thread_ = std::thread(&AdapterStoTemplated<T>::workerThreadFun, this);
 }
 
 template <class T>
@@ -243,6 +243,7 @@ void AdapterStoTemplated<T>::updateSto(const bool sto)
   }
   worker_cv_.notify_one();
 }
+
 template <class T>
 void AdapterStoTemplated<T>::workerThreadFun()
 {
@@ -260,7 +261,7 @@ void AdapterStoTemplated<T>::workerThreadFun()
     AsyncStoTask task = state_machine_->task_queue_.front();
     state_machine_->task_queue_.pop();
 
-    sm_lock.unlock();               // | This is the part is executed async from
+    sm_lock.unlock();               // | This part is executed async from
     ROS_DEBUG("Execute task");      // | the state machine since new sto updates need to be handled
     task.execute();                 // | during service calls.
                                     // |
@@ -271,7 +272,7 @@ void AdapterStoTemplated<T>::workerThreadFun()
 }
 
 template <class T>
-void AdapterStoTemplated<T>::call_recover()
+void AdapterStoTemplated<T>::callRecoverService()
 {
   std_srvs::Trigger recover_trigger;
   ROS_DEBUG_STREAM("Calling Recover (Service: " << recover_srv_client_.getService() << ")");
@@ -285,7 +286,7 @@ void AdapterStoTemplated<T>::call_recover()
 }
 
 template <class T>
-void AdapterStoTemplated<T>::call_unhold()
+void AdapterStoTemplated<T>::callUnholdService()
 {
   std_srvs::Trigger unhold_trigger;
   ROS_DEBUG_STREAM("Calling Unhold (Service: " << unhold_srv_client_.getService() << ")");
@@ -298,7 +299,7 @@ void AdapterStoTemplated<T>::call_unhold()
 }
 
 template <class T>
-void AdapterStoTemplated<T>::call_hold()
+void AdapterStoTemplated<T>::callHoldServiceAndWait()
 {
   std_srvs::Trigger hold_trigger;
   ROS_DEBUG_STREAM("Calling Hold on controller (Service: " << hold_srv_client_.getService() << ")");
@@ -313,7 +314,7 @@ void AdapterStoTemplated<T>::call_hold()
 }
 
 template <class T>
-void AdapterStoTemplated<T>::call_halt()
+void AdapterStoTemplated<T>::callHaltService()
 {
   std_srvs::Trigger halt_trigger;
   ROS_DEBUG_STREAM("Calling Halt on driver (Service: " << halt_srv_client_.getService() << ")");

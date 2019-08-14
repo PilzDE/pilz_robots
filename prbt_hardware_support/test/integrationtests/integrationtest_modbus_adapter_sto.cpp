@@ -678,9 +678,7 @@ TEST_F(ModbusAdapterStoTest, testNoSto)
  */
 TEST_F(ModbusAdapterStoTest, ModbusMsgExceptionCTOR)
 {
-  ModbusMsgStoWrapperException* exception = new ModbusMsgStoWrapperException("test");
-
-  delete exception;
+  std::shared_ptr<ModbusMsgStoWrapperException> exception_ptr{new ModbusMsgStoWrapperException("test")};
 }
 
 /**
