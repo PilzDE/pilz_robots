@@ -270,7 +270,9 @@ void AdapterStoTemplated<T>::callUnholdService()
 
   if (!unhold_success)
   {
-    ROS_ERROR_STREAM("No success calling Unhold (Service: " << unhold_srv_client_.getService() << ")");
+    ROS_ERROR_STREAM("No success calling Unhold (Service: " << unhold_srv_client_.getService() << ")" << "\n"
+                     << "Most certainly a Stop1 is no longer feasible. "
+                     << "Please beware that the hardware might get damaged.");
   }
 }
 
@@ -283,7 +285,9 @@ void AdapterStoTemplated<T>::callHoldService()
 
   if (!hold_success)
   {
-    ROS_ERROR_STREAM("No success calling Hold on controller (Service: " << hold_srv_client_.getService() << ")");
+    ROS_ERROR_STREAM("No success calling Hold on controller (Service: " << hold_srv_client_.getService() << ")" << "\n"
+                     << "Most certainly a Stop1 is no longer feasible. "
+                     << "Please beware that the hardware might get damaged.");
   }
 }
 
