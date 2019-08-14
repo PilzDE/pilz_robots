@@ -106,6 +106,8 @@ handleHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response
   JointTrajectoryController::preemptActiveGoal();
   triggerMovementToHoldPosition();
 
+  ros::Duration(JointTrajectoryController::stop_trajectory_duration_).sleep();
+
   response.message = "Holding mode enabled";
   response.success = true;
   return true;
