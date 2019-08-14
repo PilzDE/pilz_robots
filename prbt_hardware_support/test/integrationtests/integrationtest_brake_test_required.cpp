@@ -157,7 +157,7 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
     nh_.serviceClient<prbt_hardware_support::IsBrakeTestRequired>(SERVICE_BRAKETEST_REQUIRED);
   ros::service::waitForService(SERVICE_BRAKETEST_REQUIRED, ros::Duration(10));
   ASSERT_TRUE(is_brake_test_required_client.exists());
-  ROS_ERROR("Calling service!");
+  ROS_INFO("Calling service!");
 
 	EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(is_brake_test_required_client, true, 10));
 
