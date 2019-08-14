@@ -96,7 +96,7 @@ public:
    * with the values beeing of type <b>int</b>.
    *
    * @param nh NodeHandle to read the parameters from
-   * @param_name the name on the rosparam server to read from
+   * @param param_name the name on the rosparam server to read from
    */
   ModbusApiSpecTemplated(T &nh, const std::string &param_name)
   {
