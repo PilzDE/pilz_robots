@@ -4,6 +4,7 @@ Changelog for package pilz_control
 
 Forthcoming
 -----------
+* Make hold service of joint trajectory controller blocking until hold position is reached
 * Add is_executing service to joint trajectory controller
 * Better handling consecutive calls on the hold service of joint trajectory controller
 * Contributors: Pilz GmbH and Co. KG
