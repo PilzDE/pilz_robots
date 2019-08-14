@@ -92,9 +92,9 @@ public:
   void callHaltService();
 
   /**
-   * @brief Call the service triggering hold of the controller. Wait until execution of the hold trajectory finished.
+   * @brief Call the service triggering hold of the controller.
    */
-  void callHoldServiceAndWait();
+  void callHoldService();
 
   /**
    * @brief Call the service triggering unhold of the controller.
@@ -106,7 +106,6 @@ public:
   static const std::string UNHOLD_SERVICE;
   static const std::string RECOVER_SERVICE;
   static const std::string HALT_SERVICE;
-  static const std::string IS_EXECUTING_SERVICE;
 
 protected:
 
@@ -130,13 +129,6 @@ private:
    * the state machine, whereas the completion signalling does.
    */
   void workerThreadFun();
-
-  /**
-   * @brief Wait until controller finishes executing.
-   *
-   * If the connection to the controller service fails, wait until WAIT_FOR_IS_EXECUTING_TIMEOUT_S is reached.
-   */
-  void waitForHoldTrajectoryExecution();
 
 private:
   //! State machine
@@ -165,18 +157,6 @@ private:
 
   //! ServiceClient attached to the driver <code>/halt</code> service
   T halt_srv_client_;
-
-  //! For creating new service clients
-  std::function<T(std::string, bool)> create_service_client_;
-
-  //! Rate for calling the is_executing service of the controller during hold
-  static constexpr int WAIT_FOR_IS_EXECUTING_RATE{100};
-
-  /**
-   * @brief Specifies when to abort waiting for the execution of a hold trajectory. This should not be smaller
-   * than the duration of the hold trajectory, such that in any case the driver halt is not called too early.
-   */
-  static constexpr double WAIT_FOR_IS_EXECUTING_TIMEOUT_S{0.2};
 };
 
 //! typedef for simple usage
@@ -195,20 +175,16 @@ template <class T>
 const std::string AdapterStoTemplated<T>::HALT_SERVICE{"driver/halt"};
 
 template <class T>
-const std::string AdapterStoTemplated<T>::IS_EXECUTING_SERVICE{"manipulator_joint_trajectory_controller/is_executing"};
-
-template <class T>
 AdapterStoTemplated<T>::AdapterStoTemplated(const std::function<T(std::string, bool)> &create_service_client)
     : hold_srv_client_(create_service_client(HOLD_SERVICE, false)),
       unhold_srv_client_(create_service_client(UNHOLD_SERVICE, false)),
       recover_srv_client_(create_service_client(RECOVER_SERVICE, false)),
-      halt_srv_client_(create_service_client(HALT_SERVICE, false)),
-      create_service_client_(create_service_client)
+      halt_srv_client_(create_service_client(HALT_SERVICE, false))
 {
   state_machine_ = std::unique_ptr<StoStateMachine>(new StoStateMachine(
     std::bind(&AdapterStoTemplated<T>::callRecoverService, this),
     std::bind(&AdapterStoTemplated<T>::callHaltService, this),
-    std::bind(&AdapterStoTemplated<T>::callHoldServiceAndWait, this),
+    std::bind(&AdapterStoTemplated<T>::callHoldService, this),
     std::bind(&AdapterStoTemplated<T>::callUnholdService, this)));
 
   ROS_DEBUG("Start state machine");
@@ -299,7 +275,7 @@ void AdapterStoTemplated<T>::callUnholdService()
 }
 
 template <class T>
-void AdapterStoTemplated<T>::callHoldServiceAndWait()
+void AdapterStoTemplated<T>::callHoldService()
 {
   std_srvs::Trigger hold_trigger;
   ROS_DEBUG_STREAM("Calling Hold on controller (Service: " << hold_srv_client_.getService() << ")");
@@ -309,8 +285,6 @@ void AdapterStoTemplated<T>::callHoldServiceAndWait()
   {
     ROS_ERROR_STREAM("No success calling Hold on controller (Service: " << hold_srv_client_.getService() << ")");
   }
-
-  waitForHoldTrajectoryExecution();
 }
 
 template <class T>
@@ -331,69 +305,6 @@ void AdapterStoTemplated<T>::stopStateMachine()
 {
   ROS_DEBUG("Stop state machine");
   state_machine_->stop();
-}
-
-template <class T>
-void AdapterStoTemplated<T>::waitForHoldTrajectoryExecution()
-{
-  ros::Time start_waiting{ros::Time::now()};
-
-  // create persistent service client for is_executing
-  T is_executing_srv_client = create_service_client_(IS_EXECUTING_SERVICE, true);
-  while (!is_executing_srv_client && !terminate_)
-  {
-    ROS_ERROR_STREAM("No success connecting to service " << IS_EXECUTING_SERVICE);
-    ros::Time::sleepUntil(start_waiting + ros::Duration(WAIT_FOR_IS_EXECUTING_TIMEOUT_S));
-    return;
-  }
-
-  bool is_executing{false};
-  ros::Rate rate{WAIT_FOR_IS_EXECUTING_RATE};
-
-  // wait for execution of hold trajectory to begin
-  while (!is_executing && !terminate_)
-  {
-    if (ros::Time::now() - start_waiting > ros::Duration(WAIT_FOR_IS_EXECUTING_TIMEOUT_S))
-    {
-      ROS_ERROR("No success detecting execution of hold trajectory.");
-      return;
-    }
-
-    std_srvs::Trigger is_executing_trigger;
-    bool is_executing_success = is_executing_srv_client.call(is_executing_trigger);
-    if (!is_executing_success)
-    {
-      ROS_ERROR_STREAM("No success calling service " << is_executing_srv_client.getService());
-    }
-    else
-    {
-      is_executing = is_executing_trigger.response.success;
-    }
-
-    rate.sleep();
-  }
-
-  // wait for execution of hold trajectory to end
-  while (is_executing && !terminate_)
-  {
-    std_srvs::Trigger is_executing_trigger;
-    bool is_executing_success = is_executing_srv_client.call(is_executing_trigger);
-    if (!is_executing_success)
-    {
-      ROS_ERROR_STREAM("No success calling service " << is_executing_srv_client.getService());
-      // In case the service call fails, make sure to return eventually
-      if (ros::Time::now() - start_waiting > ros::Duration(WAIT_FOR_IS_EXECUTING_TIMEOUT_S))
-      {
-        return;
-      }
-    }
-    else
-    {
-      is_executing = is_executing_trigger.response.success;
-    }
-
-    rate.sleep();
-  }
 }
 
 } // namespace prbt_hardware_support

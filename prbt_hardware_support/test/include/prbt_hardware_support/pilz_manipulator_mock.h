@@ -39,38 +39,32 @@ class ManipulatorMock
     void advertiseUnholdService(ros::NodeHandle nh, std::string unhold_service_name);
     void advertiseHaltService(ros::NodeHandle nh, std::string halt_service_name);
     void advertiseRecoverService(ros::NodeHandle nh, std::string recover_service_name);
-    void advertiseIsExecutingService(ros::NodeHandle nh, std::string is_executing_service_name);
 
     void shutdownHoldService();
     void shutdownUnholdService();
-    void shutdownIsExecutingService();
 
     void advertiseServices(ros::NodeHandle nh,
                            std::string hold_service_name,
                            std::string unhold_service_name,
                            std::string halt_service_name,
-                           std::string recover_service_name,
-                           std::string is_executing_service_name);
+                           std::string recover_service_name);
 
 
     MOCK_METHOD2(holdCb,        bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
     MOCK_METHOD2(unholdCb,      bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
     MOCK_METHOD2(haltCb,        bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
     MOCK_METHOD2(recoverCb,     bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
-    MOCK_METHOD2(isExecutingCb, bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
 
   private:
     bool holdCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp);
     bool unholdCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp);
     bool haltCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp);
     bool recoverCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp);
-    bool isExecutingCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp);
 
     ros::ServiceServer hold_srv_;
     ros::ServiceServer unhold_srv_;
     ros::ServiceServer halt_srv_;
     ros::ServiceServer recover_srv_;
-    ros::ServiceServer is_executing_srv_;
 
 };
 
@@ -98,12 +92,6 @@ void ManipulatorMock::advertiseRecoverService(ros::NodeHandle nh, std::string re
   ROS_DEBUG_NAMED("ManipulatorMock", "Advertised %s", recover_srv_.getService().c_str());
 }
 
-void ManipulatorMock::advertiseIsExecutingService(ros::NodeHandle nh, std::string is_executing_service_name)
-{
-  is_executing_srv_ = nh.advertiseService(is_executing_service_name, &ManipulatorMock::isExecutingCb_internal, this);
-  ROS_DEBUG_NAMED("ManipulatorMock", "Advertised %s", is_executing_srv_.getService().c_str());
-}
-
 bool ManipulatorMock::holdCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp)
 {
   ROS_DEBUG_NAMED("ManipulatorMock", "Call to %s", hold_srv_.getService().c_str());
@@ -128,12 +116,6 @@ bool ManipulatorMock::recoverCb_internal(std_srvs::Trigger::Request& req, std_sr
   return recoverCb(req, resp);
 }
 
-bool ManipulatorMock::isExecutingCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp)
-{
-  ROS_DEBUG_NAMED("ManipulatorMock", "Call to %s", is_executing_srv_.getService().c_str());
-  return isExecutingCb(req, resp);
-}
-
 void ManipulatorMock::shutdownHoldService()
 {
   hold_srv_.shutdown();
@@ -146,24 +128,16 @@ void ManipulatorMock::shutdownUnholdService()
   ROS_DEBUG_NAMED("ManipulatorMock", "Shut down service %s", unhold_srv_.getService().c_str());
 }
 
-void ManipulatorMock::shutdownIsExecutingService()
-{
-  is_executing_srv_.shutdown();
-  ROS_DEBUG_NAMED("ManipulatorMock", "Shut down service %s", is_executing_srv_.getService().c_str());
-}
-
 void ManipulatorMock::advertiseServices(ros::NodeHandle nh,
                                         std::string hold_service_name,
                                         std::string unhold_service_name,
                                         std::string halt_service_name,
-                                        std::string recover_service_name,
-                                        std::string is_executing_service_name)
+                                        std::string recover_service_name)
 {
   advertiseHoldService(nh, hold_service_name);
   advertiseUnholdService(nh, unhold_service_name);
   advertiseHaltService(nh, halt_service_name);
   advertiseRecoverService(nh, recover_service_name);
-  advertiseIsExecutingService(nh, is_executing_service_name);
 }
 
 #endif // PRBT_HARDWARE_SUPPORT_PILZ_MANIPULATOR_MOCK_H

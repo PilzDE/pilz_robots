@@ -22,7 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <arg name="halt_service_name" default="driver/halt"/>
 <arg name="hold_service_name" default="manipulator_joint_trajectory_controller/hold"/>
 <arg name="unhold_service_name" default="manipulator_joint_trajectory_controller/unhold"/>
-<arg name="is_executing_service_name" default="manipulator_joint_trajectory_controller/is_executing"/>
 
 <!-- Modbus config -->
 <arg name="modbus_server_ip" default="127.0.0.1"/>
@@ -46,7 +45,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   <remap from="halt" to="$(arg halt_service_name)"/>
   <remap from="hold" to="$(arg hold_service_name)"/>
   <remap from="unhold" to="$(arg unhold_service_name)"/>
-  <remap from="is_executing" to="$(arg is_executing_service_name)"/>
 </test>
 
 </launch>

@@ -60,7 +60,6 @@ static const std::string RECOVER_SERVICE_NAME {"recover"};
 static const std::string HALT_SERVICE_NAME {"halt"};
 static const std::string HOLD_SERVICE_NAME {"hold"};
 static const std::string UNHOLD_SERVICE_NAME {"unhold"};
-static const std::string IS_EXECUTING_SERVICE_NAME {"is_executing"};
 
 /**
  * @brief Stop1IntegrationTest checks if the chain
@@ -89,8 +88,7 @@ void Stop1IntegrationTest::SetUp()
                                 HOLD_SERVICE_NAME,
                                 UNHOLD_SERVICE_NAME,
                                 HALT_SERVICE_NAME,
-                                RECOVER_SERVICE_NAME,
-                                IS_EXECUTING_SERVICE_NAME);
+                                RECOVER_SERVICE_NAME);
 }
 
 void Stop1IntegrationTest::TearDown()
@@ -197,7 +195,6 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
     EXPECT_CALL(manipulator, unholdCb(_,_)).Times(0);
     EXPECT_CALL(manipulator, recoverCb(_,_)).Times(0);
     EXPECT_CALL(manipulator, holdCb(_,_)).Times(1);
-    EXPECT_CALL(manipulator, isExecutingCb(_,_)).Times(AtLeast(1));
     EXPECT_CALL(manipulator, haltCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("halt_callback"));
   }
 
@@ -230,7 +227,6 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
 
     // Call from Disconnect
     EXPECT_CALL(manipulator, holdCb(_,_)).Times(1);
-    EXPECT_CALL(manipulator, isExecutingCb(_,_)).Times(AtLeast(1));
     EXPECT_CALL(manipulator, unholdCb(_,_)).Times(0);
     EXPECT_CALL(manipulator, recoverCb(_,_)).Times(0);
     EXPECT_CALL(manipulator, haltCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("halt_callback"));

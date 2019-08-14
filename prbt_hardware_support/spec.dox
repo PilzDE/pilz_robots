@@ -80,9 +80,6 @@
  * @definereq{Controller_service_hold_optional}
  *  - If the controller hold service fails during Stop1, the driver can still be recovered.
  *
- * @definereq{Controller_service_is_executing_optional}
- *  - If the controller is_executing service fails during Stop1, the driver is still recovered after the stop motion.
- *
  *
  *
  * @subsubsection brake_test Braketest

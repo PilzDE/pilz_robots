@@ -73,7 +73,6 @@ using ::testing::Return;
   EXPECT_CALL(manipulator_, unholdCb(_,_)).Times(0);\
   EXPECT_CALL(manipulator_, recoverCb(_,_)).Times(0);\
   EXPECT_CALL(manipulator_, holdCb(_,_)).Times(1);\
-  EXPECT_CALL(manipulator_, isExecutingCb(_,_)).Times(AtLeast(1));\
   EXPECT_CALL(manipulator_, haltCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("halt_callback")); }\
   while(false)
 
@@ -116,7 +115,6 @@ protected:
   std::string UNHOLD_SERVICE_T {ModbusAdapterSto::UNHOLD_SERVICE};
   std::string RECOVER_SERVICE_T {ModbusAdapterSto::RECOVER_SERVICE};
   std::string HALT_SERVICE_T {ModbusAdapterSto::HALT_SERVICE};
-  std::string IS_EXECUTING_SERVICE_T {ModbusAdapterSto::IS_EXECUTING_SERVICE};
 };
 
 ModbusAdapterStoTest::ModbusAdapterStoTest()
@@ -189,8 +187,7 @@ TEST_F(ModbusAdapterStoTest, testModbusMsgStoWrapperDtor)
  */
 TEST_F(ModbusAdapterStoTest, testAdapterStoDtor)
 {
-  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T,
-                                 IS_EXECUTING_SERVICE_T);
+  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
   std::shared_ptr<AdapterSto> adapter {new AdapterSto()};
 }
 
@@ -199,8 +196,7 @@ TEST_F(ModbusAdapterStoTest, testAdapterStoDtor)
  */
 TEST_F(ModbusAdapterStoTest, testSetup)
 {
-  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T,
-                                 IS_EXECUTING_SERVICE_T);
+  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
 
@@ -218,7 +214,6 @@ TEST_F(ModbusAdapterStoTest, testSetupNoDisableService)
 {
   manipulator_.advertiseHoldService(nh_, HOLD_SERVICE_T);
   manipulator_.advertiseUnholdService(nh_, UNHOLD_SERVICE_T);
-  manipulator_.advertiseIsExecutingService(nh_, IS_EXECUTING_SERVICE_T);
   manipulator_.advertiseRecoverService(nh_, RECOVER_SERVICE_T);
 
   auto adapter_thread = asyncConstructor();
@@ -239,7 +234,6 @@ TEST_F(ModbusAdapterStoTest, testSetupNoDisableService)
 TEST_F(ModbusAdapterStoTest, testSetupNoUnholdService)
 {
   manipulator_.advertiseHoldService(nh_, HOLD_SERVICE_T);
-  manipulator_.advertiseIsExecutingService(nh_, IS_EXECUTING_SERVICE_T);
   manipulator_.advertiseHaltService(nh_, HALT_SERVICE_T);
   manipulator_.advertiseRecoverService(nh_, RECOVER_SERVICE_T);
 
@@ -262,7 +256,6 @@ TEST_F(ModbusAdapterStoTest, testSetupNoRecoverService)
 {
   manipulator_.advertiseHoldService(nh_, HOLD_SERVICE_T);
   manipulator_.advertiseUnholdService(nh_, UNHOLD_SERVICE_T);
-  manipulator_.advertiseIsExecutingService(nh_, IS_EXECUTING_SERVICE_T);
   manipulator_.advertiseHaltService(nh_, HALT_SERVICE_T);
 
   auto adapter_thread = asyncConstructor();
@@ -283,7 +276,6 @@ TEST_F(ModbusAdapterStoTest, testSetupNoRecoverService)
 TEST_F(ModbusAdapterStoTest, testSetupNoHoldService)
 {
   manipulator_.advertiseUnholdService(nh_, UNHOLD_SERVICE_T);
-  manipulator_.advertiseIsExecutingService(nh_, IS_EXECUTING_SERVICE_T);
   manipulator_.advertiseHaltService(nh_, HALT_SERVICE_T);
   manipulator_.advertiseRecoverService(nh_, RECOVER_SERVICE_T);
 
@@ -310,8 +302,7 @@ TEST_F(ModbusAdapterStoTest, testSetupNoHoldService)
  */
 TEST_F(ModbusAdapterStoTest, testClearMsg)
 {
-  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T,
-                                 IS_EXECUTING_SERVICE_T);
+  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
 
@@ -329,8 +320,7 @@ TEST_F(ModbusAdapterStoTest, testClearMsg)
  */
 TEST_F(ModbusAdapterStoTest, testRemoveUnholdService)
 {
-  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T,
-                                 IS_EXECUTING_SERVICE_T);
+  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
 
@@ -356,8 +346,7 @@ TEST_F(ModbusAdapterStoTest, testRemoveUnholdService)
  */
 TEST_F(ModbusAdapterStoTest, testRemoveHoldService)
 {
-  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T,
-                                 IS_EXECUTING_SERVICE_T);
+  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
 
@@ -368,51 +357,6 @@ TEST_F(ModbusAdapterStoTest, testRemoveHoldService)
 
   BARRIER("unhold_callback");
 
-  EXPECT_CALL(manipulator_, isExecutingCb(_,_)).Times(AtLeast(1));
-  EXPECT_CALL(manipulator_, haltCb(_,_)).WillOnce(ACTION_OPEN_BARRIER("halt_callback"));
-
-  pub_.publish(createDefaultStoModbusMsg(STO_ACTIVE));
-
-  BARRIER("halt_callback");
-
-  EXPECT_CLEARANCE;
-
-  std::atomic_bool keep_publishing{true};
-  std::thread pub_thread = std::thread([this, &keep_publishing](){
-    ros::Rate rate(STO_CLEAR_PUBLISHING_RATE);
-    while (keep_publishing)
-    {
-      this->pub_.publish(this->createDefaultStoModbusMsg(STO_CLEAR));
-      rate.sleep();
-    }
-    });
-
-  BARRIER("unhold_callback");
-
-  keep_publishing = false;
-  pub_thread.join();
-}
-
-/**
- * @tests{Controller_service_is_executing_optional,
- *  Test system can deal correctly with missing is_executing service of controller.
- * }
- */
-TEST_F(ModbusAdapterStoTest, testRemoveIsExecutingService)
-{
-  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T,
-                                 IS_EXECUTING_SERVICE_T);
-
-  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
-
-  EXPECT_CLEARANCE;
-
-  manipulator_.shutdownIsExecutingService();
-  pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
-
-  BARRIER("unhold_callback");
-
-  EXPECT_CALL(manipulator_, holdCb(_,_)).Times(1);
   EXPECT_CALL(manipulator_, haltCb(_,_)).WillOnce(ACTION_OPEN_BARRIER("halt_callback"));
 
   pub_.publish(createDefaultStoModbusMsg(STO_ACTIVE));
@@ -448,8 +392,7 @@ TEST_F(ModbusAdapterStoTest, testRemoveIsExecutingService)
  */
 TEST_F(ModbusAdapterStoTest, testHoldMsg)
 {
-  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T,
-                                 IS_EXECUTING_SERVICE_T);
+  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
 
@@ -474,8 +417,7 @@ TEST_F(ModbusAdapterStoTest, testHoldMsg)
  */
 TEST_F(ModbusAdapterStoTest, testDisconnectNoStoMsg)
 {
-  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T,
-                                 IS_EXECUTING_SERVICE_T);
+  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
 
@@ -504,8 +446,7 @@ TEST_F(ModbusAdapterStoTest, testDisconnectNoStoMsg)
  */
 TEST_F(ModbusAdapterStoTest, testDisconnectWithStoMsg)
 {
-  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T,
-                                 IS_EXECUTING_SERVICE_T);
+  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
 
@@ -533,8 +474,7 @@ TEST_F(ModbusAdapterStoTest, testDisconnectWithStoMsg)
  */
 TEST_F(ModbusAdapterStoTest, testDisconnectPure)
 {
-  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T,
-                                 IS_EXECUTING_SERVICE_T);
+  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
 
@@ -562,8 +502,7 @@ TEST_F(ModbusAdapterStoTest, testDisconnectPure)
  */
 TEST_F(ModbusAdapterStoTest, testNoVersion)
 {
-  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T,
-                                 IS_EXECUTING_SERVICE_T);
+  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
 
@@ -590,8 +529,7 @@ TEST_F(ModbusAdapterStoTest, testNoVersion)
  */
 TEST_F(ModbusAdapterStoTest, testWrongVersion)
 {
-  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T,
-                                 IS_EXECUTING_SERVICE_T);
+  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
 
@@ -622,8 +560,7 @@ TEST_F(ModbusAdapterStoTest, testWrongVersion)
  */
 TEST_F(ModbusAdapterStoTest, testVersion1)
 {
-  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T,
-                                 IS_EXECUTING_SERVICE_T);
+  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
 
@@ -651,8 +588,7 @@ TEST_F(ModbusAdapterStoTest, testVersion1)
  */
 TEST_F(ModbusAdapterStoTest, testNoSto)
 {
-  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T,
-                                 IS_EXECUTING_SERVICE_T);
+  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
 
@@ -689,8 +625,7 @@ TEST_F(ModbusAdapterStoTest, ModbusMsgExceptionCTOR)
  */
 TEST_F(ModbusAdapterStoTest, testStoChangeDuringRecover)
 {
-  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T,
-                                 IS_EXECUTING_SERVICE_T);
+  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
 
@@ -703,7 +638,6 @@ TEST_F(ModbusAdapterStoTest, testStoChangeDuringRecover)
   };
 
   EXPECT_CALL(manipulator_, holdCb(_,_)).Times(0);
-  EXPECT_CALL(manipulator_, isExecutingCb(_,_)).Times(0);
   EXPECT_CALL(manipulator_, unholdCb(_,_)).Times(0);
   EXPECT_CALL(manipulator_, haltCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("halt_callback"));
   EXPECT_CALL(manipulator_, recoverCb(_,_)).Times(1).WillOnce(InvokeWithoutArgs(recover_action));
