@@ -393,15 +393,15 @@ if(CATKIN_ENABLE_TESTING)
   add_dependencies(integrationtest_trigger_brake_test ${catkin_EXPORTED_TARGETS})
   #----------------------------------------
 
-  # --- Speed Observer integration test ---
-  add_rostest_gtest(integrationtest_speed_observer
-      test/integrationtests/integrationtest_speed_observer.test
-      test/integrationtests/integrationtest_speed_observer.cpp
+  # --- Speed Observer unit test ---
+  add_rostest_gmock(unittest_speed_observer
+      test/unittests/unittest_speed_observer.test
+      test/unittests/unittest_speed_observer.cpp
   )
-  target_link_libraries(integrationtest_speed_observer
+  target_link_libraries(unittest_speed_observer
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
   )
-  add_dependencies(integrationtest_speed_observer ${${PROJECT_NAME}_EXPORTED_TARGETS})
+  add_dependencies(unittest_speed_observer ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------------
 
   #--- SystemInfo unit test ---

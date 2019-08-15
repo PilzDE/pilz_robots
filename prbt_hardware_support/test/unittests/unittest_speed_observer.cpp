@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 #include <ros/ros.h>
 
@@ -25,6 +25,7 @@
 
 namespace speed_observer_test
 {
+using ::testing::_;
 using namespace prbt_hardware_support;
 
 static const std::string FRAME_SPEEDS_TOPIC_NAME{"/frame_speeds"};
@@ -93,13 +94,14 @@ TEST_F(SpeedObserverIntegarionTest, testStartupAndTopic)
   for(auto & n : last_frame_speeds_.name){
     ROS_DEBUG_STREAM("> " << n);
   }
+//  EXPECT_THAT(last_frame_speeds_.name, ::testing::Contains("world"));
 }
 
 } // namespace speed_observer_test
 
 int main(int argc, char *argv[])
 {
-  ros::init(argc, argv, "integrationtest_speed_observer");
+  ros::init(argc, argv, "unittest_speed_observer");
   ros::NodeHandle nh;
 
   testing::InitGoogleTest(&argc, argv);

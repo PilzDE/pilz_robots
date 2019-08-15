@@ -34,5 +34,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
     <node pkg="tf" type="static_transform_publisher" name="test_transform_publisher" args="99 0 0 0 1.57 0 /world /$(arg testing_frame) 100"/>
 
-    <test test-name="integrationtest_speed_observer" pkg="prbt_hardware_support" type="integrationtest_speed_observer" time-limit="$(arg timeout)"/>
+    <test test-name="unittest_speed_observer" pkg="prbt_hardware_support" type="unittest_speed_observer" time-limit="$(arg timeout)"/>
 </launch>
