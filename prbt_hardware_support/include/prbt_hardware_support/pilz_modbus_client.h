@@ -129,7 +129,7 @@ private:
   };
 
   //! Registers which have to be read.
-  std::vector<unsigned short> registers_to_read;
+  std::vector<unsigned short> registers_to_read_;
 
   //! Defines how long we wait for a response from the Modbus-server.
   const unsigned int RESPONSE_TIMEOUT_MS;

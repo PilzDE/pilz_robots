@@ -32,7 +32,7 @@ PilzModbusClient::PilzModbusClient(ros::NodeHandle& nh,
                                    const std::string& modbus_read_topic_name,
                                    const std::string& modbus_write_service_name,
                                    double read_frequency_hz)
-  : registers_to_read(registers_to_read)
+  : registers_to_read_(registers_to_read)
   , RESPONSE_TIMEOUT_MS(response_timeout_ms)
   , READ_FREQUENCY_HZ(read_frequency_hz)
   , modbus_client_(std::move(modbus_client))
@@ -129,10 +129,10 @@ void PilzModbusClient::run()
       }
     }
 
-    std::vector<std::vector<unsigned short>> blocks = splitIntoBlocks(registers_to_read);
+    std::vector<std::vector<unsigned short>> blocks = splitIntoBlocks(registers_to_read_);
 
-    unsigned short index_of_first_register = *std::min_element(registers_to_read.begin(), registers_to_read.end());
-    int num_registers = *std::max_element(registers_to_read.begin(), registers_to_read.end()) - index_of_first_register + 1;
+    unsigned short index_of_first_register = *std::min_element(registers_to_read_.begin(), registers_to_read_.end());
+    int num_registers = *std::max_element(registers_to_read_.begin(), registers_to_read_.end()) - index_of_first_register + 1;
     holding_register = RegCont(static_cast<unsigned long>(num_registers), 0);
 
     ROS_DEBUG("blocks.size() %zu", blocks.size());
