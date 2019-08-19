@@ -348,6 +348,12 @@ TEST_F(AdapterStoTest, testSkippingHoldPlusEnable)
     return true;
   };
 
+  std::function<bool()> halt_action = [this, &adapter_sto]() {
+    this->triggerClearEvent(HALT_SRV_CALLED_EVENT);
+    adapter_sto.updateSto(true);
+    return true;
+  };
+
   /**********
    * Step 1 *
    **********/
@@ -357,7 +363,8 @@ TEST_F(AdapterStoTest, testSkippingHoldPlusEnable)
     EXPECT_CALL(mock_factory_, call_named(RECOVER_SERVICE, _))
         .WillOnce(InvokeWithoutArgs(recover_action));
 
-    EXPECT_HALT;
+    EXPECT_CALL(mock_factory_, call_named(HALT_SERVICE, _))
+        .WillOnce(InvokeWithoutArgs(halt_action));
   }
 
   adapter_sto.updateSto(true);
