@@ -200,7 +200,10 @@ AdapterStoTemplated<T>::~AdapterStoTemplated()
   if (worker_thread_.joinable())
   {
     ROS_DEBUG("Join worker thread");
+    {
+      std::lock_guard<std::mutex> lock(sm_mutex_);
     terminate_ = true;
+    }
     worker_cv_.notify_one();
     worker_thread_.join();
   }
