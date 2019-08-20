@@ -20,8 +20,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   <arg name="index_of_first_register_to_read" default="512"/>
   <arg name="num_registers_to_read" default="2" />
 
-  <test pkg="prbt_hardware_support" type="unittest_modbus_adapter_sto"
-        test-name="unittest_modbus_adapter_sto">
+  <test pkg="prbt_hardware_support" type="integrationtest_modbus_adapter_sto"
+        test-name="integrationtest_modbus_adapter_sto">
     <param name="index_of_first_register_to_read" value="$(arg index_of_first_register_to_read)"/>
     <param name="num_registers_to_read" value="$(arg num_registers_to_read)"/>
   </test>

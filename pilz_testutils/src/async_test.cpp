@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include <algorithm>
+
 #include <ros/ros.h>
 
 #include <pilz_testutils/async_test.h>
@@ -29,9 +31,18 @@ void AsyncTest::barricade(std::string clear_event)
 void AsyncTest::barricade(std::initializer_list<std::string> clear_events)
 {
   std::unique_lock<std::mutex> lk(m_);
+
+  std::stringstream events_stringstream;
+  for (auto event : clear_events)
+  {
+    events_stringstream << event << ", ";
+  }
+  ROS_DEBUG_NAMED("Test", "Adding Barricade[%s]", events_stringstream.str().c_str());
+
   std::copy_if(clear_events.begin(), clear_events.end(), std::inserter(clear_events_, clear_events_.end()),
                [this](std::string event){ return this->waitlist_.count(event) == 0; });
   waitlist_.clear();
+
   while(!clear_events_.empty())
   {
     cv_.wait(lk);
@@ -41,8 +52,10 @@ void AsyncTest::barricade(std::initializer_list<std::string> clear_events)
 void AsyncTest::triggerClearEvent(std::string event)
 {
   std::lock_guard<std::mutex> lk(m_);
+
   if (clear_events_.empty())
   {
+    ROS_DEBUG_NAMED("Test", "Clearing Barricade[%s]", event.c_str());
     waitlist_.insert(event);
   }
   else if (clear_events_.erase(event) < 1)
