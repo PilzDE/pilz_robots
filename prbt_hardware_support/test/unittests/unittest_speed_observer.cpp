@@ -93,7 +93,7 @@ TEST_F(SpeedObserverIntegarionTest, testStartupAndTopic)
   for(auto & n : last_frame_speeds_.name){
     ROS_DEBUG_STREAM("> " << n);
   }
-  EXPECT_THAT(last_frame_speeds_.name, ::testing::Contains("wourld"));
+  EXPECT_THAT(last_frame_speeds_.name, ::testing::Contains("prbt_base"));
 }
 
 } // namespace speed_observer_test
