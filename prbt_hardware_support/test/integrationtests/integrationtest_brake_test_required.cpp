@@ -152,14 +152,11 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
 
   modbus_server.setHoldingRegister({{braketest_register, 1}, {version_register, MODBUS_API_VERSION_VALUE}});
 
-
-  ros::ServiceClient	is_brake_test_required_client =
+  ros::ServiceClient is_brake_test_required_client =
     nh_.serviceClient<prbt_hardware_support::IsBrakeTestRequired>(SERVICE_BRAKETEST_REQUIRED);
-  ros::service::waitForService(SERVICE_BRAKETEST_REQUIRED, ros::Duration(10));
-  ASSERT_TRUE(is_brake_test_required_client.exists());
-  ROS_INFO("Calling service!");
+  ASSERT_TRUE(is_brake_test_required_client.waitForExistence(ros::Duration(10)));
 
-	EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(is_brake_test_required_client, true, 10));
+  EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(is_brake_test_required_client, true, 10));
 
   /**********
    * Step 2 *
