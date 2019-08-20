@@ -27,6 +27,7 @@
 #include <boost/msm/front/functor_row.hpp>
 #include <boost/msm/front/state_machine_def.hpp>
 #include <boost/core/demangle.hpp>
+#include <ros/console.h>
 
 namespace prbt_hardware_support
 {
@@ -36,8 +37,11 @@ inline std::string className(std::string fullName)
   return fullName.substr(fullName.rfind("::") + 2);
 }
 
+#define COLOR_GREEN "\033[32m"
+#define COLOR_GREEN_BOLD "\033[1;32m"
+
 #define STATE_ENTER_OUTPUT ROS_DEBUG_STREAM_NAMED("STOStateMachine", "Event: " << className(boost::core::demangle(typeid(ev).name())) \
-                                            << " - Entering: " << className(boost::core::demangle(typeid(*this).name())));
+                                            << " - Entering: " << COLOR_GREEN_BOLD << className(boost::core::demangle(typeid(*this).name())) << COLOR_GREEN);
 #define STATE_EXIT_OUTPUT ROS_DEBUG_STREAM_NAMED("STOStateMachine", "Event: " << className(boost::core::demangle(typeid(ev).name())) \
                                             << " - Leaving: " << className(boost::core::demangle(typeid(*this).name())));
 #define ACTION_OUTPUT ROS_DEBUG_STREAM_NAMED("STOStateMachine", "Event: " << className(boost::core::demangle(typeid(ev).name())) \

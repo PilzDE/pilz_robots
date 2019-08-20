@@ -187,10 +187,8 @@ AdapterStoTemplated<T>::AdapterStoTemplated(const std::function<T(std::string, b
     std::bind(&AdapterStoTemplated<T>::callHoldService, this),
     std::bind(&AdapterStoTemplated<T>::callUnholdService, this)));
 
-  ROS_DEBUG("Start state machine");
   state_machine_->start();
 
-  ROS_DEBUG("Start worker-thread");
   worker_thread_ = std::thread(&AdapterStoTemplated<T>::workerThreadFun, this);
 }
 
@@ -199,10 +197,9 @@ AdapterStoTemplated<T>::~AdapterStoTemplated()
 {
   if (worker_thread_.joinable())
   {
-    ROS_DEBUG("Join worker thread");
     {
       std::lock_guard<std::mutex> lock(sm_mutex_);
-    terminate_ = true;
+      terminate_ = true;
     }
     worker_cv_.notify_one();
     worker_thread_.join();
@@ -214,10 +211,9 @@ AdapterStoTemplated<T>::~AdapterStoTemplated()
 template <class T>
 void AdapterStoTemplated<T>::updateSto(const bool sto)
 {
-  ROS_DEBUG("updateSto called");
+  ROS_DEBUG_STREAM("updateSto(" << std::boolalpha << sto << std::noboolalpha << ")");
   {
     std::lock_guard<std::mutex> lock(sm_mutex_);
-    ROS_DEBUG("trigger sto_updated");
     state_machine_->process_event(typename StoStateMachine::sto_updated(sto));
   }
   worker_cv_.notify_one();
@@ -229,24 +225,21 @@ void AdapterStoTemplated<T>::workerThreadFun()
   std::unique_lock<std::mutex> sm_lock(sm_mutex_);
   while (!terminate_)
   {
-    ROS_DEBUG("Wait for task or termination");
     worker_cv_.wait(sm_lock, [this]() { return (!this->state_machine_->task_queue_.empty() || this->terminate_); });
     if (terminate_)
     {
       break;
     }
 
-    ROS_DEBUG("Obtain task");
     AsyncStoTask task = state_machine_->task_queue_.front();
     state_machine_->task_queue_.pop();
 
     sm_lock.unlock();               // | This part is executed async from
-    ROS_DEBUG("Execute task");      // | the state machine since new sto updates need to be handled
-    task.execute();                 // | during service calls.
-                                    // |
+    task.execute();                 // | the state machine since new sto updates need to be handled
+                                    // | during service calls.
     sm_lock.lock();                 // |
-    ROS_DEBUG("trigger completion event");
-    task.signalCompletion();  //Could add Task to Queue
+
+    task.signalCompletion();  //Could add Task to Queue and does process_event on the state machine. Needs lock.
   }
 }
 
@@ -256,7 +249,6 @@ void AdapterStoTemplated<T>::callRecoverService()
   std_srvs::Trigger recover_trigger;
   ROS_DEBUG_STREAM("Calling Recover (Service: " << recover_srv_client_.getService() << ")");
   bool recover_success = recover_srv_client_.call(recover_trigger);
-  ROS_DEBUG_STREAM("Finished Recover (Service: " << recover_srv_client_.getService() << ")");
 
   if (!recover_success)
   {
