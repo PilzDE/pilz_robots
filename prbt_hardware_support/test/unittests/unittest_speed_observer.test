@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <rosparam param="/source_list">[fake_controller_joint_states]</rosparam>
     </node>
     <param name="robot_description"
-      command="$(find xacro)/xacro --inorder '$(find prbt_support)/urdf/prbt.xacro'" />
+      command="$(find xacro)/xacro --inorder '$(find prbt_hardware_support)/test/config/unittestl.xacro'" />
 
     <node name="speed_observer_node" pkg="prbt_hardware_support" type="speed_observer_node" output="screen" >
         <rosparam param="additional_frames" subst_value="True">["$(arg testing_frame)"]</rosparam>
