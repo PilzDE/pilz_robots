@@ -46,8 +46,7 @@ protected:
   FrameSpeeds last_frame_speeds_;
   std::vector<std::string> additional_frames_;
 
-//  MOCK_METHOD1(nothing, int(int a));
-//  MOCK_METHOD1(frame_speeds_cb, void(FrameSpeeds msg));
+  MOCK_METHOD1(frame_speeds_cb_mock, void(FrameSpeeds msg));
   void frameSpeedsCb(const FrameSpeeds::ConstPtr& msg);
 };
 
@@ -94,7 +93,7 @@ TEST_F(SpeedObserverIntegarionTest, testStartupAndTopic)
   for(auto & n : last_frame_speeds_.name){
     ROS_DEBUG_STREAM("> " << n);
   }
-//  EXPECT_THAT(last_frame_speeds_.name, ::testing::Contains("world"));
+  EXPECT_THAT(last_frame_speeds_.name, ::testing::Contains("wourld"));
 }
 
 } // namespace speed_observer_test
