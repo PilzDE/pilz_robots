@@ -594,7 +594,7 @@ TEST_F(PilzModbusClientTests, testWritingOfHoldingRegister)
  * @brief Tests the split_into_blocks method
  */
 TEST_F(PilzModbusClientTests, testSplitIntoBlocksFcn){
-  // lists with same elemnts will throw exception
+  // lists with same elements will throw exception
   std::vector<unsigned short> in_throw = {1, 2, 1};
   ASSERT_THROW(PilzModbusClient::split_into_blocks(in_throw),
                PilzModbusClientException);
