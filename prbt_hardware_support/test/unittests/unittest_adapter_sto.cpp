@@ -342,15 +342,14 @@ TEST_F(AdapterStoTest, testSkippingHoldPlusEnable)
                                                                        , std::placeholders::_2)};
 
   // define function for recover-invoke action
-  std::function<bool()> recover_action = [this, &adapter_sto]() {
+  std::function<bool()> sto_false_during_recover_action = [this, &adapter_sto]() {
     this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT);
     adapter_sto.updateSto(false);
     return true;
   };
 
-  std::function<bool()> halt_action = [this, &adapter_sto]() {
+  std::function<bool()> halt_action = [this]() {
     this->triggerClearEvent(HALT_SRV_CALLED_EVENT);
-    adapter_sto.updateSto(true);
     return true;
   };
 
@@ -361,7 +360,7 @@ TEST_F(AdapterStoTest, testSkippingHoldPlusEnable)
     InSequence dummy;
 
     EXPECT_CALL(mock_factory_, call_named(RECOVER_SERVICE, _))
-        .WillOnce(InvokeWithoutArgs(recover_action));
+        .WillOnce(InvokeWithoutArgs(sto_false_during_recover_action));
 
     EXPECT_CALL(mock_factory_, call_named(HALT_SERVICE, _))
         .WillOnce(InvokeWithoutArgs(halt_action));
