@@ -85,6 +85,7 @@ public:
 
   FRIEND_TEST(AdapterStoTest, testExitInStateEnabling);
   FRIEND_TEST(AdapterStoTest, testExitInStateStopRequestedDuringEnable);
+  FRIEND_TEST(AdapterStoTest, testExitDuringPendingHaltCall);
 };
 
 const std::string RECOVER_SERVICE{AdapterSto::RECOVER_SERVICE};
@@ -386,6 +387,119 @@ TEST_F(AdapterStoTest, testSkippingHoldPlusEnable)
 
   keep_spamming = false;
   spam_enable.join();
+}
+
+/**
+ * @brief Test sending sto change to true while halt call is still pending.
+ *
+ * Test Sequence:
+ *  1. Run the sto adapter and call updateSto(true)),
+ *     call updateSto(false)) during recover service call and return success.
+ *     Before returning success on halt service call updateSto(true)
+ *
+ * Expected Results:
+ *  1. Recover and halt services are called successively. Afterwards recover and unhold are called.
+ */
+TEST_F(AdapterStoTest, testEnableDuringHaltService)
+{
+  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
+                                                                       , std::placeholders::_2)};
+
+  // define function for recover-invoke action
+  std::function<bool()> sto_false_during_recover_action = [this, &adapter_sto]() {
+    this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT);
+    adapter_sto.updateSto(false);
+    return true;
+  };
+
+  std::function<bool()> enable_during_halt_action = [this, &adapter_sto]() {
+    this->triggerClearEvent(HALT_SRV_CALLED_EVENT);
+    adapter_sto.updateSto(true);
+    return true;
+  };
+
+  /**********
+   * Step 1 *
+   **********/
+
+  const std::string RECOVER_SRV_CALLED_EVENT2{"recover_srv_called2"};
+  const std::string UNHOLD_SRV_CALLED_EVENT2{"unhold_srv_called2"};
+  {
+    InSequence dummy;
+
+    EXPECT_CALL(mock_factory_, call_named(RECOVER_SERVICE, _))
+        .WillOnce(InvokeWithoutArgs(sto_false_during_recover_action));
+
+    EXPECT_CALL(mock_factory_, call_named(HALT_SERVICE, _))
+        .WillOnce(InvokeWithoutArgs(enable_during_halt_action));
+
+    EXPECT_CALL(mock_factory_, call_named(RECOVER_SERVICE, _))
+        .WillOnce(InvokeWithoutArgs([this, RECOVER_SRV_CALLED_EVENT2]() {
+          this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT2);
+          return true;
+        }));
+
+    EXPECT_CALL(mock_factory_, call_named(UNHOLD_SERVICE, _))
+        .WillOnce(InvokeWithoutArgs([this, UNHOLD_SRV_CALLED_EVENT2]() {
+          this->triggerClearEvent(UNHOLD_SRV_CALLED_EVENT2);
+          return true;
+        }));
+  }
+
+  adapter_sto.updateSto(true);
+
+  BARRIER({RECOVER_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT, RECOVER_SRV_CALLED_EVENT2, UNHOLD_SRV_CALLED_EVENT2});
+}
+
+/**
+ * @brief Test sending sto change to true and back to false while halt call is still pending.
+ *
+ * Test Sequence:
+ *  1. Run the sto adapter and call updateSto(true)).
+ *     Call updateSto(false)) during recover service call and return success. (This is not essential for the test)
+ *     Before returning success on halt service call updateSto(true) and update(false).
+ *
+ * Expected Results:
+ *  1. Recover and halt services are called successively. Afterwards recover and unhold are called once.
+ */
+TEST_F(AdapterStoTest, testEnableDisableDuringHaltService)
+{
+  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
+                                                                       , std::placeholders::_2)};
+
+  // define function for recover-invoke action
+  std::function<bool()> sto_false_during_recover_action = [this, &adapter_sto]() {
+    this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT);
+    adapter_sto.updateSto(false);
+    return true;
+  };
+
+  std::function<bool()> enable_during_halt_action = [this, &adapter_sto]() {
+    this->triggerClearEvent(HALT_SRV_CALLED_EVENT);
+    adapter_sto.updateSto(true);
+    adapter_sto.updateSto(false); // Important flip!
+    return true;
+  };
+
+  /**********
+   * Step 1 *
+   **********/
+
+  {
+    InSequence dummy;
+
+    EXPECT_CALL(mock_factory_, call_named(RECOVER_SERVICE, _))
+        .Times(1)
+        .WillOnce(InvokeWithoutArgs(sto_false_during_recover_action));
+
+    EXPECT_CALL(mock_factory_, call_named(HALT_SERVICE, _))
+        .Times(1)
+        .WillOnce(InvokeWithoutArgs(enable_during_halt_action));
+  }
+
+  adapter_sto.updateSto(true);
+
+  BARRIER({RECOVER_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 }
 
 /**
@@ -695,6 +809,63 @@ TEST_F(AdapterStoTest, testExitInStateStopRequestedDuringEnable)
   adapter_sto.updateSto(true);
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+}
+
+/**
+ * @brief Test stopping the state machine in state StopRequestedDuringRecover.
+ *
+ * @note This test exists mainly for full function coverage.
+ *
+ * Test Sequence:
+ *  1. Run the sto adapter and call updateSto(true)),
+ *     call updateSto(false)) and stopStateMachine() during unhold service call and return success,
+ *     let hold and halt services return success
+ *
+ * Expected Results:
+ *  1. Recover and unhold services are called successively
+ */
+TEST_F(AdapterStoTest, testExitDuringPendingHaltCall)
+{
+  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
+                                                                       , std::placeholders::_2)};
+
+  // define function for recover-invoke action
+  std::function<bool()> sto_false_during_recover_action = [this, &adapter_sto]() {
+    this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT);
+    adapter_sto.updateSto(false);
+    return true;
+  };
+
+  std::function<bool()> false_recover_action = []() {
+    return false;
+  };
+
+  std::function<bool()> enable_during_halt_action = [this, &adapter_sto]() {
+    adapter_sto.updateSto(true);
+    adapter_sto.stopStateMachine();
+    this->triggerClearEvent(HALT_SRV_CALLED_EVENT);
+    return true;
+  };
+
+  /**********
+   * Step 1 *
+   **********/
+  {
+    InSequence dummy;
+
+    EXPECT_CALL(mock_factory_, call_named(RECOVER_SERVICE, _))
+        .WillOnce(InvokeWithoutArgs(sto_false_during_recover_action));
+
+    EXPECT_CALL(mock_factory_, call_named(HALT_SERVICE, _))
+        .WillOnce(InvokeWithoutArgs(enable_during_halt_action));
+
+    EXPECT_CALL(mock_factory_, call_named(RECOVER_SERVICE, _))
+        .WillOnce(InvokeWithoutArgs(false_recover_action));
+  }
+
+  adapter_sto.updateSto(true);
+
+  BARRIER({RECOVER_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 }
 
 } // namespace prbt_hardware_support_tests
