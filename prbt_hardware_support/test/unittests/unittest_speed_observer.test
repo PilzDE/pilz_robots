@@ -16,6 +16,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <launch>
-    <arg name="timeout" default="5" />
+    <arg name="timeout" default="60" />
     <test test-name="unittest_speed_observer" pkg="prbt_hardware_support" type="unittest_speed_observer" time-limit="$(arg timeout)"/>
 </launch>
