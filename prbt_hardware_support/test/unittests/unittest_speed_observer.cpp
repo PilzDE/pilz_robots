@@ -22,6 +22,7 @@
 #include <ros/ros.h>
 #include <tf2_ros/transform_broadcaster.h>
 
+#include <pilz_testutils/async_test.h>
 #include <prbt_hardware_support/ros_test_helper.h>
 #include <prbt_hardware_support/speed_observer.h>
 #include <prbt_hardware_support/FrameSpeeds.h>
@@ -31,16 +32,19 @@ namespace speed_observer_test
 using ::testing::_;
 using namespace prbt_hardware_support;
 
+static const std::string BARRIER_SLOW{"BARRIER_SLOW"};
+static const std::string BARRIER_FAST{"BARRIER_FAST"};
+
 static const std::string FRAME_SPEEDS_TOPIC_NAME{"/frame_speeds"};
 static const std::string STOP_TOPIC_NAME{"/stop"};
-static const double TEST_FREQUENCY{10};
 static const std::string TEST_BASE_FRAME{"test_base"};
 static const std::string TEST_FRAME_A{"a"};
 static const std::string TEST_FRAME_B{"b"};
+static const double TEST_FREQUENCY{20};
 static const double SQRT_2_HALF{1 / sqrt(2)};
 static const double PI_2{2 * M_PI};
 
-class SpeedObserverIntegarionTest : public testing::Test
+class SpeedObserverIntegarionTest : public testing::Test, public testing::AsyncTest
 {
 
 public:
@@ -48,13 +52,15 @@ public:
   void TearDown() override;
 
   MOCK_METHOD1(frame_speeds_cb_mock, void(FrameSpeeds msg));
-  void publishTfAtSpeed(double v, double t);
+  void publishTfAtSpeed(double v);
+  void stopTfPublisher();
 
 protected:
   ros::Subscriber speed_subscriber_;
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_{"~"};
   std::vector<std::string> additional_frames_;
+  bool tf_publisher_running{false};
 };
 
 void SpeedObserverIntegarionTest::SetUp(){
@@ -67,12 +73,13 @@ void SpeedObserverIntegarionTest::SetUp(){
 
 void SpeedObserverIntegarionTest::TearDown(){}
 
-void SpeedObserverIntegarionTest::publishTfAtSpeed(double v, double duration_s){
+void SpeedObserverIntegarionTest::publishTfAtSpeed(double v){
   static tf2_ros::TransformBroadcaster br;
   ros::Rate r = ros::Rate(TEST_FREQUENCY * 3); // publishing definitely faster then observing
   ros::Time start = ros::Time::now();
   double t = 0;
-  while(t < duration_s){
+  tf_publisher_running = true;
+  while(tf_publisher_running){
     ros::Time current = ros::Time::now();
     t = (current-start).toSec();
     // a has no speed
@@ -98,6 +105,10 @@ void SpeedObserverIntegarionTest::publishTfAtSpeed(double v, double duration_s){
     br.sendTransform(tfsb);
     r.sleep();
   }
+}
+
+void SpeedObserverIntegarionTest::stopTfPublisher(){
+  tf_publisher_running = false;
 }
 
 MATCHER_P(ContainsName, name,
@@ -153,41 +164,72 @@ TEST_F(SpeedObserverIntegarionTest, testStartupAndTopic)
   /**********
    * Step 0 *
    **********/
-  std::thread pubisher_thread_slow = std::thread(&SpeedObserverIntegarionTest::publishTfAtSpeed, this, 0.24, 5);
+  ::testing::Sequence s;
   EXPECT_CALL(*this, frame_speeds_cb_mock(
           AllOf(ContainsName(TEST_FRAME_A),
                 ContainsName(TEST_FRAME_B),
-                SpeedAtILe(0, .1),
-                SpeedAtILe(1, .26),
-                SpeedAtIGe(0, 0),
-                SpeedAtIGe(1, 0))
+                SpeedAtILe((unsigned long) 0, .1),
+                SpeedAtILe((unsigned long) 1, .26),
+                SpeedAtIGe((unsigned long) 0, 0),
+                SpeedAtIGe((unsigned long) 1, 0))
       ))
-      .Times(AtLeast(2));
+      .Times(AtLeast(10))
+      .InSequence(s);
+  EXPECT_CALL(*this, frame_speeds_cb_mock(
+          AllOf(ContainsName(TEST_FRAME_A),
+                ContainsName(TEST_FRAME_B),
+                SpeedAtILe((unsigned long) 0, .1),
+                SpeedAtILe((unsigned long) 1, .26),
+                SpeedAtIGe((unsigned long) 0, 0),
+                SpeedAtIGe((unsigned long) 1, 0))
+      ))
+      .Times(AtLeast(1))
+      .InSequence(s)
+      .WillRepeatedly(ACTION_OPEN_BARRIER_VOID(BARRIER_SLOW));
+
+  std::thread pubisher_thread_slow = std::thread(&SpeedObserverIntegarionTest::publishTfAtSpeed, this, 0.24);
+  BARRIER({BARRIER_SLOW});
+  stopTfPublisher();
   pubisher_thread_slow.join();
 
   /**********
    * Step 1 *
    **********/
-  // one message could contain a faster speed when switching to a bigger roatation radius
   EXPECT_CALL(*this, frame_speeds_cb_mock(
           AllOf(ContainsName(TEST_FRAME_A),
                 ContainsName(TEST_FRAME_B),
-                SpeedAtILe(0, .1),
-                SpeedAtIGe(0, 0),
-                SpeedAtIGe(1, .28))
+                SpeedAtILe((unsigned long) 0, .1),
+                // we can once have an unlimited speed, when the publisher changes speed
+                SpeedAtIGe((unsigned long) 0, 0),
+                SpeedAtIGe((unsigned long) 1, .28))
       ))
-      .Times(AtMost(1));
+      .Times(AtMost(1))
+      .InSequence(s);
+  EXPECT_CALL(*this, frame_speeds_cb_mock(
+          AllOf(ContainsName(TEST_FRAME_A),
+                ContainsName(TEST_FRAME_B),
+                SpeedAtILe((unsigned long) 0, .1),
+                SpeedAtILe((unsigned long) 1, .32),
+                SpeedAtIGe((unsigned long) 0, 0),
+                SpeedAtIGe((unsigned long) 1, .28))
+      ))
+      .Times(AtLeast(10))
+      .InSequence(s);
+  EXPECT_CALL(*this, frame_speeds_cb_mock(
+          AllOf(ContainsName(TEST_FRAME_A),
+                ContainsName(TEST_FRAME_B),
+                SpeedAtILe((unsigned long) 0, .1),
+                SpeedAtILe((unsigned long) 1, .32),
+                SpeedAtIGe((unsigned long) 0, 0),
+                SpeedAtIGe((unsigned long) 1, .28))
+      ))
+      .Times(AtLeast(1))
+      .InSequence(s)
+      .WillRepeatedly(ACTION_OPEN_BARRIER_VOID(BARRIER_FAST));
 
-  std::thread pubisher_thread_fast = std::thread(&SpeedObserverIntegarionTest::publishTfAtSpeed, this, 0.3, 5);
-  EXPECT_CALL(*this, frame_speeds_cb_mock(
-          AllOf(ContainsName(TEST_FRAME_A),
-                ContainsName(TEST_FRAME_B),
-                SpeedAtILe(0, .1),
-                SpeedAtILe(1, .32),
-                SpeedAtIGe(0, 0),
-                SpeedAtIGe(1, .28))
-      ))
-      .Times(AtLeast(2));
+  std::thread pubisher_thread_fast = std::thread(&SpeedObserverIntegarionTest::publishTfAtSpeed, this, 0.3);
+  BARRIER({BARRIER_FAST});
+  stopTfPublisher();
   pubisher_thread_fast.join();
 
   /*************
