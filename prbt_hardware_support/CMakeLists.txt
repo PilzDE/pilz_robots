@@ -417,6 +417,7 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest_gmock(unittest_speed_observer
       test/unittests/unittest_speed_observer.test
       test/unittests/unittest_speed_observer.cpp
+      src/speed_observer.cpp
   )
   target_link_libraries(unittest_speed_observer
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}

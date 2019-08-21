@@ -36,6 +36,7 @@ public:
       std::vector<std::string>& frames_to_observe
       );
   void startObserving(double frequency);
+  void terminateNow();
 
 private:
   ros::NodeHandle nh_;
@@ -48,6 +49,7 @@ private:
   std::vector<double> speeds;
   std::map<std::string, tf2::Vector3> previous_poses;
   ros::Time previous_t;
+  bool terminate {false};
 
   FrameSpeeds makeFrameSpeedsMessage(std::vector<double>& speeds);
   static double speedFromTwoPoses(tf2::Vector3 a, tf2::Vector3 b, double t);

@@ -25,6 +25,7 @@ static const std::string REFERENCE_FRAME_PARAM_NAME{"reference_frame"};
 static const std::string REFERENCE_FRAME_PARAM_DEFAULT{"prbt_base_link"};
 static const std::string ADDITIONAL_FRAMES_PARAM_NAME{"additional_frames"};
 static const std::string ROBOT_DESCRIPTION_PARAM_NAME{"robot_description"};
+static const double OBSERVATION_FREQUENCY{10};
 
 /**
  * @brief Read requested parameters, start and initialize the prbt_hardware_support::SpeedObserver
@@ -63,7 +64,7 @@ int main(int argc, char **argv)
     reference_frame,
     frames_to_observe
   );
-  observer.startObserving(10);
+  observer.startObserving(OBSERVATION_FREQUENCY);
 
   return EXIT_SUCCESS;
 

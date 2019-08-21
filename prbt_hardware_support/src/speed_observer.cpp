@@ -27,6 +27,7 @@ static const std::string FRAME_SPEEDS_TOPIC_NAME{"frame_speeds"};
 static const std::string STOP_TOPIC_NAME{"stop"};
 static const uint32_t DEFAULT_QUEUE_SIZE{10};
 static const uint32_t WAITING_TIME_FOR_TRANSFORM_S{1};
+static const uint32_t WAITING_FOR_TRANSFORM_RETRIES{20};
 static const double SPEED_LIMIT{.25};
 
 SpeedObserver::SpeedObserver(ros::NodeHandle& nh,
@@ -76,14 +77,21 @@ void SpeedObserver::startObserving(double frequency)
   ROS_INFO("Observing at %.1fHz", frequency);
 
   // Starting the observer loop
-  while (ros::ok()){
+  while (ros::ok() & !terminate){
     now = ros::Time::now();
     try{
       speeds.clear();
       for(auto & frame : frames_to_observe_){
+        uint32_t retries = 0;
         while(!tf_buffer.canTransform(reference_frame_, frame, now))
         {
           ros::spinOnce();
+          ros::Duration(WAITING_TIME_FOR_TRANSFORM_S).sleep();
+          if(retries > WAITING_FOR_TRANSFORM_RETRIES){
+            ROS_WARN("Waited for transform %s -> %s for too long.", reference_frame_.c_str(), frame.c_str());
+            return;
+          }
+          retries++;
         }
         transform = tf_buffer.lookupTransform(reference_frame_, frame, now);
         tf2::fromMsg(transform.transform.translation, v);
@@ -132,6 +140,12 @@ double SpeedObserver::speedFromTwoPoses(tf2::Vector3 a, tf2::Vector3 b, double t
 bool SpeedObserver::isWithinLimits(const double& speed)
 {
   return speed < SPEED_LIMIT;
+}
+
+// This method is only needed for the unittest
+void SpeedObserver::terminateNow(){
+  ROS_DEBUG("terminateNow");
+  terminate = true;
 }
 
 } // namespace prbt_hardware_support
