@@ -37,7 +37,7 @@ static const double TEST_FREQUENCY{10};
 static const std::string TEST_BASE_FRAME{"test_base"};
 static const std::string TEST_FRAME_A{"a"};
 static const std::string TEST_FRAME_B{"b"};
-static const double SQRT_2{1 / sqrt(2)};
+static const double SQRT_2_HALF{1 / sqrt(2)};
 static const double PI_2{2 * M_PI};
 
 class SpeedObserverIntegarionTest : public testing::Test
@@ -48,35 +48,28 @@ public:
   void TearDown() override;
 
   MOCK_METHOD1(frame_speeds_cb_mock, void(FrameSpeeds msg));
-  void frameSpeedsCb(const FrameSpeeds::ConstPtr& msg);
-  void publishTfWithSpeed(double v, double t);
+  void publishTfAtSpeed(double v, double t);
 
 protected:
-  ros::Subscriber subscriber_;
+  ros::Subscriber speed_subscriber_;
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_{"~"};
-  FrameSpeeds last_frame_speeds_;
   std::vector<std::string> additional_frames_;
 };
 
 void SpeedObserverIntegarionTest::SetUp(){
-  last_frame_speeds_ = FrameSpeeds();
-  subscriber_ = nh_.subscribe<FrameSpeeds>(
+  speed_subscriber_ = nh_.subscribe<FrameSpeeds>(
         FRAME_SPEEDS_TOPIC_NAME,
         1,
-        &SpeedObserverIntegarionTest::frameSpeedsCb,
+        &SpeedObserverIntegarionTest::frame_speeds_cb_mock,
         this);
 }
 
 void SpeedObserverIntegarionTest::TearDown(){}
 
-void SpeedObserverIntegarionTest::frameSpeedsCb(const FrameSpeeds::ConstPtr& msg){
-  last_frame_speeds_ = FrameSpeeds(*msg);
-}
-
-void SpeedObserverIntegarionTest::publishTfWithSpeed(double v, double duration_s){
+void SpeedObserverIntegarionTest::publishTfAtSpeed(double v, double duration_s){
   static tf2_ros::TransformBroadcaster br;
-  ros::Rate r = ros::Rate(TEST_FREQUENCY * 3);
+  ros::Rate r = ros::Rate(TEST_FREQUENCY * 3); // publishing definitely faster then observing
   ros::Time start = ros::Time::now();
   double t = 0;
   while(t < duration_s){
@@ -96,15 +89,36 @@ void SpeedObserverIntegarionTest::publishTfWithSpeed(double v, double duration_s
     tfsb.header.stamp = current;
     tfsb.header.frame_id = TEST_BASE_FRAME;
     tfsb.child_frame_id = TEST_FRAME_B;
-    // rotation in a tilted circle
-    tfsb.transform.translation.x = v / PI_2 * cos(t);
-    tfsb.transform.translation.y = v / PI_2 * SQRT_2 * -sin(t);
-    tfsb.transform.translation.z = v / PI_2 * SQRT_2 * sin(t);
+    // rotation in a tilted circle to cover all axis
+    tfsb.transform.translation.x = v * cos(t);
+    tfsb.transform.translation.y = v * SQRT_2_HALF * -sin(t);
+    tfsb.transform.translation.z = v * SQRT_2_HALF * sin(t);
     tfsb.transform.rotation.w = 1;
     br.sendTransform(tfsa);
     br.sendTransform(tfsb);
     r.sleep();
   }
+}
+
+MATCHER_P(ContainsName, name,
+          "Message " + std::string(negation ? "does not contain" : "contains") + " name: " + name + "."
+          ) {
+  return arg.name.end() != std::find(arg.name.begin(), arg.name.end(), name);
+}
+
+using ::testing::PrintToString;
+MATCHER_P2(SpeedAtIGe, i, x,
+           "Speed at index " + PrintToString(i) + std::string(negation ? "is not" : "is") +
+           " greater or equal to" + PrintToString(x) + "."
+           ) {
+  return arg.speed[i] >= x;
+}
+
+MATCHER_P2(SpeedAtILe, i, x,
+           "Speed at index " + PrintToString(i) + std::string(negation ? "is not" : "is") +
+           " less or equal to" + PrintToString(x) + "."
+           ) {
+  return arg.speed[i] <= x;
 }
 
 /**
@@ -118,6 +132,10 @@ void SpeedObserverIntegarionTest::publishTfWithSpeed(double v, double duration_s
  */
 TEST_F(SpeedObserverIntegarionTest, testStartupAndTopic)
 {
+  using ::testing::AllOf;
+  using ::testing::AtLeast;
+  using ::testing::AtMost;
+
   ROS_DEBUG_STREAM("test started");
   /**********
    * Setup *
@@ -129,25 +147,48 @@ TEST_F(SpeedObserverIntegarionTest, testStartupAndTopic)
     reference_frame,
     frames_to_observe
   );
-  //  observer.startObserving(TEST_FREQUENCY);
   std::thread observer_thread = std::thread(&SpeedObserver::startObserving, &observer, TEST_FREQUENCY);
   ROS_DEBUG_STREAM("thread started");
 
   /**********
    * Step 0 *
    **********/
-  // rotating a multiple of 2pi to end up at the start
-  std::thread pubisher_thread_ = std::thread(&SpeedObserverIntegarionTest::publishTfWithSpeed, this, 0, PI_2);
-  while(last_frame_speeds_.name.empty()){
-    ros::Duration(.1).sleep();
-    ros::spinOnce();
-  }
-  for(auto & n : last_frame_speeds_.name){
-    ROS_DEBUG_STREAM("> " << n);
-  }
-  EXPECT_THAT(last_frame_speeds_.name, ::testing::Contains(TEST_FRAME_A));
-  EXPECT_THAT(last_frame_speeds_.name, ::testing::Contains(TEST_FRAME_B));
-  pubisher_thread_.join();
+  std::thread pubisher_thread_slow = std::thread(&SpeedObserverIntegarionTest::publishTfAtSpeed, this, 0.24, 5);
+  EXPECT_CALL(*this, frame_speeds_cb_mock(
+          AllOf(ContainsName(TEST_FRAME_A),
+                ContainsName(TEST_FRAME_B),
+                SpeedAtILe(0, .1),
+                SpeedAtILe(1, .26),
+                SpeedAtIGe(0, 0),
+                SpeedAtIGe(1, 0))
+      ))
+      .Times(AtLeast(2));
+  pubisher_thread_slow.join();
+
+  /**********
+   * Step 1 *
+   **********/
+  // one message could contain a faster speed when switching to a bigger roatation radius
+  EXPECT_CALL(*this, frame_speeds_cb_mock(
+          AllOf(ContainsName(TEST_FRAME_A),
+                ContainsName(TEST_FRAME_B),
+                SpeedAtILe(0, .1),
+                SpeedAtIGe(0, 0),
+                SpeedAtIGe(1, .28))
+      ))
+      .Times(AtMost(1));
+
+  std::thread pubisher_thread_fast = std::thread(&SpeedObserverIntegarionTest::publishTfAtSpeed, this, 0.3, 5);
+  EXPECT_CALL(*this, frame_speeds_cb_mock(
+          AllOf(ContainsName(TEST_FRAME_A),
+                ContainsName(TEST_FRAME_B),
+                SpeedAtILe(0, .1),
+                SpeedAtILe(1, .32),
+                SpeedAtIGe(0, 0),
+                SpeedAtIGe(1, .28))
+      ))
+      .Times(AtLeast(2));
+  pubisher_thread_fast.join();
 
   /*************
    * Tear Down *
