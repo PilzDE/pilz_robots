@@ -40,7 +40,10 @@ These modes are:
 See DIN EN ISO 10218-1 for more details or contact us: ros@pilz.de
 
 # Architecture
-![Component diagram](doc/architecture_overview.png)
+The following diagram shows all components of the system and the connections
+between them.  
+
+![Component diagram of overall architecture](doc/diag_comp_overall_architecture.png)
 
 # ROS API
 
