@@ -625,26 +625,26 @@ speed_observer</panel_attributes>
     <id>Relation</id>
     <coordinates>
       <x>594</x>
-      <y>294</y>
+      <y>252</y>
       <w>120</w>
-      <h>48</h>
+      <h>54</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=()-[Service]
 /activate_speed_limits</panel_attributes>
-    <additional_attributes>30.0;10.0;30.0;60.0</additional_attributes>
+    <additional_attributes>30.0;70.0;30.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>600</x>
-      <y>252</y>
+      <y>294</y>
       <w>30</w>
       <h>48</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=-(</panel_attributes>
-    <additional_attributes>20.0;10.0;20.0;50.0</additional_attributes>
+    <additional_attributes>20.0;60.0;20.0;20.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
