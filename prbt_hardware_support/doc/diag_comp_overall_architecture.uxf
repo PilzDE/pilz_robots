@@ -104,7 +104,7 @@ Controller</panel_attributes>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 layer=100
-lt=()-[publish]
+lt=()-[Service]
 /halt</panel_attributes>
     <additional_attributes>30.0;10.0;30.0;1030.0</additional_attributes>
   </element>
@@ -118,7 +118,7 @@ lt=()-[publish]
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 layer=100
-lt=()-[publish]
+lt=()-[Service]
 /recover</panel_attributes>
     <additional_attributes>30.0;10.0;30.0;1030.0</additional_attributes>
   </element>
@@ -148,7 +148,7 @@ lt=()-[publish]
       <h>444</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
-lt=()-[publish]
+lt=()-[Service]
 /hold</panel_attributes>
     <additional_attributes>30.0;10.0;30.0;720.0</additional_attributes>
   </element>
@@ -161,7 +161,7 @@ lt=()-[publish]
       <h>438</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
-lt=()-[publish]
+lt=()-[Service]
 /unhold</panel_attributes>
     <additional_attributes>30.0;10.0;30.0;710.0</additional_attributes>
   </element>
@@ -260,12 +260,12 @@ lt=[subscribe]-(</panel_attributes>
     <coordinates>
       <x>768</x>
       <y>174</y>
-      <w>54</w>
+      <w>96</w>
       <h>360</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=()-[publish]
-/stop1</panel_attributes>
+/safe_torque_off</panel_attributes>
     <additional_attributes>30.0;10.0;30.0;580.0</additional_attributes>
   </element>
   <element>
@@ -285,26 +285,26 @@ stop1_executor</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>966</x>
+      <x>978</x>
       <y>132</y>
-      <w>54</w>
+      <w>30</w>
       <h>108</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
-lt=[subscribe]-(</panel_attributes>
-    <additional_attributes>40.0;10.0;40.0;150.0</additional_attributes>
+lt=-(</panel_attributes>
+    <additional_attributes>20.0;10.0;20.0;150.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1026</x>
+      <x>1038</x>
       <y>132</y>
-      <w>54</w>
+      <w>30</w>
       <h>108</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
-lt=[subscribe]-(</panel_attributes>
-    <additional_attributes>40.0;10.0;40.0;150.0</additional_attributes>
+lt=-(</panel_attributes>
+    <additional_attributes>20.0;10.0;20.0;150.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
@@ -471,26 +471,26 @@ lt=()-[Service]
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1146</x>
+      <x>1158</x>
       <y>180</y>
-      <w>54</w>
+      <w>30</w>
       <h>96</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
-lt=[subscribe]-(</panel_attributes>
-    <additional_attributes>40.0;10.0;40.0;130.0</additional_attributes>
+lt=-(</panel_attributes>
+    <additional_attributes>20.0;10.0;20.0;130.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1206</x>
+      <x>1218</x>
       <y>180</y>
-      <w>54</w>
+      <w>30</w>
       <h>96</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
-lt=[subscribe]-(</panel_attributes>
-    <additional_attributes>40.0;10.0;40.0;130.0</additional_attributes>
+lt=-(</panel_attributes>
+    <additional_attributes>20.0;10.0;20.0;130.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
@@ -561,26 +561,26 @@ lt=[subscribe]-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>822</x>
+      <x>834</x>
       <y>132</y>
-      <w>54</w>
+      <w>30</w>
       <h>102</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
-lt=[subscribe]-(</panel_attributes>
-    <additional_attributes>40.0;10.0;40.0;140.0</additional_attributes>
+lt=-(</panel_attributes>
+    <additional_attributes>20.0;10.0;20.0;140.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>876</x>
+      <x>888</x>
       <y>132</y>
-      <w>54</w>
+      <w>30</w>
       <h>102</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
-lt=[subscribe]-(</panel_attributes>
-    <additional_attributes>40.0;10.0;40.0;140.0</additional_attributes>
+lt=-(</panel_attributes>
+    <additional_attributes>20.0;10.0;20.0;140.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
@@ -667,7 +667,7 @@ lt=-(</panel_attributes>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=()-[publish]
-/stop1</panel_attributes>
+/safe_torque_off</panel_attributes>
     <additional_attributes>310.0;10.0;30.0;50.0</additional_attributes>
   </element>
   <element>
