@@ -21,35 +21,36 @@
 #include <memory>
 #include <thread>
 
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
 #include <ros/ros.h>
-#include <std_srvs/Trigger.h>
 
 #include <pilz_testutils/async_test.h>
-#include <pilz_testutils/service_client_mock.h>
 
-#include <prbt_hardware_support/adapter_sto.h>
+#include <prbt_hardware_support/stop1_executor.h>
+#include <prbt_hardware_support/service_function_decl.h>
 
 #define EXPECT_RECOVER                                       \
-  EXPECT_CALL(mock_factory_, call_named(RECOVER_SERVICE, _)) \
-      .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(RECOVER_SRV_CALLED_EVENT), Return(true)))
+  EXPECT_CALL(*this, recover_func()) \
+  .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(RECOVER_SRV_CALLED_EVENT), Return(true)))
 
 #define EXPECT_UNHOLD                                       \
-  EXPECT_CALL(mock_factory_, call_named(UNHOLD_SERVICE, _)) \
-      .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(UNHOLD_SRV_CALLED_EVENT), Return(true)))
+  EXPECT_CALL(*this, unhold_func()) \
+  .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(UNHOLD_SRV_CALLED_EVENT), Return(true)))
 
 #define EXPECT_HOLD                                       \
-  EXPECT_CALL(mock_factory_, call_named(HOLD_SERVICE, _)) \
-      .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(HOLD_SRV_CALLED_EVENT), Return(true)))
+  EXPECT_CALL(*this, hold_func()) \
+  .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(HOLD_SRV_CALLED_EVENT), Return(true)))
 
 #define EXPECT_HALT                                       \
-  EXPECT_CALL(mock_factory_, call_named(HALT_SERVICE, _)) \
-      .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(HALT_SRV_CALLED_EVENT), Return(true)))
+  EXPECT_CALL(*this, halt_func()) \
+  .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(HALT_SRV_CALLED_EVENT), Return(true)))
 
 namespace prbt_hardware_support_tests
 {
 
 using namespace prbt_hardware_support;
-using namespace pilz_testutils;
 
 using ::testing::_;
 using ::testing::DoAll;
@@ -59,53 +60,59 @@ using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::AtLeast;
 
-typedef ServiceClientMock<std_srvs::Trigger> ClientMock;
-typedef ServiceClientMockFactory<std_srvs::Trigger> MockFactory;
-
 const std::string RECOVER_SRV_CALLED_EVENT{"recover_srv_called"};
 const std::string UNHOLD_SRV_CALLED_EVENT{"unhold_srv_called"};
 const std::string HOLD_SRV_CALLED_EVENT{"hold_srv_called"};
 const std::string HALT_SRV_CALLED_EVENT{"halt_srv_called"};
 
-class AdapterStoTest : public ::testing::Test, public ::testing::AsyncTest
-{
-protected:
-  MockFactory mock_factory_;
-};
-
 /**
  * Gives access to protected methods of sto adapter.
  */
-class AdapterSto : public AdapterStoTemplated<ClientMock>
+class Stop1ExecutorForTests : public Stop1Executor
 {
 public:
-  AdapterSto(const std::function<ClientMock(std::string, bool)> &create_service_client)
-    : AdapterStoTemplated<ClientMock>(create_service_client)
+  Stop1ExecutorForTests(const TServiceCallFunc& hold_func,
+                        const TServiceCallFunc& unhold_func,
+                        const TServiceCallFunc& recover_func,
+                        const TServiceCallFunc& halt_func)
+    : Stop1Executor(hold_func, unhold_func, recover_func, halt_func)
   {
   }
 
-  FRIEND_TEST(AdapterStoTest, testExitInStateEnabling);
-  FRIEND_TEST(AdapterStoTest, testExitInStateStopRequestedDuringEnable);
-  FRIEND_TEST(AdapterStoTest, testExitDuringPendingHaltCall);
+  FRIEND_TEST(Stop1ExecutorTest, testExitInStateEnabling);
+  FRIEND_TEST(Stop1ExecutorTest, testExitInStateStopRequestedDuringEnable);
+  FRIEND_TEST(Stop1ExecutorTest, testExitDuringPendingHaltCall);
 };
 
-const std::string RECOVER_SERVICE{AdapterSto::RECOVER_SERVICE};
-const std::string UNHOLD_SERVICE{AdapterSto::UNHOLD_SERVICE};
-const std::string HOLD_SERVICE{AdapterSto::HOLD_SERVICE};
-const std::string HALT_SERVICE{AdapterSto::HALT_SERVICE};
+class Stop1ExecutorTest : public ::testing::Test, public ::testing::AsyncTest
+{
+protected:
+  Stop1ExecutorForTests* createStop1Executor();
+
+protected:
+  MOCK_METHOD0(hold_func,     bool());
+  MOCK_METHOD0(unhold_func,   bool());
+  MOCK_METHOD0(recover_func,  bool());
+  MOCK_METHOD0(halt_func,     bool());
+
+};
+
+inline Stop1ExecutorForTests* Stop1ExecutorTest::createStop1Executor()
+{
+  return new Stop1ExecutorForTests( std::bind(&Stop1ExecutorTest::hold_func,    this),
+                                    std::bind(&Stop1ExecutorTest::unhold_func,  this),
+                                    std::bind(&Stop1ExecutorTest::recover_func, this),
+                                    std::bind(&Stop1ExecutorTest::halt_func,    this) );
+}
 
 /**
- * @brief Test D0 destructor
+ * @brief Test increases function coverage by ensuring that all Dtor variants
+ * are called.
  *
- * Increases function coverage
  */
-TEST_F(AdapterStoTest, testD0estructor)
+TEST_F(Stop1ExecutorTest, testD0estructor)
 {
-  typedef prbt_hardware_support::AdapterStoTemplated<ClientMock> AdapterSto;
-  std::shared_ptr<AdapterSto> adapter_sto{new AdapterSto(std::bind(&MockFactory::create,
-                                                                   &mock_factory_,
-                                                                   std::placeholders::_1,
-                                                                   std::placeholders::_2))};
+  std::shared_ptr<Stop1Executor> adapter_sto {createStop1Executor()};
 }
 
 /**
@@ -118,7 +125,7 @@ TEST_F(AdapterStoTest, testD0estructor)
  * Expected Results:
  *  1. Recover and unhold services are called successively
  */
-TEST_F(AdapterStoTest, testEnable)
+TEST_F(Stop1ExecutorTest, testEnable)
 {
   {
     InSequence dummy;
@@ -126,10 +133,8 @@ TEST_F(AdapterStoTest, testEnable)
     EXPECT_UNHOLD;
   }
 
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
-                                                                       , std::placeholders::_2)};
-
-  adapter_sto.updateSto(true);
+  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
+  adapter_sto->updateSto(true);
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 }
@@ -150,7 +155,7 @@ TEST_F(AdapterStoTest, testEnable)
  *  2. Hold and halt services are called successively
  *  3. Recover and unhold services are called successively
  */
-TEST_F(AdapterStoTest, testEnableStopEnable)
+TEST_F(Stop1ExecutorTest, testEnableStopEnable)
 {
   /**********
    * Step 1 *
@@ -161,10 +166,8 @@ TEST_F(AdapterStoTest, testEnableStopEnable)
     EXPECT_UNHOLD;
   }
 
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
-                                                                       , std::placeholders::_2)};
-
-  adapter_sto.updateSto(true);
+  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
+  adapter_sto->updateSto(true);
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -177,7 +180,7 @@ TEST_F(AdapterStoTest, testEnableStopEnable)
     EXPECT_HALT;
   }
 
-  adapter_sto.updateSto(false);
+  adapter_sto->updateSto(false);
 
   BARRIER2({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 
@@ -191,7 +194,7 @@ TEST_F(AdapterStoTest, testEnableStopEnable)
   }
 
   std::atomic_bool keep_spamming{true};
-  std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto.updateSto(true); } }};
+  std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto->updateSto(true); } }};
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -214,7 +217,7 @@ TEST_F(AdapterStoTest, testEnableStopEnable)
  *  2. -
  *  3. Hold and halt services are called successively
  */
-TEST_F(AdapterStoTest, testSpamEnablePlusStop)
+TEST_F(Stop1ExecutorTest, testSpamEnablePlusStop)
 {
   /**********
    * Step 1 *
@@ -225,11 +228,10 @@ TEST_F(AdapterStoTest, testSpamEnablePlusStop)
     EXPECT_UNHOLD;
   }
 
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
-                                                                       , std::placeholders::_2)};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
 
   std::atomic_bool keep_spamming{true};
-  std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto.updateSto(true); } }};
+  std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto->updateSto(true); } }};
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -240,7 +242,7 @@ TEST_F(AdapterStoTest, testSpamEnablePlusStop)
    * Step 2 *
    **********/
 
-  adapter_sto.updateSto(true);
+  adapter_sto->updateSto(true);
 
   /**********
    * Step 3 *
@@ -251,7 +253,7 @@ TEST_F(AdapterStoTest, testSpamEnablePlusStop)
     EXPECT_HALT;
   }
 
-  adapter_sto.updateSto(false);
+  adapter_sto->updateSto(false);
 
   BARRIER2({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 }
@@ -272,7 +274,7 @@ TEST_F(AdapterStoTest, testSpamEnablePlusStop)
  *  2. Hold and halt services are called successively
  *  3. Recover and unhold services are called successively
  */
-TEST_F(AdapterStoTest, testSpamStoActivePlusEnable)
+TEST_F(Stop1ExecutorTest, testSpamStoActivePlusEnable)
 {
   /**********
    * Step 1 *
@@ -283,10 +285,9 @@ TEST_F(AdapterStoTest, testSpamStoActivePlusEnable)
     EXPECT_UNHOLD;
   }
 
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
-                                                                       , std::placeholders::_2)};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
 
-  adapter_sto.updateSto(true);
+  adapter_sto->updateSto(true);
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -300,7 +301,7 @@ TEST_F(AdapterStoTest, testSpamStoActivePlusEnable)
   }
 
   std::atomic_bool keep_spamming{true};
-  std::thread spam_disable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto.updateSto(false); } }};
+  std::thread spam_disable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto->updateSto(false); } }};
 
   BARRIER2({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 
@@ -317,7 +318,7 @@ TEST_F(AdapterStoTest, testSpamStoActivePlusEnable)
   }
 
   keep_spamming = true;
-  std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto.updateSto(true); } }};
+  std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto->updateSto(true); } }};
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -338,19 +339,18 @@ TEST_F(AdapterStoTest, testSpamStoActivePlusEnable)
  *  1. Recover and halt services are called successively
  *  2. Recover and unhold services are called successively
  */
-TEST_F(AdapterStoTest, testSkippingHoldPlusEnable)
+TEST_F(Stop1ExecutorTest, testSkippingHoldPlusEnable)
 {
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
-                                                                       , std::placeholders::_2)};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
 
   // define function for recover-invoke action
-  std::function<bool()> sto_false_during_recover_action = [this, &adapter_sto]() {
+  TServiceCallFunc sto_false_during_recover_action = [this, &adapter_sto]() {
     this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT);
-    adapter_sto.updateSto(false);
+    adapter_sto->updateSto(false);
     return true;
   };
 
-  std::function<bool()> halt_action = [this]() {
+  TServiceCallFunc halt_action = [this]() {
     this->triggerClearEvent(HALT_SRV_CALLED_EVENT);
     return true;
   };
@@ -361,14 +361,14 @@ TEST_F(AdapterStoTest, testSkippingHoldPlusEnable)
   {
     InSequence dummy;
 
-    EXPECT_CALL(mock_factory_, call_named(RECOVER_SERVICE, _))
+    EXPECT_CALL(*this, recover_func())
         .WillOnce(InvokeWithoutArgs(sto_false_during_recover_action));
 
-    EXPECT_CALL(mock_factory_, call_named(HALT_SERVICE, _))
+    EXPECT_CALL(*this, halt_func())
         .WillOnce(InvokeWithoutArgs(halt_action));
   }
 
-  adapter_sto.updateSto(true);
+  adapter_sto->updateSto(true);
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 
@@ -382,7 +382,7 @@ TEST_F(AdapterStoTest, testSkippingHoldPlusEnable)
   }
 
   std::atomic_bool keep_spamming{true};
-  std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto.updateSto(true); } }};
+  std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto->updateSto(true); } }};
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -401,21 +401,20 @@ TEST_F(AdapterStoTest, testSkippingHoldPlusEnable)
  * Expected Results:
  *  1. Recover and halt services are called successively. Afterwards recover and unhold are called.
  */
-TEST_F(AdapterStoTest, testEnableDuringHaltService)
+TEST_F(Stop1ExecutorTest, testEnableDuringHaltService)
 {
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
-                                                                       , std::placeholders::_2)};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
 
   // define function for recover-invoke action
-  std::function<bool()> sto_false_during_recover_action = [this, &adapter_sto]() {
+  TServiceCallFunc sto_false_during_recover_action = [this, &adapter_sto]() {
     this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT);
-    adapter_sto.updateSto(false);
+    adapter_sto->updateSto(false);
     return true;
   };
 
-  std::function<bool()> enable_during_halt_action = [this, &adapter_sto]() {
+  TServiceCallFunc enable_during_halt_action = [this, &adapter_sto]() {
     this->triggerClearEvent(HALT_SRV_CALLED_EVENT);
-    adapter_sto.updateSto(true);
+    adapter_sto->updateSto(true);
     return true;
   };
 
@@ -428,26 +427,26 @@ TEST_F(AdapterStoTest, testEnableDuringHaltService)
   {
     InSequence dummy;
 
-    EXPECT_CALL(mock_factory_, call_named(RECOVER_SERVICE, _))
+    EXPECT_CALL(*this, recover_func())
         .WillOnce(InvokeWithoutArgs(sto_false_during_recover_action));
 
-    EXPECT_CALL(mock_factory_, call_named(HALT_SERVICE, _))
+    EXPECT_CALL(*this, halt_func())
         .WillOnce(InvokeWithoutArgs(enable_during_halt_action));
 
-    EXPECT_CALL(mock_factory_, call_named(RECOVER_SERVICE, _))
+    EXPECT_CALL(*this, recover_func())
         .WillOnce(InvokeWithoutArgs([this, recover_srv_called_event2]() {
-          this->triggerClearEvent(recover_srv_called_event2);
-          return true;
-        }));
+      this->triggerClearEvent(recover_srv_called_event2);
+      return true;
+    }));
 
-    EXPECT_CALL(mock_factory_, call_named(UNHOLD_SERVICE, _))
+    EXPECT_CALL(*this, unhold_func())
         .WillOnce(InvokeWithoutArgs([this, unhold_srv_called_event2]() {
-          this->triggerClearEvent(unhold_srv_called_event2);
-          return true;
-        }));
+      this->triggerClearEvent(unhold_srv_called_event2);
+      return true;
+    }));
   }
 
-  adapter_sto.updateSto(true);
+  adapter_sto->updateSto(true);
 
   BARRIER({RECOVER_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT, recover_srv_called_event2, unhold_srv_called_event2});
 }
@@ -463,22 +462,21 @@ TEST_F(AdapterStoTest, testEnableDuringHaltService)
  * Expected Results:
  *  1. Recover and halt services are called successively. Afterwards recover and unhold are called once.
  */
-TEST_F(AdapterStoTest, testEnableDisableDuringHaltService)
+TEST_F(Stop1ExecutorTest, testEnableDisableDuringHaltService)
 {
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
-                                                                       , std::placeholders::_2)};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
 
   // define function for recover-invoke action
-  std::function<bool()> sto_false_during_recover_action = [this, &adapter_sto]() {
+  TServiceCallFunc sto_false_during_recover_action = [this, &adapter_sto]() {
     this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT);
-    adapter_sto.updateSto(false);
+    adapter_sto->updateSto(false);
     return true;
   };
 
-  std::function<bool()> enable_during_halt_action = [this, &adapter_sto]() {
+  TServiceCallFunc enable_during_halt_action = [this, &adapter_sto]() {
     this->triggerClearEvent(HALT_SRV_CALLED_EVENT);
-    adapter_sto.updateSto(true);
-    adapter_sto.updateSto(false); // Important flip!
+    adapter_sto->updateSto(true);
+    adapter_sto->updateSto(false); // Important flip!
     return true;
   };
 
@@ -489,16 +487,16 @@ TEST_F(AdapterStoTest, testEnableDisableDuringHaltService)
   {
     InSequence dummy;
 
-    EXPECT_CALL(mock_factory_, call_named(RECOVER_SERVICE, _))
+    EXPECT_CALL(*this, recover_func())
         .Times(1)
         .WillOnce(InvokeWithoutArgs(sto_false_during_recover_action));
 
-    EXPECT_CALL(mock_factory_, call_named(HALT_SERVICE, _))
+    EXPECT_CALL(*this, halt_func())
         .Times(1)
         .WillOnce(InvokeWithoutArgs(enable_during_halt_action));
   }
 
-  adapter_sto.updateSto(true);
+  adapter_sto->updateSto(true);
 
   BARRIER({RECOVER_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 }
@@ -519,23 +517,22 @@ TEST_F(AdapterStoTest, testEnableDisableDuringHaltService)
  *  2. Halt service is called
  *  2. Recover and unhold services are called successively
  */
-TEST_F(AdapterStoTest, testRecoverFailPlusRetry)
+TEST_F(Stop1ExecutorTest, testRecoverFailPlusRetry)
 {
   /**********
    * Step 1 *
    **********/
-  EXPECT_CALL(mock_factory_, call_named(RECOVER_SERVICE, _))
+  EXPECT_CALL(*this, recover_func())
       .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(RECOVER_SRV_CALLED_EVENT), Return(false)))
       .WillRepeatedly(Return(false));
 
   // unhold is optional here
-  EXPECT_CALL(mock_factory_, call_named(UNHOLD_SERVICE, _))
+  EXPECT_CALL(*this, unhold_func())
       .WillRepeatedly(Return(true));
 
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
-                                                                       , std::placeholders::_2)};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
 
-  adapter_sto.updateSto(true);
+  adapter_sto->updateSto(true);
 
   BARRIER(RECOVER_SRV_CALLED_EVENT);
 
@@ -546,13 +543,13 @@ TEST_F(AdapterStoTest, testRecoverFailPlusRetry)
     InSequence dummy;
 
     // hold and is_executing and is optional here
-    EXPECT_CALL(mock_factory_, call_named(HOLD_SERVICE, _))
+    EXPECT_CALL(*this, hold_func())
         .WillRepeatedly(Return(true));
 
     EXPECT_HALT;
   }
 
-  adapter_sto.updateSto(false);
+  adapter_sto->updateSto(false);
 
   BARRIER(HALT_SRV_CALLED_EVENT);
 
@@ -567,7 +564,7 @@ TEST_F(AdapterStoTest, testRecoverFailPlusRetry)
   }
 
   std::atomic_bool keep_spamming{true};
-  std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto.updateSto(true); } }};
+  std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto->updateSto(true); } }};
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -588,7 +585,7 @@ TEST_F(AdapterStoTest, testRecoverFailPlusRetry)
  *  1. Recover and unhold services are called successively, the latter one at least once
  *  2. Hold and halt services are called successively.
  */
-TEST_F(AdapterStoTest, testUnholdFail)
+TEST_F(Stop1ExecutorTest, testUnholdFail)
 {
   /**********
    * Step 1 *
@@ -598,15 +595,13 @@ TEST_F(AdapterStoTest, testUnholdFail)
 
     EXPECT_RECOVER;
 
-    EXPECT_CALL(mock_factory_, call_named(UNHOLD_SERVICE, _))
+    EXPECT_CALL(*this, unhold_func())
         .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(UNHOLD_SRV_CALLED_EVENT), Return(false)))
         .WillRepeatedly(Return(false));
   }
 
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
-                                                                       , std::placeholders::_2)};
-
-  adapter_sto.updateSto(true);
+  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
+  adapter_sto->updateSto(true);
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -620,7 +615,7 @@ TEST_F(AdapterStoTest, testUnholdFail)
     EXPECT_HALT;
   }
 
-  adapter_sto.updateSto(false);
+  adapter_sto->updateSto(false);
 
   BARRIER2({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 }
@@ -639,7 +634,7 @@ TEST_F(AdapterStoTest, testUnholdFail)
  *  1. Recover and unhold services are called successively
  *  2. Hold, is_executing and halt services are called successively
  */
-TEST_F(AdapterStoTest, testHoldFail)
+TEST_F(Stop1ExecutorTest, testHoldFail)
 {
   /**********
    * Step 1 *
@@ -650,10 +645,9 @@ TEST_F(AdapterStoTest, testHoldFail)
     EXPECT_UNHOLD;
   }
 
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
-                                                                       , std::placeholders::_2)};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
 
-  adapter_sto.updateSto(true);
+  adapter_sto->updateSto(true);
 
   BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -663,16 +657,16 @@ TEST_F(AdapterStoTest, testHoldFail)
   {
     InSequence dummy;
 
-    EXPECT_CALL(mock_factory_, call_named(HOLD_SERVICE, _))
+    EXPECT_CALL(*this, hold_func())
         .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(HOLD_SRV_CALLED_EVENT), Return(false)))
         .WillRepeatedly(Return(false));
 
-    EXPECT_CALL(mock_factory_, call_named(HALT_SERVICE, _))
+    EXPECT_CALL(*this, halt_func())
         .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(HALT_SRV_CALLED_EVENT), Return(false)))
         .WillRepeatedly(Return(false));
   }
 
-  adapter_sto.updateSto(false);
+  adapter_sto->updateSto(false);
 
   BARRIER2({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 }
@@ -690,15 +684,14 @@ TEST_F(AdapterStoTest, testHoldFail)
  * Expected Results:
  *  1. Recover, unhold, hold and halt services are called successively
  */
-TEST_F(AdapterStoTest, testHoldImmediatelyAfterUnhold)
+TEST_F(Stop1ExecutorTest, testHoldImmediatelyAfterUnhold)
 {
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
-                                                                       , std::placeholders::_2)};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
 
   // define function for unhold-invoke action
-  std::function<bool()> unhold_action = [this, &adapter_sto]() {
+  TServiceCallFunc unhold_action = [this, &adapter_sto]() {
     this->triggerClearEvent(UNHOLD_SRV_CALLED_EVENT);
-    adapter_sto.updateSto(false);
+    adapter_sto->updateSto(false);
     return true;
   };
 
@@ -710,14 +703,14 @@ TEST_F(AdapterStoTest, testHoldImmediatelyAfterUnhold)
 
     EXPECT_RECOVER;
 
-    EXPECT_CALL(mock_factory_, call_named(UNHOLD_SERVICE, _))
+    EXPECT_CALL(*this, unhold_func())
         .WillOnce(InvokeWithoutArgs(unhold_action));
 
     EXPECT_HOLD;
     EXPECT_HALT;
   }
 
-  adapter_sto.updateSto(true);
+  adapter_sto->updateSto(true);
 
   barricade({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT, HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 }
@@ -735,14 +728,13 @@ TEST_F(AdapterStoTest, testHoldImmediatelyAfterUnhold)
  * Expected Results:
  *  1. Recover service is called
  */
-TEST_F(AdapterStoTest, testExitInStateEnabling)
+TEST_F(Stop1ExecutorTest, testExitInStateEnabling)
 {
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
-                                                                       , std::placeholders::_2)};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
 
   // define function for recover-invoke action
-  std::function<bool()> recover_action = [this, &adapter_sto]() {
-    adapter_sto.stopStateMachine();
+  TServiceCallFunc recover_action = [this, &adapter_sto]() {
+    adapter_sto->stopStateMachine();
     this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT);
     return true;
   };
@@ -750,15 +742,15 @@ TEST_F(AdapterStoTest, testExitInStateEnabling)
   {
     InSequence dummy;
 
-    EXPECT_CALL(mock_factory_, call_named(RECOVER_SERVICE, _))
+    EXPECT_CALL(*this, recover_func())
         .WillOnce(InvokeWithoutArgs(recover_action));
 
     // do not exclude other service calls as stopping the state machine does not prevent further actions
-    EXPECT_CALL(mock_factory_, call_named(UNHOLD_SERVICE, _))
+    EXPECT_CALL(*this, unhold_func())
         .WillRepeatedly(Return(true));
   }
 
-  adapter_sto.updateSto(true);
+  adapter_sto->updateSto(true);
 
   BARRIER(RECOVER_SRV_CALLED_EVENT);
 }
@@ -770,21 +762,20 @@ TEST_F(AdapterStoTest, testExitInStateEnabling)
  *
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)),
- *     call updateSto(false)) and stopStateMachine() during unhold service call and return success,
+ *     call updateSto(false)) and stopStateMachine() during unhold service call,
  *     let hold and halt services return success
  *
  * Expected Results:
  *  1. Recover and unhold services are called successively
  */
-TEST_F(AdapterStoTest, testExitInStateStopRequestedDuringEnable)
+TEST_F(Stop1ExecutorTest, testExitInStateStopRequestedDuringEnable)
 {
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
-                                                                       , std::placeholders::_2)};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
 
   // define function for unhold-invoke action
-  std::function<bool()> unhold_action = [this, &adapter_sto]() {
-    adapter_sto.updateSto(false);
-    adapter_sto.stopStateMachine();
+  TServiceCallFunc unhold_action = [this, &adapter_sto]() {
+    adapter_sto->updateSto(false);
+    adapter_sto->stopStateMachine();
     this->triggerClearEvent(UNHOLD_SRV_CALLED_EVENT);
     return true;
   };
@@ -796,20 +787,19 @@ TEST_F(AdapterStoTest, testExitInStateStopRequestedDuringEnable)
     InSequence dummy;
 
     EXPECT_RECOVER;
-    EXPECT_CALL(mock_factory_, call_named(UNHOLD_SERVICE, _))
+    EXPECT_CALL(*this, unhold_func())
         .WillOnce(InvokeWithoutArgs(unhold_action));
 
     // do not exclude other service calls as stopping the state machine does not prevent further actions
-    EXPECT_CALL(mock_factory_, call_named(HOLD_SERVICE, _))
+    EXPECT_CALL(*this, hold_func())
         .WillRepeatedly(Return(true));
 
-    EXPECT_CALL(mock_factory_, call_named(HALT_SERVICE, _))
-        .WillRepeatedly(Return(true));
+    EXPECT_HALT;
   }
 
-  adapter_sto.updateSto(true);
+  adapter_sto->updateSto(true);
 
-  BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER3({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 }
 
 /**
@@ -819,31 +809,31 @@ TEST_F(AdapterStoTest, testExitInStateStopRequestedDuringEnable)
  *
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)),
- *     call updateSto(false)) and stopStateMachine() during unhold service call and return success,
- *     let hold and halt services return success
+ *    call updateSto(false)) and stopStateMachine() during unhold service call
+ *    and return success,
+ *    let hold and halt services return success
  *
  * Expected Results:
  *  1. Recover and unhold services are called successively
  */
-TEST_F(AdapterStoTest, testExitDuringPendingHaltCall)
+TEST_F(Stop1ExecutorTest, testExitDuringPendingHaltCall)
 {
-  AdapterSto adapter_sto{std::bind(&MockFactory::create, &mock_factory_, std::placeholders::_1
-                                                                       , std::placeholders::_2)};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
 
   // define function for recover-invoke action
-  std::function<bool()> sto_false_during_recover_action = [this, &adapter_sto]() {
+  TServiceCallFunc sto_false_during_recover_action = [this, &adapter_sto]() {
     this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT);
-    adapter_sto.updateSto(false);
+    adapter_sto->updateSto(false);
     return true;
   };
 
-  std::function<bool()> false_recover_action = []() {
+  TServiceCallFunc false_recover_action = []() {
     return false;
   };
 
-  std::function<bool()> enable_during_halt_action = [this, &adapter_sto]() {
-    adapter_sto.updateSto(true);
-    adapter_sto.stopStateMachine();
+  TServiceCallFunc enable_during_halt_action = [this, &adapter_sto]() {
+    adapter_sto->updateSto(true);
+    adapter_sto->stopStateMachine();
     this->triggerClearEvent(HALT_SRV_CALLED_EVENT);
     return true;
   };
@@ -854,21 +844,22 @@ TEST_F(AdapterStoTest, testExitDuringPendingHaltCall)
   {
     InSequence dummy;
 
-    EXPECT_CALL(mock_factory_, call_named(RECOVER_SERVICE, _))
+    EXPECT_CALL(*this, recover_func())
         .WillOnce(InvokeWithoutArgs(sto_false_during_recover_action));
 
-    EXPECT_CALL(mock_factory_, call_named(HALT_SERVICE, _))
+    EXPECT_CALL(*this, halt_func())
         .WillOnce(InvokeWithoutArgs(enable_during_halt_action));
 
-    EXPECT_CALL(mock_factory_, call_named(RECOVER_SERVICE, _))
+    EXPECT_CALL(*this, recover_func())
         .Times(AtLeast(0)) // Not nice but at this point not easy to say...
         .WillOnce(InvokeWithoutArgs(false_recover_action));
   }
 
-  adapter_sto.updateSto(true);
+  adapter_sto->updateSto(true);
 
   BARRIER({RECOVER_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 }
+
 
 } // namespace prbt_hardware_support_tests
 
