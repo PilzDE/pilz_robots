@@ -44,7 +44,7 @@ using namespace prbt_hardware_support;
 class CallbackReceiver
 {
   public:
-    MOCK_METHOD1(modbusInMsgCallback,  void(ModbusMsgInStampedConstPtr msg));
+    MOCK_METHOD1(modbusInMsgCallback,  void(const ModbusMsgInStampedConstPtr& msg));
 };
 
 class TestPublisher : public ros::Publisher

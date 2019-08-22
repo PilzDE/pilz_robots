@@ -123,14 +123,14 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
   /**********
    * Step 2 *
    **********/
-  ros::ServiceClient brake_test_srv_client_ = nh.serviceClient<BrakeTest>(EXECUTE_BRAKE_TEST_SERVICE_NAME);
-  EXPECT_TRUE(brake_test_srv_client_.waitForExistence(ros::Duration(WAIT_FOR_BRAKE_TEST_SERVICE_TIMEOUT_S)));
+  ros::ServiceClient brake_test_srv_client = nh.serviceClient<BrakeTest>(EXECUTE_BRAKE_TEST_SERVICE_NAME);
+  EXPECT_TRUE(brake_test_srv_client.waitForExistence(ros::Duration(WAIT_FOR_BRAKE_TEST_SERVICE_TIMEOUT_S)));
 
   /**********
    * Step 3 *
    **********/
   BrakeTest srv;
-  EXPECT_TRUE(brake_test_srv_client_.call(srv));
+  EXPECT_TRUE(brake_test_srv_client.call(srv));
 
   /**********
    * Step 4 *
