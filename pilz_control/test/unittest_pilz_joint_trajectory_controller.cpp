@@ -53,7 +53,7 @@ static constexpr double STOP_TRAJECTORY_DURATION{0.2};
 class PilzJointTrajectoryControllerTest : public testing::Test
 {
 protected:
-  void SetUp();
+  void SetUp() override;
 
   ::testing::AssertionResult waitForIsExecutingServiceResult(bool expectation,
                                                              double timeout = DEFAULT_WAIT_FOR_ACTIVITY_TIMEOUT);

@@ -45,47 +45,36 @@ int main(int argc, char **argv)
   ros::NodeHandle pnh{"~"};
   ros::NodeHandle nh;
 
-  std::vector<unsigned short> registers_to_read;
-  bool has_register_range_parameters = pnh.hasParam(PARAM_NUM_REGISTERS_TO_READ_STR) &&
-                                       pnh.hasParam(PARAM_INDEX_OF_FIRST_REGISTER_TO_READ_STR);
-
-  if (!has_register_range_parameters)
-  {
-    ROS_INFO_STREAM("Parameters for register range are not set. Will try to determine range from api spec...");
-
-    try
-    {
-      ModbusApiSpec api_spec(nh);
-      api_spec.getAllDefinedRegisters(registers_to_read);
-      ROS_DEBUG("registers_to_read.size() %d", registers_to_read.size());
-    }
-    // LCOV_EXCL_START Can be ignored here, exceptions of ModbusApiSpec are tested in unittest_modbus_api_spec
-    catch (const ModbusApiSpecException &ex)
-    {
-      ROS_ERROR_STREAM(ex.what());
-      return EXIT_FAILURE;
-    }
-    // LCOV_EXCL_STOP
-  }
-
   // LCOV_EXCL_START Simple parameter reading not analyzed
 
   std::string ip;
   int port;
+  std::vector<unsigned short> registers_to_read;
 
   try
   {
     ip = getParam<std::string>(pnh, PARAM_MODBUS_SERVER_IP_STR);
     port = getParam<int>(pnh, PARAM_MODBUS_SERVER_PORT_STR);
+
+    bool has_register_range_parameters =
+        pnh.hasParam(PARAM_NUM_REGISTERS_TO_READ_STR) &&
+        pnh.hasParam(PARAM_INDEX_OF_FIRST_REGISTER_TO_READ_STR);
     if (has_register_range_parameters)
     {
       int num_registers_to_read = getParam<int>(pnh, PARAM_NUM_REGISTERS_TO_READ_STR);
       int index_of_first_register = getParam<int>(pnh, PARAM_INDEX_OF_FIRST_REGISTER_TO_READ_STR);
-      registers_to_read = std::vector<unsigned short>(num_registers_to_read);
+      registers_to_read = std::vector<unsigned short>(static_cast<unsigned long>(num_registers_to_read));
       std::iota(registers_to_read.begin(), registers_to_read.end(), index_of_first_register);
     }
+    else
+    {
+      ROS_INFO_STREAM("Parameters for register range are not set. Will try to determine range from api spec...");
+      ModbusApiSpec api_spec(nh);
+      api_spec.getAllDefinedRegisters(registers_to_read);
+      ROS_DEBUG("registers_to_read.size() %zu", registers_to_read.size());
+    }
   }
-  catch (const GetParamException &ex)
+  catch (const std::runtime_error &ex)
   {
     ROS_ERROR_STREAM(ex.what());
     return EXIT_FAILURE;

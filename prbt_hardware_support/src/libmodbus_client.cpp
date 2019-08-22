@@ -36,7 +36,7 @@ LibModbusClient::~LibModbusClient()
 
 bool LibModbusClient::init(const char* ip, unsigned int port)
 {
-  modbus_connection_ = modbus_new_tcp(ip, port);
+  modbus_connection_ = modbus_new_tcp(ip, static_cast<int>(port));
 
   if (modbus_connect(modbus_connection_) == -1)
   {
@@ -60,7 +60,7 @@ unsigned long LibModbusClient::getResponseTimeoutInMs()
 {
   struct timeval response_timeout;
   modbus_get_response_timeout(modbus_connection_, &response_timeout);
-  return response_timeout.tv_sec * 1000L + (response_timeout.tv_usec  / 1000L);
+  return static_cast<unsigned long>(response_timeout.tv_sec * 1000L + (response_timeout.tv_usec  / 1000L));
 }
 
 RegCont LibModbusClient::readHoldingRegister(int addr, int nb)
@@ -77,12 +77,12 @@ RegCont LibModbusClient::readHoldingRegister(int addr, int nb)
   rc = modbus_read_registers(modbus_connection_, addr, nb, tab_reg.data());
   if (rc == -1)
   {
-    std::ostringstream errStream;
-    errStream << "Failed to read " << nb;
-    errStream << " registers starting from " << addr;
-    errStream << " with err: " << modbus_strerror(errno);
-    ROS_ERROR_STREAM_NAMED("LibModbusClient", errStream.str());
-    throw ModbusExceptionDisconnect(errStream.str());
+    std::ostringstream err_stream;
+    err_stream << "Failed to read " << nb;
+    err_stream << " registers starting from " << addr;
+    err_stream << " with err: " << modbus_strerror(errno);
+    ROS_ERROR_STREAM_NAMED("LibModbusClient", err_stream.str());
+    throw ModbusExceptionDisconnect(err_stream.str());
   }
 
   return tab_reg;

@@ -70,7 +70,7 @@ class AsyncTest
      *
      * @param event The event that is triggered
      */
-    void triggerClearEvent(std::string event);
+    void triggerClearEvent(const std::string &event);
 
     /**
      * @brief Will block until the event given by clear_event is triggered. Unblocks immediately, if the event was
@@ -78,7 +78,7 @@ class AsyncTest
      *
      * @param clear_event Event that allows the test to pass on
      */
-    void barricade(std::string clear_event);
+    void barricade(const std::string &clear_event);
 
     /**
      * @brief Will block until all events given by clear_events are triggered. Events triggered in advance take effect,

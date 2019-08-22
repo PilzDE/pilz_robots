@@ -35,7 +35,7 @@ public:
   BrakeTestExecutor(ros::NodeHandle& nh);
 
 private:
-  bool executeBrakeTest(BrakeTest::Request&, BrakeTest::Response& response);
+  bool executeBrakeTest(BrakeTest::Request& req, BrakeTest::Response& response);
 
 private:
   ros::NodeHandle nh_;

@@ -53,8 +53,7 @@ static constexpr bool STO_CLEAR {true};
 static constexpr bool STO_ACTIVE {false};
 
 static constexpr int STO_CLEAR_PUBLISHING_RATE {10};
-
-static const ModbusApiSpec test_api_spec{ {modbus_api_spec::VERSION, 513},
+static const ModbusApiSpec TEST_API_SPEC{ {modbus_api_spec::VERSION, 513},
                                           {modbus_api_spec::STO, 512} };
 
 static constexpr int MODBUS_API_VERSION_FOR_TESTING {2};
@@ -92,9 +91,9 @@ class ModbusAdapterStoTest : public ::testing::Test, public ::testing::AsyncTest
 {
 protected:
   ModbusAdapterStoTest();
-  virtual ~ModbusAdapterStoTest() override;
+  ~ModbusAdapterStoTest() override;
 
-  virtual void SetUp() override;
+  void SetUp() override;
 
   ModbusMsgInStampedPtr createDefaultStoModbusMsg(bool sto_clear);
   std::thread asyncConstructor();
@@ -157,7 +156,7 @@ ModbusMsgInStampedPtr ModbusAdapterStoTest::createDefaultStoModbusMsg(bool sto)
 std::thread ModbusAdapterStoTest::asyncConstructor()
 {
   std::thread t([this](){
-    ModbusAdapterSto adapter_node(nh_, test_api_spec);
+    ModbusAdapterSto adapter_node(nh_, TEST_API_SPEC);
   });
   return t;
 }
@@ -178,7 +177,7 @@ TEST_F(ModbusAdapterStoTest, testModbusMsgWrapperExceptionDtor)
 TEST_F(ModbusAdapterStoTest, testModbusMsgStoWrapperDtor)
 {
   ModbusMsgInStampedConstPtr msg_const_ptr {createDefaultStoModbusMsg(STO_CLEAR)};
-  std::shared_ptr<ModbusMsgStoWrapper> ex {new ModbusMsgStoWrapper(msg_const_ptr, test_api_spec)};
+  std::shared_ptr<ModbusMsgStoWrapper> ex {new ModbusMsgStoWrapper(msg_const_ptr, TEST_API_SPEC)};
 }
 
 /**
@@ -198,7 +197,7 @@ TEST_F(ModbusAdapterStoTest, testSetup)
 {
   manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
-  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
+  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
 
   EXPECT_EQ(1, pub_.getNumSubscribers());
 }
@@ -304,7 +303,7 @@ TEST_F(ModbusAdapterStoTest, testClearMsg)
 {
   manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
-  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
+  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
 
   EXPECT_CLEARANCE;
 
@@ -322,7 +321,7 @@ TEST_F(ModbusAdapterStoTest, testRemoveUnholdService)
 {
   manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
-  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
+  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
 
   EXPECT_CALL(manipulator_, recoverCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("recover_callback"));
 
@@ -348,7 +347,7 @@ TEST_F(ModbusAdapterStoTest, testRemoveHoldService)
 {
   manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
-  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
+  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
 
   EXPECT_CLEARANCE;
 
@@ -394,7 +393,7 @@ TEST_F(ModbusAdapterStoTest, testHoldMsg)
 {
   manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
-  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
+  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
 
   EXPECT_CLEARANCE;
 
@@ -419,7 +418,7 @@ TEST_F(ModbusAdapterStoTest, testDisconnectNoStoMsg)
 {
   manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
-  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
+  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
 
   EXPECT_CLEARANCE;
 
@@ -448,7 +447,7 @@ TEST_F(ModbusAdapterStoTest, testDisconnectWithStoMsg)
 {
   manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
-  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
+  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
 
   EXPECT_CLEARANCE;
 
@@ -476,7 +475,7 @@ TEST_F(ModbusAdapterStoTest, testDisconnectPure)
 {
   manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
-  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
+  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
 
   EXPECT_CLEARANCE;
 
@@ -504,7 +503,7 @@ TEST_F(ModbusAdapterStoTest, testNoVersion)
 {
   manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
-  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
+  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
 
   EXPECT_CLEARANCE;
 
@@ -531,7 +530,7 @@ TEST_F(ModbusAdapterStoTest, testWrongVersion)
 {
   manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
-  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
+  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
 
   EXPECT_CLEARANCE;
 
@@ -562,7 +561,7 @@ TEST_F(ModbusAdapterStoTest, testVersion1)
 {
   manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
-  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
+  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
 
   EXPECT_CLEARANCE;
 
@@ -590,7 +589,7 @@ TEST_F(ModbusAdapterStoTest, testNoSto)
 {
   manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
-  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
+  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
 
   EXPECT_CLEARANCE;
 
@@ -602,7 +601,7 @@ TEST_F(ModbusAdapterStoTest, testNoSto)
 
   ModbusMsgInStampedPtr msg = createDefaultStoModbusMsg(STO_ACTIVE);
   msg->holding_registers.data.erase(msg->holding_registers.data.begin());
-  msg->holding_registers.layout.data_offset = test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION);
+  msg->holding_registers.layout.data_offset = TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION);
 
   pub_.publish(msg);
 
@@ -627,7 +626,7 @@ TEST_F(ModbusAdapterStoTest, testStoChangeDuringRecover)
 {
   manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
-  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, test_api_spec));
+  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
 
   // define function for recover-invoke action
   std::function<bool()> recover_action = [this]() {
@@ -653,7 +652,7 @@ TEST_F(ModbusAdapterStoTest, testStoChangeDuringRecover)
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "integrationtest_modbus_adapter_sto");
-  ros::NodeHandle nh_;
+  ros::NodeHandle nh;
 
   testing::InitGoogleTest(&argc, argv);
 

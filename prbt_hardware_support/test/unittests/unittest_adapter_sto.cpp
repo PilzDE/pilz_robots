@@ -423,8 +423,8 @@ TEST_F(AdapterStoTest, testEnableDuringHaltService)
    * Step 1 *
    **********/
 
-  const std::string RECOVER_SRV_CALLED_EVENT2{"recover_srv_called2"};
-  const std::string UNHOLD_SRV_CALLED_EVENT2{"unhold_srv_called2"};
+  const std::string recover_srv_called_event2{"recover_srv_called2"};
+  const std::string unhold_srv_called_event2{"unhold_srv_called2"};
   {
     InSequence dummy;
 
@@ -435,21 +435,21 @@ TEST_F(AdapterStoTest, testEnableDuringHaltService)
         .WillOnce(InvokeWithoutArgs(enable_during_halt_action));
 
     EXPECT_CALL(mock_factory_, call_named(RECOVER_SERVICE, _))
-        .WillOnce(InvokeWithoutArgs([this, RECOVER_SRV_CALLED_EVENT2]() {
-          this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT2);
+        .WillOnce(InvokeWithoutArgs([this, recover_srv_called_event2]() {
+          this->triggerClearEvent(recover_srv_called_event2);
           return true;
         }));
 
     EXPECT_CALL(mock_factory_, call_named(UNHOLD_SERVICE, _))
-        .WillOnce(InvokeWithoutArgs([this, UNHOLD_SRV_CALLED_EVENT2]() {
-          this->triggerClearEvent(UNHOLD_SRV_CALLED_EVENT2);
+        .WillOnce(InvokeWithoutArgs([this, unhold_srv_called_event2]() {
+          this->triggerClearEvent(unhold_srv_called_event2);
           return true;
         }));
   }
 
   adapter_sto.updateSto(true);
 
-  BARRIER({RECOVER_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT, RECOVER_SRV_CALLED_EVENT2, UNHOLD_SRV_CALLED_EVENT2});
+  BARRIER({RECOVER_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT, recover_srv_called_event2, unhold_srv_called_event2});
 }
 
 /**
