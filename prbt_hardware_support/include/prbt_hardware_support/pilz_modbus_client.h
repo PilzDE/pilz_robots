@@ -45,8 +45,7 @@ public:
   /**
    * @brief Sets up publisher. To open the modbus connection call PilzModbusClient::init.
    * @param nh Node handle.
-   * @param num_registers_to_read Size of the data array.
-   * @param index_of_first_register Offset of the modbus data.
+   * @param registers_to_read Registers which have to be read.
    * @param modbus_client ModbusClient to use
    * @param response_timeout_ms Time to wait for a response from Modbus server.
    * @param modbus_read_topic_name Name of the topic to which is published.
