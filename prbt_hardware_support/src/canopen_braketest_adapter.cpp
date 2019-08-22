@@ -165,14 +165,14 @@ std::vector<std::string> CANOpenBrakeTestAdapter::getNodeNames()
   }
 
   std::vector<std::string> node_names;
-  for (auto rpci = rpc.begin(); rpci != rpc.end(); ++rpci)
+  for (auto& rpci : rpc)
   {
-    auto node_name = rpci->first.c_str();
+    auto node_name = rpci.first.c_str();
 
     try
     {
-      auto braketest = rpci->second.hasMember(NODE_BRAKETEST_ENABLED_PARAMETER) &&
-                        rpci->second[NODE_BRAKETEST_ENABLED_PARAMETER];
+      auto braketest = rpci.second.hasMember(NODE_BRAKETEST_ENABLED_PARAMETER) &&
+                        rpci.second[NODE_BRAKETEST_ENABLED_PARAMETER];
 
         if(braketest)
         {
@@ -198,7 +198,7 @@ std::vector<std::string> CANOpenBrakeTestAdapter::getNodeNames()
   return node_names;
 }
 
-bool CANOpenBrakeTestAdapter::triggerBrakeTests(BrakeTest::Request &, BrakeTest::Response &response)
+bool CANOpenBrakeTestAdapter::triggerBrakeTests(BrakeTest::Request& /*req*/, BrakeTest::Response &response)
 {
   try
   {
@@ -207,7 +207,7 @@ bool CANOpenBrakeTestAdapter::triggerBrakeTests(BrakeTest::Request &, BrakeTest:
     // should be executed prior to brake tests
     auto max_duration = getMaximumBrakeTestDuration(node_names);
 
-    for (auto node_name : node_names)
+    for (const auto& node_name : node_names)
     {
       ROS_INFO_STREAM("Perform brake test for node \"" << node_name << "\"...");
       triggerBrakeTestForNode(node_name);

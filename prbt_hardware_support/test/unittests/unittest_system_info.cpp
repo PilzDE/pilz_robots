@@ -53,8 +53,8 @@ static constexpr unsigned int JOINT_STATES_TOPIC_QUEUE_SIZE{1};
 class SystemInfoTests : public testing::Test, public testing::AsyncTest
 {
 public:
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
   void publishJointState();
 

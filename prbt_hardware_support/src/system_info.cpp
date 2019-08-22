@@ -85,9 +85,9 @@ std::vector<std::string> SystemInfo::getNodeNames(const ros::NodeHandle& nh)
   }
 
   std::vector<std::string> node_names;
-  for (auto rpci = rpc.begin(); rpci != rpc.end(); ++rpci)
+  for (auto& rpci : rpc)
   {
-    auto node_name = rpci->first.c_str();
+    auto node_name = rpci.first.c_str();
     node_names.push_back(node_name);
   }
   return node_names;

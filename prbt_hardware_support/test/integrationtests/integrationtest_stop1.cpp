@@ -49,9 +49,11 @@ namespace prbt_hardware_support
 {
 
 using ::testing::_;
+using ::testing::AtLeast;
 using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
+using ::testing::Return;
 
 static constexpr uint16_t MODBUS_API_VERSION_VALUE {2};
 static const std::string RECOVER_SERVICE_NAME {"recover"};
@@ -70,8 +72,8 @@ class Stop1IntegrationTest : public testing::Test, public testing::AsyncTest
 {
 
 public:
-  void SetUp();
-  void TearDown();
+  void SetUp() override;
+  void TearDown() override;
 
   // Serves both the controller (/hold + /unhold) and the driver (/halt + /recover) services
   ManipulatorMock manipulator;
@@ -96,20 +98,16 @@ void Stop1IntegrationTest::TearDown()
 /**
  * @brief Test that correct service calls occurs based on STO state.
  *
- * @tests{No_new_commands_during_STO_false,
- *  Test that controller is set to hold in case of STO==false.
- * }
- *
  * @tests{Recover_driver_after_STO_false,
  *  Test that drives are recovered after STO switch: false->true.
  * }
  *
- * @tests{Stop1_Trigger,
- *  Test that Stop 1 is triggered if STO value changes to false.
+ * @tests{Leave_hold_after_recover,
+ *  Test that controller unhold is called after recovering.
  * }
  *
- * @tests{Hold_driver_if_STO_false,
- *  Test that driver is halt in case of STO switch: true->false.
+ * @tests{Stop1_Trigger,
+ *  Test that Stop 1 is triggered if STO value changes to false.
  * }
  *
  *
@@ -128,11 +126,11 @@ void Stop1IntegrationTest::TearDown()
  *    3. Terminate Modbus-server to cause a disconnect.
  *
  * Expected Results:
- *    0. The manipulator mock should receive a call to /unhold after that a call to /recover.
+ *    0. The manipulator mock should receive a call to /recover after that a call to /unhold.
  *       No other calls should happen.
  *    1. The manipulator mock should receive a call to /hold after that a call to /halt.
  *       No other calls should happen.
- *    2. The manipulator mock should receive a call to /unhold after that a call to /recover.
+ *    2. The manipulator mock should receive a call to /recover after that a call to /unhold.
  *       No other calls should happen.
  *    3. The manipulator mock should receive a call to /hold after that a call to /halt.
  *       No other calls should happen.
@@ -168,10 +166,10 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
     InSequence dummy;
 
     // Call from STO clear
-    EXPECT_CALL(manipulator, unholdCb(_,_)).Times(1);
     EXPECT_CALL(manipulator, holdCb(_,_)).Times(0);
     EXPECT_CALL(manipulator, haltCb(_,_)).Times(0);
-    EXPECT_CALL(manipulator, recoverCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("recover_callback"));
+    EXPECT_CALL(manipulator, recoverCb(_,_)).Times(1).WillOnce(Return(true));
+    EXPECT_CALL(manipulator, unholdCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("unhold_callback"));
       // Expected came true -> go on
   }
 
@@ -188,7 +186,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
   /**********
    * Step 1 *
    **********/
-  BARRIER("recover_callback");
+  BARRIER("unhold_callback");
 
   {
     InSequence dummy;
@@ -213,8 +211,8 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
     // Call from STO clear
     EXPECT_CALL(manipulator, holdCb(_,_)).Times(0);
     EXPECT_CALL(manipulator, haltCb(_,_)).Times(0);
-    EXPECT_CALL(manipulator, unholdCb(_,_)).Times(1);
-    EXPECT_CALL(manipulator, recoverCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("recover_callback"));
+    EXPECT_CALL(manipulator, recoverCb(_,_)).Times(1).WillOnce(Return(true));
+    EXPECT_CALL(manipulator, unholdCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("unhold_callback"));
 
   }
 
@@ -223,7 +221,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
   /**********
    * Step 3 *
    **********/
-  BARRIER("recover_callback");
+  BARRIER("unhold_callback");
   {
     InSequence dummy;
 
@@ -251,8 +249,8 @@ int main(int argc, char *argv[])
   ros::init(argc, argv, "integrationtest_stop1");
   ros::NodeHandle nh;
 
-  ros::AsyncSpinner spinner_{1};
-  spinner_.start();
+  ros::AsyncSpinner spinner{1};
+  spinner.start();
 
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

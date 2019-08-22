@@ -32,7 +32,7 @@ PilzModbusClient::PilzModbusClient(ros::NodeHandle& nh,
                                    const std::string& modbus_read_topic_name,
                                    const std::string& modbus_write_service_name,
                                    double read_frequency_hz)
-  : registers_to_read(registers_to_read)
+  : registers_to_read_(registers_to_read)
   , RESPONSE_TIMEOUT_MS(response_timeout_ms)
   , READ_FREQUENCY_HZ(read_frequency_hz)
   , modbus_client_(std::move(modbus_client))
@@ -45,7 +45,7 @@ PilzModbusClient::PilzModbusClient(ros::NodeHandle& nh,
 
 
 bool PilzModbusClient::init(const char* ip, unsigned int port,
-                            unsigned int retries, ros::Duration timeout)
+                            unsigned int retries, const ros::Duration& timeout)
 {
   for(size_t retry_n = 0; retry_n < retries; ++retry_n)
   {
@@ -69,8 +69,8 @@ bool PilzModbusClient::init(const char* ip, unsigned int port,
 
 bool PilzModbusClient::init(const char* ip, unsigned int port)
 {
-  State expectedState {State::not_initialized};
-  if (!state_.compare_exchange_strong(expectedState, State::initializing))
+  State expected_state {State::not_initialized};
+  if (!state_.compare_exchange_strong(expected_state, State::initializing))
   {
     ROS_ERROR_STREAM("Modbus-client not in correct state: " << state_ << "expected:" << State::initializing);
     state_ = State::not_initialized;
@@ -102,8 +102,8 @@ void PilzModbusClient::sendDisconnectMsg()
 
 void PilzModbusClient::run()
 {
-  State expectedState {State::initialized};
-  if (!state_.compare_exchange_strong(expectedState, State::running))
+  State expected_state {State::initialized};
+  if (!state_.compare_exchange_strong(expected_state, State::running))
   {
     ROS_ERROR_STREAM("Modbus-client not in correct state: " << state_ << "expected:" << State::running);
     throw PilzModbusClientException("Modbus-client not in correct state.");
@@ -129,17 +129,17 @@ void PilzModbusClient::run()
       }
     }
 
-    std::vector<std::vector<unsigned short>> blocks = split_into_blocks(registers_to_read);
+    std::vector<std::vector<unsigned short>> blocks = splitIntoBlocks(registers_to_read_);
 
-    unsigned short index_of_first_register = *std::min_element(registers_to_read.begin(), registers_to_read.end());
-    int num_registers = *std::max_element(registers_to_read.begin(), registers_to_read.end()) - index_of_first_register + 1;
-    holding_register = RegCont(num_registers, 0);
+    unsigned short index_of_first_register = *std::min_element(registers_to_read_.begin(), registers_to_read_.end());
+    int num_registers = *std::max_element(registers_to_read_.begin(), registers_to_read_.end()) - index_of_first_register + 1;
+    holding_register = RegCont(static_cast<unsigned long>(num_registers), 0);
 
-    ROS_DEBUG("blocks.size() %d", blocks.size());
+    ROS_DEBUG("blocks.size() %zu", blocks.size());
     try
     {
       for(auto &block : blocks){
-        ROS_DEBUG("block.size() %d", block.size());
+        ROS_DEBUG("block.size() %zu", block.size());
         unsigned short index_of_first_register_block = *(block.begin());
         unsigned long num_registers_block = block.size();
         RegCont block_holding_register;
@@ -193,7 +193,7 @@ void PilzModbusClient::run()
   state_ = State::not_initialized;
 }
 
-std::vector<std::vector<unsigned short>> PilzModbusClient::split_into_blocks(std::vector<unsigned short> &in){
+std::vector<std::vector<unsigned short>> PilzModbusClient::splitIntoBlocks(std::vector<unsigned short> &in){
   std::vector<std::vector<unsigned short>> out;
   std::sort(in.begin(), in.end()); // sort just in case to be more user-friendly
   unsigned short prev{0};
@@ -207,7 +207,8 @@ std::vector<std::vector<unsigned short>> PilzModbusClient::split_into_blocks(std
     }
     else { // *it >= prev + 1
       std::vector<unsigned short> to_out(current_block);
-      if(to_out.size() > 0) {
+      if(!to_out.empty())
+      {
         out.push_back(to_out);
       }
       current_block.clear();
@@ -216,7 +217,8 @@ std::vector<std::vector<unsigned short>> PilzModbusClient::split_into_blocks(std
     prev = reg;
   }
   std::vector<unsigned short> to_out(current_block);
-  if(to_out.size() > 0) {
+  if(!to_out.empty())
+  {
     out.push_back(to_out);
   }
   return out;
