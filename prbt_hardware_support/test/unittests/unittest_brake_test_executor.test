@@ -16,6 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <launch>
+  <arg name="safety_hw" default="pss4000" />
+  <rosparam ns="//write_api_spec" command="load" file="$(find prbt_hardware_support)/config/modbus_write_api_spec_$(arg safety_hw).yaml" />
   <test pkg="prbt_hardware_support" type="unittest_brake_test_executor"
         test-name="unittest_brake_test_executor">
   </test>

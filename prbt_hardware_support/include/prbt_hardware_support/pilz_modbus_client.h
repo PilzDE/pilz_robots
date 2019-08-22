@@ -77,7 +77,7 @@ public:
    * @param timeout_ms between retries
    * @return True if a connection is established, false otherwise.
    */
-  bool init(const char* ip, unsigned int port, unsigned int retries, ros::Duration timeout_ms);
+  bool init(const char* ip, unsigned int port, unsigned int retries, const ros::Duration &timeout_ms);
 
   /**
    * @brief Publishes the register values as messages.
@@ -104,7 +104,7 @@ public:
   /**
    * @brief Splits a vector of integers into a vector of vectors with consecutive groups
    */
-  std::vector<std::vector<unsigned short>> static split_into_blocks(std::vector<unsigned short> &in);
+  std::vector<std::vector<unsigned short>> static splitIntoBlocks(std::vector<unsigned short> &in);
 
 private:
   void sendDisconnectMsg();
@@ -122,14 +122,14 @@ private:
      */
   enum State
   {
-    not_initialized, // 0
-    initializing, // 1
-    initialized, // 2
-    running, // 3
+    not_initialized,
+    initializing,
+    initialized,
+    running,
   };
 
   //! Registers which have to be read.
-  std::vector<unsigned short> registers_to_read;
+  std::vector<unsigned short> registers_to_read_;
 
   //! Defines how long we wait for a response from the Modbus-server.
   const unsigned int RESPONSE_TIMEOUT_MS;
