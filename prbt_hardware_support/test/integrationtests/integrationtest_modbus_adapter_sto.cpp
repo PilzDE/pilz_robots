@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <atomic>
 #include <string>
 #include <vector>
 #include <stdexcept>
@@ -51,6 +52,7 @@ static const std::string STO_ADAPTER_NODE_NAME {"/modbus_adapter_sto_node"};
 static constexpr bool STO_CLEAR {true};
 static constexpr bool STO_ACTIVE {false};
 
+static constexpr int STO_CLEAR_PUBLISHING_RATE {10};
 static const ModbusApiSpec TEST_API_SPEC{ {modbus_api_spec::VERSION, 513},
                                           {modbus_api_spec::STO, 512} };
 
@@ -59,7 +61,10 @@ static constexpr int MODBUS_API_VERSION_FOR_TESTING {2};
 using namespace prbt_hardware_support;
 
 using ::testing::_;
+using ::testing::AtLeast;
 using ::testing::InSequence;
+using ::testing::InvokeWithoutArgs;
+using ::testing::Return;
 
 
 #define EXPECT_STOP1 \
@@ -74,8 +79,8 @@ using ::testing::InSequence;
   do { \
   EXPECT_CALL(manipulator_, holdCb(_,_)).Times(0); \
   EXPECT_CALL(manipulator_, haltCb(_,_)).Times(0); \
-  EXPECT_CALL(manipulator_, unholdCb(_,_)).Times(1); \
-  EXPECT_CALL(manipulator_, recoverCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("recover_callback")); }\
+  EXPECT_CALL(manipulator_, recoverCb(_,_)).Times(1).WillOnce(Return(true)); \
+  EXPECT_CALL(manipulator_, unholdCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("unhold_callback")); }\
   while(false)
 
 /**
@@ -182,7 +187,7 @@ TEST_F(ModbusAdapterStoTest, testModbusMsgStoWrapperDtor)
 TEST_F(ModbusAdapterStoTest, testAdapterStoDtor)
 {
   manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
-  std::shared_ptr<AdapterSto> adapter {new AdapterSto(nh_)};
+  std::shared_ptr<AdapterSto> adapter {new AdapterSto()};
 }
 
 /**
@@ -210,20 +215,20 @@ TEST_F(ModbusAdapterStoTest, testSetupNoDisableService)
   manipulator_.advertiseUnholdService(nh_, UNHOLD_SERVICE_T);
   manipulator_.advertiseRecoverService(nh_, RECOVER_SERVICE_T);
 
-  auto t = asyncConstructor();
-  ros::Duration(5.5).sleep(); // slightly longer than WAIT_FOR_SERVICE_TIMEOUT_S
+  auto adapter_thread = asyncConstructor();
+  ros::Duration(1.0).sleep();
 
   EXPECT_EQ(0, pub_.getNumSubscribers()); // the constructor should wait, no subscription yet
   manipulator_.advertiseHaltService(nh_, HALT_SERVICE_T);
-  t.join();
+  adapter_thread.join();
 }
 
 /**
- * @tests{Controller_service_unhold_optional,
- *  Test constructor if there is no service for unholding the controller.
+ * @tests{No_Startup_if_controller_unhold_missing,
+ *  Test constructor with delayed unhold service.
  * }
  *
- * Expected: Constructor finishes successfully without unhold service.
+ * Expected: Constructor blocks until the unhold service is available.
  */
 TEST_F(ModbusAdapterStoTest, testSetupNoUnholdService)
 {
@@ -231,17 +236,20 @@ TEST_F(ModbusAdapterStoTest, testSetupNoUnholdService)
   manipulator_.advertiseHaltService(nh_, HALT_SERVICE_T);
   manipulator_.advertiseRecoverService(nh_, RECOVER_SERVICE_T);
 
-  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
+  auto adapter_thread = asyncConstructor();
+  ros::Duration(1.0).sleep();
 
-  EXPECT_EQ(1, pub_.getNumSubscribers());
+  EXPECT_EQ(0, pub_.getNumSubscribers()); // the constructor should wait, no subscription yet
+  manipulator_.advertiseUnholdService(nh_, UNHOLD_SERVICE_T);
+  adapter_thread.join();
 }
 
 /**
- * @tests{Driver_service_recover_optional,
- *  Test successful constructor call if recover service for driver is missing.
+ * @tests{No_Startup_if_driver_recover_missing,
+ *  Test constructor with delayed recover service.
  * }
  *
- * Expected: Constructor finishes successfully without recover service
+ * Expected: Constructor blocks until the recover service is available.
  */
 TEST_F(ModbusAdapterStoTest, testSetupNoRecoverService)
 {
@@ -249,9 +257,12 @@ TEST_F(ModbusAdapterStoTest, testSetupNoRecoverService)
   manipulator_.advertiseUnholdService(nh_, UNHOLD_SERVICE_T);
   manipulator_.advertiseHaltService(nh_, HALT_SERVICE_T);
 
-  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
+  auto adapter_thread = asyncConstructor();
+  ros::Duration(1.0).sleep();
 
-  EXPECT_EQ(1, pub_.getNumSubscribers());
+  EXPECT_EQ(0, pub_.getNumSubscribers()); // the constructor should wait, no subscription yet
+  manipulator_.advertiseRecoverService(nh_, RECOVER_SERVICE_T);
+  adapter_thread.join();
 }
 
 /**
@@ -267,12 +278,12 @@ TEST_F(ModbusAdapterStoTest, testSetupNoHoldService)
   manipulator_.advertiseHaltService(nh_, HALT_SERVICE_T);
   manipulator_.advertiseRecoverService(nh_, RECOVER_SERVICE_T);
 
-  auto t = asyncConstructor();
-  ros::Duration(5.5).sleep(); // slightly longer than WAIT_FOR_SERVICE_TIMEOUT_S
+  auto adapter_thread = asyncConstructor();
+  ros::Duration(1.0).sleep();
 
   EXPECT_EQ(0, pub_.getNumSubscribers()); // the constructor should wait, no subscription yet
   manipulator_.advertiseHoldService(nh_, HOLD_SERVICE_T);
-  t.join();
+  adapter_thread.join();
 }
 
 /**
@@ -282,7 +293,7 @@ TEST_F(ModbusAdapterStoTest, testSetupNoHoldService)
  *  Tests that driver is recovered in case of STO switch: false->true.
  * }
  *
- * @tests{No_new_commands_during_STO_false,
+ * @tests{Leave_hold_after_recover,
  *  Tests that new commands are accepted by controller in case of STO switch:
  *  false->true
  * }
@@ -298,7 +309,7 @@ TEST_F(ModbusAdapterStoTest, testClearMsg)
 
   pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
 
-  BARRIER("recover_callback");
+  BARRIER("unhold_callback");
 }
 
 /**
@@ -318,37 +329,63 @@ TEST_F(ModbusAdapterStoTest, testRemoveUnholdService)
   pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
 
   BARRIER("recover_callback");
+  ros::Duration(1.0).sleep();
+
+  EXPECT_STOP1;
+
+  pub_.publish(createDefaultStoModbusMsg(STO_ACTIVE));
+
+  BARRIER("halt_callback");
 }
 
 /**
- * @tests{Driver_service_recover_optional,
- *  Test system can deal correctly with missing recover service of driver.
+ * @tests{Controller_service_hold_optional,
+ *  Test system can deal correctly with missing hold service of controller.
  * }
  */
-TEST_F(ModbusAdapterStoTest, testRemoveRecoverService)
+TEST_F(ModbusAdapterStoTest, testRemoveHoldService)
 {
   manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
 
-  EXPECT_CALL(manipulator_, unholdCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("unhold_callback"));
+  EXPECT_CLEARANCE;
 
-  manipulator_.shutdownRecoverService();
+  manipulator_.shutdownHoldService();
   pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
 
   BARRIER("unhold_callback");
+
+  EXPECT_CALL(manipulator_, haltCb(_,_)).WillOnce(ACTION_OPEN_BARRIER("halt_callback"));
+
+  pub_.publish(createDefaultStoModbusMsg(STO_ACTIVE));
+
+  BARRIER("halt_callback");
+
+  EXPECT_CLEARANCE;
+
+  std::atomic_bool keep_publishing{true};
+  std::thread pub_thread = std::thread([this, &keep_publishing](){
+    ros::Rate rate(STO_CLEAR_PUBLISHING_RATE);
+    while (keep_publishing)
+    {
+      this->pub_.publish(this->createDefaultStoModbusMsg(STO_CLEAR));
+      rate.sleep();
+    }
+    });
+
+  BARRIER("unhold_callback");
+
+  keep_publishing = false;
+  pub_thread.join();
 }
 
 /**
  * @brief Tests that a message giving sto request is handled correctly.
  * Controller must be holded and driver must be disabled.
  *
- * @tests{Hold_driver_if_STO_false,
- *  Tests that a message giving sto request leads to driver halt call.
- * }
- *
- * @tests{No_new_commands_during_STO_false,
- *  Tests that a message giving sto request leads to controller hold call.
+ * @tests{Stop1_Trigger,
+ *  Test that Stop 1 is triggered if STO value changes to false.
  * }
  *
  */
@@ -357,6 +394,12 @@ TEST_F(ModbusAdapterStoTest, testHoldMsg)
   manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
+
+  EXPECT_CLEARANCE;
+
+  pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
+
+  BARRIER("unhold_callback");
 
   EXPECT_STOP1;
 
@@ -376,6 +419,12 @@ TEST_F(ModbusAdapterStoTest, testDisconnectNoStoMsg)
   manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
+
+  EXPECT_CLEARANCE;
+
+  pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
+
+  BARRIER("unhold_callback");
 
   EXPECT_STOP1;
 
@@ -400,6 +449,12 @@ TEST_F(ModbusAdapterStoTest, testDisconnectWithStoMsg)
 
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
 
+  EXPECT_CLEARANCE;
+
+  pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
+
+  BARRIER("unhold_callback");
+
   EXPECT_STOP1;
 
   ModbusMsgInStampedPtr msg = createDefaultStoModbusMsg(STO_ACTIVE);
@@ -421,6 +476,12 @@ TEST_F(ModbusAdapterStoTest, testDisconnectPure)
   manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
+
+  EXPECT_CLEARANCE;
+
+  pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
+
+  BARRIER("unhold_callback");
 
   EXPECT_STOP1;
 
@@ -444,6 +505,12 @@ TEST_F(ModbusAdapterStoTest, testNoVersion)
 
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
 
+  EXPECT_CLEARANCE;
+
+  pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
+
+  BARRIER("unhold_callback");
+
   EXPECT_STOP1;
 
   ModbusMsgInStampedPtr msg = createDefaultStoModbusMsg(STO_ACTIVE);
@@ -464,6 +531,12 @@ TEST_F(ModbusAdapterStoTest, testWrongVersion)
   manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
 
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
+
+  EXPECT_CLEARANCE;
+
+  pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
+
+  BARRIER("unhold_callback");
 
   EXPECT_STOP1;
 
@@ -490,6 +563,12 @@ TEST_F(ModbusAdapterStoTest, testVersion1)
 
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
 
+  EXPECT_CLEARANCE;
+
+  pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
+
+  BARRIER("unhold_callback");
+
   EXPECT_STOP1;
 
   ModbusMsgInStampedPtr msg = createDefaultStoModbusMsg(STO_ACTIVE);
@@ -512,6 +591,12 @@ TEST_F(ModbusAdapterStoTest, testNoSto)
 
   modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
 
+  EXPECT_CLEARANCE;
+
+  pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
+
+  BARRIER("unhold_callback");
+
   EXPECT_STOP1;
 
   ModbusMsgInStampedPtr msg = createDefaultStoModbusMsg(STO_ACTIVE);
@@ -524,74 +609,49 @@ TEST_F(ModbusAdapterStoTest, testNoSto)
 }
 
 /**
- * @brief Helper class which allows us to test a function which is normally
- * protected and, therefore, not directly accessible for testing.
- */
-class TestingAdapterSto : public AdapterSto
-{
-public:
-  TestingAdapterSto(ros::NodeHandle& nh)
-    : AdapterSto(nh)
-  {}
-
-  ~TestingAdapterSto() override = default;
-
-public:
-  void testingUpdateSto(const bool sto)
-  {
-    updateSto(sto);
-  }
-};
-
-/**
- * @brief Tests that unhold, recover, halt, hold services are ONLY called
- * if the STO changes its value.
- *
- * @tests{Hold_driver_if_STO_false,
- *  Test that hold only called in case of STO switch.
- * }
- *
- * @tests{Recover_driver_after_STO_false,
- *  Test that driver recover only called in case of STO switch.
- * }
- *
- */
-TEST_F(ModbusAdapterStoTest, testSameStoValue)
-{
-  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
-
-  TestingAdapterSto sto_adapter(nh_);
-  {
-    InSequence dummy;
-    EXPECT_CALL(manipulator_, unholdCb(_,_)).Times(1);
-    EXPECT_CALL(manipulator_, recoverCb(_,_)).Times(1);
-    EXPECT_CALL(manipulator_, holdCb(_,_)).Times(0);
-    EXPECT_CALL(manipulator_, haltCb(_,_)).Times(0);
-  }
-  sto_adapter.testingUpdateSto(true);
-
-  EXPECT_CALL(manipulator_, unholdCb(_,_)).Times(0);
-  EXPECT_CALL(manipulator_, recoverCb(_,_)).Times(0);
-  EXPECT_CALL(manipulator_, holdCb(_,_)).Times(0);
-  EXPECT_CALL(manipulator_, haltCb(_,_)).Times(0);
-  sto_adapter.testingUpdateSto(true);
-}
-
-/**
  * @brief Check construction of the exception (essentially for full function coverage)
  */
 TEST_F(ModbusAdapterStoTest, ModbusMsgExceptionCTOR)
 {
-  ModbusMsgStoWrapperException* exception = new ModbusMsgStoWrapperException("test");
+  std::shared_ptr<ModbusMsgStoWrapperException> exception_ptr{new ModbusMsgStoWrapperException("test")};
+}
 
-  delete exception;
+/**
+ * @tests{STO_false_during_recover,
+ *  Tests that the driver is halted upon completion of recover and no controller service is called
+ *  if STO changes to false during recover.
+ * }
+ */
+TEST_F(ModbusAdapterStoTest, testStoChangeDuringRecover)
+{
+  manipulator_.advertiseServices(nh_, HOLD_SERVICE_T, UNHOLD_SERVICE_T, HALT_SERVICE_T, RECOVER_SERVICE_T);
+
+  modbus_sto_adapter_.reset(new ModbusAdapterSto(nh_, TEST_API_SPEC));
+
+  // define function for recover-invoke action
+  std::function<bool()> recover_action = [this]() {
+    this->triggerClearEvent("recover_callback");
+    this->pub_.publish(createDefaultStoModbusMsg(STO_ACTIVE));
+    ros::spinOnce();
+    return true;
+  };
+
+  EXPECT_CALL(manipulator_, holdCb(_,_)).Times(0);
+  EXPECT_CALL(manipulator_, unholdCb(_,_)).Times(0);
+  EXPECT_CALL(manipulator_, haltCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("halt_callback"));
+  EXPECT_CALL(manipulator_, recoverCb(_,_)).Times(1).WillOnce(InvokeWithoutArgs(recover_action));
+
+  pub_.publish(createDefaultStoModbusMsg(STO_CLEAR));
+
+  BARRIER("recover_callback");
+  BARRIER("halt_callback");
 }
 
 } // namespace prbt_hardware_support
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "unittest_modbus_adapter_sto");
+  ros::init(argc, argv, "integrationtest_modbus_adapter_sto");
   ros::NodeHandle nh;
 
   testing::InitGoogleTest(&argc, argv);

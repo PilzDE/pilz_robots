@@ -122,10 +122,10 @@ private:
      */
   enum State
   {
-    not_initialized, // 0
-    initializing, // 1
-    initialized, // 2
-    running, // 3
+    not_initialized,
+    initializing,
+    initialized,
+    running,
   };
 
   //! Registers which have to be read.
