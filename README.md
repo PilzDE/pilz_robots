@@ -85,7 +85,7 @@ The launch file allows to set optional parameters
 ### Running the simulation
 1. Run `roslaunch prbt_moveit_config moveit_planning_execution.launch sim:=true pipeline:=ompl`
 2. Use the moveit Motion Planning rviz plugin to plan and execute
-   (see e.g. [ROS-I training exercise 3.4](http://ros-industrial.github.io/industrial_training/_source/session3/Motion-Planning-RVIZ.html))
+   (see e.g. [ROS-I training exercise 3.4](https://industrial-training-master.readthedocs.io/en/melodic/_source/session3/Motion-Planning-RVIZ.html))
 
 ### Running on the real robot
 1. Bringup can: `sudo ip link set can0 up type can bitrate 1000000` (after every reboot or reconnect of the CAN hardware).
