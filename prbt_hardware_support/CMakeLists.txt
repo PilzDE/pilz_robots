@@ -469,6 +469,7 @@ if(CATKIN_ENABLE_TESTING)
                           "*/BrakeTest.h"
                           "*/BrakeTestRequest.h"
                           "*/BrakeTestResponse.h"
+                          "*/FrameSpeeds.h"
                           "*/IsBrakeTestRequired.h"
                           "*/IsBrakeTestRequiredRequest.h"
                           "*/IsBrakeTestRequiredResponse.h"
