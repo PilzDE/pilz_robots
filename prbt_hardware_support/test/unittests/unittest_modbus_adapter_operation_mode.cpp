@@ -33,7 +33,7 @@ static const std::string SERVICE_NAME_OPERATION_MODE = "/prbt/get_operation_mode
 
 static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{2};
 
-static const ModbusApiSpec test_api_spec{ {modbus_api_spec::VERSION, 1},
+static const ModbusApiSpec TEST_API_SPEC{ {modbus_api_spec::VERSION, 1},
                                           {modbus_api_spec::OPERATION_MODE, 11} };
 
 static constexpr double OPERATION_MODE_CHANGE_WAIT_TIME_S{2.0};
@@ -49,7 +49,7 @@ class ModbusAdapterOperationModeTest : public testing::Test
 {
 public:
   ModbusAdapterOperationModeTest();
-  virtual ~ModbusAdapterOperationModeTest();
+  ~ModbusAdapterOperationModeTest() override;
 
   /**
    * @brief Wait for a specific change in operation mode to take effect.
@@ -77,7 +77,7 @@ ModbusAdapterOperationModeTest::ModbusAdapterOperationModeTest()
     ros::Time::init();
   }
 
-  adapter_operation_mode_.reset(new ModbusAdapterOperationMode(nh_, test_api_spec));
+  adapter_operation_mode_.reset(new ModbusAdapterOperationMode(nh_, TEST_API_SPEC));
   modbus_topic_pub_ = nh_.advertise<ModbusMsgInStamped>(TOPIC_MODBUS_READ, DEFAULT_QUEUE_SIZE_MODBUS);
   operation_mode_client_ = nh_.serviceClient<prbt_hardware_support::GetOperationMode>(SERVICE_NAME_OPERATION_MODE);
 
@@ -157,9 +157,9 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusMsgOperationModeWrapperExceptio
  */
 TEST_F(ModbusAdapterOperationModeTest, testModbusMsgOperationModeWrapperDtor)
 {
-  ModbusMsgInBuilder builder(test_api_spec);
+  ModbusMsgInBuilder builder(TEST_API_SPEC);
   builder.setApiVersion(MODBUS_API_VERSION_REQUIRED).setOperationMode(OperationModes::T1);
-  std::shared_ptr<ModbusMsgOperationModeWrapper> wrapper (new ModbusMsgOperationModeWrapper(builder.build(ros::Time::now()), test_api_spec));
+  std::shared_ptr<ModbusMsgOperationModeWrapper> wrapper (new ModbusMsgOperationModeWrapper(builder.build(ros::Time::now()), TEST_API_SPEC));
 }
 
 /**
@@ -178,7 +178,7 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusMsgOperationModeWrapperDtor)
  */
 TEST_F(ModbusAdapterOperationModeTest, testMissingOperationModeRegister)
 {
-  ModbusMsgInBuilder builder(test_api_spec);
+  ModbusMsgInBuilder builder(TEST_API_SPEC);
   builder.setApiVersion(MODBUS_API_VERSION_REQUIRED);
 
   ROS_DEBUG("+++  Step 1 +++");
@@ -191,10 +191,10 @@ TEST_F(ModbusAdapterOperationModeTest, testMissingOperationModeRegister)
 
   ROS_DEBUG("+++  Step 2 +++");
   // Remove operation mode from modbus message
-  ASSERT_GT(test_api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE), test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION))
+  ASSERT_GT(TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::OPERATION_MODE), TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION))
       << "For the test to work correctly, the operation mode register has to be stored in the last register.";
   msg->holding_registers.data.erase(--msg->holding_registers.data.end());
-  const uint32_t new_offset = test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION);
+  const uint32_t new_offset = TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION);
   msg->holding_registers.layout.data_offset = new_offset;
   ModbusMsgInBuilder::setDefaultLayout(&(msg->holding_registers.layout), new_offset, static_cast<uint32_t>(msg->holding_registers.data.size()));
 
@@ -216,7 +216,7 @@ TEST_F(ModbusAdapterOperationModeTest, testMissingOperationModeRegister)
  */
 TEST_F(ModbusAdapterOperationModeTest, testOperationModeChange)
 {
-  ModbusMsgInBuilder builder(test_api_spec);
+  ModbusMsgInBuilder builder(TEST_API_SPEC);
   builder.setApiVersion(MODBUS_API_VERSION_REQUIRED);
   for (const auto& mode : OPERATION_MODES)
   {
@@ -240,7 +240,7 @@ TEST_F(ModbusAdapterOperationModeTest, testOperationModeChange)
  */
 TEST_F(ModbusAdapterOperationModeTest, testDisconnect)
 {
-  ModbusMsgInBuilder builder(test_api_spec);
+  ModbusMsgInBuilder builder(TEST_API_SPEC);
   builder.setApiVersion(MODBUS_API_VERSION_REQUIRED).setOperationMode(OperationModes::T1);
 
   modbus_topic_pub_.publish(builder.build(ros::Time::now()));
@@ -272,7 +272,7 @@ TEST_F(ModbusAdapterOperationModeTest, testDisconnect)
  */
 TEST_F(ModbusAdapterOperationModeTest, testModbusUnexpectedOperationMode)
 {
-  ModbusMsgInBuilder builder(test_api_spec);
+  ModbusMsgInBuilder builder(TEST_API_SPEC);
   builder.setApiVersion(MODBUS_API_VERSION_REQUIRED).setOperationMode(1234 /* stupid value */);
   modbus_topic_pub_.publish(builder.build(ros::Time::now()));
 
@@ -296,7 +296,7 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusUnexpectedOperationMode)
  */
 TEST_F(ModbusAdapterOperationModeTest, testModbusIncorrectApiVersion)
 {
-  ModbusMsgInBuilder builder(test_api_spec);
+  ModbusMsgInBuilder builder(TEST_API_SPEC);
 
   // Step 1
   builder.setApiVersion(MODBUS_API_VERSION_REQUIRED).setOperationMode(OperationModes::T1);

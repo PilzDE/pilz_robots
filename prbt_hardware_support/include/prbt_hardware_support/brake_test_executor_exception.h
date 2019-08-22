@@ -15,28 +15,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <ros/ros.h>
-#include <prbt_hardware_support/system_info.h>
+#ifndef PRBT_HARDWARE_SUPPORT_BRAKE_TEST_EXECUTOR_EXCEPTION_H
+#define PRBT_HARDWARE_SUPPORT_BRAKE_TEST_EXECUTOR_EXCEPTION_H
 
-using namespace prbt_hardware_support;
+#include <stdexcept>
 
-/**
- * @brief Logs important system information.
- */
-// LCOV_EXCL_START
-int main(int argc, char **argv)
+namespace prbt_hardware_support
 {
-  ros::init(argc, argv, "system_info");
-  ros::NodeHandle nh{"~"};
-
-  prbt_hardware_support::SystemInfo system_info(nh);
-  FirmwareCont versions {system_info.getFirmwareVersions()};
-  for (const auto& curr_elem : versions)
+/**
+ * @brief Exception thrown by a BrakeTestExecutor function.
+ */
+class BrakeTestExecutorException : public std::runtime_error
+{
+public:
+  BrakeTestExecutorException(const std::string &what_arg) : std::runtime_error(what_arg)
   {
-    ROS_INFO("Firmware version [%s]: %s",
-             curr_elem.first.c_str(),
-             curr_elem.second.c_str());
   }
-  return EXIT_SUCCESS;
-}
-// LCOV_EXCL_STOP
+};
+} // namespace prbt_hardware_support
+
+#endif // PRBT_HARDWARE_SUPPORT_BRAKE_TEST_EXECUTOR_EXCEPTION_H
