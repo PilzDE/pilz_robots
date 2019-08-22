@@ -433,19 +433,9 @@ if(CATKIN_ENABLE_TESTING)
   if(ENABLE_COVERAGE_TESTING)
     include(CodeCoverage)
     APPEND_COVERAGE_COMPILER_FLAGS()
-    set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*"
-                          "*/BrakeTestErrorCodes.h"
-                          "*/ModbusMsgInStamped.h"
-                          "*/BrakeTest.h"
-                          "*/BrakeTestRequest.h"
-                          "*/BrakeTestResponse.h"
-                          "*/IsBrakeTestRequired.h"
-                          "*/IsBrakeTestRequiredRequest.h"
-                          "*/IsBrakeTestRequiredResponse.h"
-                          "*/ModbusRegisterBlock.h"
-                          "*/WriteModbusRegister.h"
-                          "*/WriteModbusRegisterRequest.h"
-                          "*/WriteModbusRegisterResponse.h")
+    set(COVERAGE_EXCLUDES
+        "*/${PROJECT_NAME}/test*"
+        "*/.private/${PROJECT_NAME}/include/${PROJECT_NAME}/*.h")
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
       DEPENDS tests
