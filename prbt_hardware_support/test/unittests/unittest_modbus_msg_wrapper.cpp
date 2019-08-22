@@ -30,7 +30,7 @@ using namespace prbt_hardware_support;
 namespace modbus_msg_wrapper
 {
 
-static const ModbusApiSpec test_api_spec{ {modbus_api_spec::VERSION, 0} };
+static const ModbusApiSpec TEST_API_SPEC{ {modbus_api_spec::VERSION, 0} };
 
 /**
  * @brief Test increases function coverage by ensuring that all Dtor variants
@@ -44,7 +44,7 @@ TEST(ModbusMsgWrapperTest, testModbusMsgWrapperDtor)
   ModbusMsgInStampedPtr msg{ModbusMsgInBuilder::createDefaultModbusMsgIn(offset, holding_register)};
 
   ModbusMsgInStampedConstPtr msg_const_ptr {msg};
-  std::shared_ptr<ModbusMsgWrapper> ex(new ModbusMsgWrapper(msg_const_ptr, test_api_spec));
+  std::shared_ptr<ModbusMsgWrapper> ex(new ModbusMsgWrapper(msg_const_ptr, TEST_API_SPEC));
 }
 
 }  // namespace modbus_msg_wrapper

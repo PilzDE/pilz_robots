@@ -31,9 +31,9 @@ namespace prbt_hardware_support
 /**
  * @brief Waits until the specified service starts.
  */
-static void waitForService(const std::string service_name,
-                    const double retry_timeout = DEFAULT_RETRY_TIMEOUT,
-                    const double msg_output_period = DEFAULT_MSG_OUTPUT_PERIOD)
+static inline void waitForService(const std::string service_name,
+                                  const double retry_timeout = DEFAULT_RETRY_TIMEOUT,
+                                  const double msg_output_period = DEFAULT_MSG_OUTPUT_PERIOD)
 {
   while (!ros::service::waitForService(service_name, ros::Duration(retry_timeout)) && ros::ok())
   {

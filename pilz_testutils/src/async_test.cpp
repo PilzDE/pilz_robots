@@ -23,7 +23,7 @@
 namespace testing
 {
 
-void AsyncTest::barricade(std::string clear_event)
+void AsyncTest::barricade(const std::string& clear_event)
 {
   barricade({clear_event});
 }
@@ -33,7 +33,7 @@ void AsyncTest::barricade(std::initializer_list<std::string> clear_events)
   std::unique_lock<std::mutex> lk(m_);
 
   std::stringstream events_stringstream;
-  for (auto event : clear_events)
+  for (const auto& event : clear_events)
   {
     events_stringstream << event << ", ";
   }
@@ -49,7 +49,7 @@ void AsyncTest::barricade(std::initializer_list<std::string> clear_events)
   }
 }
 
-void AsyncTest::triggerClearEvent(std::string event)
+void AsyncTest::triggerClearEvent(const std::string& event)
 {
   std::lock_guard<std::mutex> lk(m_);
 
