@@ -56,13 +56,13 @@ catkin_package(
 ################
 find_program(
   CLANG_TIDY_EXE
-  NAMES "clang-tidy-6.0"
+  NAMES "clang-tidy"
   DOC "Path to clang-tidy executable"
   )
 if(NOT CLANG_TIDY_EXE)
-  message(FATAL_ERROR "clang-tidy-6.0 not found.")
+  message(FATAL_ERROR "clang-tidy not found.")
 else()
-  message(STATUS "clang-tidy-6.0 found: ${CLANG_TIDY_EXE}")
+  message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
   set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
 endif()
 
@@ -80,7 +80,6 @@ include_directories(SYSTEM ${catkin_INCLUDE_DIRS}) #Must be declared SYSTEM to a
 # MODBUS_ADAPTER_STO_NODE
 add_executable(modbus_adapter_sto_node
   src/modbus_adapter_sto_node.cpp
-  src/adapter_sto.cpp
   src/modbus_adapter_sto.cpp
   src/modbus_msg_sto_wrapper.cpp
 )
@@ -188,16 +187,16 @@ if(CATKIN_ENABLE_TESTING)
   )
   add_dependencies(unittest_update_filter ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-  catkin_add_gtest(unittest_libmodbus_client
-      test/unittests/unittest_libmodbus_client.cpp
-      test/unittests/pilz_modbus_server_mock.cpp
-      src/libmodbus_client.cpp
-  )
-  target_link_libraries(unittest_libmodbus_client
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
-    modbus
-  )
-  add_dependencies(unittest_libmodbus_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
+#  catkin_add_gtest(unittest_libmodbus_client
+#      test/unittests/unittest_libmodbus_client.cpp
+#      test/unittests/pilz_modbus_server_mock.cpp
+#      src/libmodbus_client.cpp
+#  )
+#  target_link_libraries(unittest_libmodbus_client
+#    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+#    modbus
+#  )
+#  add_dependencies(unittest_libmodbus_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
   catkin_add_gmock(unittest_modbus_api_spec
   test/unittests/unittest_modbus_api_spec.cpp
@@ -234,20 +233,6 @@ if(CATKIN_ENABLE_TESTING)
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
   )
   add_dependencies(unittest_pilz_modbus_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
-  #--- StoModbusAdapter unit test ---
-  add_rostest_gmock(unittest_modbus_adapter_sto
-   test/unittests/unittest_modbus_adapter_sto.test
-   test/unittests/unittest_modbus_adapter_sto.cpp
-   src/adapter_sto.cpp
-   src/modbus_adapter_sto.cpp
-   src/modbus_msg_sto_wrapper.cpp
-   src/modbus_msg_in_builder.cpp
-  )
-  target_link_libraries(unittest_modbus_adapter_sto
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
-  )
-  #----------------------------------
 
   # --- ModbusAdapterBrakeTest unit test ---
   add_rostest_gmock(unittest_modbus_adapter_brake_test
@@ -319,7 +304,39 @@ if(CATKIN_ENABLE_TESTING)
   target_link_libraries(unittest_get_param
     ${catkin_LIBRARIES}
   )
-#----------------------------------
+  #----------------------------------
+
+  # --- STOExecutor unit test ---
+  catkin_add_gmock(unittest_adapter_sto
+    test/unittests/unittest_adapter_sto.cpp
+  )
+  target_link_libraries(unittest_adapter_sto
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  #----------------------------------
+
+  # --- ServiceClientFactory integration test ---
+  add_rostest_gmock(integrationtest_service_client_factory
+     test/integrationtests/integrationtest_service_client_factory.test
+     test/integrationtests/integrationtest_service_client_factory.cpp
+  )
+  target_link_libraries(integrationtest_service_client_factory
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  #----------------------------------
+
+  #--- StoModbusAdapter intrgration test ---
+  add_rostest_gmock(integrationtest_modbus_adapter_sto
+    test/integrationtests/integrationtest_modbus_adapter_sto.test
+    test/integrationtests/integrationtest_modbus_adapter_sto.cpp
+    src/modbus_adapter_sto.cpp
+    src/modbus_msg_sto_wrapper.cpp
+    src/modbus_msg_in_builder.cpp
+  )
+  target_link_libraries(integrationtest_modbus_adapter_sto
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  #----------------------------------
 
   # --- Stop integration test ---
   add_rostest_gmock(integrationtest_stop1
@@ -337,10 +354,10 @@ if(CATKIN_ENABLE_TESTING)
 
   # --- Brake test required integration test ---
   add_rostest_gmock(integrationtest_brake_test_required
-     test/integrationtests/integrationtest_brake_test_required.test
-     test/integrationtests/integrationtest_brake_test_required.cpp
-     test/unittests/pilz_modbus_server_mock.cpp
-     src/libmodbus_client.cpp
+    test/integrationtests/integrationtest_brake_test_required.test
+    test/integrationtests/integrationtest_brake_test_required.cpp
+    test/unittests/pilz_modbus_server_mock.cpp
+    src/libmodbus_client.cpp
   )
   target_link_libraries(integrationtest_brake_test_required
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
@@ -349,31 +366,34 @@ if(CATKIN_ENABLE_TESTING)
   add_dependencies(integrationtest_brake_test_required ${catkin_EXPORTED_TARGETS})
   #----------------------------------
 
-  # --- Brake test required integration test ---
+  # --- Operation mode integration test ---
   add_rostest_gmock(integrationtest_operation_mode
     test/integrationtests/integrationtest_operation_mode.test
     test/integrationtests/integrationtest_operation_mode.cpp
     test/unittests/pilz_modbus_server_mock.cpp
     src/libmodbus_client.cpp
- )
- target_link_libraries(integrationtest_operation_mode
-   ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
-   modbus
- )
- add_dependencies(integrationtest_operation_mode ${catkin_EXPORTED_TARGETS})
- #----------------------------------
-
-  # --- Trigger brake test integration test ---
-  add_rostest_gmock(integrationtest_trigger_brake_test
-    test/integrationtests/integrationtest_trigger_brake_test.test
-    test/integrationtests/integrationtest_trigger_brake_test.cpp
-    test/unittests/joint_states_publisher_mock.cpp
-    test/unittests/canopen_chain_node_mock.cpp
   )
-  target_link_libraries(integrationtest_trigger_brake_test
+  target_link_libraries(integrationtest_operation_mode
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+    modbus
   )
-  add_dependencies(integrationtest_trigger_brake_test ${catkin_EXPORTED_TARGETS})
+  add_dependencies(integrationtest_operation_mode ${catkin_EXPORTED_TARGETS})
+  #----------------------------------
+
+  # --- Execute brake test integration test ---
+  add_rostest_gmock(integrationtest_execute_brake_test
+    test/integrationtests/integrationtest_execute_brake_test.test
+    test/integrationtests/integrationtest_execute_brake_test.cpp
+    test/unittests/joint_states_publisher_mock.cpp
+    test/unittests/pilz_modbus_server_mock.cpp
+    test/unittests/canopen_chain_node_mock.cpp
+    src/libmodbus_client.cpp
+  )
+  target_link_libraries(integrationtest_execute_brake_test
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+    modbus
+  )
+  add_dependencies(integrationtest_execute_brake_test ${catkin_EXPORTED_TARGETS})
 
   #--- SystemInfo unit test ---
   add_rostest_gmock(unittest_system_info

@@ -76,10 +76,10 @@ class PrbtIKFastPluginTest : public ::testing::Test
 {
 protected:
   //! @brief Loads and initializes the IKFast plugin.
-  void SetUp();
+  void SetUp() override;
 
   //! @brief Ensures that the solver is destroyed before the ClassLoader.
-  void TearDown();
+  void TearDown() override;
 
 protected:
   std::string root_link_;
@@ -122,7 +122,7 @@ void PrbtIKFastPluginTest::SetUp()
 
   std::vector<std::string> tip_links {tip_link_};
   robot_model_loader::RobotModelLoader robot_model_loader(ROBOT_DESCRIPTION_PARAM, false);
-  robot_model::RobotModelPtr robot_model = robot_model_loader.getModel();
+  const robot_model::RobotModelPtr& robot_model = robot_model_loader.getModel();
 
   ASSERT_TRUE( solver_->initialize(*robot_model, group_name_, root_link_, tip_links,
                                    DEFAULT_SEARCH_DISCRETIZATION) ) << "Failed to initialize plugin.";
@@ -230,7 +230,7 @@ TEST_F(PrbtIKFastPluginTest, testSingularities)
     {
       ADD_FAILURE() << "No solution is near the expected values.";
       // print all solutions in case of failure
-      for (Vec1D sol : solutions)
+      for (const Vec1D& sol : solutions)
       {
         ROS_INFO_STREAM("Solution: " << sol);
       }

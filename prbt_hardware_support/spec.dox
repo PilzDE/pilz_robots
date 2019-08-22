@@ -27,12 +27,19 @@
  *
  * @subsubsection sto_stop1 Safe torque off (STO) and  Stop 1
  *
- * @note STO == 1/TRUE  <-> robot is allowed to move freely
- * @note STO == 0/FALSE <-> robot is NOT allowed to move (except for stop motion)
+ * @note STO == 1/TRUE  <-> manipulator is allowed to move freely
+ * @note STO == 0/FALSE <-> manipulator is NOT allowed to move (except for stop motion)
+ *
+ * @note A Stop 1 consists of holding the controller and halting the drives afterwards.
+ *  - Holding the controller starts with performing a stop motion (possibly replacing other prevailing motions).
+ *  - As long as the controller is holded, no new motions can be performed.
+ *
+ * @note The term "recovering" in the following section refers to a pending call on the respective service.
  *
  * @definereq{Stop1_Trigger}
  *  - A Stop 1 is triggered, if at least one of the following cases is true:
- *    - the state of the STO changes from TRUE -> FALSE,
+ *    - the state of the STO changes from TRUE -> FALSE when the drives are not
+ *      recovering (Otherwise see \refspec{STO_false_during_recover}),
  *    - connection to safety controller is lost,
  *    - the messages informing about the STO (coming from the
  *      safety controller) is incomplete or in any way corrupted,
@@ -40,14 +47,15 @@
  *      does not fulfill the expected specification
  *      (defined by the version of the protocol).
  *
- * @definereq{No_new_commands_during_STO_false}
- *  - As long as the STO is FALSE, no new motions commands are allowed.
- *
- * @definereq{Hold_driver_if_STO_false}
- *  - If the STO changes from TRUE -> FALSE the driver is halted.
+ * @definereq{STO_false_during_recover}
+ *  - If the state of the STO changes from TRUE -> FALSE when the drives are recovering,
+ *    the controller hold is kept, that is performing a stop motion is skipped.
  *
  * @definereq{Recover_driver_after_STO_false}
  *  - If the STO changes from FALSE -> TRUE, the driver is recovered.
+ *
+ * @definereq{Leave_hold_after_recover}
+ *  - If STO is still TRUE after recovering, the controller is no longer holded.
  *
  *
  * @definereq{No_Startup_if_controller_hold_missing}
@@ -58,13 +66,19 @@
  *  - The system is not allowed to complete the startup procedure until
  *    the driver halt service is available.
  *
- * @definereq{Controller_service_unhold_optional}
- *  - The system can still be started even if the controller unhold service
- *    is missing.
+ * @definereq{No_Startup_if_controller_unhold_missing}
+ *  - The system is not allowed to complete the startup procedure until
+ *    the controller unhold service is available.
  *
- * @definereq{Driver_service_recover_optional}
- *  - The system can still be started even if the driver recover service
- *    is missing.
+ * @definereq{No_Startup_if_driver_recover_missing}
+ *  - The system is not allowed to complete the startup procedure until
+ *    the driver recover service is available.
+ *
+ * @definereq{Controller_service_unhold_optional}
+ *  - If the controller unhold service fails, Stop1 can still be triggered.
+ *
+ * @definereq{Controller_service_hold_optional}
+ *  - If the controller hold service fails during Stop1, the driver can still be recovered.
  *
  *
  *
@@ -88,13 +102,20 @@
  * - The brake test is performed for all axes.
  * - The brake test mechanism returns a status stating if the
  *    brake test was successful xor what error occured.
- * - At the beginning of the brake test it is checked if the robot is
- *    currently moving. In case the robot is moving, the brake test is not
+ * - At the beginning of the brake test it is checked if the manipulator is
+ *    currently moving. In case the manipulator is moving, the brake test is not
  *    performed and an error is retured.
  * - As long as the brake test is performed no motion is allowed. Commands
  *    send during the execution of the brake test are rejected.
  * - Brake tests are only performed for drives which define that they require
  *    a brake test (configurable via config file or parameter server).
+ * - After the brake test is performed the result of the brake test is
+ *    reported back to the safety controller. The result is also reported back
+ *    to the safety controller if the brake test was not required by the
+ *    safety controller.
+ * - If the connection to the safety controller is lost, no further
+ *    action regarding the sending of the brake test result is taken (e.g. NO
+ *    result sending as soon as the connection is established again).
  *
  *
  *
