@@ -54,8 +54,7 @@ public:
    * @param read_frequency_hz Defines how often Modbus registers are read in.
    */
   PilzModbusClient(ros::NodeHandle& nh,
-                   const unsigned int num_registers_to_read,
-                   const unsigned int index_of_first_register,
+                   const std::vector<unsigned short>& registers_to_read,
                    ModbusClientUniquePtr modbus_client,
                    unsigned int response_timeout_ms,
                    const std::string& modbus_read_topic_name,
@@ -78,7 +77,7 @@ public:
    * @param timeout_ms between retries
    * @return True if a connection is established, false otherwise.
    */
-  bool init(const char* ip, unsigned int port, unsigned int retries, ros::Duration timeout_ms);
+  bool init(const char* ip, unsigned int port, unsigned int retries, const ros::Duration &timeout_ms);
 
   /**
    * @brief Publishes the register values as messages.
@@ -102,6 +101,11 @@ public:
    */
   bool isRunning();
 
+  /**
+   * @brief Splits a vector of integers into a vector of vectors with consecutive groups
+   */
+  std::vector<std::vector<unsigned short>> static splitIntoBlocks(std::vector<unsigned short> &in);
+
 private:
   void sendDisconnectMsg();
 
@@ -113,7 +117,6 @@ private:
                                WriteModbusRegister::Response& res);
 
 private:
-
   /**
      * @brief States of the Modbus-client.
      */
@@ -125,10 +128,8 @@ private:
     running,
   };
 
-  //! Number of registers which have to be read.
-  const uint32_t NUM_REGISTERS_TO_READ;
-  //! Index from which the registers have to be read.
-  const uint32_t INDEX_OF_FIRST_REGISTER;
+  //! Registers which have to be read.
+  std::vector<unsigned short> registers_to_read_;
 
   //! Defines how long we wait for a response from the Modbus-server.
   const unsigned int RESPONSE_TIMEOUT_MS;
