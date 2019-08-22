@@ -52,7 +52,7 @@ static constexpr double STOP_TRAJECTORY_DURATION{0.2};
 class PilzJointTrajectoryControllerTest : public testing::Test
 {
 protected:
-  void SetUp();
+  void SetUp() override;
 
   ::testing::AssertionResult waitForIsExecutingServiceResult(bool expectation);
 
@@ -361,12 +361,19 @@ TEST_F(PilzJointTrajectoryControllerTest, testUpdateWhileHolding)
  *    2. Request DEFAULT twice.
  *
  * Expected Results:
- *    1. Response contains success==True.
- *    2. Response contains success==True.
+ *    1. Each Response contains success==True.
+ *    2. Each Response contains success==True. The second call does not trigger a execution (stop trajectory)
  */
 TEST_F(PilzJointTrajectoryControllerTest, testDoubleRequest)
 {
   ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
+  controller_->state_ = controller_->INITIALIZED;
+  controller_->starting(ros::Time::now());
+
+  controller_->state_ = controller_->RUNNING;
+
+  controller_->update(ros::Time::now(), ros::Duration(SMALL_PERIOD));
+  EXPECT_TRUE(controller_->is_executing()) << "Controller is not executing as expected";
 
   std_srvs::TriggerRequest req;
   std_srvs::TriggerResponse resp;
@@ -377,8 +384,13 @@ TEST_F(PilzJointTrajectoryControllerTest, testDoubleRequest)
 
   ASSERT_TRUE(controller_->handleHoldRequest(req, resp));
   EXPECT_TRUE(resp.success);
+  controller_->update(ros::Time::now(), ros::Duration(STOP_TRAJECTORY_DURATION + SMALL_PERIOD));
+
+  // Now we should have stopped
   ASSERT_TRUE(controller_->handleHoldRequest(req, resp));
   EXPECT_TRUE(resp.success);
+  controller_->update(ros::Time::now(), ros::Duration(SMALL_PERIOD));
+  EXPECT_FALSE(controller_->is_executing());
 }
 
 /**

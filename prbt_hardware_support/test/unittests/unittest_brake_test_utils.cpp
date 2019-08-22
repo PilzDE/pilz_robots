@@ -112,9 +112,9 @@ TEST(BrakeTestUtilsTest, testCompareJointStatePositions)
    * Step 2 *
    **********/
   double tolerance = 0.0001;
-  for (size_t i = 0; i < msg2->position.size(); ++i)
+  for (double & pos : msg2->position)
   {
-    msg2->position[i] += 0.9 * tolerance;
+    pos += 0.9 * tolerance;
   }
 
   EXPECT_TRUE(BrakeTestUtils::compareJointStatePositions(msg1, msg2, tolerance));

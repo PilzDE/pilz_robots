@@ -61,4 +61,4 @@ bool AdapterBrakeTest::isBrakeTestRequired(IsBrakeTestRequired::Request& /*req*/
   return true;
 }
 
-}
+} // namespace prbt_hardware_support

@@ -55,7 +55,6 @@ using ::testing::InvokeWithoutArgs;
 
 static constexpr uint16_t MODBUS_API_VERSION_VALUE {2};
 static const std::string SERVICE_BRAKETEST_REQUIRED = "/prbt/brake_test_required";
-static constexpr int DEFAULT_QUEUE_SIZE_BRAKE_TEST {1};
 
 /**
  * @brief BrakeTestRequiredIntegrationTest checks if the chain
@@ -117,8 +116,6 @@ protected:
  */
 TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
 {
-  EXPECT_GE(std::thread::hardware_concurrency(), 2) << "Hardware does not support enough threads";
-
   /**********
    * Setup *
    **********/
@@ -154,14 +151,11 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
 
   modbus_server.setHoldingRegister({{braketest_register, 1}, {version_register, MODBUS_API_VERSION_VALUE}});
 
-
-  ros::ServiceClient	is_brake_test_required_client =
+  ros::ServiceClient is_brake_test_required_client =
     nh_.serviceClient<prbt_hardware_support::IsBrakeTestRequired>(SERVICE_BRAKETEST_REQUIRED);
-  ros::service::waitForService(SERVICE_BRAKETEST_REQUIRED, ros::Duration(10));
-  ASSERT_TRUE(is_brake_test_required_client.exists());
-  ROS_ERROR("Calling service!");
+  ASSERT_TRUE(is_brake_test_required_client.waitForExistence(ros::Duration(10)));
 
-	EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(is_brake_test_required_client, true, 10));
+  EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(is_brake_test_required_client, true, 10));
 
   /**********
    * Step 2 *

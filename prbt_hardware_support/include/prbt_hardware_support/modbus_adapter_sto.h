@@ -31,8 +31,7 @@ namespace prbt_hardware_support
 {
 
 /**
- * @brief Listens to the modbus_read topic and reacts to changes to the STO
- * state.
+ * @brief Listens to the modbus_read topic and reacts to updated STO states.
  */
 class ModbusAdapterSto : public AdapterSto
 {

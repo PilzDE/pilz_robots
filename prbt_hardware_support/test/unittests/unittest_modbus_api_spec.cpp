@@ -81,7 +81,7 @@ TEST(ModbusApiSpecTest, NodeHandleConstructionSimpleRead)
   rpc_value["A"] = 123;
 
   NodeHandleMock nh;
-  EXPECT_CALL(nh, getParam("api_spec/",_))
+  EXPECT_CALL(nh, getParam("read_api_spec/",_))
   .WillOnce(DoAll(SetArgReferee<1>(rpc_value), Return(true)));
 
   ModbusApiSpecTemplated<NodeHandleMock> api_spec{nh};
@@ -97,7 +97,7 @@ TEST(ModbusApiSpecTest, NodeHandleConstructionMissingApiSpec)
   rpc_value["A"] = 123;
 
   NodeHandleMock nh;
-  EXPECT_CALL(nh, getParam("api_spec/",_))
+  EXPECT_CALL(nh, getParam("read_api_spec/",_))
    .Times(1)
    .WillOnce(Return(false));
 

@@ -34,8 +34,8 @@ using namespace prbt_hardware_support;
 TEST(ModbusMsgInBuilderTest, testOutOfRangeRegister)
 {
   std::unique_ptr<std_msgs::MultiArrayLayout> layout {new std_msgs::MultiArrayLayout()};
-  const RegCont::size_type N {static_cast<RegCont::size_type>(std::numeric_limits<std_msgs::MultiArrayDimension::_size_type>::max()) + 1};
-  EXPECT_THROW(ModbusMsgInBuilder::setDefaultLayout(layout.get(), 1, N), std::invalid_argument);
+  const RegCont::size_type n {static_cast<RegCont::size_type>(std::numeric_limits<std_msgs::MultiArrayDimension::_size_type>::max()) + 1};
+  EXPECT_THROW(ModbusMsgInBuilder::setDefaultLayout(layout.get(), 1, n), std::invalid_argument);
 }
 
 

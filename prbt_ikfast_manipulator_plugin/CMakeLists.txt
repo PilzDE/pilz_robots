@@ -9,10 +9,10 @@ add_compile_options(-Wno-unused-variable)
 add_compile_options(-Werror)
 
 # enable aligned new in gcc7+
-if(CMAKE_COMPILER_IS_GNUCXX) 
-  if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.0) 
+if(CMAKE_COMPILER_IS_GNUCXX)
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.0)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -faligned-new")
-  endif() 
+  endif()
 endif()
 
 find_package(catkin REQUIRED COMPONENTS
@@ -34,6 +34,21 @@ add_library(${IKFAST_LIBRARY_NAME} src/prbt_manipulator_ikfast_moveit_plugin.cpp
 target_link_libraries(${IKFAST_LIBRARY_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${LAPACK_LIBRARIES})
 # suppress warnings about unused variables in OpenRave's solver code
 target_compile_options(${IKFAST_LIBRARY_NAME} PRIVATE -Wno-unused-variable)
+
+################
+## Clang tidy ##
+################
+find_program(
+  CLANG_TIDY_EXE
+  NAMES "clang-tidy"
+  DOC "Path to clang-tidy executable"
+  )
+if(NOT CLANG_TIDY_EXE)
+  message(FATAL_ERROR "clang-tidy not found.")
+else()
+  message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
+  set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
+endif()
 
 install(TARGETS
   ${IKFAST_LIBRARY_NAME}

@@ -26,6 +26,21 @@ add_definitions(-std=c++11)
 
 include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
 
+################
+## Clang tidy ##
+################
+find_program(
+  CLANG_TIDY_EXE
+  NAMES "clang-tidy"
+  DOC "Path to clang-tidy executable"
+  )
+if(NOT CLANG_TIDY_EXE)
+  message(FATAL_ERROR "clang-tidy not found.")
+else()
+  message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
+  set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
+endif()
+
 add_library(${PROJECT_NAME}
             include/${PROJECT_NAME}/pilz_joint_trajectory_controller.h
             src/pilz_joint_trajectory_controller.cpp)

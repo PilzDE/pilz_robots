@@ -15,16 +15,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <prbt_hardware_support/canopen_braketest_adapter_exception.h>
+#ifndef PRBT_HARDWARE_SUPPORT_BRAKE_TEST_EXECUTOR_EXCEPTION_H
+#define PRBT_HARDWARE_SUPPORT_BRAKE_TEST_EXECUTOR_EXCEPTION_H
+
+#include <stdexcept>
 
 namespace prbt_hardware_support
 {
-
-CANOpenBrakeTestAdapterException::CANOpenBrakeTestAdapterException(const std::string &what_arg,
-                                                                   const int8_t error_value)
-  : std::runtime_error(what_arg)
-  , error_value_(error_value)
+/**
+ * @brief Exception thrown by a BrakeTestExecutor function.
+ */
+class BrakeTestExecutorException : public std::runtime_error
 {
-}
-
+public:
+  BrakeTestExecutorException(const std::string &what_arg) : std::runtime_error(what_arg)
+  {
+  }
+};
 } // namespace prbt_hardware_support
+
+#endif // PRBT_HARDWARE_SUPPORT_BRAKE_TEST_EXECUTOR_EXCEPTION_H
