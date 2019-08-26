@@ -98,12 +98,9 @@ void Stop1IntegrationTest::TearDown()
 /**
  * @brief Test that correct service calls occurs based on STO state.
  *
- * @tests{Recover_driver_after_STO_false,
- *  Test that drives are recovered after STO switch: false->true.
- * }
- *
- * @tests{Leave_hold_after_recover,
- *  Test that controller unhold is called after recovering.
+ * @tests{execution_of_stop1,
+ *  Test that drives are recovered and controller is unhold
+ *  after STO switch: false->true.
  * }
  *
  * @tests{Stop1_Trigger,

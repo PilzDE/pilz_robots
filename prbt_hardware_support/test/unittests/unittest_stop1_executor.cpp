@@ -116,7 +116,10 @@ TEST_F(Stop1ExecutorTest, testD0estructor)
 }
 
 /**
- * @brief Test enabling
+ * @tests{release_of_stop1,
+ * Tests that driver is recovered and controller no longer holded
+ * in case of STO switch: false->true.
+ * }
  *
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)),
@@ -140,7 +143,13 @@ TEST_F(Stop1ExecutorTest, testEnable)
 }
 
 /**
- * @brief Test enabling, stopping and enabling again
+ * @tests{execution_of_stop1,
+ * Test enabling stopping and enabling again.
+ * }
+ *
+ * @tests{release_of_stop1,
+ * Test enabling stopping and enabling again.
+ * }
  *
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)),
@@ -205,6 +214,15 @@ TEST_F(Stop1ExecutorTest, testEnableStopEnable)
 /**
  * @brief Test spaming enable plus subsequent stop
  *
+ * @tests{execution_of_stop1,
+ * Test spaming enable plus subsequent stop.
+ * }
+ *
+ * @tests{release_of_stop1,
+ * Test spaming enable plus subsequent stop.
+ * }
+ *
+ *
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)) repeatedly,
  *     let recover and unhold services return success
@@ -260,6 +278,14 @@ TEST_F(Stop1ExecutorTest, testSpamEnablePlusStop)
 
 /**
  * @brief Test spamming STO=false plus subsequent enable
+ *
+ * @tests{execution_of_stop1,
+ * Test spamming STO=false plus subsequent enable.
+ * }
+ *
+ * @tests{release_of_stop1,
+ * Test spamming STO=false plus subsequent enable.
+ * }
  *
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)),
@@ -327,7 +353,10 @@ TEST_F(Stop1ExecutorTest, testSpamStoActivePlusEnable)
 }
 
 /**
- * @brief Test skipping hold when sto changes to false during recover. Test also a following enabling.
+ *
+ * @tests{execution_of_stop1,
+ * Test skipping hold when sto changes to false during recover.
+ * }
  *
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)),
@@ -391,15 +420,18 @@ TEST_F(Stop1ExecutorTest, testSkippingHoldPlusEnable)
 }
 
 /**
- * @brief Test sending sto change to true while halt call is still pending.
+ * @tests{release_of_stop1,
+ * Test sending sto change to true while halt call is still pending.
+ * }
  *
  * Test Sequence:
- *  1. Run the sto adapter and call updateSto(true)),
- *     call updateSto(false)) during recover service call and return success.
- *     Before returning success on halt service call updateSto(true)
+ *  1.  Run the sto adapter and call updateSto(true)),
+ *      call updateSto(false)) during recover service call and return success.
+ *      Before returning success on halt service call updateSto(true)
  *
  * Expected Results:
- *  1. Recover and halt services are called successively. Afterwards recover and unhold are called.
+ *  1.  Recover and halt services are called successively.
+ *      Afterwards recover and unhold are called.
  */
 TEST_F(Stop1ExecutorTest, testEnableDuringHaltService)
 {
@@ -452,7 +484,10 @@ TEST_F(Stop1ExecutorTest, testEnableDuringHaltService)
 }
 
 /**
- * @brief Test sending sto change to true and back to false while halt call is still pending.
+ * @tests{execution_of_stop1,
+ * Test sending sto change to true and back to false while halt call
+ * is still pending.
+ * }
  *
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)).
@@ -502,7 +537,12 @@ TEST_F(Stop1ExecutorTest, testEnableDisableDuringHaltService)
 }
 
 /**
- * @brief Test enabling with failing recover service and retry (stop plus enable).
+ * @tests{execution_of_stop1,
+ * Test enabling with failing recover service and retry (stop plus enable).
+ * }
+ * @tests{release_of_stop1,
+ * Test enabling with failing recover service and retry (stop plus enable).
+ * }
  *
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)),
@@ -573,7 +613,9 @@ TEST_F(Stop1ExecutorTest, testRecoverFailPlusRetry)
 }
 
 /**
- * @brief Test if a stop is possible after unhold failed.
+ * @tests{unhold_service_fails,
+ * Test if a stop is possible after unhold failed.
+ * }
  *
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)),
@@ -621,7 +663,9 @@ TEST_F(Stop1ExecutorTest, testUnholdFail)
 }
 
 /**
- * @brief Test if stop is continued properly despite failing hold service
+ * @tests{hold_service_fail,
+ * Test if stop is continued properly despite failing hold service.
+ * }
  *
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)),
