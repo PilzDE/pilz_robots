@@ -139,7 +139,7 @@ TEST_F(Stop1ExecutorTest, testEnable)
   std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
   adapter_sto->updateSto(true);
 
-  BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 }
 
 /**
@@ -178,7 +178,7 @@ TEST_F(Stop1ExecutorTest, testEnableStopEnable)
   std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
   adapter_sto->updateSto(true);
 
-  BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
   /**********
    * Step 2 *
@@ -191,7 +191,7 @@ TEST_F(Stop1ExecutorTest, testEnableStopEnable)
 
   adapter_sto->updateSto(false);
 
-  BARRIER2({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
+  BARRIER({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 
   /**********
    * Step 3 *
@@ -205,7 +205,7 @@ TEST_F(Stop1ExecutorTest, testEnableStopEnable)
   std::atomic_bool keep_spamming{true};
   std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto->updateSto(true); } }};
 
-  BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
   keep_spamming = false;
   spam_enable.join();
@@ -251,7 +251,7 @@ TEST_F(Stop1ExecutorTest, testSpamEnablePlusStop)
   std::atomic_bool keep_spamming{true};
   std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto->updateSto(true); } }};
 
-  BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
   keep_spamming = false;
   spam_enable.join();
@@ -273,7 +273,7 @@ TEST_F(Stop1ExecutorTest, testSpamEnablePlusStop)
 
   adapter_sto->updateSto(false);
 
-  BARRIER2({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
+  BARRIER({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 }
 
 /**
@@ -315,7 +315,7 @@ TEST_F(Stop1ExecutorTest, testSpamStoActivePlusEnable)
 
   adapter_sto->updateSto(true);
 
-  BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
   /**********
    * Step 2 *
@@ -329,7 +329,7 @@ TEST_F(Stop1ExecutorTest, testSpamStoActivePlusEnable)
   std::atomic_bool keep_spamming{true};
   std::thread spam_disable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto->updateSto(false); } }};
 
-  BARRIER2({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
+  BARRIER({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 
   keep_spamming = false;
   spam_disable.join();
@@ -346,7 +346,7 @@ TEST_F(Stop1ExecutorTest, testSpamStoActivePlusEnable)
   keep_spamming = true;
   std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto->updateSto(true); } }};
 
-  BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
   keep_spamming = false;
   spam_enable.join();
@@ -399,7 +399,7 @@ TEST_F(Stop1ExecutorTest, testSkippingHoldPlusEnable)
 
   adapter_sto->updateSto(true);
 
-  BARRIER2({RECOVER_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
+  BARRIER({RECOVER_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 
   /**********
    * Step 2 *
@@ -413,7 +413,7 @@ TEST_F(Stop1ExecutorTest, testSkippingHoldPlusEnable)
   std::atomic_bool keep_spamming{true};
   std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto->updateSto(true); } }};
 
-  BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
   keep_spamming = false;
   spam_enable.join();
@@ -606,7 +606,7 @@ TEST_F(Stop1ExecutorTest, testRecoverFailPlusRetry)
   std::atomic_bool keep_spamming{true};
   std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto->updateSto(true); } }};
 
-  BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
   keep_spamming = false;
   spam_enable.join();
@@ -645,7 +645,7 @@ TEST_F(Stop1ExecutorTest, testUnholdFail)
   std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
   adapter_sto->updateSto(true);
 
-  BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
   /**********
    * Step 2 *
@@ -659,7 +659,7 @@ TEST_F(Stop1ExecutorTest, testUnholdFail)
 
   adapter_sto->updateSto(false);
 
-  BARRIER2({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
+  BARRIER({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 }
 
 /**
@@ -693,7 +693,7 @@ TEST_F(Stop1ExecutorTest, testHoldFail)
 
   adapter_sto->updateSto(true);
 
-  BARRIER2({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
   /**********
    * Step 2 *
@@ -712,7 +712,7 @@ TEST_F(Stop1ExecutorTest, testHoldFail)
 
   adapter_sto->updateSto(false);
 
-  BARRIER2({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
+  BARRIER({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 }
 
 /**
@@ -843,7 +843,7 @@ TEST_F(Stop1ExecutorTest, testExitInStateStopRequestedDuringEnable)
 
   adapter_sto->updateSto(true);
 
-  BARRIER3({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
+  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 }
 
 /**
