@@ -163,6 +163,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
 install(TARGETS
   modbus_adapter_sto_node
   pilz_modbus_client_node
+  stop1_executor_node
   canopen_braketest_adapter_node
   modbus_adapter_brake_test_node
   brake_test_executor_node
