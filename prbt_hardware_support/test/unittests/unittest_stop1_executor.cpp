@@ -89,7 +89,7 @@ class Stop1ExecutorTest : public ::testing::Test, public ::testing::AsyncTest
 protected:
   Stop1ExecutorForTests* createStop1Executor();
 
-protected:
+public:
   MOCK_METHOD0(hold_func,     bool());
   MOCK_METHOD0(unhold_func,   bool());
   MOCK_METHOD0(recover_func,  bool());
@@ -112,7 +112,19 @@ inline Stop1ExecutorForTests* Stop1ExecutorTest::createStop1Executor()
  */
 TEST_F(Stop1ExecutorTest, testD0estructor)
 {
-  std::shared_ptr<Stop1Executor> adapter_sto {createStop1Executor()};
+  {
+    std::shared_ptr<Stop1Executor> adapter_sto {new Stop1Executor( std::bind(&Stop1ExecutorTest::hold_func,    this),
+                                                                   std::bind(&Stop1ExecutorTest::unhold_func,  this),
+                                                                   std::bind(&Stop1ExecutorTest::recover_func, this),
+                                                                   std::bind(&Stop1ExecutorTest::halt_func,    this) ) };
+  }
+
+  {
+    Stop1Executor adapter_sto( std::bind(&Stop1ExecutorTest::hold_func,    this),
+                               std::bind(&Stop1ExecutorTest::unhold_func,  this),
+                               std::bind(&Stop1ExecutorTest::recover_func, this),
+                               std::bind(&Stop1ExecutorTest::halt_func,    this) );
+  }
 }
 
 /**
