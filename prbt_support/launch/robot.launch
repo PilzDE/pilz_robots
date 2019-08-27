@@ -71,6 +71,7 @@
       <arg name="modbus_server_ip" value="$(arg sto_modbus_server_ip)" />
     </include>
     <include file="$(find prbt_hardware_support)/launch/modbus_adapter_sto_node.launch" />
+    <include file="$(find prbt_hardware_support)/launch/stop1_executor_node.launch" />
     <include if="$(arg has_braketest_support)" file="$(find prbt_hardware_support)/launch/brake_test.launch">
       <arg name="write_api_spec_file" value="$(arg write_api_spec_file)" />
     </include>

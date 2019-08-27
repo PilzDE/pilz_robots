@@ -326,9 +326,8 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringHoldFailing)
 }
 
 /**
- * @tests{Execute_BrakeTest_exceptions,
- *  Test execution of brake tests when there is a problem in the api definition.
- * }
+ * @brief Test execution of brake tests when there is a problem
+ * in the api definition.
  *
  * Test Sequence:
  *  0. Prepare required service mocks and backup current api spec
