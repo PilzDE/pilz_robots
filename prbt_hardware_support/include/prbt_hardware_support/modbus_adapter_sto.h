@@ -29,7 +29,7 @@
 namespace prbt_hardware_support
 {
 
-using TUpdateStoFunc = std::function<void(const bool)>;
+using UpdateStoFunc = std::function<void(const bool)>;
 
 /**
  * @brief Listens to the modbus_read topic and reacts to updated STO states.
@@ -37,7 +37,7 @@ using TUpdateStoFunc = std::function<void(const bool)>;
 class ModbusAdapterSto
 {
 public:
-  ModbusAdapterSto(TUpdateStoFunc&& update_sto_func,
+  ModbusAdapterSto(UpdateStoFunc&& update_sto_func,
                    const ModbusApiSpec& api_spec);
 
 public:
@@ -57,7 +57,7 @@ public:
 
 private:
   const ModbusApiSpec api_spec_;
-  TUpdateStoFunc update_sto_;
+  UpdateStoFunc update_sto_;
 
 private:
   static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {2};

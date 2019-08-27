@@ -24,7 +24,7 @@
 namespace prbt_hardware_support
 {
 
-ModbusAdapterSto::ModbusAdapterSto(TUpdateStoFunc&& update_sto_func,
+ModbusAdapterSto::ModbusAdapterSto(UpdateStoFunc&& update_sto_func,
                                    const ModbusApiSpec& api_spec)
   : api_spec_(api_spec)
   , update_sto_(std::move(update_sto_func))

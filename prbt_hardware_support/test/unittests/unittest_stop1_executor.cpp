@@ -373,13 +373,13 @@ TEST_F(Stop1ExecutorTest, testSkippingHoldPlusEnable)
   std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
 
   // define function for recover-invoke action
-  TServiceCallFunc sto_false_during_recover_action = [this, &adapter_sto]() {
+  auto sto_false_during_recover_action = [this, &adapter_sto]() {
     this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT);
     adapter_sto->updateSto(false);
     return true;
   };
 
-  TServiceCallFunc halt_action = [this]() {
+  auto halt_action = [this]() {
     this->triggerClearEvent(HALT_SRV_CALLED_EVENT);
     return true;
   };
@@ -438,13 +438,13 @@ TEST_F(Stop1ExecutorTest, testEnableDuringHaltService)
   std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
 
   // define function for recover-invoke action
-  TServiceCallFunc sto_false_during_recover_action = [this, &adapter_sto]() {
+  auto sto_false_during_recover_action = [this, &adapter_sto]() {
     this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT);
     adapter_sto->updateSto(false);
     return true;
   };
 
-  TServiceCallFunc enable_during_halt_action = [this, &adapter_sto]() {
+  auto enable_during_halt_action = [this, &adapter_sto]() {
     this->triggerClearEvent(HALT_SRV_CALLED_EVENT);
     adapter_sto->updateSto(true);
     return true;
@@ -502,13 +502,13 @@ TEST_F(Stop1ExecutorTest, testEnableDisableDuringHaltService)
   std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
 
   // define function for recover-invoke action
-  TServiceCallFunc sto_false_during_recover_action = [this, &adapter_sto]() {
+  auto sto_false_during_recover_action = [this, &adapter_sto]() {
     this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT);
     adapter_sto->updateSto(false);
     return true;
   };
 
-  TServiceCallFunc enable_during_halt_action = [this, &adapter_sto]() {
+  auto enable_during_halt_action = [this, &adapter_sto]() {
     this->triggerClearEvent(HALT_SRV_CALLED_EVENT);
     adapter_sto->updateSto(true);
     adapter_sto->updateSto(false); // Important flip!
@@ -574,7 +574,7 @@ TEST_F(Stop1ExecutorTest, testRecoverFailPlusRetry)
 
   adapter_sto->updateSto(true);
 
-  BARRIER(RECOVER_SRV_CALLED_EVENT);
+  BARRIER({RECOVER_SRV_CALLED_EVENT});
 
   /**********
    * Step 2 *
@@ -591,7 +591,7 @@ TEST_F(Stop1ExecutorTest, testRecoverFailPlusRetry)
 
   adapter_sto->updateSto(false);
 
-  BARRIER(HALT_SRV_CALLED_EVENT);
+  BARRIER({HALT_SRV_CALLED_EVENT});
 
   /**********
    * Step 3 *
@@ -733,7 +733,7 @@ TEST_F(Stop1ExecutorTest, testHoldImmediatelyAfterUnhold)
   std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
 
   // define function for unhold-invoke action
-  TServiceCallFunc unhold_action = [this, &adapter_sto]() {
+  auto unhold_action = [this, &adapter_sto]() {
     this->triggerClearEvent(UNHOLD_SRV_CALLED_EVENT);
     adapter_sto->updateSto(false);
     return true;
@@ -777,7 +777,7 @@ TEST_F(Stop1ExecutorTest, testExitInStateEnabling)
   std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
 
   // define function for recover-invoke action
-  TServiceCallFunc recover_action = [this, &adapter_sto]() {
+  auto recover_action = [this, &adapter_sto]() {
     adapter_sto->stopStateMachine();
     this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT);
     return true;
@@ -796,7 +796,7 @@ TEST_F(Stop1ExecutorTest, testExitInStateEnabling)
 
   adapter_sto->updateSto(true);
 
-  BARRIER(RECOVER_SRV_CALLED_EVENT);
+  BARRIER({RECOVER_SRV_CALLED_EVENT});
 }
 
 /**
@@ -817,7 +817,7 @@ TEST_F(Stop1ExecutorTest, testExitInStateStopRequestedDuringEnable)
   std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
 
   // define function for unhold-invoke action
-  TServiceCallFunc unhold_action = [this, &adapter_sto]() {
+  auto unhold_action = [this, &adapter_sto]() {
     adapter_sto->updateSto(false);
     adapter_sto->stopStateMachine();
     this->triggerClearEvent(UNHOLD_SRV_CALLED_EVENT);
@@ -865,17 +865,17 @@ TEST_F(Stop1ExecutorTest, testExitDuringPendingHaltCall)
   std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
 
   // define function for recover-invoke action
-  TServiceCallFunc sto_false_during_recover_action = [this, &adapter_sto]() {
+  auto sto_false_during_recover_action = [this, &adapter_sto]() {
     this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT);
     adapter_sto->updateSto(false);
     return true;
   };
 
-  TServiceCallFunc false_recover_action = []() {
+  auto false_recover_action = []() {
     return false;
   };
 
-  TServiceCallFunc enable_during_halt_action = [this, &adapter_sto]() {
+  auto enable_during_halt_action = [this, &adapter_sto]() {
     adapter_sto->updateSto(true);
     adapter_sto->stopStateMachine();
     this->triggerClearEvent(HALT_SRV_CALLED_EVENT);
