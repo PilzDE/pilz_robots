@@ -82,29 +82,31 @@ void SpeedObserver::startObserving(double frequency)
     try{
       speeds.clear();
       for(auto & frame : frames_to_observe_){
-        uint32_t retries = 0;
-        while(!tf_buffer.canTransform(reference_frame_, frame, now))
-        {
-          ros::spinOnce();
-          ros::Duration(WAITING_TIME_FOR_TRANSFORM_S).sleep();
-          if(retries > WAITING_FOR_TRANSFORM_RETRIES){
-            ROS_WARN("Waited for transform %s -> %s for too long.", reference_frame_.c_str(), frame.c_str());
-            return;
+        if(!terminate){
+          uint32_t retries = 0;
+          while(!tf_buffer.canTransform(reference_frame_, frame, now))
+          {
+            ros::spinOnce();
+            ros::Duration(WAITING_TIME_FOR_TRANSFORM_S).sleep();
+            if(retries > WAITING_FOR_TRANSFORM_RETRIES){
+              ROS_WARN("Waited for transform %s -> %s for too long.", reference_frame_.c_str(), frame.c_str());
+              return;
+            }
+            retries++;
           }
-          retries++;
+          transform = tf_buffer.lookupTransform(reference_frame_, frame, now);
+          tf2::fromMsg(transform.transform.translation, v);
+          double speed = speedFromTwoPoses(
+                previous_poses[frame],
+                v,
+                (now - previous_t).toSec());
+          previous_poses[frame] = tf2::Vector3(v);
+          if(!isWithinLimits(speed)){
+            ROS_ERROR("Speed %.2f m/s of frame >%s< exceeds limit of %.2f m/s", speed, frame.c_str(), SPEED_LIMIT);
+            triggerStop1();
+          }
+          speeds.push_back(speed);
         }
-        transform = tf_buffer.lookupTransform(reference_frame_, frame, now);
-        tf2::fromMsg(transform.transform.translation, v);
-        double speed = speedFromTwoPoses(
-              previous_poses[frame],
-              v,
-              (now - previous_t).toSec());
-        previous_poses[frame] = tf2::Vector3(v);
-        if(!isWithinLimits(speed)){
-          ROS_ERROR("Speed %.2f m/s of frame >%s< exceeds limit of %.2f m/s", speed, frame.c_str(), SPEED_LIMIT);
-          triggerStop1();
-        }
-        speeds.push_back(speed);
       }
       previous_t = now;
       frame_speeds_pub.publish(makeFrameSpeedsMessage(speeds));
