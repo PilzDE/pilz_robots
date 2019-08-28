@@ -97,14 +97,9 @@
  *  - The system provides a mechanism which allows to determine if
  *    a braketest is requested by the safety controller.
  *
- *  - The mechanism continues to return the last received value,
- *    if at least one of the following conditions is true:
- *    - the connection to the safety controller is lost,
- *    - the messages informing about the operation mode (coming from the
- *      safety controller) is incomplete or in any way corrupted,
- *    - the communication protocol used by the safety controller
- *      does not fulfill the expected specification
- *      (defined by the version of the protocol).
+ *  - The value returned will indicate if a braketest is requested, not requested or
+ *    if it is currently unknown if a braketest has to be performed. It is unknown if a braketest
+ *    has to be performed if the communication with the safety control is lost or corrupted.
  *
  * @definereq{Execute_BrakeTest_mechanism}
  * - The system provides a mechanism which allows to execute a brake test.
