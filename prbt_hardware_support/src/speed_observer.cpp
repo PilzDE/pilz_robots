@@ -16,7 +16,7 @@
  */
 
 #include <tf2/convert.h>
-#include <std_msgs/Empty.h>
+#include <std_srvs/SetBool.h>
 
 #include <prbt_hardware_support/speed_observer.h>
 
@@ -24,7 +24,7 @@ namespace prbt_hardware_support
 {
 
 static const std::string FRAME_SPEEDS_TOPIC_NAME{"frame_speeds"};
-static const std::string STOP_TOPIC_NAME{"stop"};
+static const std::string STO_SERVICE{"safe_torque_off"};
 static const uint32_t DEFAULT_QUEUE_SIZE{10};
 static const uint32_t WAITING_TIME_FOR_TRANSFORM_S{1};
 static const uint32_t WAITING_FOR_TRANSFORM_RETRIES{20};
@@ -39,7 +39,7 @@ SpeedObserver::SpeedObserver(ros::NodeHandle& nh,
   , tf_buffer()
 {
   frame_speeds_pub = nh.advertise<FrameSpeeds>(FRAME_SPEEDS_TOPIC_NAME, DEFAULT_QUEUE_SIZE);
-  stop_pub = nh.advertise<std_msgs::Empty>(STOP_TOPIC_NAME, DEFAULT_QUEUE_SIZE);
+  sto_client_ = nh.serviceClient<std_srvs::SetBool>(STO_SERVICE, DEFAULT_QUEUE_SIZE);
   speeds = std::vector<double>(0);
 }
 
@@ -102,7 +102,7 @@ void SpeedObserver::startObserving(double frequency)
         previous_poses[frame] = tf2::Vector3(v);
         if(!isWithinLimits(speed)){
           ROS_ERROR("Speed %.2f m/s of frame >%s< exceeds limit of %.2f m/s", speed, frame.c_str(), SPEED_LIMIT);
-          stop_pub.publish(std_msgs::Empty());
+          triggerStop1();
         }
         speeds.push_back(speed);
       }
@@ -146,6 +146,24 @@ bool SpeedObserver::isWithinLimits(const double& speed)
 void SpeedObserver::terminateNow(){
   ROS_DEBUG("terminateNow");
   terminate = true;
+}
+
+void SpeedObserver::triggerStop1()
+{
+  std_srvs::SetBool sto_srv;
+  sto_srv.request.data = true;
+  bool call_success = sto_client_.call(sto_srv);
+  if (!call_success)
+  {
+    ROS_ERROR_STREAM("No success calling service: " << sto_client_.getService());
+  }
+
+  if (!sto_srv.response.success)
+  {
+    ROS_ERROR_STREAM("Service: " << sto_client_.getService()
+                     << " failed with error message:\n"
+                     << sto_srv.response.message);
+  }
 }
 
 } // namespace prbt_hardware_support

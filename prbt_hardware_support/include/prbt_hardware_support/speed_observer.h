@@ -39,12 +39,15 @@ public:
   void terminateNow();
 
 private:
+  void triggerStop1();
+
+private:
   ros::NodeHandle nh_;
   const std::string reference_frame_;
   const std::vector<std::string> frames_to_observe_;
   tf2_ros::Buffer tf_buffer;
   ros::Publisher frame_speeds_pub;
-  ros::Publisher stop_pub;
+  ros::ServiceClient sto_client_;
   uint32_t seq{0};
   std::vector<double> speeds;
   std::map<std::string, tf2::Vector3> previous_poses;

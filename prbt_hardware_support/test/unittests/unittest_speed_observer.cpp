@@ -20,24 +20,29 @@
 #include <gmock/gmock.h>
 
 #include <ros/ros.h>
-#include <std_msgs/Empty.h>
+#include <std_srvs/SetBool.h>
 #include <tf2_ros/transform_broadcaster.h>
 
 #include <pilz_testutils/async_test.h>
 #include <prbt_hardware_support/ros_test_helper.h>
 #include <prbt_hardware_support/speed_observer.h>
 #include <prbt_hardware_support/FrameSpeeds.h>
+#include <prbt_hardware_support/wait_for_service.h>
 
 namespace speed_observer_test
 {
 using ::testing::_;
+using ::testing::Return;
+using ::testing::DoAll;
+using ::testing::SetArgReferee;
+
 using namespace prbt_hardware_support;
 
 static const std::string BARRIER_SLOW{"BARRIER_SLOW"};
 static const std::string BARRIER_FAST{"BARRIER_FAST"};
 
 static const std::string FRAME_SPEEDS_TOPIC_NAME{"/frame_speeds"};
-static const std::string STOP_TOPIC_NAME{"/stop"};
+static const std::string STOP_TOPIC_NAME{"/safe_torque_off"};
 static const std::string TEST_BASE_FRAME{"test_base"};
 static const std::string TEST_FRAME_A{"a"};
 static const std::string TEST_FRAME_B{"b"};
@@ -53,13 +58,14 @@ public:
   void TearDown() override;
 
   MOCK_METHOD1(frame_speeds_cb_mock, void(FrameSpeeds msg));
-  MOCK_METHOD1(stop_cb_mock, void(std_msgs::Empty msg));
+  MOCK_METHOD2(stop_cb_mock, bool(std_srvs::SetBool::Request &req,
+                                  std_srvs::SetBool::Response &res));
   void publishTfAtSpeed(double v);
   void stopTfPublisher();
 
 protected:
   ros::Subscriber speed_subscriber_;
-  ros::Subscriber stop_subscriber_;
+  ros::ServiceServer stop_subscriber_;
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_{"~"};
   std::vector<std::string> additional_frames_;
@@ -72,11 +78,11 @@ void SpeedObserverIntegarionTest::SetUp(){
         1,
         &SpeedObserverIntegarionTest::frame_speeds_cb_mock,
         this);
-  stop_subscriber_ = nh_.subscribe<std_msgs::Empty>(
-        STOP_TOPIC_NAME,
-        1,
-        &SpeedObserverIntegarionTest::stop_cb_mock,
-        this);
+  stop_subscriber_ = nh_.advertiseService(STOP_TOPIC_NAME,
+                                          &SpeedObserverIntegarionTest::stop_cb_mock,
+                                          this);
+
+  waitForService(STOP_TOPIC_NAME);
 }
 
 void SpeedObserverIntegarionTest::TearDown(){}
@@ -162,10 +168,10 @@ TEST_F(SpeedObserverIntegarionTest, testStartupAndTopic)
   std::string reference_frame{TEST_BASE_FRAME};
   std::vector<std::string> frames_to_observe{TEST_FRAME_A, TEST_FRAME_B};
   prbt_hardware_support::SpeedObserver observer(
-    nh_,
-    reference_frame,
-    frames_to_observe
-  );
+        nh_,
+        reference_frame,
+        frames_to_observe
+        );
   std::thread observer_thread = std::thread(&SpeedObserver::startObserving, &observer, TEST_FREQUENCY);
   ROS_DEBUG_STREAM("thread started");
 
@@ -174,28 +180,28 @@ TEST_F(SpeedObserverIntegarionTest, testStartupAndTopic)
    **********/
   ::testing::Sequence s_speeds, s_stop;
   EXPECT_CALL(*this, frame_speeds_cb_mock(
-          AllOf(ContainsName(TEST_FRAME_A),
-                ContainsName(TEST_FRAME_B),
-                SpeedAtILe((unsigned long) 0, .1),
-                SpeedAtILe((unsigned long) 1, .26),
-                SpeedAtIGe((unsigned long) 0, 0),
-                SpeedAtIGe((unsigned long) 1, 0))
-      ))
+                AllOf(ContainsName(TEST_FRAME_A),
+                      ContainsName(TEST_FRAME_B),
+                      SpeedAtILe((unsigned long) 0, .1),
+                      SpeedAtILe((unsigned long) 1, .26),
+                      SpeedAtIGe((unsigned long) 0, 0),
+                      SpeedAtIGe((unsigned long) 1, 0))
+                ))
       .Times(AtLeast(2))
       .InSequence(s_speeds);
   EXPECT_CALL(*this, frame_speeds_cb_mock(
-          AllOf(ContainsName(TEST_FRAME_A),
-                ContainsName(TEST_FRAME_B),
-                SpeedAtILe((unsigned long) 0, .1),
-                SpeedAtILe((unsigned long) 1, .26),
-                SpeedAtIGe((unsigned long) 0, 0),
-                SpeedAtIGe((unsigned long) 1, 0))
-      ))
+                AllOf(ContainsName(TEST_FRAME_A),
+                      ContainsName(TEST_FRAME_B),
+                      SpeedAtILe((unsigned long) 0, .1),
+                      SpeedAtILe((unsigned long) 1, .26),
+                      SpeedAtIGe((unsigned long) 0, 0),
+                      SpeedAtIGe((unsigned long) 1, 0))
+                ))
       .Times(AtLeast(1))
       .InSequence(s_speeds)
       .WillRepeatedly(ACTION_OPEN_BARRIER_VOID(BARRIER_SLOW));
 
-  EXPECT_CALL(*this, stop_cb_mock(_))
+  EXPECT_CALL(*this, stop_cb_mock(_,_))
       .Times(0)
       .InSequence(s_stop);
 
@@ -208,40 +214,44 @@ TEST_F(SpeedObserverIntegarionTest, testStartupAndTopic)
    * Step 1 *
    **********/
   EXPECT_CALL(*this, frame_speeds_cb_mock(
-          AllOf(ContainsName(TEST_FRAME_A),
-                ContainsName(TEST_FRAME_B),
-                SpeedAtILe((unsigned long) 0, .1),
-                // we can once have an unlimited speed, when the publisher changes speed
-                SpeedAtIGe((unsigned long) 0, 0),
-                SpeedAtIGe((unsigned long) 1, .28))
-      ))
+                AllOf(ContainsName(TEST_FRAME_A),
+                      ContainsName(TEST_FRAME_B),
+                      SpeedAtILe((unsigned long) 0, .1),
+                      // we can once have an unlimited speed, when the publisher changes speed
+                      SpeedAtIGe((unsigned long) 0, 0),
+                      SpeedAtIGe((unsigned long) 1, .28))
+                ))
       .Times(AtMost(1))
       .InSequence(s_speeds);
   EXPECT_CALL(*this, frame_speeds_cb_mock(
-          AllOf(ContainsName(TEST_FRAME_A),
-                ContainsName(TEST_FRAME_B),
-                SpeedAtILe((unsigned long) 0, .1),
-                SpeedAtILe((unsigned long) 1, .32),
-                SpeedAtIGe((unsigned long) 0, 0),
-                SpeedAtIGe((unsigned long) 1, .28))
-      ))
+                AllOf(ContainsName(TEST_FRAME_A),
+                      ContainsName(TEST_FRAME_B),
+                      SpeedAtILe((unsigned long) 0, .1),
+                      SpeedAtILe((unsigned long) 1, .32),
+                      SpeedAtIGe((unsigned long) 0, 0),
+                      SpeedAtIGe((unsigned long) 1, .28))
+                ))
       .Times(AtLeast(2))
       .InSequence(s_speeds);
   EXPECT_CALL(*this, frame_speeds_cb_mock(
-          AllOf(ContainsName(TEST_FRAME_A),
-                ContainsName(TEST_FRAME_B),
-                SpeedAtILe((unsigned long) 0, .1),
-                SpeedAtILe((unsigned long) 1, .32),
-                SpeedAtIGe((unsigned long) 0, 0),
-                SpeedAtIGe((unsigned long) 1, .28))
-      ))
+                AllOf(ContainsName(TEST_FRAME_A),
+                      ContainsName(TEST_FRAME_B),
+                      SpeedAtILe((unsigned long) 0, .1),
+                      SpeedAtILe((unsigned long) 1, .32),
+                      SpeedAtIGe((unsigned long) 0, 0),
+                      SpeedAtIGe((unsigned long) 1, .28))
+                ))
       .Times(AtLeast(1))
       .InSequence(s_speeds)
       .WillRepeatedly(ACTION_OPEN_BARRIER_VOID(BARRIER_FAST));
 
-  EXPECT_CALL(*this, stop_cb_mock(_))
+  std_srvs::SetBool::Response sto_srv_resp;
+  sto_srv_resp.success = true;
+
+  EXPECT_CALL(*this, stop_cb_mock(_,_))
       .Times(AtLeast(1))
-      .InSequence(s_stop);
+      .InSequence(s_stop)
+      .WillOnce(DoAll(SetArgReferee<1>(sto_srv_resp), Return(true)));
 
   std::thread pubisher_thread_fast = std::thread(&SpeedObserverIntegarionTest::publishTfAtSpeed, this, 0.3);
   BARRIER({BARRIER_FAST});
@@ -261,6 +271,9 @@ int main(int argc, char *argv[])
 {
   ros::init(argc, argv, "unittest_speed_observer");
   ros::NodeHandle nh;
+
+  ros::AsyncSpinner spinner{2};
+  spinner.start();
 
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
