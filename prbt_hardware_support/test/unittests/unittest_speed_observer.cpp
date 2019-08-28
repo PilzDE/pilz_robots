@@ -160,7 +160,6 @@ MATCHER_P2(SpeedAtILe, i, x,
 TEST_F(SpeedObserverIntegarionTest, testStartupAndTopic) {
   using ::testing::AllOf;
   using ::testing::AtLeast;
-  using ::testing::AtMost;
 
   /**********
    * Step 0 *
@@ -208,6 +207,7 @@ TEST_F(SpeedObserverIntegarionTest, testStartupAndTopic) {
   /*************
    * Tear Down *
    *************/
+  ROS_DEBUG_STREAM("Tear Down");
   observer.terminateNow();
   observer_thread.join();
 }
@@ -289,8 +289,38 @@ TEST_F(SpeedObserverIntegarionTest, testTooHighSpeed) {
   /*************
    * Tear Down *
    *************/
+  ROS_DEBUG_STREAM("Tear Down");
   observer.terminateNow();
   observer_thread.join();
+}
+
+/**
+ * @tests{The correct handling of too high speeds}
+ *
+ * Test Sequence:
+ *    0. Starting up
+ *    1. Publishing tf movements only for a short while
+ *
+ * Expected Results:
+ *    0. -
+ *    1. observe method just finishes (without throw)
+ */
+TEST_F(SpeedObserverIntegarionTest, testTimeout) {
+
+  /**********
+   * Step 0 *
+   **********/
+  ROS_DEBUG_STREAM("Step 0");
+  std::string reference_frame{TEST_BASE_FRAME};
+  std::vector<std::string> frames_to_observe{TEST_FRAME_A, TEST_FRAME_B};
+  prbt_hardware_support::SpeedObserver observer(nh_, reference_frame,
+                                                frames_to_observe);
+
+  /**********
+   * Step 1 *
+   **********/
+  ROS_DEBUG_STREAM("Step 1");
+  EXPECT_NO_THROW(observer.startObserving(TEST_FREQUENCY));
 }
 
 } // namespace speed_observer_test

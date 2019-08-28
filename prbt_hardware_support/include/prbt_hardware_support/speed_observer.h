@@ -42,7 +42,7 @@ private:
   FrameSpeeds
   createFrameSpeedsMessage(const std::vector<double> &speeds_) const;
   void waitTillTFReady(const std::string &frame, const ros::Time &now,
-                       const unsigned short int max_num_retries = 20) const;
+                       const unsigned short int max_num_retries = 10) const;
   tf2::Vector3 getPose(const std::string &frame, const ros::Time &now) const;
 
 private:

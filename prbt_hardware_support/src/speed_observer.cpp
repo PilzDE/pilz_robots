@@ -39,12 +39,12 @@ SpeedObserver::SpeedObserver(ros::NodeHandle &nh, std::string &reference_frame,
 }
 
 void SpeedObserver::waitTillTFReady(
-    const std::string &frame, const ros::Time &now,
+    const std::string &frame, const ros::Time &time,
     const unsigned short int max_num_retries) const {
   unsigned short int retries{0};
 
   while (!terminate_ && (retries < max_num_retries) &&
-         !tf_buffer_.canTransform(reference_frame_, frame, now)) {
+         !tf_buffer_.canTransform(reference_frame_, frame, time)) {
     ros::spinOnce();
     ROS_WARN("Waiting for transform %s -> %s", reference_frame_.c_str(),
              frame.c_str());
@@ -53,7 +53,7 @@ void SpeedObserver::waitTillTFReady(
   }
 
   if (retries >= max_num_retries) {
-    ROS_WARN("Waited for transform %s -> %s for too long.",
+    ROS_ERROR("Waited for transform %s -> %s for too long.",
              reference_frame_.c_str(), frame.c_str());
     throw std::runtime_error("Exceeded maximum number of retries.");
   }
