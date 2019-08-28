@@ -18,6 +18,8 @@
 #ifndef SPEED_OBSERVER_H
 #define SPEED_OBSERVER_H
 
+#include <atomic>
+
 #include <ros/node_handle.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_ros/transform_listener.h>
@@ -35,29 +37,64 @@ public:
       std::string& reference_frame,
       std::vector<std::string>& frames_to_observe
       );
+
+public:
   void startObserving(double frequency);
   void terminateNow();
 
 private:
   void triggerStop1();
+  FrameSpeeds createFrameSpeedsMessage(const std::vector<double> &speeds_) const;
+  void waitTillTFReady(const std::string& frame, const ros::Time& now,
+                       const unsigned short int max_num_retries = 20) const;
+  tf2::Vector3 getPose(const std::string& frame, const ros::Time& now) const;
+
+private:
+  static double speedFromTwoPoses(const tf2::Vector3& a,
+                                  const tf2::Vector3& b,
+                                  const double& t);
+  static bool isWithinLimits(const double& speed);
 
 private:
   ros::NodeHandle nh_;
   const std::string reference_frame_;
   const std::vector<std::string> frames_to_observe_;
-  tf2_ros::Buffer tf_buffer;
-  ros::Publisher frame_speeds_pub;
+  ros::Publisher frame_speeds_pub_;
   ros::ServiceClient sto_client_;
-  uint32_t seq{0};
-  std::vector<double> speeds;
-  std::map<std::string, tf2::Vector3> previous_poses;
-  ros::Time previous_t;
-  bool terminate {false};
+  std::atomic_bool terminate_ {false};
 
-  FrameSpeeds makeFrameSpeedsMessage(std::vector<double>& speeds);
-  static double speedFromTwoPoses(tf2::Vector3 a, tf2::Vector3 b, double t);
-  static bool isWithinLimits(const double& speed);
+  tf2_ros::Buffer tf_buffer_;
+  // Needed to receive tf2 transformations over the wire
+  // For more infor see https://wiki.ros.org/tf2/Tutorials/
+  tf2_ros::TransformListener tf_listener {tf_buffer_};
+
+private:
+  static constexpr double SPEED_LIMIT{.25};
+  static constexpr uint32_t DEFAULT_QUEUE_SIZE{10};
+  static constexpr uint32_t WAITING_TIME_FOR_TRANSFORM_S{1};
 };
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+inline double SpeedObserver::speedFromTwoPoses(const tf2::Vector3 &a,
+                                               const tf2::Vector3 &b,
+                                               const double& t)
+{
+  double d = tf2::tf2Distance(a, b);
+  return d / t;
+}
+
+inline bool SpeedObserver::isWithinLimits(const double& speed)
+{
+  return speed < SPEED_LIMIT;
+}
+
+// This method is only needed for the unittest
+inline void SpeedObserver::terminateNow()
+{
+  ROS_DEBUG("terminateNow");
+  terminate_ = true;
+}
 
 } // namespace prbt_hardware_support
 
