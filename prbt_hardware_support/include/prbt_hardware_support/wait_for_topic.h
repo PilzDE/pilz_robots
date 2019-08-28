@@ -38,7 +38,7 @@ static void waitForTopic(const std::string topic_name,
 {
   while ( (ros::topic::waitForMessage<T>(topic_name, ros::Duration(retry_timeout)) == nullptr) && ros::ok())
   {
-    ROS_WARN_STREAM_DELAYED_THROTTLE(msg_output_period,
+    ROS_DEBUG_STREAM_DELAYED_THROTTLE(msg_output_period,
                                      "Waiting for topic \""
                                      + topic_name + "\"...");
   }
