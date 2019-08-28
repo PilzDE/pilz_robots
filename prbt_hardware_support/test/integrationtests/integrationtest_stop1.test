@@ -37,6 +37,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <node name="modbus_adapter_sto_node" pkg="prbt_hardware_support" type="modbus_adapter_sto_node">
 </node>
+<node name="stop1_executor_node" pkg="prbt_hardware_support" type="stop1_executor_node">
+</node>
 
 <test test-name="integrationtest_stop1" pkg="prbt_hardware_support" type="integrationtest_stop1">
   <param name="modbus_server_ip" value="$(arg modbus_server_ip)"/>

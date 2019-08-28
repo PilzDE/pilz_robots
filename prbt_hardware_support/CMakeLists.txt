@@ -90,6 +90,14 @@ add_executable(modbus_adapter_sto_node
 add_dependencies(modbus_adapter_sto_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
 target_link_libraries(modbus_adapter_sto_node ${catkin_LIBRARIES})
 
+# STOP1_EXECUTOR_NODE
+add_executable(stop1_executor_node
+  src/stop1_executor.cpp
+  src/stop1_executor_node.cpp
+)
+add_dependencies(stop1_executor_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(stop1_executor_node ${catkin_LIBRARIES})
+
 # BRAKE_TEST_NODE
 add_executable(modbus_adapter_brake_test_node
   src/modbus_adapter_brake_test_node.cpp
@@ -171,6 +179,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
 install(TARGETS
   modbus_adapter_sto_node
   pilz_modbus_client_node
+  stop1_executor_node
   canopen_braketest_adapter_node
   modbus_adapter_brake_test_node
   brake_test_executor_node
@@ -323,34 +332,24 @@ if(CATKIN_ENABLE_TESTING)
   )
   #----------------------------------
 
-  # --- STOExecutor unit test ---
-  catkin_add_gmock(unittest_adapter_sto
-    test/unittests/unittest_adapter_sto.cpp
+  # --- Stop1Executor unit test ---
+  catkin_add_gmock(unittest_stop1_executor
+    src/stop1_executor.cpp
+    test/unittests/unittest_stop1_executor.cpp
   )
-  target_link_libraries(unittest_adapter_sto
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
-  )
-  #----------------------------------
-
-  # --- ServiceClientFactory integration test ---
-  add_rostest_gmock(integrationtest_service_client_factory
-     test/integrationtests/integrationtest_service_client_factory.test
-     test/integrationtests/integrationtest_service_client_factory.cpp
-  )
-  target_link_libraries(integrationtest_service_client_factory
+  target_link_libraries(unittest_stop1_executor
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
   )
   #----------------------------------
 
   #--- StoModbusAdapter intrgration test ---
-  add_rostest_gmock(integrationtest_modbus_adapter_sto
-    test/integrationtests/integrationtest_modbus_adapter_sto.test
-    test/integrationtests/integrationtest_modbus_adapter_sto.cpp
+  catkin_add_gmock(unittest_modbus_adapter_sto
+    test/unittests/unittest_modbus_adapter_sto.cpp
     src/modbus_adapter_sto.cpp
     src/modbus_msg_sto_wrapper.cpp
     src/modbus_msg_in_builder.cpp
   )
-  target_link_libraries(integrationtest_modbus_adapter_sto
+  target_link_libraries(unittest_modbus_adapter_sto
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
   )
   #----------------------------------
