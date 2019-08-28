@@ -115,7 +115,8 @@ void SpeedObserver::startObserving(double frequency)
       ROS_ERROR_STREAM(ex.what());
       return;
     }
-    r.sleep();
+    if(!terminate)
+      r.sleep();
   }
 }
 
