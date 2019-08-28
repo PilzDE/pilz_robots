@@ -58,12 +58,12 @@ private:
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 inline FilterPipeline::FilterPipeline(ros::NodeHandle& nh, TCallbackFunc callback_func)
 {
-  modbus_read_sub_ = std::make_shared< message_filters::Subscriber<ModbusMsgInStamped> >(nh, TOPIC_MODBUS_READ, 1);
-  update_filter_ = std::make_shared< message_filters::UpdateFilter<ModbusMsgInStamped> >(*modbus_read_sub_);
   if (!callback_func)
   {
     throw std::invalid_argument("Argument \"callback_func\" must not be empty");
   }
+  modbus_read_sub_ = std::make_shared< message_filters::Subscriber<ModbusMsgInStamped> >(nh, TOPIC_MODBUS_READ, 1);
+  update_filter_ = std::make_shared< message_filters::UpdateFilter<ModbusMsgInStamped> >(*modbus_read_sub_);
   update_filter_->registerCallback(callback_func);
 }
 
