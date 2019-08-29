@@ -18,35 +18,31 @@
 #include <prbt_hardware_support/adapter_brake_test.h>
 #include <std_msgs/Bool.h>
 
-
 namespace prbt_hardware_support
 {
-
 static const std::string SERVICE_NAME_IS_BRAKE_TEST_REQUIRED = "/prbt/brake_test_required";
 
 AdapterBrakeTest::AdapterBrakeTest(ros::NodeHandle& nh)
 {
-    is_brake_test_required_server_ = nh.advertiseService(SERVICE_NAME_IS_BRAKE_TEST_REQUIRED,
-                                                        &AdapterBrakeTest::isBrakeTestRequired,
-                                                        this);
+  is_brake_test_required_server_ =
+      nh.advertiseService(SERVICE_NAME_IS_BRAKE_TEST_REQUIRED, &AdapterBrakeTest::isBrakeTestRequired, this);
 }
 
 void AdapterBrakeTest::updateBrakeTestRequiredState(IsBrakeTestRequiredResponse::_result_type brake_test_required)
 {
-  IsBrakeTestRequiredResponse::_result_type last_brake_test_flag {brake_test_required_};
+  IsBrakeTestRequiredResponse::_result_type last_brake_test_flag{ brake_test_required_ };
   brake_test_required_ = brake_test_required;
-  if(brake_test_required_ == IsBrakeTestRequiredResponse::REQUIRED
-     && last_brake_test_flag != IsBrakeTestRequiredResponse::REQUIRED)
+  if (brake_test_required_ == IsBrakeTestRequiredResponse::REQUIRED &&
+      last_brake_test_flag != IsBrakeTestRequiredResponse::REQUIRED)
   {
     ROS_INFO("Brake Test required.");
   }
 }
 
-bool AdapterBrakeTest::isBrakeTestRequired(IsBrakeTestRequired::Request& /*req*/,
-                                           IsBrakeTestRequired::Response& res)
+bool AdapterBrakeTest::isBrakeTestRequired(IsBrakeTestRequired::Request& /*req*/, IsBrakeTestRequired::Response& res)
 {
   res.result = brake_test_required_;
   return true;
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support

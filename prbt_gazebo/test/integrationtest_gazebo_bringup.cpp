@@ -22,13 +22,12 @@
 
 namespace prbt_gazebo
 {
-
 class GazeboTest : public testing::Test
 {
 protected:
   void SetUp() override;
-  ros::AsyncSpinner spinner_ {1};
-  const ros::Duration WAIT_FOR_ACTION_SERVER_TIME {5};
+  ros::AsyncSpinner spinner_{ 1 };
+  const ros::Duration WAIT_FOR_ACTION_SERVER_TIME{ 5 };
 };
 
 void GazeboTest::SetUp()
@@ -39,7 +38,8 @@ void GazeboTest::SetUp()
 TEST_F(GazeboTest, basicMove)
 {
   ros::NodeHandle nh;
-  const std::string action_server_name = nh.getNamespace() + "/manipulator_joint_trajectory_controller/follow_joint_trajectory";
+  const std::string action_server_name = nh.getNamespace() + "/manipulator_joint_trajectory_controller/"
+                                                             "follow_joint_trajectory";
 
   actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> action_client(action_server_name);
   ASSERT_TRUE(action_client.waitForServer(WAIT_FOR_ACTION_SERVER_TIME));
@@ -48,10 +48,10 @@ TEST_F(GazeboTest, basicMove)
   control_msgs::FollowJointTrajectoryGoal goal;
   trajectory_msgs::JointTrajectory traj;
   trajectory_msgs::JointTrajectoryPoint traj_point;
-  traj_point.positions = {0.0, 1.0, 0.0, 0.0, 0.0, 0.0};
+  traj_point.positions = { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 };
   traj_point.time_from_start = ros::Duration(1);
   traj.points.push_back(traj_point);
-  traj.joint_names = {"prbt_joint_1", "prbt_joint_2", "prbt_joint_3", "prbt_joint_4", "prbt_joint_5", "prbt_joint_6"};
+  traj.joint_names = { "prbt_joint_1", "prbt_joint_2", "prbt_joint_3", "prbt_joint_4", "prbt_joint_5", "prbt_joint_6" };
   goal.trajectory = traj;
 
   ASSERT_EQ(actionlib::SimpleClientGoalState::SUCCEEDED, action_client.sendGoalAndWait(goal).state_);
@@ -59,8 +59,7 @@ TEST_F(GazeboTest, basicMove)
 
 }  // namespace prbt_gazebo
 
-
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "integrationtest_gazebo_bringup");
   ros::NodeHandle nh;

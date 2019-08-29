@@ -32,17 +32,16 @@ typedef pilz_joint_trajectory_controller::PilzJointTrajectoryController<Segment,
 
 namespace pilz_joint_trajectory_controller
 {
+static const std::string CONTROLLER_NAMESPACE{ "/controller_ns" };
+static const std::string TRAJECTORY_ACTION{ "/follow_joint_trajectory" };
+static const std::string HOLD_SERVICE{ "/hold" };
+static const std::string UNHOLD_SERVICE{ "/unhold" };
+static const std::string IS_EXECUTING_SERVICE{ "/is_executing" };
+static const std::string TRAJECTORY_COMMAND_TOPIC{ "/command" };
+static const std::string STOP_TRAJECTORY_DURATION_PARAMETER{ "stop_trajectory_duration" };
 
-static const std::string CONTROLLER_NAMESPACE{"/controller_ns"};
-static const std::string TRAJECTORY_ACTION{"/follow_joint_trajectory"};
-static const std::string HOLD_SERVICE{"/hold"};
-static const std::string UNHOLD_SERVICE{"/unhold"};
-static const std::string IS_EXECUTING_SERVICE{"/is_executing"};
-static const std::string TRAJECTORY_COMMAND_TOPIC{"/command"};
-static const std::string STOP_TRAJECTORY_DURATION_PARAMETER{"stop_trajectory_duration"};
-
-static constexpr double SMALL_PERIOD{0.000001};
-static constexpr double STOP_TRAJECTORY_DURATION{0.2};
+static constexpr double SMALL_PERIOD{ 0.000001 };
+static constexpr double STOP_TRAJECTORY_DURATION{ 0.2 };
 
 /**
  * @brief Test fixture class for the unit-test of the PilzJointTrajectoryController.
@@ -60,12 +59,13 @@ protected:
 
 protected:
   std::shared_ptr<Controller> controller_;
-  HWInterface* hardware_ {new HWInterface()};
-  ros::NodeHandle nh_ {"~"};
-  ros::NodeHandle controller_nh_ {CONTROLLER_NAMESPACE};
-  ros::AsyncSpinner spinner_ {2};
-  actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>
-        trajectory_action_client_ {CONTROLLER_NAMESPACE + TRAJECTORY_ACTION, true};
+  HWInterface* hardware_{ new HWInterface() };
+  ros::NodeHandle nh_{ "~" };
+  ros::NodeHandle controller_nh_{ CONTROLLER_NAMESPACE };
+  ros::AsyncSpinner spinner_{ 2 };
+  actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> trajectory_action_client_{
+    CONTROLLER_NAMESPACE + TRAJECTORY_ACTION, true
+  };
   std::shared_ptr<ros::Publisher> trajectory_command_publisher_;
 };
 
@@ -77,19 +77,19 @@ void PilzJointTrajectoryControllerTest::SetUp()
   double* pos = new double();
   double* vel = new double();
   double* eff = new double();
-  hardware_interface::JointStateHandle jsh {"joint1", pos, vel, eff};
+  hardware_interface::JointStateHandle jsh{ "joint1", pos, vel, eff };
   double* cmd = new double();
-  hardware_interface::JointHandle jh {jsh, cmd};
+  hardware_interface::JointHandle jh{ jsh, cmd };
   hardware_->registerHandle(jh);
 
   // set joints parameter
-  controller_nh_.setParam("joints", std::vector<std::string>( {"joint1"} ));
+  controller_nh_.setParam("joints", std::vector<std::string>({ "joint1" }));
 
   // Setup controller
   controller_ = std::make_shared<Controller>();
 
   trajectory_command_publisher_ = std::make_shared<ros::Publisher>(
-          nh_.advertise<trajectory_msgs::JointTrajectory>(CONTROLLER_NAMESPACE + TRAJECTORY_COMMAND_TOPIC, 1));
+      nh_.advertise<trajectory_msgs::JointTrajectory>(CONTROLLER_NAMESPACE + TRAJECTORY_COMMAND_TOPIC, 1));
 
   // Set stop trajectory duration on parameter server (will be read in controller_->init())
   controller_nh_.setParam(STOP_TRAJECTORY_DURATION_PARAMETER, STOP_TRAJECTORY_DURATION);
@@ -97,7 +97,7 @@ void PilzJointTrajectoryControllerTest::SetUp()
 
 ::testing::AssertionResult PilzJointTrajectoryControllerTest::waitForIsExecutingServiceResult(bool expectation)
 {
-  ros::Rate rate{10.0};
+  ros::Rate rate{ 10.0 };
   while (ros::ok())
   {
     controller_->update(ros::Time::now(), ros::Duration(SMALL_PERIOD));
@@ -114,13 +114,13 @@ void PilzJointTrajectoryControllerTest::SetUp()
     rate.sleep();
   }
 
-  return ::testing::AssertionFailure()
-      << "Controller did not " << (expectation ? "start" : "stop") << " executing as expected.";
+  return ::testing::AssertionFailure() << "Controller did not " << (expectation ? "start" : "stop")
+                                       << " executing as expected.";
 }
 
 ::testing::AssertionResult PilzJointTrajectoryControllerTest::waitForIsExecutingResult(bool expectation)
 {
-  ros::Rate rate{10.0};
+  ros::Rate rate{ 10.0 };
   while (ros::ok())
   {
     controller_->update(ros::Time::now(), ros::Duration(SMALL_PERIOD));
@@ -133,8 +133,8 @@ void PilzJointTrajectoryControllerTest::SetUp()
     rate.sleep();
   }
 
-  return ::testing::AssertionFailure()
-      << "Controller did not " << (expectation ? "start" : "stop") << " executing as expected.";
+  return ::testing::AssertionFailure() << "Controller did not " << (expectation ? "start" : "stop")
+                                       << " executing as expected.";
 }
 
 /**
@@ -229,13 +229,13 @@ TEST_F(PilzJointTrajectoryControllerTest, testIsExecutingServiceCallback)
    * Step 5 *
    **********/
   EXPECT_EQ(1u, hardware_->getNames().size());
-  ros::Duration goal_duration{2.0};
+  ros::Duration goal_duration{ 2.0 };
 
   control_msgs::FollowJointTrajectoryGoal goal;
   goal.trajectory.joint_names = hardware_->getNames();
   goal.trajectory.points.resize(1);
   goal.trajectory.points[0].time_from_start = goal_duration;
-  goal.trajectory.points[0].positions = {0.1};
+  goal.trajectory.points[0].positions = { 0.1 };
 
   trajectory_action_client_.sendGoal(goal);
   EXPECT_TRUE(waitForIsExecutingServiceResult(true));
@@ -336,13 +336,13 @@ TEST_F(PilzJointTrajectoryControllerTest, testUpdateWhileHolding)
    * Step 2 *
    **********/
   EXPECT_EQ(1u, hardware_->getNames().size());
-  ros::Duration goal_duration{2.0};
+  ros::Duration goal_duration{ 2.0 };
 
   control_msgs::FollowJointTrajectoryGoal goal;
   goal.trajectory.joint_names = hardware_->getNames();
   goal.trajectory.points.resize(1);
   goal.trajectory.points[0].time_from_start = goal_duration;
-  goal.trajectory.points[0].positions = {0.1};
+  goal.trajectory.points[0].positions = { 0.1 };
 
   trajectory_action_client_.sendGoal(goal);
   controller_->update(ros::Time::now(), ros::Duration(SMALL_PERIOD));
@@ -351,7 +351,6 @@ TEST_F(PilzJointTrajectoryControllerTest, testUpdateWhileHolding)
   EXPECT_EQ(control_msgs::FollowJointTrajectoryResult::INVALID_GOAL, trajectory_action_client_.getResult()->error_code)
       << "Obtained error code " << trajectory_action_client_.getResult()->error_code << " for goal while in HOLD mode.";
 }
-
 
 /**
  * @brief Test for correct return values in case of subsequent calls to hold/unhold function.
@@ -465,13 +464,13 @@ TEST_F(PilzJointTrajectoryControllerTest, testIsExecuting)
    * Step 5 *
    **********/
   EXPECT_EQ(1u, hardware_->getNames().size());
-  ros::Duration goal_duration{2.0};
+  ros::Duration goal_duration{ 2.0 };
 
   control_msgs::FollowJointTrajectoryGoal goal;
   goal.trajectory.joint_names = hardware_->getNames();
   goal.trajectory.points.resize(1);
   goal.trajectory.points[0].time_from_start = goal_duration;
-  goal.trajectory.points[0].positions = {0.1};
+  goal.trajectory.points[0].positions = { 0.1 };
 
   trajectory_action_client_.sendGoal(goal);
   EXPECT_TRUE(waitForIsExecutingResult(true));
@@ -533,13 +532,12 @@ TEST_F(PilzJointTrajectoryControllerTest, testFakeStart)
  */
 TEST_F(PilzJointTrajectoryControllerTest, testD0Destructor)
 {
-  std::shared_ptr<Controller> controller {new Controller()};
+  std::shared_ptr<Controller> controller{ new Controller() };
 }
 
 }  // namespace pilz_joint_trajectory_controller
 
-
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "unittest_pilz_joint_trajectory_controller");
   ros::NodeHandle nh;

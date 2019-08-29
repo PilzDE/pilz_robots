@@ -25,20 +25,19 @@ using namespace prbt_hardware_support;
 
 namespace pilz_modbus_client_exception
 {
-
 /**
  * @brief Test message setting
  */
 TEST(PilzModbusClientExceptionTests, testMsgWhat)
 {
-  const std::string test_string{"TEST_STRING"};
+  const std::string test_string{ "TEST_STRING" };
   std::shared_ptr<PilzModbusClientException> exception(new PilzModbusClientException(test_string));
   EXPECT_EQ(test_string, exception->what());
 }
 
 }  // namespace pilz_modbus_client_exception
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

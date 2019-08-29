@@ -24,9 +24,8 @@
 
 namespace prbt_hardware_support
 {
-
-static constexpr uint16_t REGISTER_VALUE_BRAKETEST_NOT_REQUIRED{0};
-static constexpr uint16_t REGISTER_VALUE_BRAKETEST_REQUIRED{1};
+static constexpr uint16_t REGISTER_VALUE_BRAKETEST_NOT_REQUIRED{ 0 };
+static constexpr uint16_t REGISTER_VALUE_BRAKETEST_REQUIRED{ 1 };
 
 /**
  * @brief Wrapper class to add semantic to a raw ModbusMsgInStamped
@@ -37,8 +36,7 @@ static constexpr uint16_t REGISTER_VALUE_BRAKETEST_REQUIRED{1};
 class ModbusMsgBrakeTestWrapper : public ModbusMsgWrapper
 {
 public:
-  ModbusMsgBrakeTestWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
-                            const ModbusApiSpec& api_spec);
+  ModbusMsgBrakeTestWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw, const ModbusApiSpec& api_spec);
 
   /**
    * @brief Calls ModbusMsgWrapper::checkStructuralIntegrity().
@@ -56,7 +54,6 @@ public:
   IsBrakeTestRequiredResponse::_result_type getBrakeTestRequirementStatus() const;
 
 private:
-
   /**
    * @brief Check if the message contains a brake test required definition.
    *
@@ -66,8 +63,8 @@ private:
 };
 
 inline ModbusMsgBrakeTestWrapper::ModbusMsgBrakeTestWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
-                                                            const ModbusApiSpec& api_spec):
-ModbusMsgWrapper(modbus_msg_raw, api_spec)
+                                                            const ModbusApiSpec& api_spec)
+  : ModbusMsgWrapper(modbus_msg_raw, api_spec)
 {
 }
 
@@ -78,7 +75,7 @@ inline bool ModbusMsgBrakeTestWrapper::hasBrakeTestRequiredFlag() const
 
 inline IsBrakeTestRequiredResponse::_result_type ModbusMsgBrakeTestWrapper::getBrakeTestRequirementStatus() const
 {
-  switch(getRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST)))
+  switch (getRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST)))
   {
     case REGISTER_VALUE_BRAKETEST_NOT_REQUIRED:
       return IsBrakeTestRequiredResponse::NOT_REQUIRED;
@@ -95,12 +92,12 @@ inline void ModbusMsgBrakeTestWrapper::checkStructuralIntegrity() const
 {
   ModbusMsgWrapper::checkStructuralIntegrity();
 
-  if(!hasBrakeTestRequiredFlag())
+  if (!hasBrakeTestRequiredFlag())
   {
     throw ModbusMsgBrakeTestWrapperException("Received message does not contain a brake test status.");
   }
 }
 
-}
+}  // namespace prbt_hardware_support
 
-#endif // MODBUS_MSG_BRAKE_TEST_WRAPPER_H
+#endif  // MODBUS_MSG_BRAKE_TEST_WRAPPER_H

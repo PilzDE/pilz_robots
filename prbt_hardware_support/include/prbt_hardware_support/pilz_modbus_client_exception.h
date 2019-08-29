@@ -22,17 +22,16 @@
 
 namespace prbt_hardware_support
 {
-  /**
-   * @brief Expection thrown by prbt_hardware_support::PilzModbusClient
-   */
-  class PilzModbusClientException : public std::runtime_error
+/**
+ * @brief Expection thrown by prbt_hardware_support::PilzModbusClient
+ */
+class PilzModbusClientException : public std::runtime_error
+{
+public:
+  PilzModbusClientException(const std::string& what_arg) : std::runtime_error(what_arg)
   {
-    public:
-      PilzModbusClientException( const std::string& what_arg ):
-        std::runtime_error(what_arg)
-      {
-      }
-  };
-}
+  }
+};
+}  // namespace prbt_hardware_support
 
-#endif // PILZ_MODBUS_CLIENT_EXCEPTION_H
+#endif  // PILZ_MODBUS_CLIENT_EXCEPTION_H

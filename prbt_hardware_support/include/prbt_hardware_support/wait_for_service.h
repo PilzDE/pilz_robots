@@ -27,23 +27,18 @@
 
 namespace prbt_hardware_support
 {
-
 /**
  * @brief Waits until the specified service starts.
  */
-static inline void waitForService(const std::string service_name,
-                                  const double retry_timeout = DEFAULT_RETRY_TIMEOUT,
+static inline void waitForService(const std::string service_name, const double retry_timeout = DEFAULT_RETRY_TIMEOUT,
                                   const double msg_output_period = DEFAULT_MSG_OUTPUT_PERIOD)
 {
   while (!ros::service::waitForService(service_name, ros::Duration(retry_timeout)) && ros::ok())
   {
-    ROS_WARN_STREAM_DELAYED_THROTTLE(msg_output_period,
-                                     "Waiting for service \""
-                                     + service_name + "\"...");
+    ROS_WARN_STREAM_DELAYED_THROTTLE(msg_output_period, "Waiting for service \"" + service_name + "\"...");
   }
 }
 
+}  // namespace prbt_hardware_support
 
-}
-
-#endif // WAIT_FOR_SERVICE_H
+#endif  // WAIT_FOR_SERVICE_H

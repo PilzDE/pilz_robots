@@ -43,15 +43,14 @@ using namespace prbt_hardware_support;
 
 class CallbackReceiver
 {
-  public:
-    MOCK_METHOD1(modbusInMsgCallback,  void(const ModbusMsgInStampedConstPtr& msg));
+public:
+  MOCK_METHOD1(modbusInMsgCallback, void(const ModbusMsgInStampedConstPtr& msg));
 };
 
 class TestPublisher : public ros::Publisher
 {
-  public:
-  TestPublisher(const Publisher& rhs):
-  ros::Publisher::Publisher(rhs)
+public:
+  TestPublisher(const Publisher& rhs) : ros::Publisher::Publisher(rhs)
   {
   }
 
@@ -92,9 +91,9 @@ TEST_F(UpdateFilterTest, testFilteringThroughSubscriber)
   std::string test_topic_name = "/test_topic";
 
   ros::NodeHandle nh;
-  ros::Publisher pub = nh.advertise<ModbusMsgInStamped>(test_topic_name,1);
+  ros::Publisher pub = nh.advertise<ModbusMsgInStamped>(test_topic_name, 1);
   TestPublisher test_pub(pub);
-  message_filters::Subscriber<ModbusMsgInStamped> modbus_sub(nh, test_topic_name,1);
+  message_filters::Subscriber<ModbusMsgInStamped> modbus_sub(nh, test_topic_name, 1);
 
   mf::UpdateFilter<ModbusMsgInStamped> update_filter(modbus_sub);
 
@@ -107,25 +106,24 @@ TEST_F(UpdateFilterTest, testFilteringThroughSubscriber)
   ModbusMsgInStampedPtr msg(new ModbusMsgInStamped());
 
   msg->header.stamp = ros::Time(1);
-  test_pub.publishAndSpin(msg); // Should pass - CALL 1
+  test_pub.publishAndSpin(msg);  // Should pass - CALL 1
   test_pub.publishAndSpin(msg);
 
   msg->header.stamp = ros::Time(2);
-  test_pub.publishAndSpin(msg); // Should pass - CALL 2
+  test_pub.publishAndSpin(msg);  // Should pass - CALL 2
   test_pub.publishAndSpin(msg);
   test_pub.publishAndSpin(msg);
 
   msg->header.stamp = ros::Time(3);
-  test_pub.publishAndSpin(msg); // Should pass - CALL 3
+  test_pub.publishAndSpin(msg);  // Should pass - CALL 3
 }
-
 
 }  // namespace update_filter_test
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "unittest_update_filter");
   testing::InitGoogleTest(&argc, argv);
-  ros::Time::init(); // Needed on message construction
+  ros::Time::init();  // Needed on message construction
   return RUN_ALL_TESTS();
 }

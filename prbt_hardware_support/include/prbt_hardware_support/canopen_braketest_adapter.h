@@ -30,7 +30,6 @@
 
 namespace prbt_hardware_support
 {
-
 /**
  * @brief Executes the brake test for all joints. A brake test is triggered
  * via service call.
@@ -50,7 +49,7 @@ private:
   ros::Duration getBrakeTestDuration(const std::string& node_name);
   void checkBrakeTestResultForNode(const std::string& node_name);
   std::vector<std::string> getNodeNames();
-  ros::Duration getMaximumBrakeTestDuration(const std::vector<std::string> &node_names);
+  ros::Duration getMaximumBrakeTestDuration(const std::vector<std::string>& node_names);
 
 private:
   ros::NodeHandle nh_;
@@ -61,5 +60,5 @@ private:
   ros::ServiceClient canopen_srv_set_client_;
 };
 
-} // namespace prbt_hardware_support
-#endif // PRBT_HARDWARE_SUPPORT_CANOPEN_BRAKETEST_ADAPTER_H
+}  // namespace prbt_hardware_support
+#endif  // PRBT_HARDWARE_SUPPORT_CANOPEN_BRAKETEST_ADAPTER_H

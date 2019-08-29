@@ -26,7 +26,6 @@
 
 namespace prbt_hardware_support
 {
-
 /**
  * @brief Offers a service with information on the active operation mode
  */
@@ -49,23 +48,21 @@ private:
    */
   void initOperationModeService();
 
-  bool getOperationMode(GetOperationMode::Request& req,
-                        GetOperationMode::Response& res);
+  bool getOperationMode(GetOperationMode::Request& req, GetOperationMode::Response& res);
 
 private:
   //! Is the service advertising the operation mode initialized?
-  bool service_initialized_ {false};
+  bool service_initialized_{ false };
 
   //! Store the current operation mode according to OperationModes.msg
-  int8_t op_mode_ {OperationModes::UNKNOWN};
+  int8_t op_mode_{ OperationModes::UNKNOWN };
 
   //! The node handle
   ros::NodeHandle& nh_;
 
   //! Server serving a service to ask whether a brake test is currently required
   ros::ServiceServer operation_mode_server_;
-
 };
 
-} // namespace prbt_hardware_support
-#endif // ADAPTER_OPERATION_MODE_H
+}  // namespace prbt_hardware_support
+#endif  // ADAPTER_OPERATION_MODE_H

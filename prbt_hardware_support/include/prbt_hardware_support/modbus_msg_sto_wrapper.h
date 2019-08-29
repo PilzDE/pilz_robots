@@ -25,7 +25,6 @@
 
 namespace prbt_hardware_support
 {
-
 /**
  * @brief Wrapper class to add semantic to a raw ModbusMsgInStamped
  *
@@ -60,7 +59,6 @@ private:
    * @return false if there is no STO defined in the message
    */
   bool hasSTO() const;
-
 };
 
 inline bool ModbusMsgStoWrapper::hasSTO() const
@@ -73,6 +71,6 @@ inline bool ModbusMsgStoWrapper::getSTO() const
   return getRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::STO));
 }
 
-}
+}  // namespace prbt_hardware_support
 
-#endif // MODBUS_MSG_STO_WRAPPER_H
+#endif  // MODBUS_MSG_STO_WRAPPER_H

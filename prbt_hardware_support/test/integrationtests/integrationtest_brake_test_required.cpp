@@ -47,16 +47,15 @@
 
 namespace prbt_hardware_support
 {
-
 using ::testing::_;
 using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 
-static constexpr uint16_t MODBUS_API_VERSION_VALUE {2};
+static constexpr uint16_t MODBUS_API_VERSION_VALUE{ 2 };
 static const std::string SERVICE_BRAKETEST_REQUIRED = "/prbt/brake_test_required";
 
-static constexpr unsigned int DEFAULT_RETRIES{10};
+static constexpr unsigned int DEFAULT_RETRIES{ 10 };
 
 /**
  * @brief BrakeTestRequiredIntegrationTest checks if the chain
@@ -68,25 +67,26 @@ class BrakeTestRequiredIntegrationTest : public testing::Test, public testing::A
 {
 protected:
   ros::NodeHandle nh_;
-  ros::NodeHandle nh_priv_{"~"};
+  ros::NodeHandle nh_priv_{ "~" };
 };
 
-::testing::AssertionResult expectBrakeTestRequiredServiceCallResult
-                                             (ros::ServiceClient& brake_test_required_client,
-                                              IsBrakeTestRequiredResponse::_result_type expectation,
-                                              uint16_t retries = DEFAULT_RETRIES)
+::testing::AssertionResult expectBrakeTestRequiredServiceCallResult(
+    ros::ServiceClient& brake_test_required_client, IsBrakeTestRequiredResponse::_result_type expectation,
+    uint16_t retries = DEFAULT_RETRIES)
 {
   prbt_hardware_support::IsBrakeTestRequired srv;
-  for (int i = 0; i<= retries; i++) {
+  for (int i = 0; i <= retries; i++)
+  {
     auto res = brake_test_required_client.call(srv);
-    if(!res)
+    if (!res)
     {
       return ::testing::AssertionFailure() << "Could not call service";
     }
-    if(srv.response.result == expectation){
-      return ::testing::AssertionSuccess() << "It took " << i+1 << " tries for the service call.";
+    if (srv.response.result == expectation)
+    {
+      return ::testing::AssertionSuccess() << "It took " << i + 1 << " tries for the service call.";
     }
-    sleep(1); // This then may take {retries*1}seconds.
+    sleep(1);  // This then may take {retries*1}seconds.
   }
   return ::testing::AssertionFailure() << "Did not get expected brake test result via service";
 }
@@ -126,18 +126,18 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
   ASSERT_TRUE(nh_priv_.getParam("modbus_server_ip", ip));
   ASSERT_TRUE(nh_priv_.getParam("modbus_server_port", port));
 
-  ModbusApiSpec api_spec {nh_};
+  ModbusApiSpec api_spec{ nh_ };
 
-  unsigned int modbus_register_size {api_spec.getMaxRegisterDefinition() + 1U};
+  unsigned int modbus_register_size{ api_spec.getMaxRegisterDefinition() + 1U };
 
   /**********
    * Step 0 *
    **********/
   prbt_hardware_support::PilzModbusServerMock modbus_server(modbus_register_size);
 
-  std::thread modbus_server_thread( &initalizeAndRun<prbt_hardware_support::PilzModbusServerMock>,
-                                    std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port) );
-	prbt_hardware_support::IsBrakeTestRequired srv;
+  std::thread modbus_server_thread(&initalizeAndRun<prbt_hardware_support::PilzModbusServerMock>,
+                                   std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port));
+  prbt_hardware_support::IsBrakeTestRequired srv;
 
   waitForNode("/pilz_modbus_client_node");
   waitForNode("/modbus_adapter_brake_test_node");
@@ -151,14 +151,14 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
   ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
   unsigned int braketest_register = api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST);
 
-  modbus_server.setHoldingRegister({{braketest_register, 1}, {version_register, MODBUS_API_VERSION_VALUE}});
+  modbus_server.setHoldingRegister({ { braketest_register, 1 }, { version_register, MODBUS_API_VERSION_VALUE } });
 
   ros::ServiceClient is_brake_test_required_client =
-    nh_.serviceClient<prbt_hardware_support::IsBrakeTestRequired>(SERVICE_BRAKETEST_REQUIRED);
+      nh_.serviceClient<prbt_hardware_support::IsBrakeTestRequired>(SERVICE_BRAKETEST_REQUIRED);
   ASSERT_TRUE(is_brake_test_required_client.waitForExistence(ros::Duration(10)));
 
-  EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(
-                                              is_brake_test_required_client, IsBrakeTestRequiredResponse::REQUIRED));
+  EXPECT_TRUE(
+      expectBrakeTestRequiredServiceCallResult(is_brake_test_required_client, IsBrakeTestRequiredResponse::REQUIRED));
 
   /**********
    * Step 2 *
@@ -166,18 +166,18 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
   ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::STO));
   unsigned int sto_register = api_spec.getRegisterDefinition(modbus_api_spec::STO);
 
-  modbus_server.setHoldingRegister({{sto_register, 1}});
+  modbus_server.setHoldingRegister({ { sto_register, 1 } });
 
-	EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(
-                                              is_brake_test_required_client, IsBrakeTestRequiredResponse::REQUIRED));
+  EXPECT_TRUE(
+      expectBrakeTestRequiredServiceCallResult(is_brake_test_required_client, IsBrakeTestRequiredResponse::REQUIRED));
 
   /**********
    * Step 3 *
    **********/
-  modbus_server.setHoldingRegister({{braketest_register, 0}});
+  modbus_server.setHoldingRegister({ { braketest_register, 0 } });
 
-  EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(
-                                          is_brake_test_required_client, IsBrakeTestRequiredResponse::NOT_REQUIRED));
+  EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(is_brake_test_required_client,
+                                                       IsBrakeTestRequiredResponse::NOT_REQUIRED));
 
   /**********
    * Step 4 *
@@ -186,10 +186,9 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
   modbus_server_thread.join();
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support
 
-
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "integrationtest_brake_test_required");
   ros::NodeHandle nh;

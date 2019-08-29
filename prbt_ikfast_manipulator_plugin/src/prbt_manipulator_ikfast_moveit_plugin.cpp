@@ -351,22 +351,22 @@ private:
   bool getCount(int& count, const int& max_count, const int& min_count) const;
 
   /**
-  * @brief samples the designated redundant joint using the chosen discretization method
-  * @param  method              An enumeration flag indicating the discretization method to be used
-  * @param  sampled_joint_vals  Sampled joint values for the redundant joint
-  * @return True if sampling succeeded.
-  */
+   * @brief samples the designated redundant joint using the chosen discretization method
+   * @param  method              An enumeration flag indicating the discretization method to be used
+   * @param  sampled_joint_vals  Sampled joint values for the redundant joint
+   * @return True if sampling succeeded.
+   */
   bool sampleRedundantJoint(kinematics::DiscretizationMethod method, std::vector<double>& sampled_joint_vals) const;
 
   /// Validate that we can compute a fixed transform between from and to links.
   bool computeRelativeTransform(const std::string& from, const std::string& to, Eigen::Isometry3d& transform,
                                 bool& differs_from_identity);
   /**
-  * @brief  Transforms the input pose to the correct frame for the solver. This assumes that the group includes the
-  * entire solver chain and that any joints outside of the solver chain within the group are are fixed.
-  * @param  ik_pose             The pose to be transformed which should be in the correct frame for the group.
-  * @param  ik_pose_chain       The ik_pose to be populated with the apropriate pose for the solver
-  */
+   * @brief  Transforms the input pose to the correct frame for the solver. This assumes that the group includes the
+   * entire solver chain and that any joints outside of the solver chain within the group are are fixed.
+   * @param  ik_pose             The pose to be transformed which should be in the correct frame for the group.
+   * @param  ik_pose_chain       The ik_pose to be populated with the apropriate pose for the solver
+   */
   void transformToChainFrame(const geometry_msgs::Pose& ik_pose, KDL::Frame& ik_pose_chain) const;
 };  // end class
 
@@ -905,8 +905,8 @@ bool IKFastKinematicsPlugin::searchPositionIK(const geometry_msgs::Pose& ik_pose
 
   if (ik_seed_state.size() != num_joints_)
   {
-    ROS_ERROR_STREAM_NAMED(name_, "Seed state must have size " << num_joints_ << " instead of size "
-                                                               << ik_seed_state.size());
+    ROS_ERROR_STREAM_NAMED(name_,
+                           "Seed state must have size " << num_joints_ << " instead of size " << ik_seed_state.size());
     error_code.val = error_code.NO_IK_SOLUTION;
     return false;
   }
@@ -1375,7 +1375,7 @@ void IKFastKinematicsPlugin::transformToChainFrame(const geometry_msgs::Pose& ik
   }
 }
 
-}  // end namespace
+}  // namespace prbt_manipulator
 
 // register IKFastKinematicsPlugin as a KinematicsBase implementation
 #include <pluginlib/class_list_macros.hpp>

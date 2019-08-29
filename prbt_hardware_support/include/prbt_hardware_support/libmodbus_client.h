@@ -26,7 +26,6 @@
 
 namespace prbt_hardware_support
 {
-
 /**
  * @brief Wrapper around libmodbus, see https://libmodbus.org/
  *
@@ -35,7 +34,6 @@ namespace prbt_hardware_support
 class LibModbusClient : public ModbusClient
 {
 public:
-
   //! @brief See base class.
   virtual ~LibModbusClient() override;
 
@@ -52,9 +50,8 @@ public:
   RegCont readHoldingRegister(int addr, int nb) override;
 
   //! @brief See base class.
-  RegCont writeReadHoldingRegister(const int write_addr,
-                                   const RegCont &write_reg,
-                                   const int read_addr, const int read_nb) override;
+  RegCont writeReadHoldingRegister(const int write_addr, const RegCont& write_reg, const int read_addr,
+                                   const int read_nb) override;
 
   /**
    * @brief Close connection with server
@@ -62,9 +59,9 @@ public:
   void close();
 
 private:
-  modbus_t *modbus_connection_ {nullptr};
+  modbus_t* modbus_connection_{ nullptr };
 };
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support
 
-#endif // LIBMODBUS_CLIENT_H
+#endif  // LIBMODBUS_CLIENT_H

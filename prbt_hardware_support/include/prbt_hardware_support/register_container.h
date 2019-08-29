@@ -22,10 +22,9 @@
 
 namespace prbt_hardware_support
 {
-
 //! Convenience data type defining the data type for a collection of registers.
 using RegCont = std::vector<uint16_t>;
 
-}
+}  // namespace prbt_hardware_support
 
-#endif // REGISTER_CONTAINER_H
+#endif  // REGISTER_CONTAINER_H

@@ -29,7 +29,6 @@
 
 namespace prbt_hardware_support
 {
-
 /**
  * @brief Listens to the modbus_read topic and publishes a message
  * informing about a required brake test.
@@ -52,8 +51,7 @@ private:
 private:
   const ModbusApiSpec api_spec_;
   std::unique_ptr<FilterPipeline> filter_pipeline_;
-
 };
 
-} // namespace prbt_hardware_support
-#endif // MODBUS_ADAPTER_BRAKE_TEST_H
+}  // namespace prbt_hardware_support
+#endif  // MODBUS_ADAPTER_BRAKE_TEST_H

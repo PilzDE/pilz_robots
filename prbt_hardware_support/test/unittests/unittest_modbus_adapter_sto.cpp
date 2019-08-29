@@ -35,19 +35,16 @@
 
 namespace prbt_hardware_support
 {
+static constexpr bool STO_CLEAR{ true };
+static constexpr bool STO_ACTIVE{ false };
 
-static constexpr bool STO_CLEAR {true};
-static constexpr bool STO_ACTIVE {false};
+static const ModbusApiSpec TEST_API_SPEC{ { modbus_api_spec::VERSION, 513 }, { modbus_api_spec::STO, 512 } };
 
-static const ModbusApiSpec TEST_API_SPEC{ {modbus_api_spec::VERSION, 513},
-                                          {modbus_api_spec::STO, 512} };
-
-static constexpr int MODBUS_API_VERSION_FOR_TESTING {2};
+static constexpr int MODBUS_API_VERSION_FOR_TESTING{ 2 };
 
 using namespace prbt_hardware_support;
 
 using std::placeholders::_1;
-
 
 class ModbusAdapterStoTest : public ::testing::Test
 {
@@ -56,16 +53,16 @@ public:
 
 public:
   MOCK_METHOD1(sendStoUpdate, void(const bool sto));
-
 };
 
 ModbusMsgInStampedPtr ModbusAdapterStoTest::createDefaultStoModbusMsg(bool sto)
 {
-  static int msg_time_counter {1};
+  static int msg_time_counter{ 1 };
   RegCont tab_reg(TEST_API_SPEC.size());
   tab_reg[0] = sto;
   tab_reg[1] = MODBUS_API_VERSION_FOR_TESTING;
-  ModbusMsgInStampedPtr msg {ModbusMsgInBuilder::createDefaultModbusMsgIn(TEST_API_SPEC.getMinRegisterDefinition(), tab_reg)};
+  ModbusMsgInStampedPtr msg{ ModbusMsgInBuilder::createDefaultModbusMsgIn(TEST_API_SPEC.getMinRegisterDefinition(),
+                                                                          tab_reg) };
   msg->header.stamp = ros::Time(msg_time_counter++);
   return msg;
 }
@@ -76,7 +73,7 @@ ModbusMsgInStampedPtr ModbusAdapterStoTest::createDefaultStoModbusMsg(bool sto)
  */
 TEST_F(ModbusAdapterStoTest, testModbusMsgWrapperExceptionDtor)
 {
-  std::shared_ptr<ModbusMsgWrapperException> es{new ModbusMsgWrapperException("Test msg")};
+  std::shared_ptr<ModbusMsgWrapperException> es{ new ModbusMsgWrapperException("Test msg") };
 }
 
 /**
@@ -85,8 +82,8 @@ TEST_F(ModbusAdapterStoTest, testModbusMsgWrapperExceptionDtor)
  */
 TEST_F(ModbusAdapterStoTest, testModbusMsgStoWrapperDtor)
 {
-  ModbusMsgInStampedConstPtr msg_const_ptr {createDefaultStoModbusMsg(STO_CLEAR)};
-  std::shared_ptr<ModbusMsgStoWrapper> ex {new ModbusMsgStoWrapper(msg_const_ptr, TEST_API_SPEC)};
+  ModbusMsgInStampedConstPtr msg_const_ptr{ createDefaultStoModbusMsg(STO_CLEAR) };
+  std::shared_ptr<ModbusMsgStoWrapper> ex{ new ModbusMsgStoWrapper(msg_const_ptr, TEST_API_SPEC) };
 }
 
 /**
@@ -98,8 +95,9 @@ TEST_F(ModbusAdapterStoTest, testSTOClearMsg)
 {
   EXPECT_CALL(*this, sendStoUpdate(STO_CLEAR)).Times(1);
 
-  ModbusAdapterSto sto_adapter {ModbusAdapterSto(std::bind(&ModbusAdapterStoTest::sendStoUpdate, this, _1), TEST_API_SPEC)};
-  sto_adapter.modbusMsgCallback( createDefaultStoModbusMsg(STO_CLEAR) );
+  ModbusAdapterSto sto_adapter{ ModbusAdapterSto(std::bind(&ModbusAdapterStoTest::sendStoUpdate, this, _1),
+                                                 TEST_API_SPEC) };
+  sto_adapter.modbusMsgCallback(createDefaultStoModbusMsg(STO_CLEAR));
 }
 
 /**
@@ -110,8 +108,9 @@ TEST_F(ModbusAdapterStoTest, testSTOActiveMsg)
 {
   EXPECT_CALL(*this, sendStoUpdate(STO_ACTIVE)).Times(1);
 
-  ModbusAdapterSto sto_adapter {ModbusAdapterSto(std::bind(&ModbusAdapterStoTest::sendStoUpdate, this, _1), TEST_API_SPEC)};
-  sto_adapter.modbusMsgCallback( createDefaultStoModbusMsg(STO_ACTIVE) );
+  ModbusAdapterSto sto_adapter{ ModbusAdapterSto(std::bind(&ModbusAdapterStoTest::sendStoUpdate, this, _1),
+                                                 TEST_API_SPEC) };
+  sto_adapter.modbusMsgCallback(createDefaultStoModbusMsg(STO_ACTIVE));
 }
 
 /**
@@ -125,11 +124,12 @@ TEST_F(ModbusAdapterStoTest, testDisconnectNoStoMsg)
 {
   EXPECT_CALL(*this, sendStoUpdate(STO_ACTIVE)).Times(1);
 
-  ModbusAdapterSto sto_adapter {ModbusAdapterSto(std::bind(&ModbusAdapterStoTest::sendStoUpdate, this, _1), TEST_API_SPEC)};
+  ModbusAdapterSto sto_adapter{ ModbusAdapterSto(std::bind(&ModbusAdapterStoTest::sendStoUpdate, this, _1),
+                                                 TEST_API_SPEC) };
 
   ModbusMsgInStampedPtr msg = createDefaultStoModbusMsg(STO_CLEAR);
   msg->disconnect.data = true;
-  sto_adapter.modbusMsgCallback( msg );
+  sto_adapter.modbusMsgCallback(msg);
 }
 
 /**
@@ -144,11 +144,12 @@ TEST_F(ModbusAdapterStoTest, testDisconnectWithStoMsg)
 {
   EXPECT_CALL(*this, sendStoUpdate(STO_ACTIVE)).Times(1);
 
-  ModbusAdapterSto sto_adapter {ModbusAdapterSto(std::bind(&ModbusAdapterStoTest::sendStoUpdate, this, _1), TEST_API_SPEC)};
+  ModbusAdapterSto sto_adapter{ ModbusAdapterSto(std::bind(&ModbusAdapterStoTest::sendStoUpdate, this, _1),
+                                                 TEST_API_SPEC) };
 
   ModbusMsgInStampedPtr msg = createDefaultStoModbusMsg(STO_ACTIVE);
   msg->disconnect.data = true;
-  sto_adapter.modbusMsgCallback( msg );
+  sto_adapter.modbusMsgCallback(msg);
 }
 
 /**
@@ -161,13 +162,14 @@ TEST_F(ModbusAdapterStoTest, testDisconnectPure)
 {
   EXPECT_CALL(*this, sendStoUpdate(STO_ACTIVE)).Times(1);
 
-  ModbusAdapterSto sto_adapter {ModbusAdapterSto(std::bind(&ModbusAdapterStoTest::sendStoUpdate, this, _1), TEST_API_SPEC)};
+  ModbusAdapterSto sto_adapter{ ModbusAdapterSto(std::bind(&ModbusAdapterStoTest::sendStoUpdate, this, _1),
+                                                 TEST_API_SPEC) };
 
-  ModbusMsgInStampedPtr msg (new ModbusMsgInStamped());
+  ModbusMsgInStampedPtr msg(new ModbusMsgInStamped());
   ros::Time::init();
   msg->header.stamp = ros::Time::now();
   msg->disconnect.data = true;
-  sto_adapter.modbusMsgCallback( msg );
+  sto_adapter.modbusMsgCallback(msg);
 }
 
 /**
@@ -180,11 +182,12 @@ TEST_F(ModbusAdapterStoTest, testNoVersion)
 {
   EXPECT_CALL(*this, sendStoUpdate(STO_ACTIVE)).Times(1);
 
-  ModbusAdapterSto sto_adapter {ModbusAdapterSto(std::bind(&ModbusAdapterStoTest::sendStoUpdate, this, _1), TEST_API_SPEC)};
+  ModbusAdapterSto sto_adapter{ ModbusAdapterSto(std::bind(&ModbusAdapterStoTest::sendStoUpdate, this, _1),
+                                                 TEST_API_SPEC) };
 
   ModbusMsgInStampedPtr msg = createDefaultStoModbusMsg(STO_ACTIVE);
   msg->holding_registers.data.pop_back();
-  sto_adapter.modbusMsgCallback( msg );
+  sto_adapter.modbusMsgCallback(msg);
 }
 
 /**
@@ -197,13 +200,13 @@ TEST_F(ModbusAdapterStoTest, testWrongVersion)
 {
   EXPECT_CALL(*this, sendStoUpdate(STO_ACTIVE)).Times(1);
 
-  ModbusAdapterSto sto_adapter {ModbusAdapterSto(std::bind(&ModbusAdapterStoTest::sendStoUpdate, this, _1), TEST_API_SPEC)};
+  ModbusAdapterSto sto_adapter{ ModbusAdapterSto(std::bind(&ModbusAdapterStoTest::sendStoUpdate, this, _1),
+                                                 TEST_API_SPEC) };
 
   ModbusMsgInStampedPtr msg = createDefaultStoModbusMsg(STO_ACTIVE);
   msg->holding_registers.data[1] = 0;
-  sto_adapter.modbusMsgCallback( msg );
+  sto_adapter.modbusMsgCallback(msg);
 }
-
 
 /**
  * @tests{Stop1_Trigger,
@@ -218,13 +221,13 @@ TEST_F(ModbusAdapterStoTest, testVersion1)
 {
   EXPECT_CALL(*this, sendStoUpdate(STO_ACTIVE)).Times(1);
 
-  ModbusAdapterSto sto_adapter {ModbusAdapterSto(std::bind(&ModbusAdapterStoTest::sendStoUpdate, this, _1), TEST_API_SPEC)};
+  ModbusAdapterSto sto_adapter{ ModbusAdapterSto(std::bind(&ModbusAdapterStoTest::sendStoUpdate, this, _1),
+                                                 TEST_API_SPEC) };
 
   ModbusMsgInStampedPtr msg = createDefaultStoModbusMsg(STO_ACTIVE);
   msg->holding_registers.data[1] = 1;
-  sto_adapter.modbusMsgCallback( msg );
+  sto_adapter.modbusMsgCallback(msg);
 }
-
 
 /**
  * @tests{Stop1_Trigger,
@@ -236,12 +239,13 @@ TEST_F(ModbusAdapterStoTest, testNoSto)
 {
   EXPECT_CALL(*this, sendStoUpdate(STO_ACTIVE)).Times(1);
 
-  ModbusAdapterSto sto_adapter {ModbusAdapterSto(std::bind(&ModbusAdapterStoTest::sendStoUpdate, this, _1), TEST_API_SPEC)};
+  ModbusAdapterSto sto_adapter{ ModbusAdapterSto(std::bind(&ModbusAdapterStoTest::sendStoUpdate, this, _1),
+                                                 TEST_API_SPEC) };
 
   ModbusMsgInStampedPtr msg = createDefaultStoModbusMsg(STO_ACTIVE);
   msg->holding_registers.data.erase(msg->holding_registers.data.begin());
   msg->holding_registers.layout.data_offset = TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION);
-  sto_adapter.modbusMsgCallback( msg );
+  sto_adapter.modbusMsgCallback(msg);
 }
 
 /**
@@ -249,10 +253,10 @@ TEST_F(ModbusAdapterStoTest, testNoSto)
  */
 TEST_F(ModbusAdapterStoTest, ModbusMsgExceptionCTOR)
 {
-  std::shared_ptr<ModbusMsgStoWrapperException> exception_ptr{new ModbusMsgStoWrapperException("test")};
+  std::shared_ptr<ModbusMsgStoWrapperException> exception_ptr{ new ModbusMsgStoWrapperException("test") };
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support
 
 int main(int argc, char** argv)
 {

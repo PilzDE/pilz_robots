@@ -28,7 +28,6 @@
 
 namespace prbt_hardware_support
 {
-
 using UpdateStoFunc = std::function<void(const bool)>;
 
 /**
@@ -37,8 +36,7 @@ using UpdateStoFunc = std::function<void(const bool)>;
 class ModbusAdapterSto
 {
 public:
-  ModbusAdapterSto(UpdateStoFunc&& update_sto_func,
-                   const ModbusApiSpec& api_spec);
+  ModbusAdapterSto(UpdateStoFunc&& update_sto_func, const ModbusApiSpec& api_spec);
 
 public:
   /**
@@ -60,9 +58,8 @@ private:
   UpdateStoFunc update_sto_;
 
 private:
-  static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {2};
+  static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{ 2 };
 };
 
-
-} // namespace prbt_hardware_support
-#endif // MODBUS_ADAPTER_STO_H
+}  // namespace prbt_hardware_support
+#endif  // MODBUS_ADAPTER_STO_H

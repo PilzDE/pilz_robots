@@ -28,16 +28,15 @@
 
 namespace prbt_hardware_support
 {
-static constexpr int DEFAULT_QUEUE_SIZE_MODBUS{1};
+static constexpr int DEFAULT_QUEUE_SIZE_MODBUS{ 1 };
 static const std::string SERVICE_NAME_OPERATION_MODE = "/prbt/get_operation_mode";
 
-static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{2};
+static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{ 2 };
 
-static const ModbusApiSpec TEST_API_SPEC{ {modbus_api_spec::VERSION, 1},
-                                          {modbus_api_spec::OPERATION_MODE, 11} };
+static const ModbusApiSpec TEST_API_SPEC{ { modbus_api_spec::VERSION, 1 }, { modbus_api_spec::OPERATION_MODE, 11 } };
 
-static constexpr double OPERATION_MODE_CHANGE_WAIT_TIME_S{2.0};
-static const std::vector<uint16_t> OPERATION_MODES{1, 2, 3};
+static constexpr double OPERATION_MODE_CHANGE_WAIT_TIME_S{ 2.0 };
+static const std::vector<uint16_t> OPERATION_MODES{ 1, 2, 3 };
 
 /**
  * @brief Test fixture for unit-tests of the ModbusAdapterOperationMode.
@@ -54,15 +53,17 @@ public:
   /**
    * @brief Wait for a specific change in operation mode to take effect.
    */
-  ::testing::AssertionResult waitForOperationMode(unsigned int op_mode, double timeout = OPERATION_MODE_CHANGE_WAIT_TIME_S);
+  ::testing::AssertionResult waitForOperationMode(unsigned int op_mode,
+                                                  double timeout = OPERATION_MODE_CHANGE_WAIT_TIME_S);
 
   /**
    * @brief Wait until operation mode service call return the expected value
    */
-  ::testing::AssertionResult waitForServiceCallResult(bool expectation, double timeout = OPERATION_MODE_CHANGE_WAIT_TIME_S);
+  ::testing::AssertionResult waitForServiceCallResult(bool expectation,
+                                                      double timeout = OPERATION_MODE_CHANGE_WAIT_TIME_S);
 
 protected:
-  ros::AsyncSpinner spinner_{2};
+  ros::AsyncSpinner spinner_{ 2 };
   ros::NodeHandle nh_;
   std::shared_ptr<ModbusAdapterOperationMode> adapter_operation_mode_;
   ros::Publisher modbus_topic_pub_;
@@ -72,7 +73,7 @@ protected:
 ModbusAdapterOperationModeTest::ModbusAdapterOperationModeTest()
 {
   // Initialize for ROS time if not already initialized
-  if(!ros::Time::isValid())
+  if (!ros::Time::isValid())
   {
     ros::Time::init();
   }
@@ -97,7 +98,7 @@ ModbusAdapterOperationModeTest::~ModbusAdapterOperationModeTest()
 ::testing::AssertionResult ModbusAdapterOperationModeTest::waitForOperationMode(unsigned int op_mode, double timeout)
 {
   ros::Rate rate(10.0);
-  ros::Time start{ros::Time::now()};
+  ros::Time start{ ros::Time::now() };
   while (ros::Time::now() - start < ros::Duration(timeout))
   {
     prbt_hardware_support::GetOperationMode srv;
@@ -118,7 +119,7 @@ ModbusAdapterOperationModeTest::~ModbusAdapterOperationModeTest()
 ::testing::AssertionResult ModbusAdapterOperationModeTest::waitForServiceCallResult(bool expectation, double timeout)
 {
   ros::Rate rate(10.0);
-  ros::Time start{ros::Time::now()};
+  ros::Time start{ ros::Time::now() };
   while (ros::Time::now() - start < ros::Duration(timeout))
   {
     prbt_hardware_support::GetOperationMode srv;
@@ -139,7 +140,7 @@ ModbusAdapterOperationModeTest::~ModbusAdapterOperationModeTest()
  */
 TEST_F(ModbusAdapterOperationModeTest, testAdapterOperationModeDtor)
 {
-  std::shared_ptr<AdapterOperationMode> adapter_op_mode (new AdapterOperationMode(nh_));
+  std::shared_ptr<AdapterOperationMode> adapter_op_mode(new AdapterOperationMode(nh_));
 }
 
 /**
@@ -148,7 +149,8 @@ TEST_F(ModbusAdapterOperationModeTest, testAdapterOperationModeDtor)
  */
 TEST_F(ModbusAdapterOperationModeTest, testModbusMsgOperationModeWrapperExceptionDtor)
 {
-  std::shared_ptr<ModbusMsgOperationModeWrapperException> ex (new ModbusMsgOperationModeWrapperException("Test message"));
+  std::shared_ptr<ModbusMsgOperationModeWrapperException> ex(new ModbusMsgOperationModeWrapperException("Test "
+                                                                                                        "message"));
 }
 
 /**
@@ -159,7 +161,8 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusMsgOperationModeWrapperDtor)
 {
   ModbusMsgInBuilder builder(TEST_API_SPEC);
   builder.setApiVersion(MODBUS_API_VERSION_REQUIRED).setOperationMode(OperationModes::T1);
-  std::shared_ptr<ModbusMsgOperationModeWrapper> wrapper (new ModbusMsgOperationModeWrapper(builder.build(ros::Time::now()), TEST_API_SPEC));
+  std::shared_ptr<ModbusMsgOperationModeWrapper> wrapper(
+      new ModbusMsgOperationModeWrapper(builder.build(ros::Time::now()), TEST_API_SPEC));
 }
 
 /**
@@ -183,20 +186,22 @@ TEST_F(ModbusAdapterOperationModeTest, testMissingOperationModeRegister)
 
   ROS_DEBUG("+++  Step 1 +++");
   modbus_topic_pub_.publish(builder.setOperationMode(OperationModes::T1).build(ros::Time::now()));
-  ASSERT_TRUE(ros::service::waitForService(SERVICE_NAME_OPERATION_MODE, ros::Duration(3)))
-      << "Operation mode service does not appear";
+  ASSERT_TRUE(ros::service::waitForService(SERVICE_NAME_OPERATION_MODE, ros::Duration(3))) << "Operation mode service "
+                                                                                              "does not appear";
   ASSERT_TRUE(waitForOperationMode(OperationModes::T1));
 
-  ModbusMsgInStampedPtr msg {builder.setOperationMode(OperationModes::T1).build(ros::Time::now())};
+  ModbusMsgInStampedPtr msg{ builder.setOperationMode(OperationModes::T1).build(ros::Time::now()) };
 
   ROS_DEBUG("+++  Step 2 +++");
   // Remove operation mode from modbus message
-  ASSERT_GT(TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::OPERATION_MODE), TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION))
+  ASSERT_GT(TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::OPERATION_MODE),
+            TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION))
       << "For the test to work correctly, the operation mode register has to be stored in the last register.";
   msg->holding_registers.data.erase(--msg->holding_registers.data.end());
   const uint32_t new_offset = TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION);
   msg->holding_registers.layout.data_offset = new_offset;
-  ModbusMsgInBuilder::setDefaultLayout(&(msg->holding_registers.layout), new_offset, static_cast<uint32_t>(msg->holding_registers.data.size()));
+  ModbusMsgInBuilder::setDefaultLayout(&(msg->holding_registers.layout), new_offset,
+                                       static_cast<uint32_t>(msg->holding_registers.data.size()));
 
   modbus_topic_pub_.publish(msg);
   ASSERT_TRUE(waitForOperationMode(OperationModes::UNKNOWN));
@@ -221,7 +226,8 @@ TEST_F(ModbusAdapterOperationModeTest, testOperationModeChange)
   for (const auto& mode : OPERATION_MODES)
   {
     modbus_topic_pub_.publish(builder.setOperationMode(mode).build(ros::Time::now()));
-    ASSERT_TRUE(ros::service::waitForService(SERVICE_NAME_OPERATION_MODE, ros::Duration(3))) << "Service does not appear";
+    ASSERT_TRUE(ros::service::waitForService(SERVICE_NAME_OPERATION_MODE, ros::Duration(3))) << "Service does not "
+                                                                                                "appear";
     ASSERT_TRUE(waitForOperationMode(mode));
   }
 }
@@ -248,10 +254,9 @@ TEST_F(ModbusAdapterOperationModeTest, testDisconnect)
   ASSERT_TRUE(ros::service::waitForService(SERVICE_NAME_OPERATION_MODE, ros::Duration(3))) << "Service does not appear";
   ASSERT_TRUE(waitForOperationMode(OperationModes::T1));
 
-
-  uint32_t offset{0};
+  uint32_t offset{ 0 };
   RegCont holding_register;
-  ModbusMsgInStampedPtr msg{ModbusMsgInBuilder::createDefaultModbusMsgIn(offset, holding_register)};
+  ModbusMsgInStampedPtr msg{ ModbusMsgInBuilder::createDefaultModbusMsgIn(offset, holding_register) };
   msg->disconnect.data = true;
   modbus_topic_pub_.publish(msg);
 
@@ -312,9 +317,9 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusIncorrectApiVersion)
   ASSERT_TRUE(waitForOperationMode(OperationModes::UNKNOWN));
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "unittest_modbus_adapter_operation_mode");
   ros::NodeHandle nh;

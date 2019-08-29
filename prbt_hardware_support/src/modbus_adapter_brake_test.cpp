@@ -24,22 +24,20 @@
 
 namespace prbt_hardware_support
 {
-
-static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {2};
+static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{ 2 };
 
 using std::placeholders::_1;
 
 ModbusAdapterBrakeTest::ModbusAdapterBrakeTest(ros::NodeHandle& nh, const ModbusApiSpec& api_spec)
   : AdapterBrakeTest(nh)
   , api_spec_(api_spec)
-  , filter_pipeline_(new FilterPipeline(nh, std::bind(&ModbusAdapterBrakeTest::modbusMsgCallback, this, _1 )) )
+  , filter_pipeline_(new FilterPipeline(nh, std::bind(&ModbusAdapterBrakeTest::modbusMsgCallback, this, _1)))
 {
-
 }
 
 void ModbusAdapterBrakeTest::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw)
 {
-  ModbusMsgBrakeTestWrapper msg {msg_raw, api_spec_};
+  ModbusMsgBrakeTestWrapper msg{ msg_raw, api_spec_ };
 
   if (msg.isDisconnect())
   {
@@ -50,19 +48,18 @@ void ModbusAdapterBrakeTest::modbusMsgCallback(const ModbusMsgInStampedConstPtr&
   {
     msg.checkStructuralIntegrity();
   }
-  catch(const ModbusMsgWrapperException &ex)
+  catch (const ModbusMsgWrapperException& ex)
   {
     ROS_ERROR_STREAM(ex.what());
     return;
   }
 
-  if(msg.getVersion() != MODBUS_API_VERSION_REQUIRED)
+  if (msg.getVersion() != MODBUS_API_VERSION_REQUIRED)
   {
     std::ostringstream os;
-    os << "Received Modbus message of unsupported API Version: "
-       << msg.getVersion()
+    os << "Received Modbus message of unsupported API Version: " << msg.getVersion()
        << ", required Version: " << MODBUS_API_VERSION_REQUIRED;
-    os <<"\n";
+    os << "\n";
     os << "Can not determine from Modbus message if brake-test is required.";
     ROS_ERROR_STREAM(os.str());
     return;
@@ -71,4 +68,4 @@ void ModbusAdapterBrakeTest::modbusMsgCallback(const ModbusMsgInStampedConstPtr&
   updateBrakeTestRequiredState(msg.getBrakeTestRequirementStatus());
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support

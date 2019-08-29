@@ -23,13 +23,12 @@
 
 namespace prbt_hardware_support
 {
+static const std::string CANOPEN_GETOBJECT_SERVICE_NAME{ "/prbt/driver/get_object" };
+static const std::string CANOPEN_SETOBJECT_SERVICE_NAME{ "/prbt/driver/set_object" };
 
-static const std::string CANOPEN_GETOBJECT_SERVICE_NAME{"/prbt/driver/get_object"};
-static const std::string CANOPEN_SETOBJECT_SERVICE_NAME{"/prbt/driver/set_object"};
-
-static const std::string BRAKE_TEST_DURATION_OBJECT_INDEX{"2060sub1"};
-static const std::string START_BRAKE_TEST_OBJECT_INDEX{"2060sub2"};
-static const std::string BRAKE_TEST_STATUS_OBJECT_INDEX{"2060sub3"};
+static const std::string BRAKE_TEST_DURATION_OBJECT_INDEX{ "2060sub1" };
+static const std::string START_BRAKE_TEST_OBJECT_INDEX{ "2060sub2" };
+static const std::string BRAKE_TEST_STATUS_OBJECT_INDEX{ "2060sub3" };
 
 using canopen_chain_node::GetObjectRequest;
 using canopen_chain_node::GetObjectResponse;
@@ -82,21 +81,13 @@ void CANOpenChainNodeMock::expectAnything()
   using ::testing::AnyNumber;
   using ::testing::Field;
 
-  EXPECT_CALL(*this, get_obj(_, _))
-      .Times(AnyNumber());
-  EXPECT_CALL(*this, set_obj(_, _))
-      .Times(AnyNumber());
+  EXPECT_CALL(*this, get_obj(_, _)).Times(AnyNumber());
+  EXPECT_CALL(*this, set_obj(_, _)).Times(AnyNumber());
 
   // Gripper should not be called
-  EXPECT_CALL(
-    *this, get_obj(Field(&GetObjectRequest::node, "gripper_joint"), _)
-    )
- .Times(0);
+  EXPECT_CALL(*this, get_obj(Field(&GetObjectRequest::node, "gripper_joint"), _)).Times(0);
 
- EXPECT_CALL(
-    *this, set_obj(Field(&SetObjectRequest::node, "gripper_joint"), _)
-    )
- .Times(0);
+  EXPECT_CALL(*this, set_obj(Field(&SetObjectRequest::node, "gripper_joint"), _)).Times(0);
 }
 
 void CANOpenChainNodeMock::shutdown()
@@ -115,5 +106,4 @@ void CANOpenChainNodeMock::shutdownSetService()
   set_obj_serv_.shutdown();
 }
 
-
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support

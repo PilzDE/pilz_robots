@@ -23,12 +23,12 @@
 
 namespace prbt_hardware_support
 {
-
 /**
  * @brief Tests that exception is thrown if empty callback function is
  * specified.
  */
-TEST(FilterPipelineTest, testEmptyCallbackFunction){
+TEST(FilterPipelineTest, testEmptyCallbackFunction)
+{
   {
     ros::NodeHandle nh;
     FilterPipeline::TCallbackFunc cb;
@@ -36,22 +36,23 @@ TEST(FilterPipelineTest, testEmptyCallbackFunction){
   }
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "unittest_filter_pipeline");
-  ros::NodeHandle nh;  // This nodehandle is held, to avoid rosconsole::shutdown(), which results in subsequent ROS_* messages no longer output.
+  ros::NodeHandle nh;  // This nodehandle is held, to avoid rosconsole::shutdown(), which results in subsequent ROS_*
+                       // messages no longer output.
   while (!ros::ok())
   {
     ROS_INFO("waiting for ros to be ok ...");
-    ros::Duration(0.1).sleep(); // making sure ros is ok
+    ros::Duration(0.1).sleep();  // making sure ros is ok
   }
 
   testing::InitGoogleTest(&argc, argv);
 
   int res = RUN_ALL_TESTS();
-  ros::Duration(0.1).sleep(); // making sure all log output is received
+  ros::Duration(0.1).sleep();  // making sure all log output is received
   nh.shutdown();
   return res;
 }

@@ -33,7 +33,6 @@
 
 namespace canopen_braketest_adapter_test
 {
-
 using namespace prbt_hardware_support;
 using namespace testing;
 
@@ -42,25 +41,24 @@ using canopen_chain_node::GetObjectResponse;
 using canopen_chain_node::SetObjectRequest;
 using canopen_chain_node::SetObjectResponse;
 
-static const std::string BRAKE_TEST_SERVICE_NAME{"/prbt/braketest_adapter_node/trigger_braketest"};
+static const std::string BRAKE_TEST_SERVICE_NAME{ "/prbt/braketest_adapter_node/trigger_braketest" };
 
-static const std::string BRAKE_TEST_DURATION_OBJECT_INDEX{"2060sub1"};
-static const std::string START_BRAKE_TEST_OBJECT_INDEX{"2060sub2"};
-static const std::string BRAKE_TEST_STATUS_OBJECT_INDEX{"2060sub3"};
+static const std::string BRAKE_TEST_DURATION_OBJECT_INDEX{ "2060sub1" };
+static const std::string START_BRAKE_TEST_OBJECT_INDEX{ "2060sub2" };
+static const std::string BRAKE_TEST_STATUS_OBJECT_INDEX{ "2060sub3" };
 
-static const std::string NODE_NAMES_PARAMETER_NAME{"/prbt/driver/nodes"};
-static const std::string BRAKETEST_REQUIRED_NAME{"braketest_required"};
-static const std::string NODE_NAMES_PREFIX{"prbt_joint_"};
-static const std::vector<size_t> NODE_TEST_SET{{0, 2, 5}};
+static const std::string NODE_NAMES_PARAMETER_NAME{ "/prbt/driver/nodes" };
+static const std::string BRAKETEST_REQUIRED_NAME{ "braketest_required" };
+static const std::string NODE_NAMES_PREFIX{ "prbt_joint_" };
+static const std::vector<size_t> NODE_TEST_SET{ { 0, 2, 5 } };
 
-#define DEFAULT_SETUP \
-CANOpenChainNodeMock canopen_chain_node;\
-ros::NodeHandle nh_adapter("/prbt/braketest_adapter_node");\
-prbt_hardware_support::CANOpenBrakeTestAdapter canopen_braketest_adapter(nh_adapter);\
-ros::ServiceClient brake_test_srv_client = nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);\
-\
-ASSERT_TRUE(brake_test_srv_client.exists()) << "Brake test service not available.";\
-
+#define DEFAULT_SETUP                                                                                                  \
+  CANOpenChainNodeMock canopen_chain_node;                                                                             \
+  ros::NodeHandle nh_adapter("/prbt/braketest_adapter_node");                                                          \
+  prbt_hardware_support::CANOpenBrakeTestAdapter canopen_braketest_adapter(nh_adapter);                                \
+  ros::ServiceClient brake_test_srv_client = nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);                    \
+                                                                                                                       \
+  ASSERT_TRUE(brake_test_srv_client.exists()) << "Brake test service not available.";
 
 class CanOpenBraketestAdapterTest : public Test
 {
@@ -77,7 +75,7 @@ protected:
 TEST_F(CanOpenBraketestAdapterTest, testCANOpenBrakeTestAdapterExceptionDtor)
 {
   {
-    std::shared_ptr<CANOpenBrakeTestAdapterException> ex {new CANOpenBrakeTestAdapterException("Test msg")};
+    std::shared_ptr<CANOpenBrakeTestAdapterException> ex{ new CANOpenBrakeTestAdapterException("Test msg") };
   }
 }
 
@@ -96,12 +94,11 @@ TEST_F(CanOpenBraketestAdapterTest, testCANOpenBrakeTestAdapterExceptionDtor)
  */
 TEST_F(CanOpenBraketestAdapterTest, testBrakeTestServiceWithoutCANGetService)
 {
-
   CANOpenChainNodeMock canopen_chain_node;
   canopen_chain_node.shutdownGetService();
 
   EXPECT_THROW(prbt_hardware_support::CANOpenBrakeTestAdapter canopen_braketest_adapter(nh_),
-  CANOpenBrakeTestAdapterException);
+               CANOpenBrakeTestAdapterException);
 }
 
 /**
@@ -119,12 +116,11 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestServiceWithoutCANGetService)
  */
 TEST_F(CanOpenBraketestAdapterTest, testBrakeTestServiceWithoutCANSetService)
 {
-
   CANOpenChainNodeMock canopen_chain_node;
   canopen_chain_node.shutdownSetService();
 
   EXPECT_THROW(prbt_hardware_support::CANOpenBrakeTestAdapter canopen_braketest_adapter(nh_),
-  CANOpenBrakeTestAdapterException);
+               CANOpenBrakeTestAdapterException);
 }
 
 /**
@@ -230,7 +226,7 @@ TEST_F(CanOpenBraketestAdapterTest, testGetBrakeTestDurationServiceCallFailure)
 
   for (size_t node_index : NODE_TEST_SET)
   {
-    std::string node{NODE_NAMES_PREFIX + std::to_string(node_index + 1)};
+    std::string node{ NODE_NAMES_PREFIX + std::to_string(node_index + 1) };
 
     /**********
      * Step 1 *
@@ -239,13 +235,14 @@ TEST_F(CanOpenBraketestAdapterTest, testGetBrakeTestDurationServiceCallFailure)
     canopen_chain_node.expectAnything();
 
     EXPECT_CALL(canopen_chain_node, get_obj(AllOf(Field(&GetObjectRequest::node, node),
-                                                   Field(&GetObjectRequest::object, BRAKE_TEST_DURATION_OBJECT_INDEX)),
-                                             _))
+                                                  Field(&GetObjectRequest::object, BRAKE_TEST_DURATION_OBJECT_INDEX)),
+                                            _))
         .Times(AtLeast(1))
         .WillRepeatedly(Return(false));
 
     EXPECT_CALL(canopen_chain_node, set_obj(AllOf(Field(&SetObjectRequest::node, node),
-                                                   Field(&SetObjectRequest::object, START_BRAKE_TEST_OBJECT_INDEX)), _))
+                                                  Field(&SetObjectRequest::object, START_BRAKE_TEST_OBJECT_INDEX)),
+                                            _))
         .Times(0);
 
     /**********
@@ -293,7 +290,7 @@ TEST_F(CanOpenBraketestAdapterTest, testGetBrakeTestDurationServiceResponseFailu
 
   for (size_t node_index : NODE_TEST_SET)
   {
-    std::string node{NODE_NAMES_PREFIX + std::to_string(node_index + 1)};
+    std::string node{ NODE_NAMES_PREFIX + std::to_string(node_index + 1) };
 
     /**********
      * Step 1 *
@@ -302,13 +299,14 @@ TEST_F(CanOpenBraketestAdapterTest, testGetBrakeTestDurationServiceResponseFailu
     canopen_chain_node.expectAnything();
 
     EXPECT_CALL(canopen_chain_node, get_obj(AllOf(Field(&GetObjectRequest::node, node),
-                                                   Field(&GetObjectRequest::object, BRAKE_TEST_DURATION_OBJECT_INDEX)),
-                                             _))
+                                                  Field(&GetObjectRequest::object, BRAKE_TEST_DURATION_OBJECT_INDEX)),
+                                            _))
         .Times(AtLeast(1))
         .WillRepeatedly(DoAll(SetArgReferee<1>(duration_resp), Return(true)));
 
     EXPECT_CALL(canopen_chain_node, set_obj(AllOf(Field(&SetObjectRequest::node, node),
-                                                   Field(&SetObjectRequest::object, START_BRAKE_TEST_OBJECT_INDEX)), _))
+                                                  Field(&SetObjectRequest::object, START_BRAKE_TEST_OBJECT_INDEX)),
+                                            _))
         .Times(0);
 
     /**********
@@ -325,7 +323,6 @@ TEST_F(CanOpenBraketestAdapterTest, testGetBrakeTestDurationServiceResponseFailu
     ASSERT_TRUE(Mock::VerifyAndClearExpectations(&canopen_chain_node));
   }
 }
-
 
 /**
  * @tests{Execute_BrakeTest_mechanism,
@@ -390,7 +387,7 @@ TEST_F(CanOpenBraketestAdapterTest, testStartBrakeTestServiceCallFailure)
 
   for (size_t node_index : NODE_TEST_SET)
   {
-    std::string node{NODE_NAMES_PREFIX + std::to_string(node_index + 1)};
+    std::string node{ NODE_NAMES_PREFIX + std::to_string(node_index + 1) };
 
     /**********
      * Step 1 *
@@ -399,12 +396,13 @@ TEST_F(CanOpenBraketestAdapterTest, testStartBrakeTestServiceCallFailure)
     canopen_chain_node.expectAnything();
 
     EXPECT_CALL(canopen_chain_node, get_obj(AllOf(Field(&GetObjectRequest::node, node),
-                                                   Field(&GetObjectRequest::object, BRAKE_TEST_DURATION_OBJECT_INDEX)),
-                                             _))
+                                                  Field(&GetObjectRequest::object, BRAKE_TEST_DURATION_OBJECT_INDEX)),
+                                            _))
         .Times(AtLeast(1));
 
     EXPECT_CALL(canopen_chain_node, set_obj(AllOf(Field(&SetObjectRequest::node, node),
-                                                   Field(&SetObjectRequest::object, START_BRAKE_TEST_OBJECT_INDEX)), _))
+                                                  Field(&SetObjectRequest::object, START_BRAKE_TEST_OBJECT_INDEX)),
+                                            _))
         .WillOnce(Return(false));
 
     /**********
@@ -431,8 +429,8 @@ TEST_F(CanOpenBraketestAdapterTest, testStartBrakeTestServiceCallFailure)
  * This is repeated for the first and the last node and one in between.
  *
  * Test Sequence:
- *  1. Set expectations on CANOpen mock object. Let the service call getting the start_brake_test object respond an error
- *     for the selected node.
+ *  1. Set expectations on CANOpen mock object. Let the service call getting the start_brake_test object respond an
+ * error for the selected node.
  *  2. Call brake test service.
  *  3. Verify and clear expectations.
  *
@@ -452,7 +450,7 @@ TEST_F(CanOpenBraketestAdapterTest, testStartBrakeTestServiceResponseFailure)
 
   for (size_t node_index : NODE_TEST_SET)
   {
-    std::string node{NODE_NAMES_PREFIX + std::to_string(node_index + 1)};
+    std::string node{ NODE_NAMES_PREFIX + std::to_string(node_index + 1) };
 
     /**********
      * Step 1 *
@@ -461,12 +459,13 @@ TEST_F(CanOpenBraketestAdapterTest, testStartBrakeTestServiceResponseFailure)
     canopen_chain_node.expectAnything();
 
     EXPECT_CALL(canopen_chain_node, get_obj(AllOf(Field(&GetObjectRequest::node, node),
-                                                   Field(&GetObjectRequest::object, BRAKE_TEST_DURATION_OBJECT_INDEX)),
-                                             _))
+                                                  Field(&GetObjectRequest::object, BRAKE_TEST_DURATION_OBJECT_INDEX)),
+                                            _))
         .Times(AtLeast(1));
 
     EXPECT_CALL(canopen_chain_node, set_obj(AllOf(Field(&SetObjectRequest::node, node),
-                                                   Field(&SetObjectRequest::object, START_BRAKE_TEST_OBJECT_INDEX)), _))
+                                                  Field(&SetObjectRequest::object, START_BRAKE_TEST_OBJECT_INDEX)),
+                                            _))
         .WillOnce(DoAll(SetArgReferee<1>(start_resp), Return(true)));
 
     /**********
@@ -509,7 +508,7 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusServiceCallFailure)
 
   for (size_t node_index : NODE_TEST_SET)
   {
-    std::string node{NODE_NAMES_PREFIX + std::to_string(node_index + 1)};
+    std::string node{ NODE_NAMES_PREFIX + std::to_string(node_index + 1) };
 
     /**********
      * Step 1 *
@@ -518,8 +517,8 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusServiceCallFailure)
     canopen_chain_node.expectAnything();
 
     EXPECT_CALL(canopen_chain_node, get_obj(AllOf(Field(&GetObjectRequest::node, node),
-                                                   Field(&GetObjectRequest::object, BRAKE_TEST_STATUS_OBJECT_INDEX)),
-                                             _))
+                                                  Field(&GetObjectRequest::object, BRAKE_TEST_STATUS_OBJECT_INDEX)),
+                                            _))
         .Times(AtLeast(1))
         .WillRepeatedly(Return(false));
 
@@ -566,7 +565,7 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusServiceResponseFailure)
 
   for (size_t node_index : NODE_TEST_SET)
   {
-    std::string node{NODE_NAMES_PREFIX + std::to_string(node_index + 1)};
+    std::string node{ NODE_NAMES_PREFIX + std::to_string(node_index + 1) };
 
     /**********
      * Step 1 *
@@ -575,8 +574,8 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusServiceResponseFailure)
     canopen_chain_node.expectAnything();
 
     EXPECT_CALL(canopen_chain_node, get_obj(AllOf(Field(&GetObjectRequest::node, node),
-                                                   Field(&GetObjectRequest::object, BRAKE_TEST_STATUS_OBJECT_INDEX)),
-                                             _))
+                                                  Field(&GetObjectRequest::object, BRAKE_TEST_STATUS_OBJECT_INDEX)),
+                                            _))
         .Times(AtLeast(1))
         .WillRepeatedly(DoAll(SetArgReferee<1>(status_resp), Return(true)));
 
@@ -623,7 +622,7 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusUnknown)
 
   for (size_t node_index : NODE_TEST_SET)
   {
-    std::string node{NODE_NAMES_PREFIX + std::to_string(node_index + 1)};
+    std::string node{ NODE_NAMES_PREFIX + std::to_string(node_index + 1) };
 
     /**********
      * Step 1 *
@@ -632,8 +631,8 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusUnknown)
     canopen_chain_node.expectAnything();
 
     EXPECT_CALL(canopen_chain_node, get_obj(AllOf(Field(&GetObjectRequest::node, node),
-                                                   Field(&GetObjectRequest::object, BRAKE_TEST_STATUS_OBJECT_INDEX)),
-                                             _))
+                                                  Field(&GetObjectRequest::object, BRAKE_TEST_STATUS_OBJECT_INDEX)),
+                                            _))
         .Times(AtLeast(1))
         .WillRepeatedly(DoAll(SetArgReferee<1>(status_resp), Return(true)));
 
@@ -680,7 +679,7 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusPerformed)
 
   for (size_t node_index : NODE_TEST_SET)
   {
-    std::string node{NODE_NAMES_PREFIX + std::to_string(node_index + 1)};
+    std::string node{ NODE_NAMES_PREFIX + std::to_string(node_index + 1) };
 
     /**********
      * Step 1 *
@@ -689,8 +688,8 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusPerformed)
     canopen_chain_node.expectAnything();
 
     EXPECT_CALL(canopen_chain_node, get_obj(AllOf(Field(&GetObjectRequest::node, node),
-                                                   Field(&GetObjectRequest::object, BRAKE_TEST_STATUS_OBJECT_INDEX)),
-                                             _))
+                                                  Field(&GetObjectRequest::object, BRAKE_TEST_STATUS_OBJECT_INDEX)),
+                                            _))
         .Times(AtLeast(1))
         .WillRepeatedly(DoAll(SetArgReferee<1>(status_resp), Return(true)));
 
@@ -737,7 +736,7 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusNotSuccessful)
 
   for (size_t node_index : NODE_TEST_SET)
   {
-    std::string node{NODE_NAMES_PREFIX + std::to_string(node_index + 1)};
+    std::string node{ NODE_NAMES_PREFIX + std::to_string(node_index + 1) };
 
     /**********
      * Step 1 *
@@ -746,8 +745,8 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusNotSuccessful)
     canopen_chain_node.expectAnything();
 
     EXPECT_CALL(canopen_chain_node, get_obj(AllOf(Field(&GetObjectRequest::node, node),
-                                                   Field(&GetObjectRequest::object, BRAKE_TEST_STATUS_OBJECT_INDEX)),
-                                             _))
+                                                  Field(&GetObjectRequest::object, BRAKE_TEST_STATUS_OBJECT_INDEX)),
+                                            _))
         .Times(AtLeast(1))
         .WillRepeatedly(DoAll(SetArgReferee<1>(status_resp), Return(true)));
 
@@ -795,7 +794,7 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusNotActivelyControlled)
 
   for (size_t node_index : NODE_TEST_SET)
   {
-    std::string node{NODE_NAMES_PREFIX + std::to_string(node_index + 1)};
+    std::string node{ NODE_NAMES_PREFIX + std::to_string(node_index + 1) };
 
     /**********
      * Step 1 *
@@ -804,8 +803,8 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusNotActivelyControlled)
     canopen_chain_node.expectAnything();
 
     EXPECT_CALL(canopen_chain_node, get_obj(AllOf(Field(&GetObjectRequest::node, node),
-                                                   Field(&GetObjectRequest::object, BRAKE_TEST_STATUS_OBJECT_INDEX)),
-                                             _))
+                                                  Field(&GetObjectRequest::object, BRAKE_TEST_STATUS_OBJECT_INDEX)),
+                                            _))
         .Times(AtLeast(1))
         .WillRepeatedly(DoAll(SetArgReferee<1>(status_resp), Return(true)));
 
@@ -824,14 +823,14 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusNotActivelyControlled)
   }
 }
 
-} // namespace canopen_braketest_adapter_test
+}  // namespace canopen_braketest_adapter_test
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "unittest_brake_test_executor");
   ros::NodeHandle nh;
 
-  ros::AsyncSpinner spinner{2};
+  ros::AsyncSpinner spinner{ 2 };
   spinner.start();
 
   testing::InitGoogleMock(&argc, argv);

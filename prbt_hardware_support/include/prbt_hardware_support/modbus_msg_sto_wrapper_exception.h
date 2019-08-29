@@ -25,20 +25,19 @@
 
 namespace prbt_hardware_support
 {
-  /**
-   * @brief Expection thrown upon construction of ModbusMsgStoWrapper of the message
-   * does not contain the required information.
-   *
-   */
-  class ModbusMsgStoWrapperException : public ModbusMsgWrapperException
+/**
+ * @brief Expection thrown upon construction of ModbusMsgStoWrapper of the message
+ * does not contain the required information.
+ *
+ */
+class ModbusMsgStoWrapperException : public ModbusMsgWrapperException
+{
+public:
+  ModbusMsgStoWrapperException(const std::string& what_arg) : ModbusMsgWrapperException(what_arg)
   {
-    public:
-      ModbusMsgStoWrapperException( const std::string& what_arg ):
-        ModbusMsgWrapperException(what_arg)
-      {
-      }
-  };
+  }
+};
 
-}
+}  // namespace prbt_hardware_support
 
-#endif // MODBUS_MSG_STO_WRAPPER_EXCEPTION_H
+#endif  // MODBUS_MSG_STO_WRAPPER_EXCEPTION_H

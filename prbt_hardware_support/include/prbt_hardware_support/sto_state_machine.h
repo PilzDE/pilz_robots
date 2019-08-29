@@ -33,7 +33,6 @@
 
 namespace prbt_hardware_support
 {
-
 inline std::string className(std::string fullName)
 {
   return fullName.substr(fullName.rfind("::") + 2);
@@ -42,12 +41,19 @@ inline std::string className(std::string fullName)
 #define COLOR_GREEN "\033[32m"
 #define COLOR_GREEN_BOLD "\033[1;32m"
 
-#define STATE_ENTER_OUTPUT ROS_DEBUG_STREAM_NAMED("STOStateMachine", "Event: " << className(boost::core::demangle(typeid(ev).name())) \
-                                            << " - Entering: " << COLOR_GREEN_BOLD << className(boost::core::demangle(typeid(*this).name())) << COLOR_GREEN);
-#define STATE_EXIT_OUTPUT ROS_DEBUG_STREAM_NAMED("STOStateMachine", "Event: " << className(boost::core::demangle(typeid(ev).name())) \
-                                            << " - Leaving: " << className(boost::core::demangle(typeid(*this).name())));
-#define ACTION_OUTPUT ROS_DEBUG_STREAM_NAMED("STOStateMachine", "Event: " << className(boost::core::demangle(typeid(ev).name())) \
-                                        << " - Action: " << className(boost::core::demangle(typeid(*this).name())));
+#define STATE_ENTER_OUTPUT                                                                                             \
+  ROS_DEBUG_STREAM_NAMED("STOStateMachine", "Event: " << className(boost::core::demangle(typeid(ev).name()))           \
+                                                      << " - Entering: " << COLOR_GREEN_BOLD                           \
+                                                      << className(boost::core::demangle(typeid(*this).name()))        \
+                                                      << COLOR_GREEN);
+#define STATE_EXIT_OUTPUT                                                                                              \
+  ROS_DEBUG_STREAM_NAMED("STOStateMachine",                                                                            \
+                         "Event: " << className(boost::core::demangle(typeid(ev).name()))                              \
+                                   << " - Leaving: " << className(boost::core::demangle(typeid(*this).name())));
+#define ACTION_OUTPUT                                                                                                  \
+  ROS_DEBUG_STREAM_NAMED("STOStateMachine",                                                                            \
+                         "Event: " << className(boost::core::demangle(typeid(ev).name()))                              \
+                                   << " - Action: " << className(boost::core::demangle(typeid(*this).name())));
 
 /**
  * @brief An AsyncStoTask is represented by a task execution and a completion signalling.
@@ -58,10 +64,10 @@ inline std::string className(std::string fullName)
 class AsyncStoTask
 {
 public:
-  AsyncStoTask(const TServiceCallFunc &operation, const std::function<void()> &finished_handler)
-      : operation_(operation),
-        finished_handler_(finished_handler)
-  {}
+  AsyncStoTask(const TServiceCallFunc& operation, const std::function<void()>& finished_handler)
+    : operation_(operation), finished_handler_(finished_handler)
+  {
+  }
 
   /**
    * @brief Execute the task.
@@ -112,16 +118,12 @@ public:
    * @param halt_operation The execution function of the halt-task.
    * @param hold_operation The execution function of the hold-task.
    * @param unhold_operation The execution function of the unhold-task.
-  */
-  StoStateMachine_(const TServiceCallFunc &recover_operation,
-                   const TServiceCallFunc &halt_operation,
-                   const TServiceCallFunc &hold_operation,
-                   const TServiceCallFunc &unhold_operation)
-      : recover_op_(recover_operation),
-        halt_op_(halt_operation),
-        hold_op_(hold_operation),
-        unhold_op_(unhold_operation)
-  {}
+   */
+  StoStateMachine_(const TServiceCallFunc& recover_operation, const TServiceCallFunc& halt_operation,
+                   const TServiceCallFunc& hold_operation, const TServiceCallFunc& unhold_operation)
+    : recover_op_(recover_operation), halt_op_(halt_operation), hold_op_(hold_operation), unhold_op_(unhold_operation)
+  {
+  }
 
   ////////////
   // States //
@@ -130,12 +132,12 @@ public:
   struct RobotInactive : public msm::front::state<>
   {
     template <class Event, class FSM>
-    void on_entry(Event const &ev, FSM &)
+    void on_entry(Event const& ev, FSM&)
     {
       STATE_ENTER_OUTPUT
     }
     template <class Event, class FSM>
-    void on_exit(Event const &ev, FSM &)
+    void on_exit(Event const& ev, FSM&)
     {
       STATE_EXIT_OUTPUT
     }
@@ -143,12 +145,12 @@ public:
   struct RobotActive : public msm::front::state<>
   {
     template <class Event, class FSM>
-    void on_entry(Event const &ev, FSM &)
+    void on_entry(Event const& ev, FSM&)
     {
       STATE_ENTER_OUTPUT
     }
     template <class Event, class FSM>
-    void on_exit(Event const &ev, FSM &)
+    void on_exit(Event const& ev, FSM&)
     {
       STATE_EXIT_OUTPUT
     }
@@ -157,12 +159,12 @@ public:
   struct Enabling : public msm::front::state<>
   {
     template <class Event, class FSM>
-    void on_entry(Event const &ev, FSM &)
+    void on_entry(Event const& ev, FSM&)
     {
       STATE_ENTER_OUTPUT
     }
     template <class Event, class FSM>
-    void on_exit(Event const &ev, FSM &)
+    void on_exit(Event const& ev, FSM&)
     {
       STATE_EXIT_OUTPUT
     }
@@ -171,12 +173,12 @@ public:
   struct Stopping : public msm::front::state<>
   {
     template <class Event, class FSM>
-    void on_entry(Event const &ev, FSM &)
+    void on_entry(Event const& ev, FSM&)
     {
       STATE_ENTER_OUTPUT
     }
     template <class Event, class FSM>
-    void on_exit(Event const &ev, FSM &)
+    void on_exit(Event const& ev, FSM&)
     {
       STATE_EXIT_OUTPUT
     }
@@ -185,12 +187,12 @@ public:
   struct StopRequestedDuringEnable : public msm::front::state<>
   {
     template <class Event, class FSM>
-    void on_entry(Event const &ev, FSM &)
+    void on_entry(Event const& ev, FSM&)
     {
       STATE_ENTER_OUTPUT
     }
     template <class Event, class FSM>
-    void on_exit(Event const &ev, FSM &)
+    void on_exit(Event const& ev, FSM&)
     {
       STATE_EXIT_OUTPUT
     }
@@ -199,17 +201,16 @@ public:
   struct EnableRequestDuringStop : public msm::front::state<>
   {
     template <class Event, class FSM>
-    void on_entry(Event const &ev, FSM &)
+    void on_entry(Event const& ev, FSM&)
     {
       STATE_ENTER_OUTPUT
     }
     template <class Event, class FSM>
-    void on_exit(Event const &ev, FSM &)
+    void on_exit(Event const& ev, FSM&)
     {
       STATE_EXIT_OUTPUT
     }
   };
-
 
   //! Initial state
   typedef RobotInactive initial_state;
@@ -223,23 +224,28 @@ public:
    */
   struct sto_updated
   {
-    sto_updated(const bool sto)
-        : sto_(sto){}
+    sto_updated(const bool sto) : sto_(sto)
+    {
+    }
 
     bool sto_;
   };
 
   struct recover_done
-  {};
+  {
+  };
 
   struct halt_done
-  {};
+  {
+  };
 
   struct hold_done
-  {};
+  {
+  };
 
   struct unhold_done
-  {};
+  {
+  };
 
   ////////////
   // Guards //
@@ -248,7 +254,7 @@ public:
   struct sto_true
   {
     template <class EVT, class FSM, class SourceState, class TargetState>
-    bool operator()(EVT const &evt, FSM &, SourceState &, TargetState &)
+    bool operator()(EVT const& evt, FSM&, SourceState&, TargetState&)
     {
       return evt.sto_;
     }
@@ -257,7 +263,7 @@ public:
   struct sto_false
   {
     template <class EVT, class FSM, class SourceState, class TargetState>
-    bool operator()(EVT const &evt, FSM &, SourceState &, TargetState &)
+    bool operator()(EVT const& evt, FSM&, SourceState&, TargetState&)
     {
       return !evt.sto_;
     }
@@ -275,7 +281,7 @@ public:
   struct recover_start
   {
     template <class EVT, class FSM, class SourceState, class TargetState>
-    void operator()(EVT const &ev, FSM &fsm, SourceState &, TargetState &)
+    void operator()(EVT const& ev, FSM& fsm, SourceState&, TargetState&)
     {
       ACTION_OUTPUT
 
@@ -291,7 +297,7 @@ public:
   struct halt_start
   {
     template <class EVT, class FSM, class SourceState, class TargetState>
-    void operator()(EVT const &ev, FSM &fsm, SourceState &, TargetState &)
+    void operator()(EVT const& ev, FSM& fsm, SourceState&, TargetState&)
     {
       ACTION_OUTPUT
 
@@ -307,7 +313,7 @@ public:
   struct hold_start
   {
     template <class EVT, class FSM, class SourceState, class TargetState>
-    void operator()(EVT const &ev, FSM &fsm, SourceState &, TargetState &)
+    void operator()(EVT const& ev, FSM& fsm, SourceState&, TargetState&)
     {
       ACTION_OUTPUT
 
@@ -323,7 +329,7 @@ public:
   struct unhold_start
   {
     template <class EVT, class FSM, class SourceState, class TargetState>
-    void operator()(EVT const &ev, FSM &fsm, SourceState &, TargetState &)
+    void operator()(EVT const& ev, FSM& fsm, SourceState&, TargetState&)
     {
       ACTION_OUTPUT
 
@@ -335,28 +341,28 @@ public:
   // Transitions //
   /////////////////
 
-  struct transition_table : mpl::vector<
-  //  Start                       Event          Target                      Action         Guard
-  // +---------------------------+--------------+---------------------------+--------------+----------+
-  Row< RobotInactive             , sto_updated  , Enabling                  , recover_start, sto_true >,
-  Row< RobotInactive             , sto_updated  , none                      , none         , sto_false>,
-  Row< Enabling                  , sto_updated  , none                      , none         , sto_true >,
-  Row< Enabling                  , sto_updated  , StopRequestedDuringEnable , none         , sto_false>,
-  Row< Enabling                  , recover_done , none                      , unhold_start , none     >,
-  Row< Enabling                  , unhold_done  , RobotActive               , none         , none     >,
-  Row< StopRequestedDuringEnable , sto_updated  , none                      , none         , none     >,
-  Row< StopRequestedDuringEnable , recover_done , Stopping                  , halt_start   , none     >,
-  Row< StopRequestedDuringEnable , unhold_done  , Stopping                  , hold_start   , none     >,
-  Row< RobotActive               , sto_updated  , none                      , none         , sto_true >,
-  Row< RobotActive               , sto_updated  , Stopping                  , hold_start   , sto_false>,
-  Row< Stopping                  , sto_updated  , EnableRequestDuringStop   , none         , sto_true >,
-  Row< Stopping                  , hold_done    , none                      , halt_start   , none     >,
-  Row< Stopping                  , halt_done    , RobotInactive             , none         , none     >,
-  Row< EnableRequestDuringStop   , halt_done    , Enabling                  , recover_start, none     >,
-  Row< EnableRequestDuringStop   , sto_updated  , Stopping                  , none         , sto_false>,
-  Row< EnableRequestDuringStop   , sto_updated  , none                      , none         , sto_true >
-  // +---------------------------+--------------+---------------------------+--------------+----------+
-  > {};
+  struct transition_table
+    : mpl::vector<
+          //  Start                       Event          Target                      Action         Guard
+          // +---------------------------+--------------+---------------------------+--------------+----------+
+          Row<RobotInactive, sto_updated, Enabling, recover_start, sto_true>,
+          Row<RobotInactive, sto_updated, none, none, sto_false>, Row<Enabling, sto_updated, none, none, sto_true>,
+          Row<Enabling, sto_updated, StopRequestedDuringEnable, none, sto_false>,
+          Row<Enabling, recover_done, none, unhold_start, none>, Row<Enabling, unhold_done, RobotActive, none, none>,
+          Row<StopRequestedDuringEnable, sto_updated, none, none, none>,
+          Row<StopRequestedDuringEnable, recover_done, Stopping, halt_start, none>,
+          Row<StopRequestedDuringEnable, unhold_done, Stopping, hold_start, none>,
+          Row<RobotActive, sto_updated, none, none, sto_true>,
+          Row<RobotActive, sto_updated, Stopping, hold_start, sto_false>,
+          Row<Stopping, sto_updated, EnableRequestDuringStop, none, sto_true>,
+          Row<Stopping, hold_done, none, halt_start, none>, Row<Stopping, halt_done, RobotInactive, none, none>,
+          Row<EnableRequestDuringStop, halt_done, Enabling, recover_start, none>,
+          Row<EnableRequestDuringStop, sto_updated, Stopping, none, sto_false>,
+          Row<EnableRequestDuringStop, sto_updated, none, none, sto_true>
+          // +---------------------------+--------------+---------------------------+--------------+----------+
+          >
+  {
+  };
 
   //! The task queue
   StoTaskQueue task_queue_;
@@ -377,6 +383,6 @@ public:
 //! The top-level (back-end) state machine
 typedef msm::back::state_machine<StoStateMachine_> StoStateMachine;
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support
 
-#endif // PRBT_HARDWARE_SUPPORT_STO_STATE_MACHINE_H
+#endif  // PRBT_HARDWARE_SUPPORT_STO_STATE_MACHINE_H

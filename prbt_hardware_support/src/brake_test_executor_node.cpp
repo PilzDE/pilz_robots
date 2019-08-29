@@ -21,10 +21,10 @@
 /**
  * @brief Provides service to execute a braketest
  */
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "brake_test_executor");
-  ros::NodeHandle nh{"~"};
+  ros::NodeHandle nh{ "~" };
 
   prbt_hardware_support::BrakeTestExecutor brake_test_executor(nh);
 

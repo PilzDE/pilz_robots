@@ -29,8 +29,7 @@ using namespace prbt_hardware_support;
 
 namespace modbus_msg_wrapper
 {
-
-static const ModbusApiSpec TEST_API_SPEC{ {modbus_api_spec::VERSION, 0} };
+static const ModbusApiSpec TEST_API_SPEC{ { modbus_api_spec::VERSION, 0 } };
 
 /**
  * @brief Test increases function coverage by ensuring that all Dtor variants
@@ -38,18 +37,18 @@ static const ModbusApiSpec TEST_API_SPEC{ {modbus_api_spec::VERSION, 0} };
  */
 TEST(ModbusMsgWrapperTest, testModbusMsgWrapperDtor)
 {
-  uint32_t offset{0};
-  const uint16_t modbus_api_version {1};
-  RegCont holding_register {modbus_api_version};
-  ModbusMsgInStampedPtr msg{ModbusMsgInBuilder::createDefaultModbusMsgIn(offset, holding_register)};
+  uint32_t offset{ 0 };
+  const uint16_t modbus_api_version{ 1 };
+  RegCont holding_register{ modbus_api_version };
+  ModbusMsgInStampedPtr msg{ ModbusMsgInBuilder::createDefaultModbusMsgIn(offset, holding_register) };
 
-  ModbusMsgInStampedConstPtr msg_const_ptr {msg};
+  ModbusMsgInStampedConstPtr msg_const_ptr{ msg };
   std::shared_ptr<ModbusMsgWrapper> ex(new ModbusMsgWrapper(msg_const_ptr, TEST_API_SPEC));
 }
 
 }  // namespace modbus_msg_wrapper
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

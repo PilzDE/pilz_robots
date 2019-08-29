@@ -23,11 +23,8 @@
 
 namespace prbt_hardware_support
 {
-
-ModbusAdapterSto::ModbusAdapterSto(UpdateStoFunc&& update_sto_func,
-                                   const ModbusApiSpec& api_spec)
-  : api_spec_(api_spec)
-  , update_sto_(std::move(update_sto_func))
+ModbusAdapterSto::ModbusAdapterSto(UpdateStoFunc&& update_sto_func, const ModbusApiSpec& api_spec)
+  : api_spec_(api_spec), update_sto_(std::move(update_sto_func))
 {
 }
 
@@ -35,7 +32,7 @@ void ModbusAdapterSto::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_r
 {
   ModbusMsgStoWrapper msg(msg_raw, api_spec_);
 
-  if(msg.isDisconnect())
+  if (msg.isDisconnect())
   {
     ROS_ERROR("A disconnect from the modbus server happend.");
     update_sto_(false);
@@ -46,18 +43,17 @@ void ModbusAdapterSto::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_r
   {
     msg.checkStructuralIntegrity();
   }
-  catch(const ModbusMsgWrapperException &e)
+  catch (const ModbusMsgWrapperException& e)
   {
     ROS_ERROR_STREAM(e.what());
     update_sto_(false);
     return;
   }
 
-  if(msg.getVersion() != MODBUS_API_VERSION_REQUIRED)
+  if (msg.getVersion() != MODBUS_API_VERSION_REQUIRED)
   {
     std::ostringstream os;
-    os << "Received Modbus message of unsupported API Version: "
-       << msg.getVersion()
+    os << "Received Modbus message of unsupported API Version: " << msg.getVersion()
        << ", required Version: " << MODBUS_API_VERSION_REQUIRED;
     ROS_ERROR_STREAM(os.str());
     update_sto_(false);
@@ -67,5 +63,4 @@ void ModbusAdapterSto::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_r
   update_sto_(msg.getSTO());
 }
 
-
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support

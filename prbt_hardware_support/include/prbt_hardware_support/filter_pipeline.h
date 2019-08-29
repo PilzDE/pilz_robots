@@ -32,7 +32,6 @@
 
 namespace prbt_hardware_support
 {
-
 /**
  * @brief An abstraction of a series of filters which ensures
  * that only Modbus messages with different timestamps pass the pipeline.
@@ -47,12 +46,11 @@ public:
 private:
   //! Subscribes to TOPIC_MODBUS_READ and redirects received messages
   //! to the update-filter.
-  std::shared_ptr< message_filters::Subscriber<ModbusMsgInStamped> > modbus_read_sub_;
+  std::shared_ptr<message_filters::Subscriber<ModbusMsgInStamped> > modbus_read_sub_;
 
   //! Filters consecutive messages with the same timestamp.
   //! Passed messages are redirected to the callback_func.
-  std::shared_ptr< message_filters::UpdateFilter<ModbusMsgInStamped> > update_filter_;
-
+  std::shared_ptr<message_filters::UpdateFilter<ModbusMsgInStamped> > update_filter_;
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -62,11 +60,11 @@ inline FilterPipeline::FilterPipeline(ros::NodeHandle& nh, TCallbackFunc callbac
   {
     throw std::invalid_argument("Argument \"callback_func\" must not be empty");
   }
-  modbus_read_sub_ = std::make_shared< message_filters::Subscriber<ModbusMsgInStamped> >(nh, TOPIC_MODBUS_READ, 1);
-  update_filter_ = std::make_shared< message_filters::UpdateFilter<ModbusMsgInStamped> >(*modbus_read_sub_);
+  modbus_read_sub_ = std::make_shared<message_filters::Subscriber<ModbusMsgInStamped> >(nh, TOPIC_MODBUS_READ, 1);
+  update_filter_ = std::make_shared<message_filters::UpdateFilter<ModbusMsgInStamped> >(*modbus_read_sub_);
   update_filter_->registerCallback(callback_func);
 }
 
-}
+}  // namespace prbt_hardware_support
 
-#endif // FILTER_PIPELINE_H
+#endif  // FILTER_PIPELINE_H

@@ -32,29 +32,28 @@
 
 namespace brake_test_executor_test
 {
-
 using namespace prbt_hardware_support;
 using namespace testing;
 
-static const std::string BRAKE_TEST_SERVICE_NAME{"/prbt/execute_braketest"};
+static const std::string BRAKE_TEST_SERVICE_NAME{ "/prbt/execute_braketest" };
 
-static const std::string BRAKETEST_ADAPTER_SERVICE_NAME{"/prbt/braketest_adapter_node/trigger_braketest"};
+static const std::string BRAKETEST_ADAPTER_SERVICE_NAME{ "/prbt/braketest_adapter_node/trigger_braketest" };
 
-static const std::string CONTROLLER_HOLD_MODE_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/hold"};
-static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/unhold"};
-static const std::string MODBUS_SERVICE_NAME{"/pilz_modbus_client_node/modbus_write"};
+static const std::string CONTROLLER_HOLD_MODE_SERVICE_NAME{ "/prbt/manipulator_joint_trajectory_controller/hold" };
+static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{ "/prbt/manipulator_joint_trajectory_controller/unhold" };
+static const std::string MODBUS_SERVICE_NAME{ "/pilz_modbus_client_node/modbus_write" };
 
-static const std::string API_SPEC_PARAM_NAME{"/write_api_spec"};
-static const std::string BRAKETEST_PERFORMED_PARAM_NAME{"/BRAKETEST_PERFORMED"};
-static const std::string BRAKETEST_RESULT_PARAM_NAME{"/BRAKETEST_RESULT"};
+static const std::string API_SPEC_PARAM_NAME{ "/write_api_spec" };
+static const std::string BRAKETEST_PERFORMED_PARAM_NAME{ "/BRAKETEST_PERFORMED" };
+static const std::string BRAKETEST_RESULT_PARAM_NAME{ "/BRAKETEST_RESULT" };
 
 class BrakeTestExecutorTest : public Test
 {
 public:
   BrakeTestExecutorTest();
 
-  MOCK_METHOD2(triggerBrakeTest, bool(BrakeTest::Request &, BrakeTest::Response &));
-  MOCK_METHOD2(modbusWrite, bool(WriteModbusRegister::Request &, WriteModbusRegister::Response &));
+  MOCK_METHOD2(triggerBrakeTest, bool(BrakeTest::Request&, BrakeTest::Response&));
+  MOCK_METHOD2(modbusWrite, bool(WriteModbusRegister::Request&, WriteModbusRegister::Response&));
 
 protected:
   ros::NodeHandle nh_;
@@ -73,7 +72,7 @@ BrakeTestExecutorTest::BrakeTestExecutorTest()
  */
 TEST(ModbusApiSpecTest, testModbusApiSpecExceptionDtor)
 {
-  std::shared_ptr<BrakeTestExecutorException> ex {new BrakeTestExecutorException("Test msg")};
+  std::shared_ptr<BrakeTestExecutorException> ex{ new BrakeTestExecutorException("Test msg") };
 }
 
 /**
@@ -101,10 +100,12 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
   /**********
    * Step 0 *
    **********/
-  ros::ServiceServer brake_test_service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>
-          (BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
-  ros::ServiceServer modbus_service = nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>
-          (MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
+  ros::ServiceServer brake_test_service =
+      nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>(
+          BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
+  ros::ServiceServer modbus_service =
+      nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>(
+          MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
 
   BrakeTestExecutor brake_test_executor(this->nh_);
 
@@ -121,11 +122,10 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
 
     EXPECT_CALL(*this, triggerBrakeTest(_, _))
         .Times(1)
-        .WillOnce(testing::Invoke(
-            [](BrakeTest::Request &, BrakeTest::Response &res) {
-              res.success = true;
-              return true;
-            }));
+        .WillOnce(testing::Invoke([](BrakeTest::Request&, BrakeTest::Response& res) {
+          res.success = true;
+          return true;
+        }));
 
     EXPECT_CALL(manipulator_, unholdCb(_, _)).WillOnce(Return(true));
   }
@@ -163,10 +163,11 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
  */
 TEST_F(BrakeTestExecutorTest, testBrakeTestServiceWithRobotMotion)
 {
-  ros::ServiceServer service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>
-          (BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
-  ros::ServiceServer modbus_service = nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>
-          (MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
+  ros::ServiceServer service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>(
+      BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
+  ros::ServiceServer modbus_service =
+      nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>(
+          MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
 
   BrakeTestExecutor brake_test_executor(this->nh_);
 
@@ -216,10 +217,11 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestServiceTriggerFails)
   /**********
    * Step 0 *
    **********/
-  ros::ServiceServer service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>
-          (BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
-  ros::ServiceServer modbus_service = nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>
-          (MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
+  ros::ServiceServer service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>(
+      BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
+  ros::ServiceServer modbus_service =
+      nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>(
+          MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
 
   BrakeTestExecutor brake_test_executor(this->nh_);
 
@@ -234,9 +236,7 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestServiceTriggerFails)
 
     EXPECT_CALL(manipulator_, holdCb(_, _)).WillOnce(Return(true));
 
-    EXPECT_CALL(*this, triggerBrakeTest(_, _))
-        .Times(1)
-        .WillOnce(Return(false));
+    EXPECT_CALL(*this, triggerBrakeTest(_, _)).Times(1).WillOnce(Return(false));
 
     EXPECT_CALL(manipulator_, unholdCb(_, _)).WillOnce(Return(true));
   }
@@ -282,10 +282,11 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringHoldFailing)
   /**********
    * Step 0 *
    **********/
-  ros::ServiceServer service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>
-          (BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
-  ros::ServiceServer modbus_service = nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>
-          (MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
+  ros::ServiceServer service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>(
+      BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
+  ros::ServiceServer modbus_service =
+      nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>(
+          MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
 
   BrakeTestExecutor brake_test_executor(this->nh_);
 
@@ -302,11 +303,10 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringHoldFailing)
 
     EXPECT_CALL(*this, triggerBrakeTest(_, _))
         .Times(1)
-        .WillOnce(testing::Invoke(
-            [](BrakeTest::Request &, BrakeTest::Response &res) {
-              res.success = true;
-              return true;
-            }));
+        .WillOnce(testing::Invoke([](BrakeTest::Request&, BrakeTest::Response& res) {
+          res.success = true;
+          return true;
+        }));
 
     EXPECT_CALL(manipulator_, unholdCb(_, _)).WillOnce(Return(false));
   }
@@ -345,14 +345,17 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringHoldFailing)
  *  4. A BrakeTestExecutorException is thown
  *  5. -
  */
-TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringWrongApiDef){
+TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringWrongApiDef)
+{
   /**********
    * Step 0 *
    **********/
-  ros::ServiceServer brake_test_service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>
-          (BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
-  ros::ServiceServer modbus_service = nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>
-          (MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
+  ros::ServiceServer brake_test_service =
+      nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>(
+          BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
+  ros::ServiceServer modbus_service =
+      nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>(
+          MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
   ASSERT_NO_THROW(BrakeTestExecutor bte_default_params(nh_));
   XmlRpc::XmlRpcValue api_spec_backup;
   nh_.getParam(API_SPEC_PARAM_NAME, api_spec_backup);
@@ -360,43 +363,42 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringWrongApiDef){
   /**********
    * Step 1 *
    **********/
-  nh_.deleteParam(API_SPEC_PARAM_NAME+BRAKETEST_PERFORMED_PARAM_NAME);
+  nh_.deleteParam(API_SPEC_PARAM_NAME + BRAKETEST_PERFORMED_PARAM_NAME);
   ASSERT_THROW(BrakeTestExecutor bte_no_perf(nh_), BrakeTestExecutorException);
 
   /**********
    * Step 2 *
    **********/
-  nh_.setParam(API_SPEC_PARAM_NAME+BRAKETEST_PERFORMED_PARAM_NAME, 100);
-  nh_.deleteParam(API_SPEC_PARAM_NAME+BRAKETEST_RESULT_PARAM_NAME);
+  nh_.setParam(API_SPEC_PARAM_NAME + BRAKETEST_PERFORMED_PARAM_NAME, 100);
+  nh_.deleteParam(API_SPEC_PARAM_NAME + BRAKETEST_RESULT_PARAM_NAME);
   ASSERT_THROW(BrakeTestExecutor bte_no_res(nh_), BrakeTestExecutorException);
 
   /**********
    * Step 3 *
    **********/
-  nh_.setParam(API_SPEC_PARAM_NAME+BRAKETEST_RESULT_PARAM_NAME, 99);
+  nh_.setParam(API_SPEC_PARAM_NAME + BRAKETEST_RESULT_PARAM_NAME, 99);
   ASSERT_NO_THROW(BrakeTestExecutor bte_one_apart(nh_));
 
   /**********
    * Step 4 *
    **********/
-  nh_.setParam(API_SPEC_PARAM_NAME+BRAKETEST_RESULT_PARAM_NAME, 98);
+  nh_.setParam(API_SPEC_PARAM_NAME + BRAKETEST_RESULT_PARAM_NAME, 98);
   ASSERT_THROW(BrakeTestExecutor bte_two_apart(nh_), BrakeTestExecutorException);
 
   /**********
    * Step 5 *
    **********/
   nh_.setParam(API_SPEC_PARAM_NAME, api_spec_backup);
-
 }
 
-} // namespace brake_test_executor_test
+}  // namespace brake_test_executor_test
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "unittest_brake_test_executor");
   ros::NodeHandle nh;
 
-  ros::AsyncSpinner spinner{2};
+  ros::AsyncSpinner spinner{ 2 };
   spinner.start();
 
   testing::InitGoogleMock(&argc, argv);

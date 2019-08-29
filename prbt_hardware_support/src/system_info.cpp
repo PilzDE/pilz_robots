@@ -27,15 +27,13 @@
 
 namespace prbt_hardware_support
 {
+static const std::string CANOPEN_GETOBJECT_SERVICE_NAME{ "/prbt/driver/get_object" };
+static const std::string CANOPEN_NODES_PARAMETER_NAME{ "/prbt/driver/nodes" };
+static const std::string JOINT_STATE_TOPIC{ "/joint_states" };
 
-static const std::string CANOPEN_GETOBJECT_SERVICE_NAME{"/prbt/driver/get_object"};
-static const std::string CANOPEN_NODES_PARAMETER_NAME{"/prbt/driver/nodes"};
-static const std::string JOINT_STATE_TOPIC {"/joint_states"};
+static const std::string GET_FIRMWARE_VERION_OBJECT{ "100A" };
 
-static const std::string GET_FIRMWARE_VERION_OBJECT{"100A"};
-
-SystemInfo::SystemInfo(ros::NodeHandle &nh)
-    : joint_names_( getNodeNames(nh) )
+SystemInfo::SystemInfo(ros::NodeHandle& nh) : joint_names_(getNodeNames(nh))
 {
   // Wait till CAN is up and running.
   // Reason: If the first CAN service call happens before
@@ -69,7 +67,7 @@ std::string SystemInfo::getFirmwareVersionOfJoint(const std::string& joint_name)
 FirmwareCont SystemInfo::getFirmwareVersions()
 {
   FirmwareCont versions;
-  for(const auto& joint : joint_names_)
+  for (const auto& joint : joint_names_)
   {
     versions[joint] = getFirmwareVersionOfJoint(joint);
   }
@@ -93,4 +91,4 @@ std::vector<std::string> SystemInfo::getNodeNames(const ros::NodeHandle& nh)
   return node_names;
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support

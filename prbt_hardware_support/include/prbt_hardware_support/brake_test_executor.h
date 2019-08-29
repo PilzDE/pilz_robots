@@ -24,7 +24,6 @@
 
 namespace prbt_hardware_support
 {
-
 /**
  * @brief Triggers execution of brake tests only if the controller is not executing a trajectory.
  *
@@ -53,5 +52,5 @@ private:
   short unsigned int brake_test_modbus_register_low_;
 };
 
-} // namespace prbt_hardware_support
-#endif // PRBT_HARDWARE_SUPPORT_BRAKE_TEST_EXECUTOR_H
+}  // namespace prbt_hardware_support
+#endif  // PRBT_HARDWARE_SUPPORT_BRAKE_TEST_EXECUTOR_H

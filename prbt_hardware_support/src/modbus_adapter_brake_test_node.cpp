@@ -23,11 +23,11 @@
 /**
  * @brief Starts a modbus brake test announcer and runs it until a failure occurs.
  */
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "modbus_adapter_brake_test");
   ros::NodeHandle nh{};
-  ros::NodeHandle pnh{"~"};
+  ros::NodeHandle pnh{ "~" };
 
   prbt_hardware_support::ModbusApiSpec api_spec(nh);
 
