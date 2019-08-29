@@ -158,7 +158,7 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
   ASSERT_TRUE(is_brake_test_required_client.waitForExistence(ros::Duration(10)));
 
   EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(
-                                              is_brake_test_required_client, IsBrakeTestRequiredResponse::REQUIRED, 10));
+                                              is_brake_test_required_client, IsBrakeTestRequiredResponse::REQUIRED));
 
   /**********
    * Step 2 *
@@ -169,7 +169,7 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
   modbus_server.setHoldingRegister({{sto_register, 1}});
 
 	EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(
-                                              is_brake_test_required_client, IsBrakeTestRequiredResponse::REQUIRED, 10));
+                                              is_brake_test_required_client, IsBrakeTestRequiredResponse::REQUIRED));
 
   /**********
    * Step 3 *
@@ -177,7 +177,7 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
   modbus_server.setHoldingRegister({{braketest_register, 0}});
 
   EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(
-                                          is_brake_test_required_client, IsBrakeTestRequiredResponse::NOT_REQUIRED, 10));
+                                          is_brake_test_required_client, IsBrakeTestRequiredResponse::NOT_REQUIRED));
 
   /**********
    * Step 4 *
