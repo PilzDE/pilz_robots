@@ -41,6 +41,7 @@ add_service_files(
   IsBrakeTestRequired.srv
   SetSpeedLimit.srv
   WriteModbusRegister.srv
+  SetSpeedLimit.srv
 )
 
 generate_messages(
@@ -98,6 +99,14 @@ add_executable(stop1_executor_node
 )
 add_dependencies(stop1_executor_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
 target_link_libraries(stop1_executor_node ${catkin_LIBRARIES})
+
+# OPERATION_MODE_SETUP_EXECUTOR_NODE
+add_executable(operation_mode_setup_executor_node
+  src/operation_mode_setup_executor.cpp
+  src/operation_mode_setup_executor_node.cpp
+)
+add_dependencies(operation_mode_setup_executor_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(operation_mode_setup_executor_node ${catkin_LIBRARIES})
 
 # BRAKE_TEST_NODE
 add_executable(modbus_adapter_brake_test_node
