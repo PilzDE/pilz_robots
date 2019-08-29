@@ -39,6 +39,7 @@ add_service_files(
   BrakeTest.srv
   GetOperationMode.srv
   IsBrakeTestRequired.srv
+  SetSpeedLimit.srv
   WriteModbusRegister.srv
 )
 

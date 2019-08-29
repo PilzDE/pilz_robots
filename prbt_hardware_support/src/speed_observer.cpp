@@ -61,10 +61,10 @@ void SpeedObserver::waitTillTFReady(const std::string& frame, const ros::Time& t
   }
 }
 
-tf2::Vector3 SpeedObserver::getPose(const std::string& frame, const ros::Time& now) const
+tf2::Vector3 SpeedObserver::getPose(const std::string& frame, const ros::Time& time) const
 {
   tf2::Vector3 v;
-  geometry_msgs::TransformStamped transform{ tf_buffer_.lookupTransform(reference_frame_, frame, now) };
+  geometry_msgs::TransformStamped transform{ tf_buffer_.lookupTransform(reference_frame_, frame, time) };
   tf2::fromMsg(transform.transform.translation, v);
   return tf2::Vector3(v);
 }
@@ -87,8 +87,8 @@ void SpeedObserver::startObserving(double frequency)
     return;
   }
 
-  ROS_INFO("Observing at %.1fHz", frequency);
   ros::Rate r(frequency);
+  ROS_INFO("Observing at %.1fHz", frequency);
 
   tf2::Vector3 curr_pos;
   std::vector<double> speeds;
@@ -118,9 +118,10 @@ void SpeedObserver::startObserving(double frequency)
       }
 
       double curr_speed{ speedFromTwoPoses(previous_poses.at(frame), curr_pos, (now - previous_t).toSec()) };
-      if (!isWithinLimits(curr_speed))
+      if (!isWithinLimit(curr_speed))
       {
-        ROS_ERROR("Speed %.2f m/s of frame >%s< exceeds limit of %.2f m/s", curr_speed, frame.c_str(), SPEED_LIMIT);
+        ROS_ERROR("Speed %.2f m/s of frame >%s< exceeds limit of %.2f m/s", curr_speed, frame.c_str(),
+                  current_speed_limit_);
         triggerStop1();
       }
 
@@ -170,6 +171,12 @@ void SpeedObserver::triggerStop1()
     ROS_ERROR_STREAM("Service: " << sto_client_.getService() << " failed with error message:\n"
                                  << sto_srv.response.message);
   }
+}
+
+bool SpeedObserver::setSpeedLimitCb(SetSpeedLimit::Request& req, SetSpeedLimit::Response& res)
+{
+  current_speed_limit_ = req.speed_limit;
+  return true;
 }
 
 }  // namespace prbt_hardware_support

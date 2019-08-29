@@ -15,9 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <prbt_hardware_support/speed_observer.h>
 #include <ros/ros.h>
 #include <urdf/model.h>
+
+#include <prbt_hardware_support/speed_observer.h>
 
 using namespace prbt_hardware_support;
 
@@ -25,6 +26,7 @@ static const std::string REFERENCE_FRAME_PARAM_NAME{ "reference_frame" };
 static const std::string REFERENCE_FRAME_PARAM_DEFAULT{ "prbt_base_link" };
 static const std::string ADDITIONAL_FRAMES_PARAM_NAME{ "additional_frames" };
 static const std::string ROBOT_DESCRIPTION_PARAM_NAME{ "robot_description" };
+static const std::string SET_SPEED_LIMIT_SERVICE{ "set_speed_limit" };
 static const double OBSERVATION_FREQUENCY{ 10 };
 
 /**
@@ -62,7 +64,9 @@ int main(int argc, char** argv)
   }
   frames_to_observe.insert(frames_to_observe.end(), additional_frames.begin(), additional_frames.end());
 
-  prbt_hardware_support::SpeedObserver observer(nh, reference_frame, frames_to_observe);
+  SpeedObserver observer(nh, reference_frame, frames_to_observe);
+  ros::ServiceServer set_speed_limit_server =
+      nh.advertiseService(SET_SPEED_LIMIT_SERVICE, &SpeedObserver::setSpeedLimitCb, &observer);
   observer.startObserving(OBSERVATION_FREQUENCY);
 
   return EXIT_SUCCESS;

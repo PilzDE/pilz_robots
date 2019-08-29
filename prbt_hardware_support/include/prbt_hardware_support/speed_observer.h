@@ -25,6 +25,7 @@
 #include <tf2_ros/transform_listener.h>
 
 #include <prbt_hardware_support/FrameSpeeds.h>
+#include <prbt_hardware_support/SetSpeedLimit.h>
 
 namespace prbt_hardware_support {
 
@@ -35,6 +36,7 @@ public:
 
 public:
   void startObserving(double frequency);
+  bool setSpeedLimitCb(SetSpeedLimit::Request& req, SetSpeedLimit::Response& res);
   void terminateNow();
 
 private:
@@ -44,11 +46,11 @@ private:
   void waitTillTFReady(const std::string &frame, const ros::Time &now,
                        const unsigned short int max_num_retries = 10) const;
   tf2::Vector3 getPose(const std::string &frame, const ros::Time &now) const;
+  bool isWithinLimit(const double &speed) const;
 
 private:
   static double speedFromTwoPoses(const tf2::Vector3 &a, const tf2::Vector3 &b,
                                   const double &t);
-  static bool isWithinLimits(const double &speed);
 
 private:
   ros::NodeHandle nh_;
@@ -62,9 +64,10 @@ private:
   // Needed to receive tf2 transformations over the wire
   // For more infor see https://wiki.ros.org/tf2/Tutorials/
   tf2_ros::TransformListener tf_listener{tf_buffer_};
+  double current_speed_limit_{DEFAULT_SPEED_LIMIT};
 
 private:
-  static constexpr double SPEED_LIMIT{.25};
+  static constexpr double DEFAULT_SPEED_LIMIT{.25};
   static constexpr uint32_t DEFAULT_QUEUE_SIZE{10};
   static constexpr uint32_t WAITING_TIME_FOR_TRANSFORM_S{1};
 };
@@ -78,8 +81,8 @@ inline double SpeedObserver::speedFromTwoPoses(const tf2::Vector3 &a,
   return d / t;
 }
 
-inline bool SpeedObserver::isWithinLimits(const double &speed) {
-  return speed < SPEED_LIMIT;
+inline bool SpeedObserver::isWithinLimit(const double &speed) const {
+  return speed < current_speed_limit_;
 }
 
 // This method is only needed for the unittest
