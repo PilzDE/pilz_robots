@@ -434,6 +434,18 @@ if(CATKIN_ENABLE_TESTING)
   add_dependencies(unittest_speed_observer ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------------
 
+  # --- Speed Observer integration test ---
+  add_rostest_gmock(integrationtest_speed_observer
+      test/integrationtests/integrationtest_speed_observer.test
+      test/integrationtests/integrationtest_speed_observer.cpp
+      src/speed_observer.cpp
+  )
+  target_link_libraries(integrationtest_speed_observer
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  add_dependencies(integrationtest_speed_observer ${${PROJECT_NAME}_EXPORTED_TARGETS})
+  #----------------------------------------
+
   #--- SystemInfo unit test ---
   add_rostest_gmock(unittest_system_info
       test/unittests/unittest_system_info.test
