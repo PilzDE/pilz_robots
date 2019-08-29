@@ -129,13 +129,13 @@ void SpeedObserverIntegarionTest::stopTfPublisher()
   tf_publisher_running = false;
 }
 
-MATCHER_P(ContainsName, name,
-          "Message " + std::string(negation ? "does not contain" : "contains") + " name: " + name + ".")
+using ::testing::PrintToString;
+MATCHER_P2(NameAtI, i, name,
+          "Name at index " + PrintToString(i) + std::string(negation ? "is not" : "is") + ": " + name + ".")
 {
-  return arg.name.end() != std::find(arg.name.begin(), arg.name.end(), name);
+  return arg.name[i].compare(name) == 0;
 }
 
-using ::testing::PrintToString;
 MATCHER_P2(SpeedAtIGe, i, x,
            "Speed at index " + PrintToString(i) + std::string(negation ? "is not" : "is") + " greater or equal to" +
                PrintToString(x) + ".")
@@ -182,12 +182,12 @@ TEST_F(SpeedObserverIntegarionTest, testStartupAndTopic)
    **********/
   ROS_DEBUG_STREAM("Step 1");
   ::testing::Sequence s_speeds;
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(ContainsName(TEST_FRAME_A), ContainsName(TEST_FRAME_B),
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
                                                 SpeedAtILe((unsigned long)0, .1), SpeedAtILe((unsigned long)1, .26),
                                                 SpeedAtIGe((unsigned long)0, 0), SpeedAtIGe((unsigned long)1, 0))))
       .Times(AtLeast(2))
       .InSequence(s_speeds);
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(ContainsName(TEST_FRAME_A), ContainsName(TEST_FRAME_B),
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
                                                 SpeedAtILe((unsigned long)0, .1), SpeedAtILe((unsigned long)1, .26),
                                                 SpeedAtIGe((unsigned long)0, 0), SpeedAtIGe((unsigned long)1, 0))))
       .Times(AtLeast(1))
@@ -243,17 +243,17 @@ TEST_F(SpeedObserverIntegarionTest, testTooHighSpeed)
   ROS_DEBUG_STREAM("Step 1");
   ::testing::Sequence s_speeds;
   // we can once have a slow speed, when the publisher starts:
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(ContainsName(TEST_FRAME_A), ContainsName(TEST_FRAME_B),
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
                                                 SpeedAtILe((unsigned long)0, .1), SpeedAtILe((unsigned long)1, .32),
                                                 SpeedAtIGe((unsigned long)0, 0), SpeedAtIGe((unsigned long)1, 0))))
       .Times(AtMost(1))
       .InSequence(s_speeds);
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(ContainsName(TEST_FRAME_A), ContainsName(TEST_FRAME_B),
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
                                                 SpeedAtILe((unsigned long)0, .1), SpeedAtILe((unsigned long)1, .32),
                                                 SpeedAtIGe((unsigned long)0, 0), SpeedAtIGe((unsigned long)1, .28))))
       .Times(AtLeast(2))
       .InSequence(s_speeds);
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(ContainsName(TEST_FRAME_A), ContainsName(TEST_FRAME_B),
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
                                                 SpeedAtILe((unsigned long)0, .1), SpeedAtILe((unsigned long)1, .32),
                                                 SpeedAtIGe((unsigned long)0, 0), SpeedAtIGe((unsigned long)1, .28))))
       .Times(AtLeast(1))
@@ -320,17 +320,17 @@ TEST_F(SpeedObserverIntegarionTest, testSetSpeedLimit)
   ROS_DEBUG_STREAM("Step 1");
   ::testing::Sequence s_speeds, s_stop;
   // we can once have a slow speed, when the publisher starts:
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(ContainsName(TEST_FRAME_A), ContainsName(TEST_FRAME_B),
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
                                                 SpeedAtILe((unsigned long)0, .1), SpeedAtILe((unsigned long)1, .32),
                                                 SpeedAtIGe((unsigned long)0, 0), SpeedAtIGe((unsigned long)1, 0))))
       .Times(AtMost(1))
       .InSequence(s_speeds);
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(ContainsName(TEST_FRAME_A), ContainsName(TEST_FRAME_B),
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
                                                 SpeedAtILe((unsigned long)0, .1), SpeedAtILe((unsigned long)1, .32),
                                                 SpeedAtIGe((unsigned long)0, 0), SpeedAtIGe((unsigned long)1, .28))))
       .Times(AtLeast(2))
       .InSequence(s_speeds);
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(ContainsName(TEST_FRAME_A), ContainsName(TEST_FRAME_B),
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
                                                 SpeedAtILe((unsigned long)0, .1), SpeedAtILe((unsigned long)1, .32),
                                                 SpeedAtIGe((unsigned long)0, 0), SpeedAtIGe((unsigned long)1, .28))))
       .Times(AtLeast(1))
