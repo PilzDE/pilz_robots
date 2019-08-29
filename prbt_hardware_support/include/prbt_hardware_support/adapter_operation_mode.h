@@ -54,8 +54,11 @@ private:
   //! The node handle
   ros::NodeHandle& nh_;
 
-  //! Server serving a service to ask whether a brake test is currently required
+  //! Service informing about the current operation mode.
   ros::ServiceServer operation_mode_server_;
+
+  //! Informs about operation mode changes via topic.
+  ros::Publisher operation_mode_pub;
 
 };
 
