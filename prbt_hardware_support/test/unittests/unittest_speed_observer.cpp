@@ -25,6 +25,7 @@
 
 #include <pilz_testutils/async_test.h>
 #include <prbt_hardware_support/FrameSpeeds.h>
+#include <prbt_hardware_support/SetSpeedLimit.h>
 #include <prbt_hardware_support/ros_test_helper.h>
 #include <prbt_hardware_support/speed_observer.h>
 #include <prbt_hardware_support/wait_for_service.h>
@@ -40,6 +41,8 @@ using namespace prbt_hardware_support;
 
 static const std::string BARRIER_SLOW{ "BARRIER_SLOW" };
 static const std::string BARRIER_FAST{ "BARRIER_FAST" };
+static const std::string BARRIER_LIMIT{ "BARRIER_LIMIT" };
+static const std::string BARRIER_LIMIT_LOW{ "BARRIER_LIMIT_LOW" };
 
 static const std::string FRAME_SPEEDS_TOPIC_NAME{ "/frame_speeds" };
 static const std::string STOP_TOPIC_NAME{ "/safe_torque_off" };
@@ -148,7 +151,7 @@ MATCHER_P2(SpeedAtILe, i, x,
 }
 
 /**
- * @tests{The correct observation of frames}
+ * @tests{The correct observation of frames and handling of slwo speeds}
  *
  * Test Sequence:
  *    0. Starting up
@@ -278,7 +281,91 @@ TEST_F(SpeedObserverIntegarionTest, testTooHighSpeed)
 }
 
 /**
- * @tests{The correct handling of too high speeds}
+ * @tests{The correct handling of changed speed limits}
+ *
+ * Test Sequence:
+ *    0. Starting up
+ *    1. Set speed limit to .4 (i.e. above currently published speed of .3)
+ *    2. Reduce speed limit to .2 (i.e. below currently published speed of .3)
+ *
+ * Expected Results:
+ *    0. -
+ *    1. Correct values are published on the speed topic.
+ *       *No* stop is published
+ *    2  A stop is published
+ */
+TEST_F(SpeedObserverIntegarionTest, testSetSpeedLimit)
+{
+  using ::testing::AllOf;
+  using ::testing::AtLeast;
+  using ::testing::AtMost;
+
+  /**********
+   * Step 0 *
+   **********/
+  ROS_DEBUG_STREAM("Step 0");
+  std::string reference_frame{ TEST_BASE_FRAME };
+  std::vector<std::string> frames_to_observe{ TEST_FRAME_A, TEST_FRAME_B };
+  prbt_hardware_support::SpeedObserver observer(nh_, reference_frame, frames_to_observe);
+  SetSpeedLimitRequest req = SetSpeedLimitRequest();
+  SetSpeedLimitResponse res = SetSpeedLimitResponse();
+  req.speed_limit = .4;
+  observer.setSpeedLimitCb(req, res);
+  std::thread observer_thread = std::thread(&SpeedObserver::startObserving, &observer, TEST_FREQUENCY);
+  ROS_DEBUG_STREAM("thread started");
+
+  /**********
+   * Step 1 *
+   **********/
+  ROS_DEBUG_STREAM("Step 1");
+  ::testing::Sequence s_speeds, s_stop;
+  // we can once have a slow speed, when the publisher starts:
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(ContainsName(TEST_FRAME_A), ContainsName(TEST_FRAME_B),
+                                                SpeedAtILe((unsigned long)0, .1), SpeedAtILe((unsigned long)1, .32),
+                                                SpeedAtIGe((unsigned long)0, 0), SpeedAtIGe((unsigned long)1, 0))))
+      .Times(AtMost(1))
+      .InSequence(s_speeds);
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(ContainsName(TEST_FRAME_A), ContainsName(TEST_FRAME_B),
+                                                SpeedAtILe((unsigned long)0, .1), SpeedAtILe((unsigned long)1, .32),
+                                                SpeedAtIGe((unsigned long)0, 0), SpeedAtIGe((unsigned long)1, .28))))
+      .Times(AtLeast(2))
+      .InSequence(s_speeds);
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(ContainsName(TEST_FRAME_A), ContainsName(TEST_FRAME_B),
+                                                SpeedAtILe((unsigned long)0, .1), SpeedAtILe((unsigned long)1, .32),
+                                                SpeedAtIGe((unsigned long)0, 0), SpeedAtIGe((unsigned long)1, .28))))
+      .Times(AtLeast(1))
+      .InSequence(s_speeds)
+      .WillRepeatedly(ACTION_OPEN_BARRIER_VOID(BARRIER_LIMIT));
+  EXPECT_CALL(*this, stop_cb_mock(_, _)).Times(AtMost(0));
+  std::thread pubisher_thread_fast = std::thread(&SpeedObserverIntegarionTest::publishTfAtSpeed, this, 0.3);
+  BARRIER({ BARRIER_LIMIT });
+
+  /**********
+   * Step 2 *
+   **********/
+  ROS_DEBUG_STREAM("Step 2");
+  std_srvs::SetBool::Response sto_srv_resp;
+  sto_srv_resp.success = true;
+  EXPECT_CALL(*this, stop_cb_mock(_, _))
+      .Times(AtLeast(1))
+      .InSequence(s_stop)
+      .WillOnce(DoAll(SetArgReferee<1>(sto_srv_resp), ACTION_OPEN_BARRIER(BARRIER_LIMIT_LOW)));
+  req.speed_limit = .2;
+  observer.setSpeedLimitCb(req, res);
+  BARRIER({ BARRIER_LIMIT_LOW });
+
+  /*************
+   * Tear Down *
+   *************/
+  ROS_DEBUG_STREAM("Tear Down");
+  stopTfPublisher();
+  pubisher_thread_fast.join();
+  observer.terminateNow();
+  observer_thread.join();
+}
+
+/**
+ * @tests{The correct handling of no tf}
  *
  * Test Sequence:
  *    0. Starting up
