@@ -30,7 +30,7 @@ namespace prbt_hardware_support
  */
 TEST(FilterPipelineTest, testEmptyCallbackFunction){
   {
-    ros::NodeHandle nh;
+    ros::NodeHandle nh{"~"};
     FilterPipeline::TCallbackFunc cb;
     EXPECT_THROW(FilterPipeline(nh, cb), std::invalid_argument);
   }
@@ -41,16 +41,8 @@ TEST(FilterPipelineTest, testEmptyCallbackFunction){
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "unittest_filter_pipeline");
-  ros::NodeHandle nh_;  // This nodehandle is held, to avoid rosconsole::shutdown(), which results in subsequent ROS_* messages no longer output.
-  while (!ros::ok()) {
-    ROS_INFO("waiting for ros to be ok ...");
-    ros::Duration(0.1).sleep(); // making sure ros is ok
-  }
+  ros::NodeHandle nh;
 
   testing::InitGoogleTest(&argc, argv);
-
-  int res = RUN_ALL_TESTS();
-  ros::Duration(0.1).sleep(); // making sure all log output is received
-  nh_.shutdown();
-  return res;
+  return RUN_ALL_TESTS();
 }
