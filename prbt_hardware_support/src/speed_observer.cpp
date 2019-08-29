@@ -130,11 +130,10 @@ void SpeedObserver::startObserving(double frequency)
     }
     previous_t = now;
     frame_speeds_pub_.publish(createFrameSpeedsMessage(speeds));
-    if (terminate_)
+    if (!terminate_)
     {
-      return;
+      r.sleep();
     }
-    r.sleep();
   }
 }
 
