@@ -30,7 +30,7 @@ namespace prbt_hardware_support
  */
 TEST(FilterPipelineTest, testEmptyCallbackFunction){
   {
-    ros::NodeHandle nh;
+    ros::NodeHandle nh{"~"};
     FilterPipeline::TCallbackFunc cb;
     EXPECT_THROW(FilterPipeline(nh, cb), std::invalid_argument);
   }
@@ -41,6 +41,8 @@ TEST(FilterPipelineTest, testEmptyCallbackFunction){
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "unittest_filter_pipeline");
+  ros::NodeHandle nh;
+
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
