@@ -41,7 +41,7 @@ protected:
    * @brief Stores the operation mode and initializes the operation mode
    * service, the first time the function is called.
    */
-  void updateOperationMode(const int8_t new_op_mode);
+  void updateOperationMode(const OperationModes& mode);
 
 private:
   /**
@@ -57,7 +57,7 @@ private:
   bool service_initialized_ {false};
 
   //! Store the current operation mode according to OperationModes.msg
-  int8_t op_mode_ {OperationModes::UNKNOWN};
+  OperationModes op_mode_;
 
   //! The node handle
   ros::NodeHandle& nh_;

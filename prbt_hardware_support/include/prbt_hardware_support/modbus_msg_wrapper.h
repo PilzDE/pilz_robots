@@ -17,6 +17,8 @@
 #ifndef MODBUS_MSG_WRAPPER_H
 #define MODBUS_MSG_WRAPPER_H
 
+#include <ros/time.h>
+
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/modbus_msg_wrapper_exception.h>
@@ -64,6 +66,8 @@ public:
    * @return true if the message informs about a disconnect, otherwise false.
    */
   bool isDisconnect() const;
+
+  const ros::Time& getTimeStamp() const;
 
 protected:
 
@@ -140,6 +144,11 @@ inline void ModbusMsgWrapper::checkStructuralIntegrity() const
 inline const ModbusApiSpec& ModbusMsgWrapper::getApiSpec() const
 {
   return api_spec_;
+}
+
+inline const ros::Time& ModbusMsgWrapper::getTimeStamp() const
+{
+  return msg_->header.stamp;
 }
 
 }

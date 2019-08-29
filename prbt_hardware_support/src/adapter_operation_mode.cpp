@@ -26,6 +26,8 @@ AdapterOperationMode::AdapterOperationMode(ros::NodeHandle& nh)
   : service_initialized_(false)
   , nh_(nh)
 {
+  op_mode_.time_stamp = ros::Time::now();
+  op_mode_.value = OperationModes::UNKNOWN;
 }
 
 void AdapterOperationMode::initOperationModeService()
@@ -35,16 +37,16 @@ void AdapterOperationMode::initOperationModeService()
                                                 this);
 }
 
-void AdapterOperationMode::updateOperationMode(const int8_t new_op_mode)
+void AdapterOperationMode::updateOperationMode(const OperationModes& new_op_mode)
 {
-  const int8_t last_op_mode {op_mode_};
+  const int8_t last_op_mode {op_mode_.value};
   op_mode_ = new_op_mode;
-  if (op_mode_ != last_op_mode)
+  if (op_mode_.value != last_op_mode)
   {
     ROS_INFO_STREAM( "Operation Mode switch: "
                      << static_cast<int>(last_op_mode)
                      << " -> "
-                     << static_cast<int>(new_op_mode) );
+                     << static_cast<int>(new_op_mode.value) );
   }
 
   // when the first data is received, the node is initialized
@@ -59,7 +61,7 @@ void AdapterOperationMode::updateOperationMode(const int8_t new_op_mode)
 bool AdapterOperationMode::getOperationMode(GetOperationMode::Request& /*req*/,
                                             GetOperationMode::Response& res)
 {
-  res.mode.value = op_mode_;
+  res.mode = op_mode_;
   return true;
 }
 
