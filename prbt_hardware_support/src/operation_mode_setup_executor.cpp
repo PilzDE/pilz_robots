@@ -45,6 +45,7 @@ void OperationModeSetupExecutor::updateOperationMode(const OperationModes& opera
   {
     return;
   }
+  time_stamp_last_op_mode_ = operation_mode.time_stamp;
 
   double speed_limit {0};
   switch(operation_mode.value)
