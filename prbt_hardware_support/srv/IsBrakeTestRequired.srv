@@ -16,5 +16,8 @@
 
 
 ---
-# A bit representing the information whether a break test is required (= true) or not (= false)
-bool result
+int8 result
+
+int8 NOT_REQUIRED = -1
+int8 REQUIRED = 1
+int8 UNKNOWN = 0

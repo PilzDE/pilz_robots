@@ -25,6 +25,9 @@
 namespace prbt_hardware_support
 {
 
+static constexpr uint16_t REGISTER_VALUE_BRAKETEST_NOT_REQUIRED{0};
+static constexpr uint16_t REGISTER_VALUE_BRAKETEST_REQUIRED{1};
+
 /**
  * @brief Wrapper class to add semantic to a raw ModbusMsgInStamped
  *
@@ -50,7 +53,7 @@ public:
    *
    * @return true if the a brake test is required, otherwise false.
    */
-  bool isBrakeTestRequired() const;
+  IsBrakeTestRequiredResponse::_result_type getBrakeTestRequirementStatus() const;
 
 private:
 
@@ -73,9 +76,19 @@ inline bool ModbusMsgBrakeTestWrapper::hasBrakeTestRequiredFlag() const
   return hasRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
 }
 
-inline bool ModbusMsgBrakeTestWrapper::isBrakeTestRequired() const
+inline IsBrakeTestRequiredResponse::_result_type ModbusMsgBrakeTestWrapper::getBrakeTestRequirementStatus() const
 {
-  return getRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
+  switch(getRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST)))
+  {
+    case REGISTER_VALUE_BRAKETEST_NOT_REQUIRED:
+      return IsBrakeTestRequiredResponse::NOT_REQUIRED;
+
+    case REGISTER_VALUE_BRAKETEST_REQUIRED:
+      return IsBrakeTestRequiredResponse::REQUIRED;
+
+    default:
+      return IsBrakeTestRequiredResponse::UNKNOWN;
+  }
 }
 
 inline void ModbusMsgBrakeTestWrapper::checkStructuralIntegrity() const
