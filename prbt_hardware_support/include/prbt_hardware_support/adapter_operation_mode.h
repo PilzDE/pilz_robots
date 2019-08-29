@@ -44,18 +44,10 @@ protected:
   void updateOperationMode(const OperationModes& mode);
 
 private:
-  /**
-   * @brief Initializes the operation mode service.
-   */
-  void initOperationModeService();
-
   bool getOperationMode(GetOperationMode::Request& req,
                         GetOperationMode::Response& res);
 
 private:
-  //! Is the service advertising the operation mode initialized?
-  bool service_initialized_ {false};
-
   //! Store the current operation mode according to OperationModes.msg
   OperationModes op_mode_;
 

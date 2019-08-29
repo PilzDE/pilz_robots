@@ -23,15 +23,11 @@ namespace prbt_hardware_support
 static const std::string SERVICE_NAME_GET_OPERATION_MODE = "/prbt/get_operation_mode";
 
 AdapterOperationMode::AdapterOperationMode(ros::NodeHandle& nh)
-  : service_initialized_(false)
-  , nh_(nh)
+  : nh_(nh)
 {
   op_mode_.time_stamp = ros::Time::now();
   op_mode_.value = OperationModes::UNKNOWN;
-}
 
-void AdapterOperationMode::initOperationModeService()
-{
   operation_mode_server_ = nh_.advertiseService(SERVICE_NAME_GET_OPERATION_MODE,
                                                 &AdapterOperationMode::getOperationMode,
                                                 this);
@@ -47,14 +43,6 @@ void AdapterOperationMode::updateOperationMode(const OperationModes& new_op_mode
                      << static_cast<int>(last_op_mode)
                      << " -> "
                      << static_cast<int>(new_op_mode.value) );
-  }
-
-  // when the first data is received, the node is initialized
-  // (i.e. the service advertised) <-> "lazy initialization"
-  if(!service_initialized_)
-  {
-    initOperationModeService();
-    service_initialized_ = true;
   }
 }
 
