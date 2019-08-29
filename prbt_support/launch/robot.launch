@@ -61,7 +61,7 @@
         args="$(arg spawn_controllers)" />
 
   <!-- Initialize controllers and start STO-processing (if configured) -->
-  <group unless="$(eval sto == 'none')" >
+  <group unless="$(eval sto.lower() == 'none')" >
     <!-- Load api spec for all nodes -->
     <rosparam ns="/prbt/read_api_spec" command="load" file="$(arg read_api_spec_file)" />
     <rosparam ns="/prbt/write_api_spec" command="load" file="$(arg write_api_spec_file)" if="$(arg has_operation_mode_support)" />
@@ -71,6 +71,7 @@
       <arg name="modbus_server_ip" value="$(arg sto_modbus_server_ip)" />
     </include>
     <include file="$(find prbt_hardware_support)/launch/modbus_adapter_sto_node.launch" />
+    <include file="$(find prbt_hardware_support)/launch/stop1_executor_node.launch" />
     <include if="$(arg has_braketest_support)" file="$(find prbt_hardware_support)/launch/brake_test.launch">
       <arg name="write_api_spec_file" value="$(arg write_api_spec_file)" />
     </include>
@@ -78,7 +79,7 @@
     <include if="$(arg has_operation_mode_support)" file="$(find prbt_hardware_support)/launch/operation_mode_adapter.launch" />
   </group>
 
-  <group if="$(eval sto == 'none')" >
+  <group if="$(eval sto.lower() == 'none')" >
     <node pkg="rosservice" type="rosservice" name="robot_init" args="call --wait /prbt/driver/init"/>
   </group>
 
