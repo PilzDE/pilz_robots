@@ -131,7 +131,7 @@ void SpeedObserverIntegarionTest::stopTfPublisher()
 
 using ::testing::PrintToString;
 MATCHER_P2(NameAtI, i, name,
-          "Name at index " + PrintToString(i) + std::string(negation ? "is not" : "is") + ": " + name + ".")
+           "Name at index " + PrintToString(i) + std::string(negation ? "is not" : "is") + ": " + name + ".")
 {
   return arg.name[i].compare(name) == 0;
 }
