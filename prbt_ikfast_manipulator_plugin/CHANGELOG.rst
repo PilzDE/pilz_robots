@@ -2,6 +2,9 @@
 Changelog for package prbt_ikfast_manipulator_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.5.6 (2019-06-12)
 ------------------
 
