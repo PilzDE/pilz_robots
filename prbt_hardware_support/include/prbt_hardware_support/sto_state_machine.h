@@ -29,6 +29,8 @@
 #include <boost/core/demangle.hpp>
 #include <ros/console.h>
 
+#include <prbt_hardware_support/service_function_decl.h>
+
 namespace prbt_hardware_support
 {
 
@@ -56,7 +58,7 @@ inline std::string className(std::string fullName)
 class AsyncStoTask
 {
 public:
-  AsyncStoTask(const std::function<void()> &operation, const std::function<void()> &finished_handler)
+  AsyncStoTask(const TServiceCallFunc &operation, const std::function<void()> &finished_handler)
       : operation_(operation),
         finished_handler_(finished_handler)
   {}
@@ -66,7 +68,10 @@ public:
    */
   void execute()
   {
-    operation_();
+    if (operation_)
+    {
+      operation_();
+    }
   }
 
   /**
@@ -78,7 +83,7 @@ public:
   }
 
 private:
-  std::function<void()> operation_;
+  TServiceCallFunc operation_;
   std::function<void()> finished_handler_;
 };
 
@@ -108,10 +113,10 @@ public:
    * @param hold_operation The execution function of the hold-task.
    * @param unhold_operation The execution function of the unhold-task.
   */
-  StoStateMachine_(const std::function<void()> &recover_operation,
-                   const std::function<void()> &halt_operation,
-                   const std::function<void()> &hold_operation,
-                   const std::function<void()> &unhold_operation)
+  StoStateMachine_(const TServiceCallFunc &recover_operation,
+                   const TServiceCallFunc &halt_operation,
+                   const TServiceCallFunc &hold_operation,
+                   const TServiceCallFunc &unhold_operation)
       : recover_op_(recover_operation),
         halt_op_(halt_operation),
         hold_op_(hold_operation),
@@ -219,7 +224,7 @@ public:
   struct sto_updated
   {
     sto_updated(const bool sto)
-        : sto_(sto){};
+        : sto_(sto){}
 
     bool sto_;
   };
@@ -357,16 +362,16 @@ public:
   StoTaskQueue task_queue_;
 
   //! The recover operation
-  std::function<void()> recover_op_;
+  TServiceCallFunc recover_op_;
 
   //! The halt operation
-  std::function<void()> halt_op_;
+  TServiceCallFunc halt_op_;
 
   //! The hold operation
-  std::function<void()> hold_op_;
+  TServiceCallFunc hold_op_;
 
   //! The unhold operation
-  std::function<void()> unhold_op_;
+  TServiceCallFunc unhold_op_;
 };
 
 //! The top-level (back-end) state machine

@@ -38,8 +38,8 @@
  *
  * @definereq{Stop1_Trigger}
  *  - A Stop 1 is triggered, if at least one of the following cases is true:
- *    - the state of the STO changes from TRUE -> FALSE when the drives are not
- *      recovering (Otherwise see \refspec{STO_false_during_recover}),
+ *    - the state of the STO changes from TRUE -> FALSE (given that the
+ *      drives are currently not recovering, see \refspec{release_of_stop1}),
  *    - connection to safety controller is lost,
  *    - the messages informing about the STO (coming from the
  *      safety controller) is incomplete or in any way corrupted,
@@ -47,40 +47,49 @@
  *      does not fulfill the expected specification
  *      (defined by the version of the protocol).
  *
- * @definereq{STO_false_during_recover}
- *  - If the state of the STO changes from TRUE -> FALSE when the drives are recovering,
- *    the controller hold is kept, that is performing a stop motion is skipped.
+ * @definereq{execution_of_stop1}
+ * - If a stop1 is triggered, the system performs the following steps:
+ * Controller:hold (includes execution of Stop1 trajectory) -> Driver:halt
  *
- * @definereq{Recover_driver_after_STO_false}
- *  - If the STO changes from FALSE -> TRUE, the driver is recovered.
+ * - If the hold step fails, the system still tries to execute the halt service.
+ *    (see also \refspec{hold_service_fail})
  *
- * @definereq{Leave_hold_after_recover}
- *  - If STO is still TRUE after recovering, the controller is no longer holded.
+ * - If the STO changes to TRUE during the execution of the stop1 process, the
+ * system stops the stop1 process as soon as the currently active step is finished.
+ * For example:
+ *    If the state of the STO changes from TRUE -> FALSE while the drives
+ *    are recovering, the controller is kept in "holding" mode and
+ *    the execution of the stop trajectory is skipped.
+ *
+ * Please note:
+ * - While the controller is holded, the controller rejects all new trajectories.
+ * - The stop1 process can also be resumed by again chainging the STO to FALSE.
+ *
+ * @definereq{release_of_stop1}
+ * - If a stop1 is released, the system performs the follwing steps:
+ * Driver:recover -> Controller:unhold
+ *
+ * - If the STO changes to FALSE during the execution of the stop1-release process,
+ * the system stops the stop1-release process as soon as the currently active step
+ * is finished.
+ *
+ * - If the recover step fails, the system ends the stop1-release process.
+ *    (see also \refspec{unhold_service_fails})
+ *
+ * Please note:
+ * - The stop1-release process can also be resumed by again chainging the
+ * STO to TRUE.
  *
  *
- * @definereq{No_Startup_if_controller_hold_missing}
- *  - The system is not allowed to complete the startup procedure until
- *    the controller hold service is available.
- *
- * @definereq{No_Startup_if_driver_halt_missing}
- *  - The system is not allowed to complete the startup procedure until
- *    the driver halt service is available.
- *
- * @definereq{No_Startup_if_controller_unhold_missing}
- *  - The system is not allowed to complete the startup procedure until
- *    the controller unhold service is available.
- *
- * @definereq{No_Startup_if_driver_recover_missing}
- *  - The system is not allowed to complete the startup procedure until
- *    the driver recover service is available.
- *
- * @definereq{Controller_service_unhold_optional}
+ * @definereq{unhold_service_fails}
  *  - If the controller unhold service fails, Stop1 can still be triggered.
  *
- * @definereq{Controller_service_hold_optional}
- *  - If the controller hold service fails during Stop1, the driver can still be recovered.
+ * @definereq{hold_service_fail}
+ *  - If the controller hold service fails during Stop1, the driver is still halted.
  *
- *
+ * @definereq{stop1_missing_services}
+ *  - The system is not allowed to complete the startup procedure until
+ *    all necessary services are available.
  *
  * @subsubsection brake_test Braketest
  *

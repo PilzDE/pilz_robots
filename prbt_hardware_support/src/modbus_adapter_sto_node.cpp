@@ -15,21 +15,51 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <functional>
+
 #include <ros/ros.h>
 
 #include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/modbus_adapter_sto.h>
+#include <prbt_hardware_support/filter_pipeline.h>
+#include <prbt_hardware_support/modbus_api_spec.h>
+#include <prbt_hardware_support/wait_for_service.h>
+#include <std_srvs/SetBool.h>
 
 using namespace prbt_hardware_support;
 
+static const std::string STO_SERVICE_NAME{"safe_torque_off"};
+
 // LCOV_EXCL_START
+static void sendStoUpdate(ros::ServiceClient& sto_service, const bool sto)
+{
+  std_srvs::SetBool srv;
+  srv.request.data = sto;
+  if (!sto_service.call(srv))
+  {
+    ROS_ERROR_STREAM("STO service call failed");
+  }
+
+  if (!srv.response.success)
+  {
+    ROS_ERROR_STREAM(srv.response.message);
+  }
+}
+
+
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "modbus_adapter_sto");
   ros::NodeHandle nh;
 
+  using std::placeholders::_1;
+
   ModbusApiSpec api_spec{nh};
-  ModbusAdapterSto adapter_sto(nh, api_spec);
+  waitForService(STO_SERVICE_NAME);
+  ros::ServiceClient sto_service = nh.serviceClient<std_srvs::SetBool>(STO_SERVICE_NAME);
+  ModbusAdapterSto adapter_sto(std::bind(sendStoUpdate, sto_service, _1), api_spec);
+  FilterPipeline filter_pipeline( nh, std::bind(&ModbusAdapterSto::modbusMsgCallback, &adapter_sto, _1) );
+
   ros::spin();
 
   return EXIT_FAILURE;
