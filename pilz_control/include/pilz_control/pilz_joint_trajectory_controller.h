@@ -25,6 +25,7 @@
 
 namespace pilz_joint_trajectory_controller
 {
+  
 enum class Mode
 {
   HOLD,
