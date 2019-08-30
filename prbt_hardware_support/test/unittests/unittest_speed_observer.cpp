@@ -70,7 +70,7 @@ protected:
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_{ "~" };
   std::vector<std::string> additional_frames_;
-  bool tf_publisher_running{ false };
+  bool tf_publisher_running_{ false };
 };
 
 void SpeedObserverIntegarionTest::SetUp()
@@ -92,8 +92,8 @@ void SpeedObserverIntegarionTest::publishTfAtSpeed(double v)
   ros::Rate r = ros::Rate(TEST_FREQUENCY * 3);  // publishing definitely faster then observing
   ros::Time start = ros::Time::now();
   double t = 0;
-  tf_publisher_running = true;
-  while (tf_publisher_running)
+  tf_publisher_running_ = true;
+  while (tf_publisher_running_)
   {
     ros::Time current = ros::Time::now();
     t = (current - start).toSec();
@@ -119,14 +119,14 @@ void SpeedObserverIntegarionTest::publishTfAtSpeed(double v)
     br.sendTransform(tfsa);
     br.sendTransform(tfsb);
 
-    if (tf_publisher_running)  // ending faster
+    if (tf_publisher_running_)  // ending faster
       r.sleep();
   }
 }
 
 void SpeedObserverIntegarionTest::stopTfPublisher()
 {
-  tf_publisher_running = false;
+  tf_publisher_running_ = false;
 }
 
 using ::testing::PrintToString;

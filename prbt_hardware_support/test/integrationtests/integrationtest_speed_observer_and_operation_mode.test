@@ -17,11 +17,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <launch>
     <arg name="timeout" default="5" />
-    <arg name="testing_frame" value="another_frame" doc="a user definded frame to test how it is handled" />
+    <arg name="testing_frame" value="another_frame"
+         doc="a user definded frame to test how it is handled" />
 
     <!-- Testing environment -->
-    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
-    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <node name="robot_state_publisher" pkg="robot_state_publisher"
+        type="robot_state_publisher" />
+    <node name="joint_state_publisher" pkg="joint_state_publisher"
+        type="joint_state_publisher">
         <param name="/use_gui" value="false"/>
         <param name="/rate" value="100"/>
         <rosparam param="/source_list">[fake_controller_joint_states]</rosparam>
@@ -29,18 +32,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <param name="robot_description"
     command="$(find xacro)/xacro --inorder '$(find prbt_hardware_support)/test/config/speed_observer_test.xacro'" />
 
-    <node pkg="tf" type="static_transform_publisher" name="test_transform_publisher" args="99 0 0 0 1.57 0 /world /$(arg testing_frame) 100"/>
+    <node pkg="tf" type="static_transform_publisher"
+        name="test_transform_publisher"
+        args="1 1 0 0 1.57 0 /world /$(arg testing_frame) 100"/>
 
-    <test test-name="integrationtest_speed_observer_and_operation_mode" pkg="prbt_hardware_support" type="integrationtest_speed_observer_and_operation_mode" time-limit="$(arg timeout)">
-        <rosparam param="additional_frames" subst_value="True">["$(arg testing_frame)"]</rosparam>
+    <test test-name="integrationtest_speed_observer_and_operation_mode"
+        pkg="prbt_hardware_support"
+        type="integrationtest_speed_observer_and_operation_mode"
+        time-limit="$(arg timeout)">
+        <rosparam param="additional_frames"
+        subst_value="True">["$(arg testing_frame)"]</rosparam>
     </test>
 
     <!-- Devices under test -->
-    <node name="speed_observer_node" pkg="prbt_hardware_support" type="speed_observer_node" output="screen" >
-        <rosparam param="additional_frames" subst_value="True">["$(arg testing_frame)"]</rosparam>
+    <node name="speed_observer_node" pkg="prbt_hardware_support"
+        type="speed_observer_node" output="screen" >
+        <rosparam param="additional_frames"
+            subst_value="True">["$(arg testing_frame)"]</rosparam>
     </node>
 
-    <node name="operation_mode_setup_executor_node" pkg="prbt_hardware_support" type="operation_mode_setup_executor_node" output="screen" >
+    <node name="operation_mode_setup_executor_node" pkg="prbt_hardware_support"
+        type="operation_mode_setup_executor_node" output="screen" >
         <!-- NOTE: These values are for testing only! -->
         <param name="/speed_limit_t1" value="0.5"/>
         <param name="/speed_limit_automatic" value="1.0"/>
