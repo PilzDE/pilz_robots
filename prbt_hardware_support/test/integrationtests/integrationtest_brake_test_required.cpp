@@ -56,6 +56,8 @@ using ::testing::InvokeWithoutArgs;
 static constexpr uint16_t MODBUS_API_VERSION_VALUE {2};
 static const std::string SERVICE_BRAKETEST_REQUIRED = "/prbt/brake_test_required";
 
+static constexpr unsigned int DEFAULT_RETRIES{10};
+
 /**
  * @brief BrakeTestRequiredIntegrationTest checks if the chain
  * ModbusServerMock -> ModbusReadClient -> ModbusAdapterBrakeTest functions properly
@@ -71,8 +73,8 @@ protected:
 
 ::testing::AssertionResult expectBrakeTestRequiredServiceCallResult
                                              (ros::ServiceClient& brake_test_required_client,
-                                              bool expectation,
-                                              uint16_t retries)
+                                              IsBrakeTestRequiredResponse::_result_type expectation,
+                                              uint16_t retries = DEFAULT_RETRIES)
 {
   prbt_hardware_support::IsBrakeTestRequired srv;
   for (int i = 0; i<= retries; i++) {
@@ -155,7 +157,8 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
     nh_.serviceClient<prbt_hardware_support::IsBrakeTestRequired>(SERVICE_BRAKETEST_REQUIRED);
   ASSERT_TRUE(is_brake_test_required_client.waitForExistence(ros::Duration(10)));
 
-  EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(is_brake_test_required_client, true, 10));
+  EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(
+                                              is_brake_test_required_client, IsBrakeTestRequiredResponse::REQUIRED));
 
   /**********
    * Step 2 *
@@ -165,14 +168,16 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
 
   modbus_server.setHoldingRegister({{sto_register, 1}});
 
-	EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(is_brake_test_required_client, true, 10));
+	EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(
+                                              is_brake_test_required_client, IsBrakeTestRequiredResponse::REQUIRED));
 
   /**********
    * Step 3 *
    **********/
   modbus_server.setHoldingRegister({{braketest_register, 0}});
 
-  EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(is_brake_test_required_client, false, 10));
+  EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(
+                                          is_brake_test_required_client, IsBrakeTestRequiredResponse::NOT_REQUIRED));
 
   /**********
    * Step 4 *

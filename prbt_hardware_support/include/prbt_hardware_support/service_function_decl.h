@@ -15,34 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdexcept>
+#ifndef SERVICE_FUNCTION_DECL_H
+#define SERVICE_FUNCTION_DECL_H
 
-#include <gtest/gtest.h>
-
-#include <prbt_hardware_support/filter_pipeline.h>
+#include <functional>
 
 namespace prbt_hardware_support
 {
 
-/**
- * @brief Tests that exception is thrown if empty callback function is
- * specified.
- */
-TEST(FilterPipelineTest, testEmptyCallbackFunction){
-  {
-    ros::NodeHandle nh{"~"};
-    FilterPipeline::TCallbackFunc cb;
-    EXPECT_THROW(FilterPipeline(nh, cb), std::invalid_argument);
-  }
+using TServiceCallFunc = std::function<bool()>;
+
 }
 
-} // namespace prbt_hardware_support
-
-int main(int argc, char** argv)
-{
-  ros::init(argc, argv, "unittest_filter_pipeline");
-  ros::NodeHandle nh;
-
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
+#endif // SERVICE_FUNCTION_DECL_H
