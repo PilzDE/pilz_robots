@@ -19,9 +19,11 @@
 
 #include <ros/ros.h>
 
+#include <pilz_testutils/async_test.h>
 #include <prbt_hardware_support/ros_test_helper.h>
 #include <prbt_hardware_support/speed_observer.h>
 #include <prbt_hardware_support/FrameSpeeds.h>
+#include <prbt_hardware_support/GetOperationMode.h>
 
 namespace speed_observer_test
 {
@@ -30,9 +32,10 @@ using namespace prbt_hardware_support;
 
 static const std::string FRAME_SPEEDS_TOPIC_NAME{"/frame_speeds"};
 static const std::string STOP_TOPIC_NAME{"/stop"};
-static const std::string ADDITIONAL_FRAMES_PARAM_NAME{"/additional_frames"};
+static const std::string ADDITIONAL_FRAMES_PARAM_NAME{"additional_frames"};
+static const std::string OPERATION_MODE_SERVICE{"/prbt/get_operation_mode"};
 
-class SpeedObserverIntegarionTest : public testing::Test
+class SpeedObserverIntegarionTest : public testing::Test, public testing::AsyncTest
 {
 
 public:
@@ -40,15 +43,15 @@ public:
 //  virtual void TearDown();
 
 protected:
-  ros::Subscriber subscriber_;
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_{"~"};
+  ros::Subscriber subscriber_;
+  ros::ServiceServer operation_mode_srv_;
   FrameSpeeds last_frame_speeds_;
   std::vector<std::string> additional_frames_;
 
-//  MOCK_METHOD1(nothing, int(int a));
-//  MOCK_METHOD1(frame_speeds_cb, void(FrameSpeeds msg));
-  void frameSpeedsCb(const FrameSpeeds::ConstPtr& msg);
+  MOCK_METHOD2(operation_mode_cb, bool(GetOperationMode::Request& req, GetOperationMode::Response& res));
+  MOCK_METHOD1(frame_speeds_cb, void(FrameSpeeds msg));
 };
 
 void SpeedObserverIntegarionTest::SetUp(){
@@ -56,8 +59,10 @@ void SpeedObserverIntegarionTest::SetUp(){
   subscriber_ = nh_.subscribe<FrameSpeeds>(
         FRAME_SPEEDS_TOPIC_NAME,
         1,
-        &SpeedObserverIntegarionTest::frameSpeedsCb,
+        &SpeedObserverIntegarionTest::frame_speeds_cb,
         this);
+  operation_mode_srv_ = nh_.advertiseService(OPERATION_MODE_SERVICE, &SpeedObserverIntegarionTest::operation_mode_cb, this);
+
   pnh_.getParam(ADDITIONAL_FRAMES_PARAM_NAME, additional_frames_);
   ROS_DEBUG_STREAM("SetUp pnh:" << pnh_.getNamespace() << " nh:" << nh_.getNamespace());
   for(auto & f : additional_frames_){
@@ -95,6 +100,7 @@ TEST_F(SpeedObserverIntegarionTest, testStartupAndTopic)
     ROS_DEBUG_STREAM("> " << n);
   }
 //  EXPECT_THAT(last_frame_speeds_.name, ::testing::Contains("world"));
+  BARRIER({"you shall not pass"});
 }
 
 } // namespace speed_observer_test

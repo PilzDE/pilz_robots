@@ -27,7 +27,7 @@
 #include <prbt_hardware_support/get_operation_mode_func_decl.h>
 #include <prbt_hardware_support/get_param.h>
 
-static const std::string SPEED_LIMIT_SERVICE{"set_speed_limit"};
+static const std::string SET_SPEED_LIMIT_SERVICE{"set_speed_limit"};
 static const std::string OPERATION_MODE_SERVICE{"/prbt/get_operation_mode"};
 static const std::string OPERATION_MODE_TOPIC{"operation_mode"};
 
@@ -75,13 +75,15 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
 
   using std::placeholders::_1;
-  waitForService(SPEED_LIMIT_SERVICE);
-  ros::ServiceClient speed_limit_srv = nh.serviceClient<SetSpeedLimit>(SPEED_LIMIT_SERVICE);
+  waitForService(SET_SPEED_LIMIT_SERVICE);
+  ros::ServiceClient speed_limit_srv = nh.serviceClient<SetSpeedLimit>(SET_SPEED_LIMIT_SERVICE);
   TSetSpeedLimit set_speed_limit_func = std::bind(setSpeedLimitSrv, speed_limit_srv, _1);
 
+  ROS_DEBUG("waitForService(OPERATION_MODE_SERVICE)");
   waitForService(OPERATION_MODE_SERVICE);
   ros::ServiceClient op_mode_srv = nh.serviceClient<GetOperationMode>(OPERATION_MODE_SERVICE);
   TGetOpMode get_op_mode_func = std::bind(getOperationMode, op_mode_srv);
+  ROS_DEBUG("DONE waitForService(OPERATION_MODE_SERVICE)");
 
   double speed_limit_t1 {0};
   double speed_limit_auto {0};
