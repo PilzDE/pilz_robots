@@ -180,6 +180,11 @@ public:
     }
   }
 
+  inline std::map<std::string, unsigned short>::size_type size() const
+  {
+    return register_mapping_.size();
+  }
+
 private:
   std::map<std::string, unsigned short> register_mapping_;
 };
