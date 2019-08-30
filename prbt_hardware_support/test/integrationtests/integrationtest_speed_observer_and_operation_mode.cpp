@@ -30,51 +30,57 @@ namespace speed_observer_test
 using ::testing::_;
 using namespace prbt_hardware_support;
 
-static const std::string FRAME_SPEEDS_TOPIC_NAME{"/frame_speeds"};
-static const std::string STOP_TOPIC_NAME{"/stop"};
-static const std::string ADDITIONAL_FRAMES_PARAM_NAME{"additional_frames"};
-static const std::string OPERATION_MODE_SERVICE{"/prbt/get_operation_mode"};
+static const std::string FRAME_SPEEDS_TOPIC_NAME{ "/frame_speeds" };
+static const std::string STOP_TOPIC_NAME{ "/stop" };
+static const std::string ADDITIONAL_FRAMES_PARAM_NAME{ "additional_frames" };
+static const std::string OPERATION_MODE_SERVICE{ "/prbt/get_operation_mode" };
 
-class SpeedObserverIntegarionTest : public testing::Test, public testing::AsyncTest
+class SpeedObserverIntegarionTest : public testing::Test,
+                                    public testing::AsyncTest
 {
-
 public:
   void SetUp() override;
-//  virtual void TearDown();
+  //  virtual void TearDown();
 
 protected:
   ros::NodeHandle nh_;
-  ros::NodeHandle pnh_{"~"};
+  ros::NodeHandle pnh_{ "~" };
   ros::Subscriber subscriber_;
   ros::ServiceServer operation_mode_srv_;
   FrameSpeeds last_frame_speeds_;
   std::vector<std::string> additional_frames_;
 
-  MOCK_METHOD2(operation_mode_cb, bool(GetOperationMode::Request& req, GetOperationMode::Response& res));
+  MOCK_METHOD2(operation_mode_cb, bool(GetOperationMode::Request& req,
+                                       GetOperationMode::Response& res));
   MOCK_METHOD1(frame_speeds_cb, void(FrameSpeeds msg));
 };
 
-void SpeedObserverIntegarionTest::SetUp(){
+void SpeedObserverIntegarionTest::SetUp()
+{
   last_frame_speeds_ = FrameSpeeds();
   subscriber_ = nh_.subscribe<FrameSpeeds>(
-        FRAME_SPEEDS_TOPIC_NAME,
-        1,
-        &SpeedObserverIntegarionTest::frame_speeds_cb,
-        this);
-  operation_mode_srv_ = nh_.advertiseService(OPERATION_MODE_SERVICE, &SpeedObserverIntegarionTest::operation_mode_cb, this);
+      FRAME_SPEEDS_TOPIC_NAME, 1, &SpeedObserverIntegarionTest::frame_speeds_cb,
+      this);
+  operation_mode_srv_ = nh_.advertiseService(
+      OPERATION_MODE_SERVICE, &SpeedObserverIntegarionTest::operation_mode_cb,
+      this);
 
   pnh_.getParam(ADDITIONAL_FRAMES_PARAM_NAME, additional_frames_);
-  ROS_DEBUG_STREAM("SetUp pnh:" << pnh_.getNamespace() << " nh:" << nh_.getNamespace());
-  for(auto & f : additional_frames_){
+  ROS_DEBUG_STREAM("SetUp pnh:" << pnh_.getNamespace()
+                                << " nh:" << nh_.getNamespace());
+  for (auto& f : additional_frames_)
+  {
     ROS_DEBUG_STREAM("- " << f);
   }
 }
 
-void SpeedObserverIntegarionTest::frameSpeedsCb(const FrameSpeeds::ConstPtr& msg){
+void SpeedObserverIntegarionTest::frameSpeedsCb(
+    const FrameSpeeds::ConstPtr& msg)
+{
   last_frame_speeds_ = FrameSpeeds(*msg);
 }
 
-//void SpeedObserverIntegarionTest::TearDown(){}
+// void SpeedObserverIntegarionTest::TearDown(){}
 
 /**
  * @tests{The correct operation of the node and interpretion of params}
@@ -92,20 +98,22 @@ TEST_F(SpeedObserverIntegarionTest, testStartupAndTopic)
    **********/
   waitForNode("/robot_state_publisher");
   waitForNode("/speed_observer_node");
-  while(last_frame_speeds_.name.empty()){
+  while (last_frame_speeds_.name.empty())
+  {
     ros::Duration(.1).sleep();
     ros::spinOnce();
   }
-  for(auto & n : last_frame_speeds_.name){
+  for (auto& n : last_frame_speeds_.name)
+  {
     ROS_DEBUG_STREAM("> " << n);
   }
-//  EXPECT_THAT(last_frame_speeds_.name, ::testing::Contains("world"));
-  BARRIER({"you shall not pass"});
+  //  EXPECT_THAT(last_frame_speeds_.name, ::testing::Contains("world"));
+  BARRIER({ "you shall not pass" });
 }
 
-} // namespace speed_observer_test
+}  // namespace speed_observer_test
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "unittest_speed_observer");
   ros::NodeHandle nh;
@@ -113,4 +121,3 @@ int main(int argc, char *argv[])
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
-
