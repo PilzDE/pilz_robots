@@ -47,7 +47,8 @@ static const std::string BRAKETEST_RESULT{ "BRAKETEST_RESULT" };
 class ModbusApiSpecException : public std::runtime_error
 {
 public:
-  ModbusApiSpecException(const std::string& what_arg) : std::runtime_error(what_arg)
+  ModbusApiSpecException(const std::string& what_arg)
+    : std::runtime_error(what_arg)
   {
   }
 };
@@ -62,7 +63,8 @@ template <class T = ros::NodeHandle>
 class ModbusApiSpecTemplated
 {
 public:
-  ModbusApiSpecTemplated(std::initializer_list<std::pair<std::string, unsigned short> > reg_list)
+  ModbusApiSpecTemplated(
+      std::initializer_list<std::pair<std::string, unsigned short> > reg_list)
   {
     for (auto entry : reg_list)
     {
@@ -83,7 +85,8 @@ public:
    *
    * @param nh NodeHandle to read the parameters from
    */
-  ModbusApiSpecTemplated(T& nh) : ModbusApiSpecTemplated(nh, READ_API_SPEC_PARAM_NAME)
+  ModbusApiSpecTemplated(T& nh)
+    : ModbusApiSpecTemplated(nh, READ_API_SPEC_PARAM_NAME)
   {
   }
 
@@ -106,13 +109,15 @@ public:
     XmlRpc::XmlRpcValue rpc;
     if (!nh.getParam(param_name, rpc))
     {
-      throw ModbusApiSpecException("No api specified. (Expected at " + nh.getNamespace() + "/" + param_name + ")");
+      throw ModbusApiSpecException("No api specified. (Expected at " +
+                                   nh.getNamespace() + "/" + param_name + ")");
     }
 
     for (auto rpci = rpc.begin(); rpci != rpc.end(); ++rpci)
     {
       int value = rpci->second;
-      setRegisterDefinition(rpci->first.c_str(), static_cast<unsigned short>(value));
+      setRegisterDefinition(rpci->first.c_str(),
+                            static_cast<unsigned short>(value));
     }
   }
 
@@ -121,7 +126,8 @@ public:
     return register_mapping_.find(key) != register_mapping_.end();
   }
 
-  inline void setRegisterDefinition(const std::string& key, unsigned short value)
+  inline void setRegisterDefinition(const std::string& key,
+                                    unsigned short value)
   {
     register_mapping_[key] = value;
   }
@@ -145,12 +151,14 @@ public:
     }
 
     typedef std::pair<std::string, unsigned short> RegisterMappingEntry;
-    // The following is excluded because lambda functions are not marked properly with gcc-7
-    // see https://github.com/gcc-mirror/gcc/commit/7de708f
+    // The following is excluded because lambda functions are not marked
+    // properly with gcc-7 see https://github.com/gcc-mirror/gcc/commit/7de708f
     // LCOV_EXCL_START
     auto it = std::min_element(
         register_mapping_.begin(), register_mapping_.end(),
-        [](const RegisterMappingEntry& a, const RegisterMappingEntry& b) { return a.second < b.second; });
+        [](const RegisterMappingEntry& a, const RegisterMappingEntry& b) {
+          return a.second < b.second;
+        });
     // LCVO EXCL_STOP
     return it->second;
   }
@@ -163,19 +171,22 @@ public:
     }
 
     typedef std::pair<std::string, unsigned short> RegisterMappingEntry;
-    // The following is excluded because lambda functions are not marked properly with gcc-7
-    // see https://github.com/gcc-mirror/gcc/commit/7de708f
+    // The following is excluded because lambda functions are not marked
+    // properly with gcc-7 see https://github.com/gcc-mirror/gcc/commit/7de708f
     // LCOV_EXCL_START
     auto it = std::max_element(
         register_mapping_.begin(), register_mapping_.end(),
-        [](const RegisterMappingEntry& a, const RegisterMappingEntry& b) { return a.second < b.second; });
+        [](const RegisterMappingEntry& a, const RegisterMappingEntry& b) {
+          return a.second < b.second;
+        });
     // LCVO EXCL_STOP
     return it->second;
   }
 
   inline void getAllDefinedRegisters(std::vector<unsigned short>& registers)
   {
-    for (auto it = register_mapping_.begin(); it != register_mapping_.end(); ++it)
+    for (auto it = register_mapping_.begin(); it != register_mapping_.end();
+         ++it)
     {
       registers.push_back(it->second);
       std::sort(registers.begin(), registers.end());

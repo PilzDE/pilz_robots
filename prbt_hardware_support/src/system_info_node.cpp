@@ -33,7 +33,8 @@ int main(int argc, char** argv)
   FirmwareCont versions{ system_info.getFirmwareVersions() };
   for (const auto& curr_elem : versions)
   {
-    ROS_INFO("Firmware version [%s]: %s", curr_elem.first.c_str(), curr_elem.second.c_str());
+    ROS_INFO("Firmware version [%s]: %s", curr_elem.first.c_str(),
+             curr_elem.second.c_str());
   }
   return EXIT_SUCCESS;
 }

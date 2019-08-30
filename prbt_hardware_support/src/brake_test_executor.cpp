@@ -35,59 +35,88 @@
 
 namespace prbt_hardware_support
 {
-static const std::string EXECUTE_BRAKETEST_SERVICE_NAME{ "/prbt/execute_braketest" };
-static const std::string BRAKETEST_ADAPTER_SERVICE_NAME{ "/prbt/braketest_adapter_node/trigger_braketest" };
+static const std::string EXECUTE_BRAKETEST_SERVICE_NAME{ "/prbt/"
+                                                         "execute_braketest" };
+static const std::string BRAKETEST_ADAPTER_SERVICE_NAME{ "/prbt/"
+                                                         "braketest_adapter_"
+                                                         "node/"
+                                                         "trigger_braketest" };
 
-static const std::string CONTROLLER_HOLD_MODE_SERVICE_NAME{ "/prbt/manipulator_joint_trajectory_controller/hold" };
-static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{ "/prbt/manipulator_joint_trajectory_controller/unhold" };
-static const std::string MODBUS_WRITE_SERVICE_NAME{ "/pilz_modbus_client_node/modbus_write" };
+static const std::string CONTROLLER_HOLD_MODE_SERVICE_NAME{ "/prbt/"
+                                                            "manipulator_joint_"
+                                                            "trajectory_"
+                                                            "controller/hold" };
+static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{ "/prbt/"
+                                                              "manipulator_"
+                                                              "joint_"
+                                                              "trajectory_"
+                                                              "controller/"
+                                                              "unhold" };
+static const std::string MODBUS_WRITE_SERVICE_NAME{ "/pilz_modbus_client_node/"
+                                                    "modbus_write" };
 
 static const std::string API_SPEC_READ_PARAM_NAME("write_api_spec/");
 
 BrakeTestExecutor::BrakeTestExecutor(ros::NodeHandle& nh) : nh_(nh)
 {
-  brake_test_srv_ = nh_.advertiseService(EXECUTE_BRAKETEST_SERVICE_NAME, &BrakeTestExecutor::executeBrakeTest, this);
+  brake_test_srv_ =
+      nh_.advertiseService(EXECUTE_BRAKETEST_SERVICE_NAME,
+                           &BrakeTestExecutor::executeBrakeTest, this);
 
   // set up braketest service client (required)
   waitForService(BRAKETEST_ADAPTER_SERVICE_NAME);
-  trigger_braketest_client_ = nh_.serviceClient<BrakeTest>(BRAKETEST_ADAPTER_SERVICE_NAME);
+  trigger_braketest_client_ =
+      nh_.serviceClient<BrakeTest>(BRAKETEST_ADAPTER_SERVICE_NAME);
 
   // set up hold service client
   waitForService(CONTROLLER_HOLD_MODE_SERVICE_NAME);
-  controller_hold_client_ = nh_.serviceClient<std_srvs::Trigger>(CONTROLLER_HOLD_MODE_SERVICE_NAME);
+  controller_hold_client_ =
+      nh_.serviceClient<std_srvs::Trigger>(CONTROLLER_HOLD_MODE_SERVICE_NAME);
 
   // set up unhold service client
   waitForService(CONTROLLER_UNHOLD_MODE_SERVICE_NAME);
-  controller_unhold_client_ = nh_.serviceClient<std_srvs::Trigger>(CONTROLLER_UNHOLD_MODE_SERVICE_NAME);
+  controller_unhold_client_ =
+      nh_.serviceClient<std_srvs::Trigger>(CONTROLLER_UNHOLD_MODE_SERVICE_NAME);
 
   // set up modbus write service client
   waitForService(MODBUS_WRITE_SERVICE_NAME);
-  modbus_write_client_ = nh_.serviceClient<WriteModbusRegister>(MODBUS_WRITE_SERVICE_NAME);
+  modbus_write_client_ =
+      nh_.serviceClient<WriteModbusRegister>(MODBUS_WRITE_SERVICE_NAME);
 
   // get brake test result register numbers
   ModbusApiSpec read_api_spec{ nh_, API_SPEC_READ_PARAM_NAME };
-  if (!read_api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED))
+  if (!read_api_spec.hasRegisterDefinition(
+          modbus_api_spec::BRAKETEST_PERFORMED))
   {
-    throw BrakeTestExecutorException("failed to read API spec for BRAKETEST_PERFORMED");
+    throw BrakeTestExecutorException("failed to read API spec for "
+                                     "BRAKETEST_PERFORMED");
   }
   short unsigned int brake_test_performed_modbus_register =
-      static_cast<short unsigned int>(read_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED));
+      static_cast<short unsigned int>(read_api_spec.getRegisterDefinition(
+          modbus_api_spec::BRAKETEST_PERFORMED));
   if (!read_api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT))
   {
-    throw BrakeTestExecutorException("failed to read API spec for BRAKETEST_RESULT");
+    throw BrakeTestExecutorException("failed to read API spec for "
+                                     "BRAKETEST_RESULT");
   }
   short unsigned int brake_test_result_modbus_register =
-      static_cast<short unsigned int>(read_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT));
-  if (abs(brake_test_performed_modbus_register - brake_test_result_modbus_register) != 1)
+      static_cast<short unsigned int>(read_api_spec.getRegisterDefinition(
+          modbus_api_spec::BRAKETEST_RESULT));
+  if (abs(brake_test_performed_modbus_register -
+          brake_test_result_modbus_register) != 1)
   {
-    // Both registers need to be one apart, so that we can write them in one cycle
-    throw BrakeTestExecutorException("registers of BRAKETEST_PERFORMED and BRAKETEST_RESULT need to be 1 apart");
+    // Both registers need to be one apart, so that we can write them in one
+    // cycle
+    throw BrakeTestExecutorException("registers of BRAKETEST_PERFORMED and "
+                                     "BRAKETEST_RESULT need to be 1 apart");
   }
   // starting from the lowest register of the two
-  brake_test_modbus_register_low_ = std::min(brake_test_performed_modbus_register, brake_test_result_modbus_register);
+  brake_test_modbus_register_low_ = std::min(
+      brake_test_performed_modbus_register, brake_test_result_modbus_register);
 }
 
-bool BrakeTestExecutor::executeBrakeTest(BrakeTest::Request& /*req*/, BrakeTest::Response& response)
+bool BrakeTestExecutor::executeBrakeTest(BrakeTest::Request& /*req*/,
+                                         BrakeTest::Response& response)
 {
   if (BrakeTestUtils::detectRobotMotion())
   {
@@ -102,15 +131,18 @@ bool BrakeTestExecutor::executeBrakeTest(BrakeTest::Request& /*req*/, BrakeTest:
   std_srvs::Trigger trigger_srv;
   if (!controller_hold_client_.call(trigger_srv))
   {
-    ROS_WARN_STREAM("Failed to trigger hold via service " << controller_hold_client_.getService());
+    ROS_WARN_STREAM("Failed to trigger hold via service "
+                    << controller_hold_client_.getService());
   }
 
   BrakeTest braketest_srv;
   if (!trigger_braketest_client_.call(braketest_srv))
   {
     response.success = false;
-    response.error_msg = "Failed to trigger brake test via service " + trigger_braketest_client_.getService();
-    response.error_code.value = BrakeTestErrorCodes::TRIGGER_BRAKETEST_SERVICE_FAILURE;
+    response.error_msg = "Failed to trigger brake test via service " +
+                         trigger_braketest_client_.getService();
+    response.error_code.value =
+        BrakeTestErrorCodes::TRIGGER_BRAKETEST_SERVICE_FAILURE;
   }
   else
   {
@@ -119,15 +151,19 @@ bool BrakeTestExecutor::executeBrakeTest(BrakeTest::Request& /*req*/, BrakeTest:
 
   if (!controller_unhold_client_.call(trigger_srv))
   {
-    ROS_WARN_STREAM("Failed to trigger unhold via service " << controller_unhold_client_.getService());
+    ROS_WARN_STREAM("Failed to trigger unhold via service "
+                    << controller_unhold_client_.getService());
   }
 
   if (response.success)
   {
     WriteModbusRegister srv;
-    srv.request.holding_register_block.start_idx = brake_test_modbus_register_low_;
-    std::vector<unsigned short> values_to_set = { 0, 1 };  // Note: The FS controller needs a positive edge, so we first
-                                                           // send 0s.
+    srv.request.holding_register_block.start_idx =
+        brake_test_modbus_register_low_;
+    std::vector<unsigned short> values_to_set = {
+      0, 1
+    };  // Note: The FS controller needs a positive edge, so we first
+        // send 0s.
     for (const auto& v : values_to_set)
     {
       srv.request.holding_register_block.values = { v, v };

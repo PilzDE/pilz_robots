@@ -34,7 +34,8 @@ namespace pilz_modbus_client_test
 {
 using namespace prbt_hardware_support;
 
-// Each testcase should have its own port in order to avoid conflicts between them
+// Each testcase should have its own port in order to avoid conflicts between
+// them
 constexpr unsigned int START_PORT{ 20500 };
 constexpr unsigned int END_PORT{ 20600 };
 static unsigned int active_port_idx{ 0 };
@@ -81,8 +82,9 @@ TEST_F(LibModbusClientTest, testModbusClientDtor)
 /**
  * @brief Test construction via new
  *
- * This test is used to at least once call the default destructor used for destructing objects allocated on the heap.
- * (If this test is missing function coverage will drop)
+ * This test is used to at least once call the default destructor used for
+ * destructing objects allocated on the heap. (If this test is missing function
+ * coverage will drop)
  */
 TEST_F(LibModbusClientTest, testNewInit)
 {
@@ -95,7 +97,8 @@ TEST_F(LibModbusClientTest, testNewInit)
 TEST_F(LibModbusClientTest, testInitialization)
 {
   LibModbusClient client;
-  std::shared_ptr<PilzModbusServerMock> server(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
+  std::shared_ptr<PilzModbusServerMock> server(
+      new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
   server->startAsync(LOCALHOST, testPort());
 
   EXPECT_TRUE(client.init(LOCALHOST, testPort()));
@@ -115,12 +118,14 @@ TEST_F(LibModbusClientTest, testFailingInitIfNoServer)
 }
 
 /**
- * @brief Tests that holding registers set on the server are correctly read by the client
+ * @brief Tests that holding registers set on the server are correctly read by
+ * the client
  */
 TEST_F(LibModbusClientTest, testReadRegisters)
 {
   LibModbusClient client;
-  std::shared_ptr<PilzModbusServerMock> server(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
+  std::shared_ptr<PilzModbusServerMock> server(
+      new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
   server->startAsync(LOCALHOST, testPort());
 
   server->setHoldingRegister(RegCont{ 1, 2 }, DEFAULT_WRITE_IDX);
@@ -142,7 +147,8 @@ TEST_F(LibModbusClientTest, testReadRegisters)
 TEST_F(LibModbusClientTest, testWritingRegisters)
 {
   LibModbusClient client;
-  std::shared_ptr<PilzModbusServerMock> server(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
+  std::shared_ptr<PilzModbusServerMock> server(
+      new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
   server->startAsync(LOCALHOST, testPort());
 
   const RegCont write_reg{ 1, 2 };
@@ -152,14 +158,17 @@ TEST_F(LibModbusClientTest, testWritingRegisters)
 
   RegCont reg_to_write_by_client{ 8, 3, 7 };
 
-  client.writeReadHoldingRegister(DEFAULT_READ_IDX, reg_to_write_by_client, DEFAULT_WRITE_IDX,
+  client.writeReadHoldingRegister(DEFAULT_READ_IDX, reg_to_write_by_client,
+                                  DEFAULT_WRITE_IDX,
                                   static_cast<int>(write_reg.size()));
 
-  RegCont res = client.readHoldingRegister(DEFAULT_WRITE_IDX, static_cast<int>(write_reg.size()));
+  RegCont res = client.readHoldingRegister(DEFAULT_WRITE_IDX,
+                                           static_cast<int>(write_reg.size()));
   RegCont res_expected{ 1, 2 };
   EXPECT_EQ(res_expected, res);
 
-  RegCont actual_hold_reg{ server->readHoldingRegister(DEFAULT_READ_IDX, reg_to_write_by_client.size()) };
+  RegCont actual_hold_reg{ server->readHoldingRegister(
+      DEFAULT_READ_IDX, reg_to_write_by_client.size()) };
   for (RegCont::size_type i = 0; i < reg_to_write_by_client.size(); ++i)
   {
     EXPECT_EQ(reg_to_write_by_client.at(i), actual_hold_reg.at(i));
@@ -176,7 +185,8 @@ TEST_F(LibModbusClientTest, testWritingRegisters)
 TEST_F(LibModbusClientTest, testNegativeNumberOfRegistersToRead)
 {
   LibModbusClient client;
-  std::shared_ptr<PilzModbusServerMock> server(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
+  std::shared_ptr<PilzModbusServerMock> server(
+      new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
   server->startAsync(LOCALHOST, testPort());
 
   server->setHoldingRegister(RegCont{ 1, 2 }, DEFAULT_WRITE_IDX);
@@ -186,7 +196,8 @@ TEST_F(LibModbusClientTest, testNegativeNumberOfRegistersToRead)
   const int negative_read_nb{ -2 };
   RegCont reg_to_write_by_client{ 8, 3, 7 };
   EXPECT_THROW(
-      client.writeReadHoldingRegister(DEFAULT_READ_IDX, reg_to_write_by_client, DEFAULT_WRITE_IDX, negative_read_nb),
+      client.writeReadHoldingRegister(DEFAULT_READ_IDX, reg_to_write_by_client,
+                                      DEFAULT_WRITE_IDX, negative_read_nb),
       std::invalid_argument);
 
   client.close();
@@ -200,7 +211,8 @@ TEST_F(LibModbusClientTest, testNegativeNumberOfRegistersToRead)
 TEST_F(LibModbusClientTest, testOutOfRangeRegisterSize)
 {
   LibModbusClient client;
-  std::shared_ptr<PilzModbusServerMock> server(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
+  std::shared_ptr<PilzModbusServerMock> server(
+      new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
   server->startAsync(LOCALHOST, testPort());
 
   const RegCont write_reg{ 1, 2 };
@@ -208,9 +220,11 @@ TEST_F(LibModbusClientTest, testOutOfRangeRegisterSize)
 
   EXPECT_TRUE(client.init(LOCALHOST, testPort()));
 
-  RegCont reg_to_write_by_client(static_cast<unsigned int>(std::numeric_limits<int>::max()) + 1u, 0);
-  EXPECT_THROW(client.writeReadHoldingRegister(DEFAULT_READ_IDX, reg_to_write_by_client, DEFAULT_WRITE_IDX,
-                                               static_cast<int>(write_reg.size())),
+  RegCont reg_to_write_by_client(
+      static_cast<unsigned int>(std::numeric_limits<int>::max()) + 1u, 0);
+  EXPECT_THROW(client.writeReadHoldingRegister(
+                   DEFAULT_READ_IDX, reg_to_write_by_client, DEFAULT_WRITE_IDX,
+                   static_cast<int>(write_reg.size())),
                std::invalid_argument);
 
   client.close();
@@ -225,7 +239,8 @@ TEST_F(LibModbusClientTest, testDisconnectBeforeReadWriteOp)
 {
   LibModbusClient client;
 
-  EXPECT_THROW(client.writeReadHoldingRegister(DEFAULT_READ_IDX, RegCont{ 8, 3, 7 }, DEFAULT_WRITE_IDX, 0),
+  EXPECT_THROW(client.writeReadHoldingRegister(
+                   DEFAULT_READ_IDX, RegCont{ 8, 3, 7 }, DEFAULT_WRITE_IDX, 0),
                ModbusExceptionDisconnect);
 
   client.close();
@@ -238,7 +253,8 @@ TEST_F(LibModbusClientTest, testDisconnectBeforeReadWriteOp)
 TEST_F(LibModbusClientTest, testDisconnectDuringReadWriteOp)
 {
   LibModbusClient client;
-  std::shared_ptr<PilzModbusServerMock> server(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
+  std::shared_ptr<PilzModbusServerMock> server(
+      new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
   server->startAsync(LOCALHOST, testPort());
 
   const RegCont write_reg{ 1, 2 };
@@ -248,43 +264,50 @@ TEST_F(LibModbusClientTest, testDisconnectDuringReadWriteOp)
   server->terminate();
 
   RegCont reg_to_write_by_client{ 8, 3, 7 };
-  EXPECT_THROW(client.writeReadHoldingRegister(DEFAULT_READ_IDX, reg_to_write_by_client, DEFAULT_WRITE_IDX,
-                                               static_cast<int>(write_reg.size())),
+  EXPECT_THROW(client.writeReadHoldingRegister(
+                   DEFAULT_READ_IDX, reg_to_write_by_client, DEFAULT_WRITE_IDX,
+                   static_cast<int>(write_reg.size())),
                ModbusExceptionDisconnect);
 
   client.close();
 }
 
 /**
- * @brief Tests that after a failed init (e.g. no available modbus server) reading throws a exception
+ * @brief Tests that after a failed init (e.g. no available modbus server)
+ * reading throws a exception
  */
 TEST_F(LibModbusClientTest, testReadRegistersNoInit)
 {
   LibModbusClient client;
   EXPECT_FALSE(client.init(LOCALHOST, testPort()));
 
-  EXPECT_THROW(client.readHoldingRegister(DEFAULT_WRITE_IDX, 2), ModbusExceptionDisconnect);
+  EXPECT_THROW(client.readHoldingRegister(DEFAULT_WRITE_IDX, 2),
+               ModbusExceptionDisconnect);
 }
 
 /**
- * @brief Tests that after a failed init (e.g. after disconnect from server) reading throws a exception
+ * @brief Tests that after a failed init (e.g. after disconnect from server)
+ * reading throws a exception
  */
 TEST_F(LibModbusClientTest, testReadRegistersTerminatedServer)
 {
   LibModbusClient client;
-  std::shared_ptr<PilzModbusServerMock> server(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
+  std::shared_ptr<PilzModbusServerMock> server(
+      new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
   server->startAsync(LOCALHOST, testPort());
   server->setHoldingRegister(RegCont{ 1, 2 }, DEFAULT_WRITE_IDX);
 
   EXPECT_TRUE(client.init(LOCALHOST, testPort()));
   server->terminate();
 
-  EXPECT_THROW(client.readHoldingRegister(DEFAULT_WRITE_IDX, 2), ModbusExceptionDisconnect);
+  EXPECT_THROW(client.readHoldingRegister(DEFAULT_WRITE_IDX, 2),
+               ModbusExceptionDisconnect);
   client.close();
 }
 
 /**
- * @brief Tests that setting reponse timeout on the client will return the same timeout on getResponseTimeoutInMs
+ * @brief Tests that setting reponse timeout on the client will return the same
+ * timeout on getResponseTimeoutInMs
  *
  * @note To keep things simple the timeout behaviour is not timed and evaluated.
  */

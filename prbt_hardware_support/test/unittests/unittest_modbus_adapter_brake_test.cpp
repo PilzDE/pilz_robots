@@ -34,13 +34,16 @@
 namespace prbt_hardware_support
 {
 static constexpr int DEFAULT_QUEUE_SIZE_MODBUS{ 1 };
-static const std::string SERVICE_NAME_IS_BRAKE_TEST_REQUIRED = "/prbt/brake_test_required";
+static const std::string SERVICE_NAME_IS_BRAKE_TEST_REQUIRED = "/prbt/"
+                                                               "brake_test_"
+                                                               "required";
 
 static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{ 2 };
 static constexpr unsigned int DEFAULT_RETRIES{ 10 };
 
 static const ModbusApiSpec TEST_API_SPEC{ { modbus_api_spec::VERSION, 969 },
-                                          { modbus_api_spec::BRAKETEST_REQUEST, 973 } };
+                                          { modbus_api_spec::BRAKETEST_REQUEST,
+                                            973 } };
 
 /**
  * @brief Test fixture for unit-tests of the ModbusAdapterBrakeTest.
@@ -48,7 +51,8 @@ static const ModbusApiSpec TEST_API_SPEC{ { modbus_api_spec::VERSION, 969 },
  * Publish messages on the modbus topic and call the brake_test_required service
  * in order to check if the expectations are met.
  */
-class ModbusAdapterBrakeTestTest : public testing::Test, public testing::AsyncTest
+class ModbusAdapterBrakeTestTest : public testing::Test,
+                                   public testing::AsyncTest
 {
 public:
   ModbusAdapterBrakeTestTest();
@@ -56,20 +60,28 @@ public:
 
 public:
   ModbusMsgInStampedPtr createDefaultBrakeTestModbusMsg(
-      uint16_t brake_test_required_value, unsigned int modbus_api_version = MODBUS_API_VERSION_REQUIRED,
-      uint32_t brake_test_required_index = TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
-  bool expectBrakeTestRequiredServiceCallResult(ros::ServiceClient& brake_test_required_client,
-                                                IsBrakeTestRequiredResponse::_result_type expectation,
-                                                uint16_t retries = DEFAULT_RETRIES);
+      uint16_t brake_test_required_value,
+      unsigned int modbus_api_version = MODBUS_API_VERSION_REQUIRED,
+      uint32_t brake_test_required_index = TEST_API_SPEC.getRegisterDefinition(
+          modbus_api_spec::BRAKETEST_REQUEST));
+  bool expectBrakeTestRequiredServiceCallResult(
+      ros::ServiceClient& brake_test_required_client,
+      IsBrakeTestRequiredResponse::_result_type expectation,
+      uint16_t retries = DEFAULT_RETRIES);
 
 protected:
   ros::AsyncSpinner spinner_{ 2 };
 
   ros::NodeHandle nh_;
-  std::unique_ptr<ModbusAdapterBrakeTest> adapter_brake_test_{ new ModbusAdapterBrakeTest(nh_, TEST_API_SPEC) };
-  ros::Publisher modbus_topic_pub_{ nh_.advertise<ModbusMsgInStamped>(TOPIC_MODBUS_READ, DEFAULT_QUEUE_SIZE_MODBUS) };
-  ros::ServiceClient brake_test_required_client_{ nh_.serviceClient<prbt_hardware_support::IsBrakeTestRequired>(
-      SERVICE_NAME_IS_BRAKE_TEST_REQUIRED) };  //(969, 973, 974);
+  std::unique_ptr<ModbusAdapterBrakeTest> adapter_brake_test_{
+    new ModbusAdapterBrakeTest(nh_, TEST_API_SPEC)
+  };
+  ros::Publisher modbus_topic_pub_{ nh_.advertise<ModbusMsgInStamped>(
+      TOPIC_MODBUS_READ, DEFAULT_QUEUE_SIZE_MODBUS) };
+  ros::ServiceClient brake_test_required_client_{
+    nh_.serviceClient<prbt_hardware_support::IsBrakeTestRequired>(
+        SERVICE_NAME_IS_BRAKE_TEST_REQUIRED)
+  };  //(969, 973, 974);
 };
 
 ModbusAdapterBrakeTestTest::ModbusAdapterBrakeTestTest()
@@ -87,24 +99,27 @@ ModbusAdapterBrakeTestTest::~ModbusAdapterBrakeTestTest()
   spinner_.stop();
 }
 
-ModbusMsgInStampedPtr ModbusAdapterBrakeTestTest::createDefaultBrakeTestModbusMsg(uint16_t brake_test_required_value,
-                                                                                  unsigned int modbus_api_version,
-                                                                                  uint32_t brake_test_required_index)
+ModbusMsgInStampedPtr
+ModbusAdapterBrakeTestTest::createDefaultBrakeTestModbusMsg(
+    uint16_t brake_test_required_value, unsigned int modbus_api_version,
+    uint32_t brake_test_required_index)
 {
-  uint32_t first_index_to_read{ TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION) };
+  uint32_t first_index_to_read{ TEST_API_SPEC.getRegisterDefinition(
+      modbus_api_spec::VERSION) };
   uint32_t last_index_to_read{ brake_test_required_index };
   static int msg_time_counter{ 1 };
   RegCont tab_reg(last_index_to_read - first_index_to_read + 1);
   tab_reg[0] = static_cast<uint16_t>(modbus_api_version);
   tab_reg[last_index_to_read - first_index_to_read] = brake_test_required_value;
-  ModbusMsgInStampedPtr msg{ ModbusMsgInBuilder::createDefaultModbusMsgIn(first_index_to_read, tab_reg) };
+  ModbusMsgInStampedPtr msg{ ModbusMsgInBuilder::createDefaultModbusMsgIn(
+      first_index_to_read, tab_reg) };
   msg->header.stamp = ros::Time(msg_time_counter++);
   return msg;
 }
 
 bool ModbusAdapterBrakeTestTest::expectBrakeTestRequiredServiceCallResult(
-    ros::ServiceClient& brake_test_required_client, IsBrakeTestRequiredResponse::_result_type expectation,
-    uint16_t retries)
+    ros::ServiceClient& brake_test_required_client,
+    IsBrakeTestRequiredResponse::_result_type expectation, uint16_t retries)
 {
   for (int i = 0; i <= retries; ++i)
   {
@@ -135,7 +150,9 @@ MATCHER(InformsAboutNotRequired, "")
  */
 TEST_F(ModbusAdapterBrakeTestTest, testModbusMsgBrakeTestWrapperExceptionDtor)
 {
-  std::shared_ptr<ModbusMsgBrakeTestWrapperException> msg_wrapper{ new ModbusMsgBrakeTestWrapperException("Test msg") };
+  std::shared_ptr<ModbusMsgBrakeTestWrapperException> msg_wrapper{
+    new ModbusMsgBrakeTestWrapperException("Test msg")
+  };
 }
 
 /**
@@ -145,8 +162,11 @@ TEST_F(ModbusAdapterBrakeTestTest, testModbusMsgBrakeTestWrapperExceptionDtor)
 TEST_F(ModbusAdapterBrakeTestTest, testModbusMsgBrakeTestWrapperDtor)
 {
   {
-    std::shared_ptr<ModbusMsgBrakeTestWrapper> msg_wrapper{ new ModbusMsgBrakeTestWrapper(
-        createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_REQUIRED), TEST_API_SPEC) };
+    std::shared_ptr<ModbusMsgBrakeTestWrapper> msg_wrapper{
+      new ModbusMsgBrakeTestWrapper(
+          createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_REQUIRED),
+          TEST_API_SPEC)
+    };
   }
 }
 
@@ -170,12 +190,13 @@ TEST_F(ModbusAdapterBrakeTestTest, testAdapterBrakeTestDtor)
  *  1. Call service without sending a message via modbus before
  *
  * Expected Results:
- *  1. The service returns true, and the it is unknown if a braketest has to be performed
+ *  1. The service returns true, and the it is unknown if a braketest has to be
+ * performed
  */
 TEST_F(ModbusAdapterBrakeTestTest, testNoMessageReceived)
 {
-  ASSERT_TRUE(
-      expectBrakeTestRequiredServiceCallResult(brake_test_required_client_, IsBrakeTestRequiredResponse::UNKNOWN));
+  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(
+      brake_test_required_client_, IsBrakeTestRequiredResponse::UNKNOWN));
 }
 
 /**
@@ -192,9 +213,10 @@ TEST_F(ModbusAdapterBrakeTestTest, testNoMessageReceived)
  */
 TEST_F(ModbusAdapterBrakeTestTest, testBrakeTestRequired)
 {
-  modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_REQUIRED));
-  ASSERT_TRUE(
-      expectBrakeTestRequiredServiceCallResult(brake_test_required_client_, IsBrakeTestRequiredResponse::REQUIRED, 50));
+  modbus_topic_pub_.publish(
+      createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_REQUIRED));
+  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(
+      brake_test_required_client_, IsBrakeTestRequiredResponse::REQUIRED, 50));
 }
 
 /**
@@ -211,9 +233,10 @@ TEST_F(ModbusAdapterBrakeTestTest, testBrakeTestRequired)
  */
 TEST_F(ModbusAdapterBrakeTestTest, testBrakeTestNotRequired)
 {
-  modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_NOT_REQUIRED));
-  ASSERT_TRUE(
-      expectBrakeTestRequiredServiceCallResult(brake_test_required_client_, IsBrakeTestRequiredResponse::NOT_REQUIRED));
+  modbus_topic_pub_.publish(
+      createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_NOT_REQUIRED));
+  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(
+      brake_test_required_client_, IsBrakeTestRequiredResponse::NOT_REQUIRED));
 }
 
 /**
@@ -232,13 +255,14 @@ TEST_F(ModbusAdapterBrakeTestTest, testDisconnect)
 {
   uint32_t offset{ 0 };
   RegCont holding_register;
-  ModbusMsgInStampedPtr msg{ ModbusMsgInBuilder::createDefaultModbusMsgIn(offset, holding_register) };
+  ModbusMsgInStampedPtr msg{ ModbusMsgInBuilder::createDefaultModbusMsgIn(
+      offset, holding_register) };
   msg->disconnect.data = true;
   modbus_topic_pub_.publish(msg);
 
   sleep(1);
-  ASSERT_TRUE(
-      expectBrakeTestRequiredServiceCallResult(brake_test_required_client_, IsBrakeTestRequiredResponse::UNKNOWN));
+  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(
+      brake_test_required_client_, IsBrakeTestRequiredResponse::UNKNOWN));
 }
 
 /**
@@ -256,11 +280,12 @@ TEST_F(ModbusAdapterBrakeTestTest, testDisconnect)
 TEST_F(ModbusAdapterBrakeTestTest, testModbusIncorrectApiVersion)
 {
   RegCont holding_register;
-  modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_REQUIRED, 0));
+  modbus_topic_pub_.publish(
+      createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_REQUIRED, 0));
 
   sleep(1);
-  ASSERT_TRUE(
-      expectBrakeTestRequiredServiceCallResult(brake_test_required_client_, IsBrakeTestRequiredResponse::UNKNOWN));
+  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(
+      brake_test_required_client_, IsBrakeTestRequiredResponse::UNKNOWN));
 }
 
 /**
@@ -276,15 +301,17 @@ TEST_F(ModbusAdapterBrakeTestTest, testModbusIncorrectApiVersion)
  */
 TEST_F(ModbusAdapterBrakeTestTest, testModbusWithoutApiVersion)
 {
-  auto msg{ createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_REQUIRED,
-                                            TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION),
-                                            TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST)) };
+  auto msg{ createDefaultBrakeTestModbusMsg(
+      REGISTER_VALUE_BRAKETEST_REQUIRED,
+      TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION),
+      TEST_API_SPEC.getRegisterDefinition(
+          modbus_api_spec::BRAKETEST_REQUEST)) };
   msg->holding_registers.data.clear();
   modbus_topic_pub_.publish(msg);
 
   sleep(1);
-  ASSERT_TRUE(
-      expectBrakeTestRequiredServiceCallResult(brake_test_required_client_, IsBrakeTestRequiredResponse::UNKNOWN));
+  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(
+      brake_test_required_client_, IsBrakeTestRequiredResponse::UNKNOWN));
 }
 
 /**
@@ -302,17 +329,20 @@ TEST_F(ModbusAdapterBrakeTestTest, testModbusWithoutApiVersion)
 TEST_F(ModbusAdapterBrakeTestTest, testBrakeTestRequiredRegisterMissing)
 {
   modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(
-      REGISTER_VALUE_BRAKETEST_REQUIRED, TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION),
-      TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST) - 1));
+      REGISTER_VALUE_BRAKETEST_REQUIRED,
+      TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION),
+      TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST) -
+          1));
 
   sleep(1);
-  ASSERT_TRUE(
-      expectBrakeTestRequiredServiceCallResult(brake_test_required_client_, IsBrakeTestRequiredResponse::UNKNOWN));
+  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(
+      brake_test_required_client_, IsBrakeTestRequiredResponse::UNKNOWN));
 }
 
 /**
  * @tests{Is_BrakeTest_required_mechanism,
- *  Tests the handling of an incoming modbus message with a undefined brake test status register value.
+ *  Tests the handling of an incoming modbus message with a undefined brake test
+ * status register value.
  * }
  *
  * Test Sequence:
@@ -323,11 +353,12 @@ TEST_F(ModbusAdapterBrakeTestTest, testBrakeTestRequiredRegisterMissing)
  */
 TEST_F(ModbusAdapterBrakeTestTest, testBrakeTestRequiredRegisterUndefinedValue)
 {
-  modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(555 /* some arbitrary value */));
+  modbus_topic_pub_.publish(
+      createDefaultBrakeTestModbusMsg(555 /* some arbitrary value */));
 
   sleep(1);
-  ASSERT_TRUE(
-      expectBrakeTestRequiredServiceCallResult(brake_test_required_client_, IsBrakeTestRequiredResponse::UNKNOWN));
+  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(
+      brake_test_required_client_, IsBrakeTestRequiredResponse::UNKNOWN));
 }
 
 }  // namespace prbt_hardware_support

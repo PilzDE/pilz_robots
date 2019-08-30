@@ -41,8 +41,9 @@ TEST(FilterPipelineTest, testEmptyCallbackFunction)
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "unittest_filter_pipeline");
-  ros::NodeHandle nh;  // This nodehandle is held, to avoid rosconsole::shutdown(), which results in subsequent ROS_*
-                       // messages no longer output.
+  ros::NodeHandle nh;  // This nodehandle is held, to avoid
+                       // rosconsole::shutdown(), which results in subsequent
+                       // ROS_* messages no longer output.
   while (!ros::ok())
   {
     ROS_INFO("waiting for ros to be ok ...");

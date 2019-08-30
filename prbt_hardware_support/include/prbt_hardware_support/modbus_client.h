@@ -46,8 +46,9 @@ public:
   /**
    * @brief Set the response timeout
    *
-   * Interval to wait for a response from the server if within this timespan no answer is received readHoldingRegisters
-   * will throw a ModbusExceptionDisconnect
+   * Interval to wait for a response from the server if within this timespan no
+   * answer is received readHoldingRegisters will throw a
+   * ModbusExceptionDisconnect
    *
    * @param timeout_ms in ms
    */
@@ -70,7 +71,9 @@ public:
    */
   virtual RegCont readHoldingRegister(int addr, int nb) = 0;
 
-  virtual RegCont writeReadHoldingRegister(const int write_addr, const RegCont& write_reg, const int read_addr,
+  virtual RegCont writeReadHoldingRegister(const int write_addr,
+                                           const RegCont& write_reg,
+                                           const int read_addr,
                                            const int read_nb) = 0;
 };
 

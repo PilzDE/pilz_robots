@@ -35,7 +35,8 @@ namespace prbt_hardware_support
 {
 /**
  * @class PilzModbusServerMock
- * @brief Offers a modbus server and read/write functionality via subscription/publication.
+ * @brief Offers a modbus server and read/write functionality via
+ * subscription/publication.
  */
 class PilzModbusServerMock
 {
@@ -53,7 +54,8 @@ public:
   void start(const char* ip, const unsigned int port);
 
   /**
-   * @brief Start the modbus server asynchronously and make it accessible for clients
+   * @brief Start the modbus server asynchronously and make it accessible for
+   * clients
    *
    * @param ip The ip the server attaches to
    * @param port The used port
@@ -62,13 +64,15 @@ public:
    */
   void startAsync(const char* ip, const unsigned int port);
 
-  void setHoldingRegister(std::initializer_list<std::pair<unsigned int, uint16_t> > reg_list);
+  void setHoldingRegister(
+      std::initializer_list<std::pair<unsigned int, uint16_t> > reg_list);
 
   /**
    * @brief Set the values in the holding register
    *
    * @param data The values in the holding register
-   * @param start_index The index from where the value is set, other values remain untouched.
+   * @param start_index The index from where the value is set, other values
+   * remain untouched.
    */
   void setHoldingRegister(const RegCont& data, unsigned int start_index);
 
@@ -81,7 +85,8 @@ public:
    *
    * @returns the registers which were read.
    */
-  RegCont readHoldingRegister(const RegCont::size_type start_index, const RegCont::size_type num_reg_to_read);
+  RegCont readHoldingRegister(const RegCont::size_type start_index,
+                              const RegCont::size_type num_reg_to_read);
 
   /**
    * @brief Terminate the Server. Reading or connecting to it will fail.
@@ -142,9 +147,11 @@ inline void PilzModbusServerMock::terminate()
 
   if (thread_.joinable())
   {
-    ROS_DEBUG_NAMED("ServerMock", "Waiting for worker Thread of ServerMock to be joined.");
+    ROS_DEBUG_NAMED("ServerMock", "Waiting for worker Thread of ServerMock to "
+                                  "be joined.");
     thread_.join();
-    ROS_DEBUG_NAMED("ServerMock", "Waiting for worker Thread of ServerMock joined.");
+    ROS_DEBUG_NAMED("ServerMock", "Waiting for worker Thread of ServerMock "
+                                  "joined.");
   }
 }
 

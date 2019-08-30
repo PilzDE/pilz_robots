@@ -25,7 +25,8 @@
 namespace prbt_hardware_support
 {
 /**
- * @brief Triggers execution of brake tests only if the controller is not executing a trajectory.
+ * @brief Triggers execution of brake tests only if the controller is not
+ * executing a trajectory.
  *
  */
 class BrakeTestExecutor
@@ -39,7 +40,8 @@ private:
 private:
   ros::NodeHandle nh_;
 
-  //! Service which can be called by the user to execute brake tests for all joints.
+  //! Service which can be called by the user to execute brake tests for all
+  //! joints.
   ros::ServiceServer brake_test_srv_;
 
   //! Service clients required for operation.

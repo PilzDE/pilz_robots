@@ -19,16 +19,19 @@
 
 namespace prbt_hardware_support
 {
-static const std::string SERVICE_NAME_GET_OPERATION_MODE = "/prbt/get_operation_mode";
+static const std::string SERVICE_NAME_GET_OPERATION_MODE = "/prbt/"
+                                                           "get_operation_mode";
 
-AdapterOperationMode::AdapterOperationMode(ros::NodeHandle& nh) : service_initialized_(false), nh_(nh)
+AdapterOperationMode::AdapterOperationMode(ros::NodeHandle& nh)
+  : service_initialized_(false), nh_(nh)
 {
 }
 
 void AdapterOperationMode::initOperationModeService()
 {
   operation_mode_server_ =
-      nh_.advertiseService(SERVICE_NAME_GET_OPERATION_MODE, &AdapterOperationMode::getOperationMode, this);
+      nh_.advertiseService(SERVICE_NAME_GET_OPERATION_MODE,
+                           &AdapterOperationMode::getOperationMode, this);
 }
 
 void AdapterOperationMode::updateOperationMode(const int8_t new_op_mode)
@@ -37,7 +40,8 @@ void AdapterOperationMode::updateOperationMode(const int8_t new_op_mode)
   op_mode_ = new_op_mode;
   if (op_mode_ != last_op_mode)
   {
-    ROS_INFO_STREAM("Operation Mode switch: " << static_cast<int>(last_op_mode) << " -> "
+    ROS_INFO_STREAM("Operation Mode switch: " << static_cast<int>(last_op_mode)
+                                              << " -> "
                                               << static_cast<int>(new_op_mode));
   }
 
@@ -50,7 +54,8 @@ void AdapterOperationMode::updateOperationMode(const int8_t new_op_mode)
   }
 }
 
-bool AdapterOperationMode::getOperationMode(GetOperationMode::Request& /*req*/, GetOperationMode::Response& res)
+bool AdapterOperationMode::getOperationMode(GetOperationMode::Request& /*req*/,
+                                            GetOperationMode::Response& res)
 {
   res.mode.value = op_mode_;
   return true;

@@ -28,7 +28,8 @@ namespace prbt_hardware_support
 class BrakeTestExecutorException : public std::runtime_error
 {
 public:
-  BrakeTestExecutorException(const std::string& what_arg) : std::runtime_error(what_arg)
+  BrakeTestExecutorException(const std::string& what_arg)
+    : std::runtime_error(what_arg)
   {
   }
 };

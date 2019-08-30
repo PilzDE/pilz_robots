@@ -31,7 +31,8 @@ class CANOpenChainNodeMock
 {
 public:
   /**
-   * @brief Advertise get_object and set_object services for CANOpen objects and call setDefaultActions().
+   * @brief Advertise get_object and set_object services for CANOpen objects and
+   * call setDefaultActions().
    */
   CANOpenChainNodeMock();
 
@@ -43,7 +44,8 @@ public:
   void setDefaultActions();
 
   /**
-   * @brief Set expectations on all mock methods, that can be fullfilled in any case.
+   * @brief Set expectations on all mock methods, that can be fullfilled in any
+   * case.
    *
    * Allows any number of calls on get_obj() and set_obj.
    */
@@ -65,8 +67,10 @@ public:
   void shutdownGetService();
 
 public:
-  MOCK_METHOD2(get_obj, bool(canopen_chain_node::GetObjectRequest&, canopen_chain_node::GetObjectResponse&));
-  MOCK_METHOD2(set_obj, bool(canopen_chain_node::SetObjectRequest&, canopen_chain_node::SetObjectResponse&));
+  MOCK_METHOD2(get_obj, bool(canopen_chain_node::GetObjectRequest&,
+                             canopen_chain_node::GetObjectResponse&));
+  MOCK_METHOD2(set_obj, bool(canopen_chain_node::SetObjectRequest&,
+                             canopen_chain_node::SetObjectResponse&));
 
 private:
   ros::NodeHandle nh_;

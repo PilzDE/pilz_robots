@@ -38,10 +38,14 @@ void GazeboTest::SetUp()
 TEST_F(GazeboTest, basicMove)
 {
   ros::NodeHandle nh;
-  const std::string action_server_name = nh.getNamespace() + "/manipulator_joint_trajectory_controller/"
-                                                             "follow_joint_trajectory";
+  const std::string action_server_name = nh.getNamespace() + "/manipulator_"
+                                                             "joint_trajectory_"
+                                                             "controller/"
+                                                             "follow_joint_"
+                                                             "trajectory";
 
-  actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> action_client(action_server_name);
+  actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>
+      action_client(action_server_name);
   ASSERT_TRUE(action_client.waitForServer(WAIT_FOR_ACTION_SERVER_TIME));
 
   // Construct the goal
@@ -51,10 +55,12 @@ TEST_F(GazeboTest, basicMove)
   traj_point.positions = { 0.0, 1.0, 0.0, 0.0, 0.0, 0.0 };
   traj_point.time_from_start = ros::Duration(1);
   traj.points.push_back(traj_point);
-  traj.joint_names = { "prbt_joint_1", "prbt_joint_2", "prbt_joint_3", "prbt_joint_4", "prbt_joint_5", "prbt_joint_6" };
+  traj.joint_names = { "prbt_joint_1", "prbt_joint_2", "prbt_joint_3",
+                       "prbt_joint_4", "prbt_joint_5", "prbt_joint_6" };
   goal.trajectory = traj;
 
-  ASSERT_EQ(actionlib::SimpleClientGoalState::SUCCEEDED, action_client.sendGoalAndWait(goal).state_);
+  ASSERT_EQ(actionlib::SimpleClientGoalState::SUCCEEDED,
+            action_client.sendGoalAndWait(goal).state_);
 }
 
 }  // namespace prbt_gazebo

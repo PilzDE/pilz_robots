@@ -31,7 +31,8 @@ static constexpr unsigned int JOINT_STATES_TOPIC_QUEUE_SIZE{ 1 };
 
 JointStatesPublisherMock::JointStatesPublisherMock()
 {
-  joint_states_pub_ = nh_.advertise<sensor_msgs::JointState>(JOINT_STATES_TOPIC_NAME, JOINT_STATES_TOPIC_QUEUE_SIZE);
+  joint_states_pub_ = nh_.advertise<sensor_msgs::JointState>(
+      JOINT_STATES_TOPIC_NAME, JOINT_STATES_TOPIC_QUEUE_SIZE);
   msg_.name = { "joint1", "joint2" };
   msg_.position = { 0.1, -0.11 };
 }

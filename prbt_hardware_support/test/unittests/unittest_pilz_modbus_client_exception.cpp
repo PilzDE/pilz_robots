@@ -31,7 +31,8 @@ namespace pilz_modbus_client_exception
 TEST(PilzModbusClientExceptionTests, testMsgWhat)
 {
   const std::string test_string{ "TEST_STRING" };
-  std::shared_ptr<PilzModbusClientException> exception(new PilzModbusClientException(test_string));
+  std::shared_ptr<PilzModbusClientException> exception(
+      new PilzModbusClientException(test_string));
   EXPECT_EQ(test_string, exception->what());
 }
 

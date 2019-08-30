@@ -23,12 +23,14 @@
 
 namespace prbt_hardware_support
 {
-ModbusAdapterSto::ModbusAdapterSto(UpdateStoFunc&& update_sto_func, const ModbusApiSpec& api_spec)
+ModbusAdapterSto::ModbusAdapterSto(UpdateStoFunc&& update_sto_func,
+                                   const ModbusApiSpec& api_spec)
   : api_spec_(api_spec), update_sto_(std::move(update_sto_func))
 {
 }
 
-void ModbusAdapterSto::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw)
+void ModbusAdapterSto::modbusMsgCallback(
+    const ModbusMsgInStampedConstPtr& msg_raw)
 {
   ModbusMsgStoWrapper msg(msg_raw, api_spec_);
 
@@ -53,7 +55,8 @@ void ModbusAdapterSto::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_r
   if (msg.getVersion() != MODBUS_API_VERSION_REQUIRED)
   {
     std::ostringstream os;
-    os << "Received Modbus message of unsupported API Version: " << msg.getVersion()
+    os << "Received Modbus message of unsupported API Version: "
+       << msg.getVersion()
        << ", required Version: " << MODBUS_API_VERSION_REQUIRED;
     ROS_ERROR_STREAM(os.str());
     update_sto_(false);

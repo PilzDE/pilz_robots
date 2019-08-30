@@ -35,7 +35,8 @@ public:
    * @brief Construct a new Modbus Msg Wrapper object
    *
    */
-  ModbusMsgWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw, const ModbusApiSpec& api_spec);
+  ModbusMsgWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
+                   const ModbusApiSpec& api_spec);
 
   virtual ~ModbusMsgWrapper() = default;
 
@@ -91,8 +92,9 @@ private:
   const ModbusMsgInStampedConstPtr msg_;
 };
 
-inline ModbusMsgWrapper::ModbusMsgWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
-                                          const ModbusApiSpec& api_spec)
+inline ModbusMsgWrapper::ModbusMsgWrapper(
+    const ModbusMsgInStampedConstPtr& modbus_msg_raw,
+    const ModbusApiSpec& api_spec)
   : api_spec_(api_spec), msg_(modbus_msg_raw)
 {
 }
@@ -106,7 +108,8 @@ inline bool ModbusMsgWrapper::hasRegister(uint32_t reg) const
 
 inline uint16_t ModbusMsgWrapper::getRegister(uint32_t reg) const
 {
-  return msg_->holding_registers.data.at(reg - msg_->holding_registers.layout.data_offset);
+  return msg_->holding_registers.data.at(
+      reg - msg_->holding_registers.layout.data_offset);
 }
 
 inline bool ModbusMsgWrapper::hasVersion() const
@@ -128,7 +131,8 @@ inline void ModbusMsgWrapper::checkStructuralIntegrity() const
 {
   if (!hasVersion())
   {
-    throw ModbusMsgWrapperException("Received message does not contain a version.");
+    throw ModbusMsgWrapperException("Received message does not contain a "
+                                    "version.");
   }
 }
 

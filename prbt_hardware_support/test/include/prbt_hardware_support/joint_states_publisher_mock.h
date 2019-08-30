@@ -28,7 +28,8 @@
 namespace prbt_hardware_support
 {
 /**
- * @brief Asynchronously publishes predefined messages on the /joint_states topic with rate ~100Hz.
+ * @brief Asynchronously publishes predefined messages on the /joint_states
+ * topic with rate ~100Hz.
  */
 class JointStatesPublisherMock
 {
@@ -40,7 +41,8 @@ public:
   /**
    * @brief Start a new thread publishing joint states.
    *
-   * @param move If true, a movement is simulated, otherwise the positions do not change.
+   * @param move If true, a movement is simulated, otherwise the positions do
+   * not change.
    */
   void startAsync(bool move = false);
 

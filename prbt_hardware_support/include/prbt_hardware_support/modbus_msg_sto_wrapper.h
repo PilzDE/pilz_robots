@@ -28,13 +28,14 @@ namespace prbt_hardware_support
 /**
  * @brief Wrapper class to add semantic to a raw ModbusMsgInStamped
  *
- * Allows to easy access to the content behind a raw modbus message which is assumed to contain
- * data about STO clearance.
+ * Allows to easy access to the content behind a raw modbus message which is
+ * assumed to contain data about STO clearance.
  */
 class ModbusMsgStoWrapper : public ModbusMsgWrapper
 {
 public:
-  ModbusMsgStoWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw, const ModbusApiSpec& api_spec);
+  ModbusMsgStoWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
+                      const ModbusApiSpec& api_spec);
 
   /**
    * @brief Calls ModbusMsgWrapper::checkStructuralIntegrity().

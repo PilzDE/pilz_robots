@@ -27,7 +27,8 @@
 
 namespace prbt_hardware_support
 {
-static const std::string CANOPEN_GETOBJECT_SERVICE_NAME{ "/prbt/driver/get_object" };
+static const std::string CANOPEN_GETOBJECT_SERVICE_NAME{ "/prbt/driver/"
+                                                         "get_object" };
 static const std::string CANOPEN_NODES_PARAMETER_NAME{ "/prbt/driver/nodes" };
 static const std::string JOINT_STATE_TOPIC{ "/joint_states" };
 
@@ -41,7 +42,8 @@ SystemInfo::SystemInfo(ros::NodeHandle& nh) : joint_names_(getNodeNames(nh))
   waitForTopic<sensor_msgs::JointState>(JOINT_STATE_TOPIC);
 
   waitForService(CANOPEN_GETOBJECT_SERVICE_NAME);
-  canopen_srv_get_client_ = nh.serviceClient<canopen_chain_node::GetObject>(CANOPEN_GETOBJECT_SERVICE_NAME);
+  canopen_srv_get_client_ = nh.serviceClient<canopen_chain_node::GetObject>(
+      CANOPEN_GETOBJECT_SERVICE_NAME);
 }
 
 std::string SystemInfo::getFirmwareVersionOfJoint(const std::string& joint_name)
@@ -54,7 +56,8 @@ std::string SystemInfo::getFirmwareVersionOfJoint(const std::string& joint_name)
   ROS_INFO_STREAM("Call \"get firmware\" service for \"" << joint_name << "\"");
   if (!canopen_srv_get_client_.call(srv))
   {
-    throw SystemInfoException("CANopen service to request firmware version failed");
+    throw SystemInfoException("CANopen service to request firmware version "
+                              "failed");
   }
 
   if (!srv.response.success)

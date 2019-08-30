@@ -41,7 +41,9 @@ using canopen_chain_node::GetObjectResponse;
 using canopen_chain_node::SetObjectRequest;
 using canopen_chain_node::SetObjectResponse;
 
-static const std::string BRAKE_TEST_SERVICE_NAME{ "/prbt/braketest_adapter_node/trigger_braketest" };
+static const std::string BRAKE_TEST_SERVICE_NAME{ "/prbt/"
+                                                  "braketest_adapter_node/"
+                                                  "trigger_braketest" };
 
 static const std::string BRAKE_TEST_DURATION_OBJECT_INDEX{ "2060sub1" };
 static const std::string START_BRAKE_TEST_OBJECT_INDEX{ "2060sub2" };
@@ -52,13 +54,16 @@ static const std::string BRAKETEST_REQUIRED_NAME{ "braketest_required" };
 static const std::string NODE_NAMES_PREFIX{ "prbt_joint_" };
 static const std::vector<size_t> NODE_TEST_SET{ { 0, 2, 5 } };
 
-#define DEFAULT_SETUP                                                                                                  \
-  CANOpenChainNodeMock canopen_chain_node;                                                                             \
-  ros::NodeHandle nh_adapter("/prbt/braketest_adapter_node");                                                          \
-  prbt_hardware_support::CANOpenBrakeTestAdapter canopen_braketest_adapter(nh_adapter);                                \
-  ros::ServiceClient brake_test_srv_client = nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);                    \
-                                                                                                                       \
-  ASSERT_TRUE(brake_test_srv_client.exists()) << "Brake test service not available.";
+#define DEFAULT_SETUP                                                          \
+  CANOpenChainNodeMock canopen_chain_node;                                     \
+  ros::NodeHandle nh_adapter("/prbt/braketest_adapter_node");                  \
+  prbt_hardware_support::CANOpenBrakeTestAdapter canopen_braketest_adapter(    \
+      nh_adapter);                                                             \
+  ros::ServiceClient brake_test_srv_client =                                   \
+      nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);                   \
+                                                                               \
+  ASSERT_TRUE(brake_test_srv_client.exists()) << "Brake test service not "     \
+                                                 "available.";
 
 class CanOpenBraketestAdapterTest : public Test
 {
@@ -75,7 +80,9 @@ protected:
 TEST_F(CanOpenBraketestAdapterTest, testCANOpenBrakeTestAdapterExceptionDtor)
 {
   {
-    std::shared_ptr<CANOpenBrakeTestAdapterException> ex{ new CANOpenBrakeTestAdapterException("Test msg") };
+    std::shared_ptr<CANOpenBrakeTestAdapterException> ex{
+      new CANOpenBrakeTestAdapterException("Test msg")
+    };
   }
 }
 
@@ -97,8 +104,10 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestServiceWithoutCANGetService)
   CANOpenChainNodeMock canopen_chain_node;
   canopen_chain_node.shutdownGetService();
 
-  EXPECT_THROW(prbt_hardware_support::CANOpenBrakeTestAdapter canopen_braketest_adapter(nh_),
-               CANOpenBrakeTestAdapterException);
+  EXPECT_THROW(
+      prbt_hardware_support::CANOpenBrakeTestAdapter canopen_braketest_adapter(
+          nh_),
+      CANOpenBrakeTestAdapterException);
 }
 
 /**
@@ -119,8 +128,10 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestServiceWithoutCANSetService)
   CANOpenChainNodeMock canopen_chain_node;
   canopen_chain_node.shutdownSetService();
 
-  EXPECT_THROW(prbt_hardware_support::CANOpenBrakeTestAdapter canopen_braketest_adapter(nh_),
-               CANOpenBrakeTestAdapterException);
+  EXPECT_THROW(
+      prbt_hardware_support::CANOpenBrakeTestAdapter canopen_braketest_adapter(
+          nh_),
+      CANOpenBrakeTestAdapterException);
 }
 
 /**
@@ -153,9 +164,11 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestServiceWithoutNodeParameters)
    * Step 3 *
    **********/
   BrakeTest srv;
-  EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test service.";
+  EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test "
+                                                  "service.";
   EXPECT_FALSE(srv.response.success);
-  EXPECT_EQ(BrakeTestErrorCodes::GET_NODE_NAMES_FAILURE, srv.response.error_code.value);
+  EXPECT_EQ(BrakeTestErrorCodes::GET_NODE_NAMES_FAILURE,
+            srv.response.error_code.value);
 
   nh_.setParam(NODE_NAMES_PARAMETER_NAME, rpc);
 }
@@ -176,7 +189,8 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestServiceWithoutNodeParameters)
  *  2. Brake test service responds with correct error case.
  *  3. -
  */
-TEST_F(CanOpenBraketestAdapterTest, testBrakeTestServiceWithNodeParametersTypeError)
+TEST_F(CanOpenBraketestAdapterTest,
+       testBrakeTestServiceWithNodeParametersTypeError)
 {
   DEFAULT_SETUP
 
@@ -185,16 +199,19 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestServiceWithNodeParametersTypeEr
    **********/
   XmlRpc::XmlRpcValue rpc;
   ASSERT_TRUE(nh_.getParam(NODE_NAMES_PARAMETER_NAME, rpc));
-  auto param_modified_name = NODE_NAMES_PARAMETER_NAME + "/" + NODE_NAMES_PREFIX + "1/" + BRAKETEST_REQUIRED_NAME;
+  auto param_modified_name = NODE_NAMES_PARAMETER_NAME + "/" +
+                             NODE_NAMES_PREFIX + "1/" + BRAKETEST_REQUIRED_NAME;
   nh_.setParam(param_modified_name, 99);
 
   /**********
    * Step 3 *
    **********/
   BrakeTest srv;
-  EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test service.";
+  EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test "
+                                                  "service.";
   EXPECT_FALSE(srv.response.success);
-  EXPECT_EQ(BrakeTestErrorCodes::GET_NODE_NAMES_FAILURE, srv.response.error_code.value);
+  EXPECT_EQ(BrakeTestErrorCodes::GET_NODE_NAMES_FAILURE,
+            srv.response.error_code.value);
 
   nh_.setParam(NODE_NAMES_PARAMETER_NAME, rpc);
 }
@@ -208,8 +225,8 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestServiceWithNodeParametersTypeEr
  * This is repeated for the first and the last node and one in between.
  *
  * Test Sequence:
- *  1. Set expectations on CANOpen mock object. Let service call getting the brake_test_duration object fail for the
- *     selected node.
+ *  1. Set expectations on CANOpen mock object. Let service call getting the
+ * brake_test_duration object fail for the selected node.
  *  2. Call brake test service.
  *  3. Verify and clear expectations.
  *
@@ -217,7 +234,8 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestServiceWithNodeParametersTypeEr
  *  1. -
  *  2. The brake test service responds with correct error case.
  *  3. There is:
- *     - at least one read request on the brake_test_duration object for the selected node,
+ *     - at least one read request on the brake_test_duration object for the
+ * selected node,
  *     - no write request for the selected node.
  */
 TEST_F(CanOpenBraketestAdapterTest, testGetBrakeTestDurationServiceCallFailure)
@@ -234,24 +252,30 @@ TEST_F(CanOpenBraketestAdapterTest, testGetBrakeTestDurationServiceCallFailure)
     // Avoid unmatched expectations
     canopen_chain_node.expectAnything();
 
-    EXPECT_CALL(canopen_chain_node, get_obj(AllOf(Field(&GetObjectRequest::node, node),
-                                                  Field(&GetObjectRequest::object, BRAKE_TEST_DURATION_OBJECT_INDEX)),
-                                            _))
+    EXPECT_CALL(canopen_chain_node,
+                get_obj(AllOf(Field(&GetObjectRequest::node, node),
+                              Field(&GetObjectRequest::object,
+                                    BRAKE_TEST_DURATION_OBJECT_INDEX)),
+                        _))
         .Times(AtLeast(1))
         .WillRepeatedly(Return(false));
 
-    EXPECT_CALL(canopen_chain_node, set_obj(AllOf(Field(&SetObjectRequest::node, node),
-                                                  Field(&SetObjectRequest::object, START_BRAKE_TEST_OBJECT_INDEX)),
-                                            _))
+    EXPECT_CALL(canopen_chain_node,
+                set_obj(AllOf(Field(&SetObjectRequest::node, node),
+                              Field(&SetObjectRequest::object,
+                                    START_BRAKE_TEST_OBJECT_INDEX)),
+                        _))
         .Times(0);
 
     /**********
      * Step 2 *
      **********/
     BrakeTest srv;
-    EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test service.";
+    EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test "
+                                                    "service.";
     EXPECT_FALSE(srv.response.success);
-    EXPECT_EQ(BrakeTestErrorCodes::GET_DURATION_FAILURE, srv.response.error_code.value);
+    EXPECT_EQ(BrakeTestErrorCodes::GET_DURATION_FAILURE,
+              srv.response.error_code.value);
 
     /**********
      * Step 3 *
@@ -269,8 +293,8 @@ TEST_F(CanOpenBraketestAdapterTest, testGetBrakeTestDurationServiceCallFailure)
  * This is repeated for the first and the last node and one in between.
  *
  * Test Sequence:
- *  1. Set expectations on CANOpen mock object. Let service call getting the brake_test_duration object respond an error
- *     for the selected node.
+ *  1. Set expectations on CANOpen mock object. Let service call getting the
+ * brake_test_duration object respond an error for the selected node.
  *  2. Call brake test service.
  *  3. Verify and clear expectations.
  *
@@ -278,10 +302,12 @@ TEST_F(CanOpenBraketestAdapterTest, testGetBrakeTestDurationServiceCallFailure)
  *  1. -
  *  2. The brake test service responds with correct error case.
  *  3. There is:
- *     - at least one read request on the brake_test_duration object for the selected node,
+ *     - at least one read request on the brake_test_duration object for the
+ * selected node,
  *     - no write request for the selected node.
  */
-TEST_F(CanOpenBraketestAdapterTest, testGetBrakeTestDurationServiceResponseFailure)
+TEST_F(CanOpenBraketestAdapterTest,
+       testGetBrakeTestDurationServiceResponseFailure)
 {
   DEFAULT_SETUP
 
@@ -298,24 +324,30 @@ TEST_F(CanOpenBraketestAdapterTest, testGetBrakeTestDurationServiceResponseFailu
     // Avoid unmatched expectations
     canopen_chain_node.expectAnything();
 
-    EXPECT_CALL(canopen_chain_node, get_obj(AllOf(Field(&GetObjectRequest::node, node),
-                                                  Field(&GetObjectRequest::object, BRAKE_TEST_DURATION_OBJECT_INDEX)),
-                                            _))
+    EXPECT_CALL(canopen_chain_node,
+                get_obj(AllOf(Field(&GetObjectRequest::node, node),
+                              Field(&GetObjectRequest::object,
+                                    BRAKE_TEST_DURATION_OBJECT_INDEX)),
+                        _))
         .Times(AtLeast(1))
         .WillRepeatedly(DoAll(SetArgReferee<1>(duration_resp), Return(true)));
 
-    EXPECT_CALL(canopen_chain_node, set_obj(AllOf(Field(&SetObjectRequest::node, node),
-                                                  Field(&SetObjectRequest::object, START_BRAKE_TEST_OBJECT_INDEX)),
-                                            _))
+    EXPECT_CALL(canopen_chain_node,
+                set_obj(AllOf(Field(&SetObjectRequest::node, node),
+                              Field(&SetObjectRequest::object,
+                                    START_BRAKE_TEST_OBJECT_INDEX)),
+                        _))
         .Times(0);
 
     /**********
      * Step 2 *
      **********/
     BrakeTest srv;
-    EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test service.";
+    EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test "
+                                                    "service.";
     EXPECT_FALSE(srv.response.success);
-    EXPECT_EQ(BrakeTestErrorCodes::GET_DURATION_FAILURE, srv.response.error_code.value);
+    EXPECT_EQ(BrakeTestErrorCodes::GET_DURATION_FAILURE,
+              srv.response.error_code.value);
 
     /**********
      * Step 3 *
@@ -340,7 +372,8 @@ TEST_F(CanOpenBraketestAdapterTest, testGetBrakeTestDurationServiceResponseFailu
  *  1. -
  *  2. The brake test service responds with success.
  *  3. There is:
- *     - at least one read request on brake_test_duration object for the selected node,
+ *     - at least one read request on brake_test_duration object for the
+ * selected node,
  *     - exactly one write request for the selected node.
  */
 TEST_F(CanOpenBraketestAdapterTest, testStartBrakeTestServiceCallSuccess)
@@ -356,7 +389,8 @@ TEST_F(CanOpenBraketestAdapterTest, testStartBrakeTestServiceCallSuccess)
    * Step 2 *
    **********/
   BrakeTest srv;
-  EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test service.";
+  EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test "
+                                                  "service.";
   EXPECT_TRUE(srv.response.success);
 }
 
@@ -369,8 +403,8 @@ TEST_F(CanOpenBraketestAdapterTest, testStartBrakeTestServiceCallSuccess)
  * This is repeated for the first and the last node and one in between.
  *
  * Test Sequence:
- *  1. Set expectations on CANOpen mock object. Let the service call getting the start_brake_test object fail for the
- *     selected node.
+ *  1. Set expectations on CANOpen mock object. Let the service call getting the
+ * start_brake_test object fail for the selected node.
  *  2. Call brake test service.
  *  3. Verify and clear expectations.
  *
@@ -378,7 +412,8 @@ TEST_F(CanOpenBraketestAdapterTest, testStartBrakeTestServiceCallSuccess)
  *  1. -
  *  2. The brake test service responds with correct error case.
  *  3. There is:
- *     - at least one read request on brake_test_duration object for the selected node,
+ *     - at least one read request on brake_test_duration object for the
+ * selected node,
  *     - exactly one write request for the selected node.
  */
 TEST_F(CanOpenBraketestAdapterTest, testStartBrakeTestServiceCallFailure)
@@ -395,23 +430,29 @@ TEST_F(CanOpenBraketestAdapterTest, testStartBrakeTestServiceCallFailure)
     // Avoid unmatched expectations
     canopen_chain_node.expectAnything();
 
-    EXPECT_CALL(canopen_chain_node, get_obj(AllOf(Field(&GetObjectRequest::node, node),
-                                                  Field(&GetObjectRequest::object, BRAKE_TEST_DURATION_OBJECT_INDEX)),
-                                            _))
+    EXPECT_CALL(canopen_chain_node,
+                get_obj(AllOf(Field(&GetObjectRequest::node, node),
+                              Field(&GetObjectRequest::object,
+                                    BRAKE_TEST_DURATION_OBJECT_INDEX)),
+                        _))
         .Times(AtLeast(1));
 
-    EXPECT_CALL(canopen_chain_node, set_obj(AllOf(Field(&SetObjectRequest::node, node),
-                                                  Field(&SetObjectRequest::object, START_BRAKE_TEST_OBJECT_INDEX)),
-                                            _))
+    EXPECT_CALL(canopen_chain_node,
+                set_obj(AllOf(Field(&SetObjectRequest::node, node),
+                              Field(&SetObjectRequest::object,
+                                    START_BRAKE_TEST_OBJECT_INDEX)),
+                        _))
         .WillOnce(Return(false));
 
     /**********
      * Step 2 *
      **********/
     BrakeTest srv;
-    EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test service.";
+    EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test "
+                                                    "service.";
     EXPECT_FALSE(srv.response.success);
-    EXPECT_EQ(BrakeTestErrorCodes::START_BRAKE_TEST_FAILURE, srv.response.error_code.value);
+    EXPECT_EQ(BrakeTestErrorCodes::START_BRAKE_TEST_FAILURE,
+              srv.response.error_code.value);
 
     /**********
      * Step 3 *
@@ -429,8 +470,8 @@ TEST_F(CanOpenBraketestAdapterTest, testStartBrakeTestServiceCallFailure)
  * This is repeated for the first and the last node and one in between.
  *
  * Test Sequence:
- *  1. Set expectations on CANOpen mock object. Let the service call getting the start_brake_test object respond an
- * error for the selected node.
+ *  1. Set expectations on CANOpen mock object. Let the service call getting the
+ * start_brake_test object respond an error for the selected node.
  *  2. Call brake test service.
  *  3. Verify and clear expectations.
  *
@@ -438,7 +479,8 @@ TEST_F(CanOpenBraketestAdapterTest, testStartBrakeTestServiceCallFailure)
  *  1. -
  *  2. The brake test service responds with correct error case.
  *  3. There is:
- *     - at least one read request on brake_test_duration object for the selected node,
+ *     - at least one read request on brake_test_duration object for the
+ * selected node,
  *     - exactly one write request for the selected node.
  */
 TEST_F(CanOpenBraketestAdapterTest, testStartBrakeTestServiceResponseFailure)
@@ -458,23 +500,29 @@ TEST_F(CanOpenBraketestAdapterTest, testStartBrakeTestServiceResponseFailure)
     // Avoid unmatched expectations
     canopen_chain_node.expectAnything();
 
-    EXPECT_CALL(canopen_chain_node, get_obj(AllOf(Field(&GetObjectRequest::node, node),
-                                                  Field(&GetObjectRequest::object, BRAKE_TEST_DURATION_OBJECT_INDEX)),
-                                            _))
+    EXPECT_CALL(canopen_chain_node,
+                get_obj(AllOf(Field(&GetObjectRequest::node, node),
+                              Field(&GetObjectRequest::object,
+                                    BRAKE_TEST_DURATION_OBJECT_INDEX)),
+                        _))
         .Times(AtLeast(1));
 
-    EXPECT_CALL(canopen_chain_node, set_obj(AllOf(Field(&SetObjectRequest::node, node),
-                                                  Field(&SetObjectRequest::object, START_BRAKE_TEST_OBJECT_INDEX)),
-                                            _))
+    EXPECT_CALL(canopen_chain_node,
+                set_obj(AllOf(Field(&SetObjectRequest::node, node),
+                              Field(&SetObjectRequest::object,
+                                    START_BRAKE_TEST_OBJECT_INDEX)),
+                        _))
         .WillOnce(DoAll(SetArgReferee<1>(start_resp), Return(true)));
 
     /**********
      * Step 2 *
      **********/
     BrakeTest srv;
-    EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test service.";
+    EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test "
+                                                    "service.";
     EXPECT_FALSE(srv.response.success);
-    EXPECT_EQ(BrakeTestErrorCodes::START_BRAKE_TEST_FAILURE, srv.response.error_code.value);
+    EXPECT_EQ(BrakeTestErrorCodes::START_BRAKE_TEST_FAILURE,
+              srv.response.error_code.value);
 
     /**********
      * Step 3 *
@@ -492,15 +540,17 @@ TEST_F(CanOpenBraketestAdapterTest, testStartBrakeTestServiceResponseFailure)
  * This is repeated for the first and the last node and one in between.
  *
  * Test Sequence:
- *  1. Set expectations on CANOpen mock object. Let all services respond success, but let the service call getting the
- *     brake_test_status object fail for a selected node.
+ *  1. Set expectations on CANOpen mock object. Let all services respond
+ * success, but let the service call getting the brake_test_status object fail
+ * for a selected node.
  *  2. Call brake test service.
  *  3. Verify and clear expectations.
  *
  * Expected Results:
  *  1. -
  *  2. The brake test service responds with correct error case.
- *  3. There is at least one read request on brake_test_status object for the selected node.
+ *  3. There is at least one read request on brake_test_status object for the
+ * selected node.
  */
 TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusServiceCallFailure)
 {
@@ -516,9 +566,11 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusServiceCallFailure)
     // Avoid unmatched expectations
     canopen_chain_node.expectAnything();
 
-    EXPECT_CALL(canopen_chain_node, get_obj(AllOf(Field(&GetObjectRequest::node, node),
-                                                  Field(&GetObjectRequest::object, BRAKE_TEST_STATUS_OBJECT_INDEX)),
-                                            _))
+    EXPECT_CALL(canopen_chain_node,
+                get_obj(AllOf(Field(&GetObjectRequest::node, node),
+                              Field(&GetObjectRequest::object,
+                                    BRAKE_TEST_STATUS_OBJECT_INDEX)),
+                        _))
         .Times(AtLeast(1))
         .WillRepeatedly(Return(false));
 
@@ -526,9 +578,11 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusServiceCallFailure)
      * Step 2 *
      **********/
     BrakeTest srv;
-    EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test service.";
+    EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test "
+                                                    "service.";
     EXPECT_FALSE(srv.response.success);
-    EXPECT_EQ(BrakeTestErrorCodes::GET_STATUS_FAILURE, srv.response.error_code.value);
+    EXPECT_EQ(BrakeTestErrorCodes::GET_STATUS_FAILURE,
+              srv.response.error_code.value);
 
     /**********
      * Step 3 *
@@ -546,15 +600,16 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusServiceCallFailure)
  * This is repeated for the first and the last node and one in between.
  *
  * Test Sequence:
- *  1. Set expectations on CANOpen mock object. Let the service call getting the brake_test_status object respond
- *     an error for the selected node.
+ *  1. Set expectations on CANOpen mock object. Let the service call getting the
+ * brake_test_status object respond an error for the selected node.
  *  2. Call brake test service.
  *  3. Verify and clear expectations.
  *
  * Expected Results:
  *  1. -
  *  2. The brake test service responds with correct error case.
- *  3. There is at least one read request on brake_test_status object for the selected node.
+ *  3. There is at least one read request on brake_test_status object for the
+ * selected node.
  */
 TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusServiceResponseFailure)
 {
@@ -573,9 +628,11 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusServiceResponseFailure)
     // Avoid unmatched expectations
     canopen_chain_node.expectAnything();
 
-    EXPECT_CALL(canopen_chain_node, get_obj(AllOf(Field(&GetObjectRequest::node, node),
-                                                  Field(&GetObjectRequest::object, BRAKE_TEST_STATUS_OBJECT_INDEX)),
-                                            _))
+    EXPECT_CALL(canopen_chain_node,
+                get_obj(AllOf(Field(&GetObjectRequest::node, node),
+                              Field(&GetObjectRequest::object,
+                                    BRAKE_TEST_STATUS_OBJECT_INDEX)),
+                        _))
         .Times(AtLeast(1))
         .WillRepeatedly(DoAll(SetArgReferee<1>(status_resp), Return(true)));
 
@@ -583,9 +640,11 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusServiceResponseFailure)
      * Step 2 *
      **********/
     BrakeTest srv;
-    EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test service.";
+    EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test "
+                                                    "service.";
     EXPECT_FALSE(srv.response.success);
-    EXPECT_EQ(BrakeTestErrorCodes::GET_STATUS_FAILURE, srv.response.error_code.value);
+    EXPECT_EQ(BrakeTestErrorCodes::GET_STATUS_FAILURE,
+              srv.response.error_code.value);
 
     /**********
      * Step 3 *
@@ -602,15 +661,16 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusServiceResponseFailure)
  * This is repeated for the first and the last node and one in between.
  *
  * Test Sequence:
- *  1. Set expectations on CANOpen mock object. Let the service call getting the brake_test_status object respond
- *     status unknown for the selected node.
+ *  1. Set expectations on CANOpen mock object. Let the service call getting the
+ * brake_test_status object respond status unknown for the selected node.
  *  2. Call brake test service.
  *  3. Verify and clear expectations.
  *
  * Expected Results:
  *  1. -
  *  2. The brake test service responds with correct error case.
- *  3. There is at least one read request on brake_test_status object for the selected node.
+ *  3. There is at least one read request on brake_test_status object for the
+ * selected node.
  */
 TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusUnknown)
 {
@@ -630,9 +690,11 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusUnknown)
     // Avoid unmatched expectations
     canopen_chain_node.expectAnything();
 
-    EXPECT_CALL(canopen_chain_node, get_obj(AllOf(Field(&GetObjectRequest::node, node),
-                                                  Field(&GetObjectRequest::object, BRAKE_TEST_STATUS_OBJECT_INDEX)),
-                                            _))
+    EXPECT_CALL(canopen_chain_node,
+                get_obj(AllOf(Field(&GetObjectRequest::node, node),
+                              Field(&GetObjectRequest::object,
+                                    BRAKE_TEST_STATUS_OBJECT_INDEX)),
+                        _))
         .Times(AtLeast(1))
         .WillRepeatedly(DoAll(SetArgReferee<1>(status_resp), Return(true)));
 
@@ -640,9 +702,11 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusUnknown)
      * Step 2 *
      **********/
     BrakeTest srv;
-    EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test service.";
+    EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test "
+                                                    "service.";
     EXPECT_FALSE(srv.response.success);
-    EXPECT_EQ(BrakeTestErrorCodes::STATUS_UNKNOWN, srv.response.error_code.value);
+    EXPECT_EQ(BrakeTestErrorCodes::STATUS_UNKNOWN,
+              srv.response.error_code.value);
 
     /**********
      * Step 3 *
@@ -659,15 +723,16 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusUnknown)
  * This is repeated for the first and the last node and one in between.
  *
  * Test Sequence:
- *  1. Set expectations on CANOpen mock object. Let the service call getting the brake_test_status object respond
- *     status performed for the selected node.
+ *  1. Set expectations on CANOpen mock object. Let the service call getting the
+ * brake_test_status object respond status performed for the selected node.
  *  2. Call brake test service.
  *  3. Verify and clear expectations.
  *
  * Expected Results:
  *  1. -
  *  2. The brake test service responds with correct error case.
- *  3. There is at least one read request on brake_test_status object for the selected node.
+ *  3. There is at least one read request on brake_test_status object for the
+ * selected node.
  */
 TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusPerformed)
 {
@@ -687,9 +752,11 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusPerformed)
     // Avoid unmatched expectations
     canopen_chain_node.expectAnything();
 
-    EXPECT_CALL(canopen_chain_node, get_obj(AllOf(Field(&GetObjectRequest::node, node),
-                                                  Field(&GetObjectRequest::object, BRAKE_TEST_STATUS_OBJECT_INDEX)),
-                                            _))
+    EXPECT_CALL(canopen_chain_node,
+                get_obj(AllOf(Field(&GetObjectRequest::node, node),
+                              Field(&GetObjectRequest::object,
+                                    BRAKE_TEST_STATUS_OBJECT_INDEX)),
+                        _))
         .Times(AtLeast(1))
         .WillRepeatedly(DoAll(SetArgReferee<1>(status_resp), Return(true)));
 
@@ -697,9 +764,11 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusPerformed)
      * Step 2 *
      **********/
     BrakeTest srv;
-    EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test service.";
+    EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test "
+                                                    "service.";
     EXPECT_FALSE(srv.response.success);
-    EXPECT_EQ(BrakeTestErrorCodes::STATUS_PERFORMING, srv.response.error_code.value);
+    EXPECT_EQ(BrakeTestErrorCodes::STATUS_PERFORMING,
+              srv.response.error_code.value);
 
     /**********
      * Step 3 *
@@ -716,15 +785,16 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusPerformed)
  * This is repeated for the first and the last node and one in between.
  *
  * Test Sequence:
- *  1. Set expectations on CANOpen mock object. Let the service call getting the brake_test_status object respond
- *     status not successful for the selected node.
+ *  1. Set expectations on CANOpen mock object. Let the service call getting the
+ * brake_test_status object respond status not successful for the selected node.
  *  2. Call brake test service.
  *  3. Verify and clear expectations.
  *
  * Expected Results:
  *  1. -
  *  2. The brake test service responds with correct error case.
- *  3. There is at least one read request on brake_test_status object for the selected node.
+ *  3. There is at least one read request on brake_test_status object for the
+ * selected node.
  */
 TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusNotSuccessful)
 {
@@ -744,9 +814,11 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusNotSuccessful)
     // Avoid unmatched expectations
     canopen_chain_node.expectAnything();
 
-    EXPECT_CALL(canopen_chain_node, get_obj(AllOf(Field(&GetObjectRequest::node, node),
-                                                  Field(&GetObjectRequest::object, BRAKE_TEST_STATUS_OBJECT_INDEX)),
-                                            _))
+    EXPECT_CALL(canopen_chain_node,
+                get_obj(AllOf(Field(&GetObjectRequest::node, node),
+                              Field(&GetObjectRequest::object,
+                                    BRAKE_TEST_STATUS_OBJECT_INDEX)),
+                        _))
         .Times(AtLeast(1))
         .WillRepeatedly(DoAll(SetArgReferee<1>(status_resp), Return(true)));
 
@@ -754,9 +826,11 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusNotSuccessful)
      * Step 2 *
      **********/
     BrakeTest srv;
-    EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test service.";
+    EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test "
+                                                    "service.";
     EXPECT_FALSE(srv.response.success);
-    EXPECT_EQ(BrakeTestErrorCodes::STATUS_NO_SUCCESS, srv.response.error_code.value);
+    EXPECT_EQ(BrakeTestErrorCodes::STATUS_NO_SUCCESS,
+              srv.response.error_code.value);
 
     /**********
      * Step 3 *
@@ -774,15 +848,17 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusNotSuccessful)
  * This is repeated for the first and the last node and one in between.
  *
  * Test Sequence:
- *  1. Set expectations on CANOpen mock object. Let the service call getting the brake_test_status object respond
- *     status not actively controlled for the selected node.
+ *  1. Set expectations on CANOpen mock object. Let the service call getting the
+ * brake_test_status object respond status not actively controlled for the
+ * selected node.
  *  2. Call brake test service.
  *  3. Verify and clear expectations.
  *
  * Expected Results:
  *  1. -
  *  2. The brake test service responds with correct error case.
- *  3. There is at least one read request on brake_test_status object for the selected node.
+ *  3. There is at least one read request on brake_test_status object for the
+ * selected node.
  */
 TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusNotActivelyControlled)
 {
@@ -802,9 +878,11 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusNotActivelyControlled)
     // Avoid unmatched expectations
     canopen_chain_node.expectAnything();
 
-    EXPECT_CALL(canopen_chain_node, get_obj(AllOf(Field(&GetObjectRequest::node, node),
-                                                  Field(&GetObjectRequest::object, BRAKE_TEST_STATUS_OBJECT_INDEX)),
-                                            _))
+    EXPECT_CALL(canopen_chain_node,
+                get_obj(AllOf(Field(&GetObjectRequest::node, node),
+                              Field(&GetObjectRequest::object,
+                                    BRAKE_TEST_STATUS_OBJECT_INDEX)),
+                        _))
         .Times(AtLeast(1))
         .WillRepeatedly(DoAll(SetArgReferee<1>(status_resp), Return(true)));
 
@@ -812,9 +890,11 @@ TEST_F(CanOpenBraketestAdapterTest, testBrakeTestStatusNotActivelyControlled)
      * Step 2 *
      **********/
     BrakeTest srv;
-    EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test service.";
+    EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test "
+                                                    "service.";
     EXPECT_FALSE(srv.response.success);
-    EXPECT_EQ(BrakeTestErrorCodes::STATUS_NO_CONTROL, srv.response.error_code.value);
+    EXPECT_EQ(BrakeTestErrorCodes::STATUS_NO_CONTROL,
+              srv.response.error_code.value);
 
     /**********
      * Step 3 *

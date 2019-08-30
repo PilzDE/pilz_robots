@@ -53,12 +53,14 @@ public:
    * @brief Creates a standard ModbusMsgIn which contains default values for
    * all essential elements of the message.
    */
-  static ModbusMsgInStampedPtr createDefaultModbusMsgIn(const std_msgs::MultiArrayLayout::_data_offset_type& offset,
-                                                        const RegCont& holding_register);
+  static ModbusMsgInStampedPtr createDefaultModbusMsgIn(
+      const std_msgs::MultiArrayLayout::_data_offset_type& offset,
+      const RegCont& holding_register);
 
-  static void setDefaultLayout(std_msgs::MultiArrayLayout* layout,
-                               const std_msgs::MultiArrayLayout::_data_offset_type& offset,
-                               const RegCont::size_type& size);
+  static void
+  setDefaultLayout(std_msgs::MultiArrayLayout* layout,
+                   const std_msgs::MultiArrayLayout::_data_offset_type& offset,
+                   const RegCont::size_type& size);
 
 private:
   const ModbusApiSpec api_spec_;
@@ -72,19 +74,24 @@ inline ModbusMsgInBuilder& ModbusMsgInBuilder::setSto(const uint16_t sto)
   return *this;
 }
 
-inline ModbusMsgInBuilder& ModbusMsgInBuilder::setOperationMode(const uint16_t mode)
+inline ModbusMsgInBuilder&
+ModbusMsgInBuilder::setOperationMode(const uint16_t mode)
 {
-  setRegister(api_spec_.getRegisterDefinition(modbus_api_spec::OPERATION_MODE), mode);
+  setRegister(api_spec_.getRegisterDefinition(modbus_api_spec::OPERATION_MODE),
+              mode);
   return *this;
 }
 
-inline ModbusMsgInBuilder& ModbusMsgInBuilder::setApiVersion(const uint16_t version)
+inline ModbusMsgInBuilder&
+ModbusMsgInBuilder::setApiVersion(const uint16_t version)
 {
-  setRegister(api_spec_.getRegisterDefinition(modbus_api_spec::VERSION), version);
+  setRegister(api_spec_.getRegisterDefinition(modbus_api_spec::VERSION),
+              version);
   return *this;
 }
 
-inline void ModbusMsgInBuilder::setRegister(const unsigned int register_n, const uint16_t value)
+inline void ModbusMsgInBuilder::setRegister(const unsigned int register_n,
+                                            const uint16_t value)
 {
   register_values_[register_n] = value;
 }

@@ -25,8 +25,9 @@
 namespace message_filters
 {
 /**
- * @brief Filters consecutive messages with the same timestamp. Only the first message passes, all consecutive
- * are dropped. It is templated on the message type to be filtered.
+ * @brief Filters consecutive messages with the same timestamp. Only the first
+ * message passes, all consecutive are dropped. It is templated on the message
+ * type to be filtered.
  *
  * \code
  *   message_filters::Subscriber sub<MsgStamped>(nh, TOPIC_NAME, 1);
@@ -60,7 +61,8 @@ public:
   {
     incoming_connection_.disconnect();
     incoming_connection_ =
-        f.registerCallback(typename UpdateFilter<M>::EventCallback(boost::bind(&UpdateFilter::cb, this, _1)));
+        f.registerCallback(typename UpdateFilter<M>::EventCallback(
+            boost::bind(&UpdateFilter::cb, this, _1)));
   }
 
 private:

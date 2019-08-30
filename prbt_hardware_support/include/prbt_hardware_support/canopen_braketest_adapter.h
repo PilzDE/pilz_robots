@@ -43,13 +43,15 @@ private:
   using BrakeTestStatus = std::pair<int8_t, std::string>;
 
 private:
-  bool triggerBrakeTests(BrakeTest::Request& req, BrakeTest::Response& response);
+  bool triggerBrakeTests(BrakeTest::Request& req,
+                         BrakeTest::Response& response);
   void triggerBrakeTestForNode(const std::string& node_name);
   BrakeTestStatus getBrakeTestStatusForNode(const std::string& node_name);
   ros::Duration getBrakeTestDuration(const std::string& node_name);
   void checkBrakeTestResultForNode(const std::string& node_name);
   std::vector<std::string> getNodeNames();
-  ros::Duration getMaximumBrakeTestDuration(const std::vector<std::string>& node_names);
+  ros::Duration
+  getMaximumBrakeTestDuration(const std::vector<std::string>& node_names);
 
 private:
   ros::NodeHandle nh_;

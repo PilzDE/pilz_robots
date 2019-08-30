@@ -37,7 +37,8 @@ static const std::string SERVICE_OPERATION_MODE = "/prbt/get_operation_mode";
 
 /**
  * @brief OperationModeIntegrationTest checks if the chain
- * ModbusServerMock -> ModbusReadClient -> ModbusAdapterOperationMode functions properly
+ * ModbusServerMock -> ModbusReadClient -> ModbusAdapterOperationMode functions
+ * properly
  */
 class OperationModeIntegrationTest : public testing::Test
 {
@@ -47,12 +48,13 @@ protected:
 };
 
 /**
- * @brief Can be used to check that a expected operation mode is eventually return by the service call
+ * @brief Can be used to check that a expected operation mode is eventually
+ * return by the service call
  *
  */
-::testing::AssertionResult expectOperationModeServiceCallResult(ros::ServiceClient& service_client,
-                                                                OperationModes::_value_type expectation,
-                                                                uint16_t retries)
+::testing::AssertionResult expectOperationModeServiceCallResult(
+    ros::ServiceClient& service_client, OperationModes::_value_type expectation,
+    uint16_t retries)
 {
   prbt_hardware_support::GetOperationMode srv;
   for (int i = 0; i <= retries; i++)
@@ -64,13 +66,15 @@ protected:
     }
     if (srv.response.mode.value == expectation)
     {
-      return ::testing::AssertionSuccess() << "It took " << i + 1 << " tries for the service call.";
+      return ::testing::AssertionSuccess()
+             << "It took " << i + 1 << " tries for the service call.";
     }
     sleep(1);  // This then may take {retries*1}seconds.
   }
-  return ::testing::AssertionFailure() << "Did not get expected operation mode:"
-                                       << "Actual: " << static_cast<int>(srv.response.mode.value)
-                                       << " Expected: " << static_cast<int>(expectation);
+  return ::testing::AssertionFailure()
+         << "Did not get expected operation mode:"
+         << "Actual: " << static_cast<int>(srv.response.mode.value)
+         << " Expected: " << static_cast<int>(expectation);
 }
 
 /**
@@ -78,19 +82,26 @@ protected:
  *  Test that the expected result is returned via the service call.
  * }
  *
- * @note Due to the asynchronicity of the test each step of the sequence passed successful
- *       allows the next step to be taken. See testing::AsyncTest for details.
+ * @note Due to the asynchronicity of the test each step of the sequence passed
+ * successful allows the next step to be taken. See testing::AsyncTest for
+ * details.
  *
  * Data send via:
  *  ModbusServerMock -> ModbusReadClient -> ModbusAdapterOperationMode
  *
  * Test Sequence:
- *    0. Start Modbus-server in separate thread. Make sure that the nodes are up.
- *    1. Send message with 0 (unknown) in operation mode register and with the correct API version.
- *    2. Send message with T1 in operation mode register and with the correct API version.
- *    3. Send message with T2 in operation mode register and with the correct API version.
- *    4. Send message with AUTO (unknown) in operation mode register and with the correct API version.
- *    5. Send message with 99 (unknown) in operation mode register and with the correct API version.
+ *    0. Start Modbus-server in separate thread. Make sure that the nodes are
+ * up.
+ *    1. Send message with 0 (unknown) in operation mode register and with the
+ * correct API version.
+ *    2. Send message with T1 in operation mode register and with the correct
+ * API version.
+ *    3. Send message with T2 in operation mode register and with the correct
+ * API version.
+ *    4. Send message with AUTO (unknown) in operation mode register and with
+ * the correct API version.
+ *    5. Send message with 99 (unknown) in operation mode register and with the
+ * correct API version.
  *    6. Terminate ModbusServerMock.
  *
  * Expected Results:
@@ -119,10 +130,12 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
   /**********
    * Step 0 *
    **********/
-  prbt_hardware_support::PilzModbusServerMock modbus_server(modbus_register_size);
+  prbt_hardware_support::PilzModbusServerMock modbus_server(
+      modbus_register_size);
 
-  std::thread modbus_server_thread(&initalizeAndRun<prbt_hardware_support::PilzModbusServerMock>,
-                                   std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port));
+  std::thread modbus_server_thread(
+      &initalizeAndRun<prbt_hardware_support::PilzModbusServerMock>,
+      std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port));
   prbt_hardware_support::GetOperationMode srv;
 
   waitForNode("/pilz_modbus_client_node");
@@ -132,43 +145,52 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
    * Step 1 *
    **********/
   ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::VERSION));
-  unsigned int version_register = api_spec.getRegisterDefinition(modbus_api_spec::VERSION);
+  unsigned int version_register =
+      api_spec.getRegisterDefinition(modbus_api_spec::VERSION);
 
-  modbus_server.setHoldingRegister({ { version_register, MODBUS_API_VERSION_VALUE } });
+  modbus_server.setHoldingRegister(
+      { { version_register, MODBUS_API_VERSION_VALUE } });
 
   ros::ServiceClient operation_mode_client =
-      nh_.serviceClient<prbt_hardware_support::GetOperationMode>(SERVICE_OPERATION_MODE);
+      nh_.serviceClient<prbt_hardware_support::GetOperationMode>(
+          SERVICE_OPERATION_MODE);
   ros::service::waitForService(SERVICE_OPERATION_MODE, ros::Duration(10));
   ASSERT_TRUE(operation_mode_client.exists());
 
-  EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::UNKNOWN, 10));
+  EXPECT_TRUE(expectOperationModeServiceCallResult(
+      operation_mode_client, OperationModes::UNKNOWN, 10));
 
   /**********
    * Step 2 *
    **********/
   ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::OPERATION_MODE));
-  unsigned int op_mode_register = api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE);
+  unsigned int op_mode_register =
+      api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE);
 
   modbus_server.setHoldingRegister({ { op_mode_register, 1 } });
-  EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::T1, 10));
+  EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client,
+                                                   OperationModes::T1, 10));
 
   /**********
    * Step 3 *
    **********/
   modbus_server.setHoldingRegister({ { op_mode_register, 2 } });
-  EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::T2, 10));
+  EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client,
+                                                   OperationModes::T2, 10));
 
   /**********
    * Step 4 *
    **********/
   modbus_server.setHoldingRegister({ { op_mode_register, 3 } });
-  EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::AUTO, 10));
+  EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client,
+                                                   OperationModes::AUTO, 10));
 
   /**********
    * Step 5 *
    **********/
   modbus_server.setHoldingRegister({ { op_mode_register, 99 } });
-  EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::UNKNOWN, 10));
+  EXPECT_TRUE(expectOperationModeServiceCallResult(
+      operation_mode_client, OperationModes::UNKNOWN, 10));
 
   /**********
    * Step 6 *

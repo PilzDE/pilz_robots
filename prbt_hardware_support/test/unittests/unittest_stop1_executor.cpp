@@ -31,17 +31,25 @@
 #include <prbt_hardware_support/stop1_executor.h>
 #include <prbt_hardware_support/service_function_decl.h>
 
-#define EXPECT_RECOVER                                                                                                 \
-  EXPECT_CALL(*this, recover_func()).WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(RECOVER_SRV_CALLED_EVENT), Return(true)))
+#define EXPECT_RECOVER                                                         \
+  EXPECT_CALL(*this, recover_func())                                           \
+      .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(RECOVER_SRV_CALLED_EVENT),      \
+                      Return(true)))
 
-#define EXPECT_UNHOLD                                                                                                  \
-  EXPECT_CALL(*this, unhold_func()).WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(UNHOLD_SRV_CALLED_EVENT), Return(true)))
+#define EXPECT_UNHOLD                                                          \
+  EXPECT_CALL(*this, unhold_func())                                            \
+      .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(UNHOLD_SRV_CALLED_EVENT),       \
+                      Return(true)))
 
-#define EXPECT_HOLD                                                                                                    \
-  EXPECT_CALL(*this, hold_func()).WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(HOLD_SRV_CALLED_EVENT), Return(true)))
+#define EXPECT_HOLD                                                            \
+  EXPECT_CALL(*this, hold_func())                                              \
+      .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(HOLD_SRV_CALLED_EVENT),         \
+                      Return(true)))
 
-#define EXPECT_HALT                                                                                                    \
-  EXPECT_CALL(*this, halt_func()).WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(HALT_SRV_CALLED_EVENT), Return(true)))
+#define EXPECT_HALT                                                            \
+  EXPECT_CALL(*this, halt_func())                                              \
+      .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(HALT_SRV_CALLED_EVENT),         \
+                      Return(true)))
 
 namespace prbt_hardware_support_tests
 {
@@ -66,8 +74,10 @@ const std::string HALT_SRV_CALLED_EVENT{ "halt_srv_called" };
 class Stop1ExecutorForTests : public Stop1Executor
 {
 public:
-  Stop1ExecutorForTests(const TServiceCallFunc& hold_func, const TServiceCallFunc& unhold_func,
-                        const TServiceCallFunc& recover_func, const TServiceCallFunc& halt_func)
+  Stop1ExecutorForTests(const TServiceCallFunc& hold_func,
+                        const TServiceCallFunc& unhold_func,
+                        const TServiceCallFunc& recover_func,
+                        const TServiceCallFunc& halt_func)
     : Stop1Executor(hold_func, unhold_func, recover_func, halt_func)
   {
   }
@@ -92,8 +102,10 @@ public:
 inline Stop1ExecutorForTests* Stop1ExecutorTest::createStop1Executor()
 {
   return new Stop1ExecutorForTests(
-      std::bind(&Stop1ExecutorTest::hold_func, this), std::bind(&Stop1ExecutorTest::unhold_func, this),
-      std::bind(&Stop1ExecutorTest::recover_func, this), std::bind(&Stop1ExecutorTest::halt_func, this));
+      std::bind(&Stop1ExecutorTest::hold_func, this),
+      std::bind(&Stop1ExecutorTest::unhold_func, this),
+      std::bind(&Stop1ExecutorTest::recover_func, this),
+      std::bind(&Stop1ExecutorTest::halt_func, this));
 }
 
 /**
@@ -105,14 +117,17 @@ TEST_F(Stop1ExecutorTest, testD0estructor)
 {
   {
     std::shared_ptr<Stop1Executor> adapter_sto{ new Stop1Executor(
-        std::bind(&Stop1ExecutorTest::hold_func, this), std::bind(&Stop1ExecutorTest::unhold_func, this),
-        std::bind(&Stop1ExecutorTest::recover_func, this), std::bind(&Stop1ExecutorTest::halt_func, this)) };
+        std::bind(&Stop1ExecutorTest::hold_func, this),
+        std::bind(&Stop1ExecutorTest::unhold_func, this),
+        std::bind(&Stop1ExecutorTest::recover_func, this),
+        std::bind(&Stop1ExecutorTest::halt_func, this)) };
   }
 
   {
-    Stop1Executor adapter_sto(
-        std::bind(&Stop1ExecutorTest::hold_func, this), std::bind(&Stop1ExecutorTest::unhold_func, this),
-        std::bind(&Stop1ExecutorTest::recover_func, this), std::bind(&Stop1ExecutorTest::halt_func, this));
+    Stop1Executor adapter_sto(std::bind(&Stop1ExecutorTest::hold_func, this),
+                              std::bind(&Stop1ExecutorTest::unhold_func, this),
+                              std::bind(&Stop1ExecutorTest::recover_func, this),
+                              std::bind(&Stop1ExecutorTest::halt_func, this));
   }
 }
 
@@ -232,7 +247,8 @@ TEST_F(Stop1ExecutorTest, testEnableStopEnable)
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)) repeatedly,
  *     let recover and unhold services return success
- *  2. Call updateSto(true) once more (this is certainly after unhold and needed for full coverage)
+ *  2. Call updateSto(true) once more (this is certainly after unhold and needed
+ * for full coverage)
  *  3. Call updateSto(false)),
  *     let hold and halt services return success
  *
@@ -381,7 +397,8 @@ TEST_F(Stop1ExecutorTest, testSpamStoActivePlusEnable)
  *
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)),
- *     call updateSto(false)) during recover service call and return success, let halt service return success
+ *     call updateSto(false)) during recover service call and return success,
+ * let halt service return success
  *  2. Call updateSto(true)),
  *     let recover and unhold services return success
  *
@@ -411,7 +428,8 @@ TEST_F(Stop1ExecutorTest, testSkippingHoldPlusEnable)
   {
     InSequence dummy;
 
-    EXPECT_CALL(*this, recover_func()).WillOnce(InvokeWithoutArgs(sto_false_during_recover_action));
+    EXPECT_CALL(*this, recover_func())
+        .WillOnce(InvokeWithoutArgs(sto_false_during_recover_action));
 
     EXPECT_CALL(*this, halt_func()).WillOnce(InvokeWithoutArgs(halt_action));
   }
@@ -483,24 +501,29 @@ TEST_F(Stop1ExecutorTest, testEnableDuringHaltService)
   {
     InSequence dummy;
 
-    EXPECT_CALL(*this, recover_func()).WillOnce(InvokeWithoutArgs(sto_false_during_recover_action));
+    EXPECT_CALL(*this, recover_func())
+        .WillOnce(InvokeWithoutArgs(sto_false_during_recover_action));
 
-    EXPECT_CALL(*this, halt_func()).WillOnce(InvokeWithoutArgs(enable_during_halt_action));
+    EXPECT_CALL(*this, halt_func())
+        .WillOnce(InvokeWithoutArgs(enable_during_halt_action));
 
-    EXPECT_CALL(*this, recover_func()).WillOnce(InvokeWithoutArgs([this, recover_srv_called_event2]() {
-      this->triggerClearEvent(recover_srv_called_event2);
-      return true;
-    }));
+    EXPECT_CALL(*this, recover_func())
+        .WillOnce(InvokeWithoutArgs([this, recover_srv_called_event2]() {
+          this->triggerClearEvent(recover_srv_called_event2);
+          return true;
+        }));
 
-    EXPECT_CALL(*this, unhold_func()).WillOnce(InvokeWithoutArgs([this, unhold_srv_called_event2]() {
-      this->triggerClearEvent(unhold_srv_called_event2);
-      return true;
-    }));
+    EXPECT_CALL(*this, unhold_func())
+        .WillOnce(InvokeWithoutArgs([this, unhold_srv_called_event2]() {
+          this->triggerClearEvent(unhold_srv_called_event2);
+          return true;
+        }));
   }
 
   adapter_sto->updateSto(true);
 
-  BARRIER({ RECOVER_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT, recover_srv_called_event2, unhold_srv_called_event2 });
+  BARRIER({ RECOVER_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT,
+            recover_srv_called_event2, unhold_srv_called_event2 });
 }
 
 /**
@@ -511,11 +534,13 @@ TEST_F(Stop1ExecutorTest, testEnableDuringHaltService)
  *
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)).
- *     Call updateSto(false)) during recover service call and return success. (This is not essential for the test)
- *     Before returning success on halt service call updateSto(true) and update(false).
+ *     Call updateSto(false)) during recover service call and return success.
+ * (This is not essential for the test) Before returning success on halt service
+ * call updateSto(true) and update(false).
  *
  * Expected Results:
- *  1. Recover and halt services are called successively. Afterwards recover and unhold are called once.
+ *  1. Recover and halt services are called successively. Afterwards recover and
+ * unhold are called once.
  */
 TEST_F(Stop1ExecutorTest, testEnableDisableDuringHaltService)
 {
@@ -542,9 +567,13 @@ TEST_F(Stop1ExecutorTest, testEnableDisableDuringHaltService)
   {
     InSequence dummy;
 
-    EXPECT_CALL(*this, recover_func()).Times(1).WillOnce(InvokeWithoutArgs(sto_false_during_recover_action));
+    EXPECT_CALL(*this, recover_func())
+        .Times(1)
+        .WillOnce(InvokeWithoutArgs(sto_false_during_recover_action));
 
-    EXPECT_CALL(*this, halt_func()).Times(1).WillOnce(InvokeWithoutArgs(enable_during_halt_action));
+    EXPECT_CALL(*this, halt_func())
+        .Times(1)
+        .WillOnce(InvokeWithoutArgs(enable_during_halt_action));
   }
 
   adapter_sto->updateSto(true);
@@ -579,7 +608,8 @@ TEST_F(Stop1ExecutorTest, testRecoverFailPlusRetry)
    * Step 1 *
    **********/
   EXPECT_CALL(*this, recover_func())
-      .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(RECOVER_SRV_CALLED_EVENT), Return(false)))
+      .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(RECOVER_SRV_CALLED_EVENT),
+                      Return(false)))
       .WillRepeatedly(Return(false));
 
   // unhold is optional here
@@ -643,7 +673,8 @@ TEST_F(Stop1ExecutorTest, testRecoverFailPlusRetry)
  *     let hold and halt services return success
  *
  * Expected Results:
- *  1. Recover and unhold services are called successively, the latter one at least once
+ *  1. Recover and unhold services are called successively, the latter one at
+ * least once
  *  2. Hold and halt services are called successively.
  */
 TEST_F(Stop1ExecutorTest, testUnholdFail)
@@ -657,7 +688,8 @@ TEST_F(Stop1ExecutorTest, testUnholdFail)
     EXPECT_RECOVER;
 
     EXPECT_CALL(*this, unhold_func())
-        .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(UNHOLD_SRV_CALLED_EVENT), Return(false)))
+        .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(UNHOLD_SRV_CALLED_EVENT),
+                        Return(false)))
         .WillRepeatedly(Return(false));
   }
 
@@ -721,11 +753,13 @@ TEST_F(Stop1ExecutorTest, testHoldFail)
     InSequence dummy;
 
     EXPECT_CALL(*this, hold_func())
-        .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(HOLD_SRV_CALLED_EVENT), Return(false)))
+        .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(HOLD_SRV_CALLED_EVENT),
+                        Return(false)))
         .WillRepeatedly(Return(false));
 
     EXPECT_CALL(*this, halt_func())
-        .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(HALT_SRV_CALLED_EVENT), Return(false)))
+        .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(HALT_SRV_CALLED_EVENT),
+                        Return(false)))
         .WillRepeatedly(Return(false));
   }
 
@@ -766,7 +800,8 @@ TEST_F(Stop1ExecutorTest, testHoldImmediatelyAfterUnhold)
 
     EXPECT_RECOVER;
 
-    EXPECT_CALL(*this, unhold_func()).WillOnce(InvokeWithoutArgs(unhold_action));
+    EXPECT_CALL(*this, unhold_func())
+        .WillOnce(InvokeWithoutArgs(unhold_action));
 
     EXPECT_HOLD;
     EXPECT_HALT;
@@ -774,7 +809,8 @@ TEST_F(Stop1ExecutorTest, testHoldImmediatelyAfterUnhold)
 
   adapter_sto->updateSto(true);
 
-  barricade({ RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT, HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT });
+  barricade({ RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT,
+              HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT });
 }
 
 /**
@@ -804,9 +840,11 @@ TEST_F(Stop1ExecutorTest, testExitInStateEnabling)
   {
     InSequence dummy;
 
-    EXPECT_CALL(*this, recover_func()).WillOnce(InvokeWithoutArgs(recover_action));
+    EXPECT_CALL(*this, recover_func())
+        .WillOnce(InvokeWithoutArgs(recover_action));
 
-    // do not exclude other service calls as stopping the state machine does not prevent further actions
+    // do not exclude other service calls as stopping the state machine does not
+    // prevent further actions
     EXPECT_CALL(*this, unhold_func()).WillRepeatedly(Return(true));
   }
 
@@ -847,9 +885,11 @@ TEST_F(Stop1ExecutorTest, testExitInStateStopRequestedDuringEnable)
     InSequence dummy;
 
     EXPECT_RECOVER;
-    EXPECT_CALL(*this, unhold_func()).WillOnce(InvokeWithoutArgs(unhold_action));
+    EXPECT_CALL(*this, unhold_func())
+        .WillOnce(InvokeWithoutArgs(unhold_action));
 
-    // do not exclude other service calls as stopping the state machine does not prevent further actions
+    // do not exclude other service calls as stopping the state machine does not
+    // prevent further actions
     EXPECT_CALL(*this, hold_func()).WillRepeatedly(Return(true));
 
     EXPECT_HALT;
@@ -857,7 +897,8 @@ TEST_F(Stop1ExecutorTest, testExitInStateStopRequestedDuringEnable)
 
   adapter_sto->updateSto(true);
 
-  BARRIER({ RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT });
+  BARRIER({ RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT,
+            HALT_SRV_CALLED_EVENT });
 }
 
 /**
@@ -900,9 +941,11 @@ TEST_F(Stop1ExecutorTest, testExitDuringPendingHaltCall)
   {
     InSequence dummy;
 
-    EXPECT_CALL(*this, recover_func()).WillOnce(InvokeWithoutArgs(sto_false_during_recover_action));
+    EXPECT_CALL(*this, recover_func())
+        .WillOnce(InvokeWithoutArgs(sto_false_during_recover_action));
 
-    EXPECT_CALL(*this, halt_func()).WillOnce(InvokeWithoutArgs(enable_during_halt_action));
+    EXPECT_CALL(*this, halt_func())
+        .WillOnce(InvokeWithoutArgs(enable_during_halt_action));
 
     EXPECT_CALL(*this, recover_func())
         .Times(AtLeast(0))  // Not nice but at this point not easy to say...

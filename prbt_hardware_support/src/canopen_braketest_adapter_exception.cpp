@@ -19,8 +19,8 @@
 
 namespace prbt_hardware_support
 {
-CANOpenBrakeTestAdapterException::CANOpenBrakeTestAdapterException(const std::string& what_arg,
-                                                                   const int8_t error_value)
+CANOpenBrakeTestAdapterException::CANOpenBrakeTestAdapterException(
+    const std::string& what_arg, const int8_t error_value)
   : std::runtime_error(what_arg), error_value_(error_value)
 {
 }

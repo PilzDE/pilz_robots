@@ -21,7 +21,8 @@
 #include <prbt_hardware_support/modbus_api_spec.h>
 
 /**
- * @brief Starts a modbus operation mode adapter and runs it until a failure occurs.
+ * @brief Starts a modbus operation mode adapter and runs it until a failure
+ * occurs.
  */
 int main(int argc, char** argv)
 {
@@ -31,7 +32,8 @@ int main(int argc, char** argv)
 
   prbt_hardware_support::ModbusApiSpec api_spec(nh);
 
-  prbt_hardware_support::ModbusAdapterOperationMode adapter_operation_mode(pnh, api_spec);
+  prbt_hardware_support::ModbusAdapterOperationMode adapter_operation_mode(
+      pnh, api_spec);
 
   ros::spin();
 

@@ -36,7 +36,8 @@ static constexpr uint16_t REGISTER_VALUE_BRAKETEST_REQUIRED{ 1 };
 class ModbusMsgBrakeTestWrapper : public ModbusMsgWrapper
 {
 public:
-  ModbusMsgBrakeTestWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw, const ModbusApiSpec& api_spec);
+  ModbusMsgBrakeTestWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
+                            const ModbusApiSpec& api_spec);
 
   /**
    * @brief Calls ModbusMsgWrapper::checkStructuralIntegrity().
@@ -51,7 +52,8 @@ public:
    *
    * @return true if the a brake test is required, otherwise false.
    */
-  IsBrakeTestRequiredResponse::_result_type getBrakeTestRequirementStatus() const;
+  IsBrakeTestRequiredResponse::_result_type
+  getBrakeTestRequirementStatus() const;
 
 private:
   /**
@@ -62,20 +64,24 @@ private:
   bool hasBrakeTestRequiredFlag() const;
 };
 
-inline ModbusMsgBrakeTestWrapper::ModbusMsgBrakeTestWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
-                                                            const ModbusApiSpec& api_spec)
+inline ModbusMsgBrakeTestWrapper::ModbusMsgBrakeTestWrapper(
+    const ModbusMsgInStampedConstPtr& modbus_msg_raw,
+    const ModbusApiSpec& api_spec)
   : ModbusMsgWrapper(modbus_msg_raw, api_spec)
 {
 }
 
 inline bool ModbusMsgBrakeTestWrapper::hasBrakeTestRequiredFlag() const
 {
-  return hasRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
+  return hasRegister(
+      getApiSpec().getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
 }
 
-inline IsBrakeTestRequiredResponse::_result_type ModbusMsgBrakeTestWrapper::getBrakeTestRequirementStatus() const
+inline IsBrakeTestRequiredResponse::_result_type
+ModbusMsgBrakeTestWrapper::getBrakeTestRequirementStatus() const
 {
-  switch (getRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST)))
+  switch (getRegister(
+      getApiSpec().getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST)))
   {
     case REGISTER_VALUE_BRAKETEST_NOT_REQUIRED:
       return IsBrakeTestRequiredResponse::NOT_REQUIRED;
@@ -94,7 +100,8 @@ inline void ModbusMsgBrakeTestWrapper::checkStructuralIntegrity() const
 
   if (!hasBrakeTestRequiredFlag())
   {
-    throw ModbusMsgBrakeTestWrapperException("Received message does not contain a brake test status.");
+    throw ModbusMsgBrakeTestWrapperException("Received message does not "
+                                             "contain a brake test status.");
   }
 }
 

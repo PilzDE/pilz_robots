@@ -53,17 +53,21 @@ using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 
 static constexpr uint16_t MODBUS_API_VERSION_VALUE{ 2 };
-static const std::string SERVICE_BRAKETEST_REQUIRED = "/prbt/brake_test_required";
+static const std::string SERVICE_BRAKETEST_REQUIRED = "/prbt/"
+                                                      "brake_test_required";
 
 static constexpr unsigned int DEFAULT_RETRIES{ 10 };
 
 /**
  * @brief BrakeTestRequiredIntegrationTest checks if the chain
- * ModbusServerMock -> ModbusReadClient -> ModbusAdapterBrakeTest functions properly
+ * ModbusServerMock -> ModbusReadClient -> ModbusAdapterBrakeTest functions
+ * properly
  *
- * @note the test is derived from testing::AsyncTest which allows the asynchronous processes to re-sync
+ * @note the test is derived from testing::AsyncTest which allows the
+ * asynchronous processes to re-sync
  */
-class BrakeTestRequiredIntegrationTest : public testing::Test, public testing::AsyncTest
+class BrakeTestRequiredIntegrationTest : public testing::Test,
+                                         public testing::AsyncTest
 {
 protected:
   ros::NodeHandle nh_;
@@ -71,7 +75,8 @@ protected:
 };
 
 ::testing::AssertionResult expectBrakeTestRequiredServiceCallResult(
-    ros::ServiceClient& brake_test_required_client, IsBrakeTestRequiredResponse::_result_type expectation,
+    ros::ServiceClient& brake_test_required_client,
+    IsBrakeTestRequiredResponse::_result_type expectation,
     uint16_t retries = DEFAULT_RETRIES)
 {
   prbt_hardware_support::IsBrakeTestRequired srv;
@@ -84,11 +89,13 @@ protected:
     }
     if (srv.response.result == expectation)
     {
-      return ::testing::AssertionSuccess() << "It took " << i + 1 << " tries for the service call.";
+      return ::testing::AssertionSuccess()
+             << "It took " << i + 1 << " tries for the service call.";
     }
     sleep(1);  // This then may take {retries*1}seconds.
   }
-  return ::testing::AssertionFailure() << "Did not get expected brake test result via service";
+  return ::testing::AssertionFailure() << "Did not get expected brake test "
+                                          "result via service";
 }
 
 /**
@@ -96,16 +103,19 @@ protected:
  *  Test that brake test required service returns correct value.
  * }
  *
- * @note Due to the asynchronicity of the test each step of the sequence passed successful
- *       allows the next step to be taken. See testing::AsyncTest for details.
+ * @note Due to the asynchronicity of the test each step of the sequence passed
+ * successful allows the next step to be taken. See testing::AsyncTest for
+ * details.
  *
  * Data are send via:
  *    ModbusServerMock -> ModbusReadClient -> ModbusAdapterBrakeTest connection
  *
  * Test Sequence:
- *    0. Start Modbus-server in separate thread. Make sure that the nodes are up.
+ *    0. Start Modbus-server in separate thread. Make sure that the nodes are
+ * up.
  *    1. Send a brake test required message with the correct API version.
- *    2. Send a brake test required message with the correct API version (change another but irrelevant register entry).
+ *    2. Send a brake test required message with the correct API version (change
+ * another but irrelevant register entry).
  *    3. Send a brake test not-required message with the correct API version.
  *    4. Terminate ModbusServerMock.
  *
@@ -133,10 +143,12 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
   /**********
    * Step 0 *
    **********/
-  prbt_hardware_support::PilzModbusServerMock modbus_server(modbus_register_size);
+  prbt_hardware_support::PilzModbusServerMock modbus_server(
+      modbus_register_size);
 
-  std::thread modbus_server_thread(&initalizeAndRun<prbt_hardware_support::PilzModbusServerMock>,
-                                   std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port));
+  std::thread modbus_server_thread(
+      &initalizeAndRun<prbt_hardware_support::PilzModbusServerMock>,
+      std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port));
   prbt_hardware_support::IsBrakeTestRequired srv;
 
   waitForNode("/pilz_modbus_client_node");
@@ -146,38 +158,47 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
    * Step 1 *
    **********/
   ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::VERSION));
-  unsigned int version_register = api_spec.getRegisterDefinition(modbus_api_spec::VERSION);
+  unsigned int version_register =
+      api_spec.getRegisterDefinition(modbus_api_spec::VERSION);
 
-  ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
-  unsigned int braketest_register = api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST);
+  ASSERT_TRUE(
+      api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
+  unsigned int braketest_register =
+      api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST);
 
-  modbus_server.setHoldingRegister({ { braketest_register, 1 }, { version_register, MODBUS_API_VERSION_VALUE } });
+  modbus_server.setHoldingRegister(
+      { { braketest_register, 1 },
+        { version_register, MODBUS_API_VERSION_VALUE } });
 
   ros::ServiceClient is_brake_test_required_client =
-      nh_.serviceClient<prbt_hardware_support::IsBrakeTestRequired>(SERVICE_BRAKETEST_REQUIRED);
-  ASSERT_TRUE(is_brake_test_required_client.waitForExistence(ros::Duration(10)));
+      nh_.serviceClient<prbt_hardware_support::IsBrakeTestRequired>(
+          SERVICE_BRAKETEST_REQUIRED);
+  ASSERT_TRUE(
+      is_brake_test_required_client.waitForExistence(ros::Duration(10)));
 
-  EXPECT_TRUE(
-      expectBrakeTestRequiredServiceCallResult(is_brake_test_required_client, IsBrakeTestRequiredResponse::REQUIRED));
+  EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(
+      is_brake_test_required_client, IsBrakeTestRequiredResponse::REQUIRED));
 
   /**********
    * Step 2 *
    **********/
   ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::STO));
-  unsigned int sto_register = api_spec.getRegisterDefinition(modbus_api_spec::STO);
+  unsigned int sto_register =
+      api_spec.getRegisterDefinition(modbus_api_spec::STO);
 
   modbus_server.setHoldingRegister({ { sto_register, 1 } });
 
-  EXPECT_TRUE(
-      expectBrakeTestRequiredServiceCallResult(is_brake_test_required_client, IsBrakeTestRequiredResponse::REQUIRED));
+  EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(
+      is_brake_test_required_client, IsBrakeTestRequiredResponse::REQUIRED));
 
   /**********
    * Step 3 *
    **********/
   modbus_server.setHoldingRegister({ { braketest_register, 0 } });
 
-  EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(is_brake_test_required_client,
-                                                       IsBrakeTestRequiredResponse::NOT_REQUIRED));
+  EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(
+      is_brake_test_required_client,
+      IsBrakeTestRequiredResponse::NOT_REQUIRED));
 
   /**********
    * Step 4 *

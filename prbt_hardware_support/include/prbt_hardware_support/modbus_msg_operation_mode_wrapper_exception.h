@@ -31,7 +31,8 @@ namespace prbt_hardware_support
 class ModbusMsgOperationModeWrapperException : public ModbusMsgWrapperException
 {
 public:
-  ModbusMsgOperationModeWrapperException(const std::string& what_arg) : ModbusMsgWrapperException(what_arg)
+  ModbusMsgOperationModeWrapperException(const std::string& what_arg)
+    : ModbusMsgWrapperException(what_arg)
   {
   }
 };

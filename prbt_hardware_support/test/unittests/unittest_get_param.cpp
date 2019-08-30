@@ -62,7 +62,8 @@ TEST(GetParamTest, testAll)
   try
   {
     param_value = getParam<std::string>(nh, DUMMY_PARAM_NAME);
-    EXPECT_EQ(DUMMY_PARAM_VALUE, param_value) << "Unexpected pararmeter value read from parameter server.";
+    EXPECT_EQ(DUMMY_PARAM_VALUE, param_value) << "Unexpected pararmeter value "
+                                                 "read from parameter server.";
   }
   catch (const GetParamException& e)
   {

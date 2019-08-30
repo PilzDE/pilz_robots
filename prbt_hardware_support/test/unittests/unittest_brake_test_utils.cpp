@@ -40,25 +40,30 @@ using sensor_msgs::JointStatePtr;
 /**
  * @brief Checks for identical names and positions in joint state messages.
  */
-static ::testing::AssertionResult compareJointStateMessages(const JointStateConstPtr& msg1,
-                                                            const JointStateConstPtr& msg2)
+static ::testing::AssertionResult compareJointStateMessages(
+    const JointStateConstPtr& msg1, const JointStateConstPtr& msg2)
 {
   if (msg1->name.size() != msg2->name.size())
   {
-    return ::testing::AssertionFailure() << "Joint numbers in joint state messages do not match.";
+    return ::testing::AssertionFailure() << "Joint numbers in joint state "
+                                            "messages do not match.";
   }
-  if (!std::equal(msg1->name.begin(), msg1->name.end(), msg2->name.begin(),
-                  [](std::string name1, std::string name2) { return name1 == name2; }))
+  if (!std::equal(
+          msg1->name.begin(), msg1->name.end(), msg2->name.begin(),
+          [](std::string name1, std::string name2) { return name1 == name2; }))
   {
-    return ::testing::AssertionFailure() << "Joint names in joint state messages do not match.";
+    return ::testing::AssertionFailure() << "Joint names in joint state "
+                                            "messages do not match.";
   }
   if (msg1->position.size() != msg2->position.size())
   {
-    return ::testing::AssertionFailure() << "Joint numbers in joint state messages do not match.";
+    return ::testing::AssertionFailure() << "Joint numbers in joint state "
+                                            "messages do not match.";
   }
   if (!BrakeTestUtils::compareJointStatePositions(msg1, msg2))
   {
-    return ::testing::AssertionFailure() << "Joint positions in joint state messages do not match.";
+    return ::testing::AssertionFailure() << "Joint positions in joint state "
+                                            "messages do not match.";
   }
 
   return ::testing::AssertionSuccess();
@@ -71,11 +76,14 @@ static ::testing::AssertionResult compareJointStateMessages(const JointStateCons
 TEST(BrakeTestUtilsTest, testExceptionDtor)
 {
   {
-    std::shared_ptr<BrakeTestUtilsException> ex{ new BrakeTestUtilsException("Test msg") };
+    std::shared_ptr<BrakeTestUtilsException> ex{ new BrakeTestUtilsException(
+        "Test msg") };
   }
 
   {
-    std::shared_ptr<GetCurrentJointStatesException> ex{ new GetCurrentJointStatesException("Test msg") };
+    std::shared_ptr<GetCurrentJointStatesException> ex{
+      new GetCurrentJointStatesException("Test msg")
+    };
   }
 }
 
@@ -84,9 +92,10 @@ TEST(BrakeTestUtilsTest, testExceptionDtor)
  *
  * Test Sequence:
  *  1. Compare two equal joint states
- *  2. Compare two joint states with a difference in all joints slightly below the tolerance
- *  3. Compare two joint_states with a difference in one joint slightly above the tolerance,
- *     repeat the test for all joints.
+ *  2. Compare two joint states with a difference in all joints slightly below
+ * the tolerance
+ *  3. Compare two joint_states with a difference in one joint slightly above
+ * the tolerance, repeat the test for all joints.
  *
  * Expected Results:
  *  1. Returns true
@@ -117,7 +126,8 @@ TEST(BrakeTestUtilsTest, testCompareJointStatePositions)
     pos += 0.9 * tolerance;
   }
 
-  EXPECT_TRUE(BrakeTestUtils::compareJointStatePositions(msg1, msg2, tolerance));
+  EXPECT_TRUE(
+      BrakeTestUtils::compareJointStatePositions(msg1, msg2, tolerance));
 
   /**********
    * Step 3 *
@@ -130,7 +140,8 @@ TEST(BrakeTestUtilsTest, testCompareJointStatePositions)
     }
     msg2->position[i] += 1.1 * tolerance;
 
-    EXPECT_FALSE(BrakeTestUtils::compareJointStatePositions(msg1, msg2, tolerance));
+    EXPECT_FALSE(
+        BrakeTestUtils::compareJointStatePositions(msg1, msg2, tolerance));
   }
 }
 
@@ -139,7 +150,8 @@ TEST(BrakeTestUtilsTest, testCompareJointStatePositions)
  *
  * Test Sequence:
  *  1. Call getCurrentJointStates() without publishing to the joint_states topic
- *  2. Call getCurrentJointStates() and publish on the joint_states topic asynchronously
+ *  2. Call getCurrentJointStates() and publish on the joint_states topic
+ * asynchronously
  *
  * Expected Results:
  *  1. Exception is thrown
@@ -150,7 +162,8 @@ TEST(BrakeTestUtilsTest, testGetCurrentJointStates)
   /**********
    * Step 1 *
    **********/
-  EXPECT_THROW(BrakeTestUtils::getCurrentJointStates(), GetCurrentJointStatesException);
+  EXPECT_THROW(BrakeTestUtils::getCurrentJointStates(),
+               GetCurrentJointStatesException);
 
   /**********
    * Step 2 *

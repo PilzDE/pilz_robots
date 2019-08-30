@@ -51,15 +51,18 @@ std::ostream& operator<<(std::ostream& os, const Vec1D& vec)
  */
 std::ostream& operator<<(std::ostream& os, const geometry_msgs::Pose& pose)
 {
-  os << "position: x=" << double(pose.position.x) << ", y=" << double(pose.position.y)
-     << ", z=" << double(pose.position.z) << ", orientation: x=" << double(pose.orientation.x)
-     << ", y=" << double(pose.orientation.y) << ", z=" << double(pose.orientation.z)
+  os << "position: x=" << double(pose.position.x)
+     << ", y=" << double(pose.position.y) << ", z=" << double(pose.position.z)
+     << ", orientation: x=" << double(pose.orientation.x)
+     << ", y=" << double(pose.orientation.y)
+     << ", z=" << double(pose.orientation.z)
      << ", w=" << double(pose.orientation.w);
   return os;
 }
 
 /**
- * @brief Computes joint2 from joint1 such that singular position with px,py=0 is reached.
+ * @brief Computes joint2 from joint1 such that singular position with px,py=0
+ * is reached.
  */
 double singularPoseJointFormula(double joint1)
 {
@@ -108,17 +111,22 @@ void PrbtIKFastPluginTest::SetUp()
   }
 
   // initialize plugin
-  EXPECT_TRUE(ph_.getParam(GROUP_PARAM, group_name_)) << "The parameter " << GROUP_PARAM << " was not found.";
-  EXPECT_TRUE(ph_.getParam(TIP_LINK_PARAM, tip_link_)) << "The parameter " << TIP_LINK_PARAM << " was not found.";
-  EXPECT_TRUE(ph_.getParam(ROOT_LINK_PARAM, root_link_)) << "The parameter " << ROOT_LINK_PARAM << " was not round.";
+  EXPECT_TRUE(ph_.getParam(GROUP_PARAM, group_name_))
+      << "The parameter " << GROUP_PARAM << " was not found.";
+  EXPECT_TRUE(ph_.getParam(TIP_LINK_PARAM, tip_link_))
+      << "The parameter " << TIP_LINK_PARAM << " was not found.";
+  EXPECT_TRUE(ph_.getParam(ROOT_LINK_PARAM, root_link_))
+      << "The parameter " << ROOT_LINK_PARAM << " was not round.";
   EXPECT_TRUE(ph_.getParam(JOINT_NAMES_PARAM, joint_names_))
       << "The parameter " << JOINT_NAMES_PARAM << " was not found.";
 
   std::vector<std::string> tip_links{ tip_link_ };
-  robot_model_loader::RobotModelLoader robot_model_loader(ROBOT_DESCRIPTION_PARAM, false);
+  robot_model_loader::RobotModelLoader robot_model_loader(
+      ROBOT_DESCRIPTION_PARAM, false);
   const robot_model::RobotModelPtr& robot_model = robot_model_loader.getModel();
 
-  ASSERT_TRUE(solver_->initialize(*robot_model, group_name_, root_link_, tip_links, DEFAULT_SEARCH_DISCRETIZATION))
+  ASSERT_TRUE(solver_->initialize(*robot_model, group_name_, root_link_,
+                                  tip_links, DEFAULT_SEARCH_DISCRETIZATION))
       << "Failed to initialize plugin.";
 }
 
@@ -128,10 +136,12 @@ void PrbtIKFastPluginTest::TearDown()
 }
 
 /**
- * @brief Tests if the IKFast plugin can solve the IK problem for specific singular poses.
+ * @brief Tests if the IKFast plugin can solve the IK problem for specific
+ * singular poses.
  *
  * Test Sequence:
- *    1. Define a set of test joint angles. Perform the following steps for all data.
+ *    1. Define a set of test joint angles. Perform the following steps for all
+ * data.
  *    2. Compute pose via forward kinematics.
  *    3. Solve IK problem.
  *    4. Compute deviation of solutions to the test joint angles.
@@ -175,7 +185,12 @@ TEST_F(PrbtIKFastPluginTest, testSingularities)
     // ++++++++++
 
     std::vector<geometry_msgs::Pose> poses;
-    ASSERT_TRUE(solver_->getPositionFK(link_names, joints, poses)) << "Failed to compute forward kinematics.";
+    ASSERT_TRUE(solver_->getPositionFK(link_names, joints, poses)) << "Failed "
+                                                                      "to "
+                                                                      "compute "
+                                                                      "forward "
+                                                                      "kinemati"
+                                                                      "cs.";
     EXPECT_EQ(1u, poses.size());
     ROS_INFO_STREAM("Obtain pose: " << poses.at(0));
 
@@ -188,12 +203,14 @@ TEST_F(PrbtIKFastPluginTest, testSingularities)
     kinematics::KinematicsQueryOptions options;
 
     ros::Time generation_begin = ros::Time::now();
-    EXPECT_TRUE(solver_->getPositionIK(poses, seed, solutions, result, options)) << "Failed to solve inverse "
-                                                                                    "kinematics.";
+    EXPECT_TRUE(solver_->getPositionIK(poses, seed, solutions, result, options))
+        << "Failed to solve inverse "
+           "kinematics.";
     double duration_ms = (ros::Time::now() - generation_begin).toSec() * 1000;
     ROS_DEBUG_STREAM("Ik solve took " << duration_ms << " ms");
 
-    ROS_INFO_STREAM("Received " << solutions.size() << " solutions to IK problem.");
+    ROS_INFO_STREAM("Received " << solutions.size()
+                                << " solutions to IK problem.");
     EXPECT_GT(solutions.size(), 0u);
 
     // ++++++++++

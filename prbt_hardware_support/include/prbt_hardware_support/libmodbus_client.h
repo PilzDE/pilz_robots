@@ -50,7 +50,9 @@ public:
   RegCont readHoldingRegister(int addr, int nb) override;
 
   //! @brief See base class.
-  RegCont writeReadHoldingRegister(const int write_addr, const RegCont& write_reg, const int read_addr,
+  RegCont writeReadHoldingRegister(const int write_addr,
+                                   const RegCont& write_reg,
+                                   const int read_addr,
                                    const int read_nb) override;
 
   /**

@@ -38,25 +38,32 @@ enum class Mode
  */
 template <class SegmentImpl, class HardwareInterface>
 class PilzJointTrajectoryController
-  : public joint_trajectory_controller::JointTrajectoryController<SegmentImpl, HardwareInterface>
+  : public joint_trajectory_controller::JointTrajectoryController<
+        SegmentImpl, HardwareInterface>
 {
 public:
-  typedef joint_trajectory_controller::JointTrajectoryController<SegmentImpl, HardwareInterface>
+  typedef joint_trajectory_controller::JointTrajectoryController<
+      SegmentImpl, HardwareInterface>
       JointTrajectoryController;
   typedef trajectory_msgs::JointTrajectory::ConstPtr JointTrajectoryConstPtr;
-  typedef realtime_tools::RealtimeServerGoalHandle<control_msgs::FollowJointTrajectoryAction> RealtimeGoalHandle;
+  typedef realtime_tools::RealtimeServerGoalHandle<
+      control_msgs::FollowJointTrajectoryAction>
+      RealtimeGoalHandle;
   typedef boost::shared_ptr<RealtimeGoalHandle> RealtimeGoalHandlePtr;
-  typedef joint_trajectory_controller::JointTrajectorySegment<SegmentImpl> Segment;
+  typedef joint_trajectory_controller::JointTrajectorySegment<SegmentImpl>
+      Segment;
   typedef std::vector<Segment> TrajectoryPerJoint;
   typedef std::vector<TrajectoryPerJoint> Trajectory;
   typedef std::shared_ptr<Trajectory> TrajectoryPtr;
 
   PilzJointTrajectoryController();
 
-  bool init(HardwareInterface* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controller_nh);
+  bool init(HardwareInterface* hw, ros::NodeHandle& root_nh,
+            ros::NodeHandle& controller_nh);
 
   /**
-   * @brief Returns true if the controller currently is executing a trajectory. False otherwise.
+   * @brief Returns true if the controller currently is executing a trajectory.
+   * False otherwise.
    */
   bool is_executing();
 
@@ -68,7 +75,8 @@ public:
    *
    * @return False if something went wrong. True otherwise.
    */
-  bool handleHoldRequest(std_srvs::TriggerRequest& request, std_srvs::TriggerResponse& response);
+  bool handleHoldRequest(std_srvs::TriggerRequest& request,
+                         std_srvs::TriggerResponse& response);
 
   /**
    * @brief Service callback to deactivate holding mode.
@@ -78,37 +86,47 @@ public:
    *
    * @return False if something went wrong. True otherwise.
    */
-  bool handleUnHoldRequest(std_srvs::TriggerRequest& request, std_srvs::TriggerResponse& response);
+  bool handleUnHoldRequest(std_srvs::TriggerRequest& request,
+                           std_srvs::TriggerResponse& response);
 
   /**
    * @brief Service callback for querying the controller activity.
    *
    * @param request Dummy for triggering the service
-   * @param response success: True if the controller is currently executing a trajectory. False otherwise.
+   * @param response success: True if the controller is currently executing a
+   * trajectory. False otherwise.
    *
    * @return False if something went wrong. True otherwise.
    */
-  bool handleIsExecutingRequest(std_srvs::TriggerRequest& request, std_srvs::TriggerResponse& response);
+  bool handleIsExecutingRequest(std_srvs::TriggerRequest& request,
+                                std_srvs::TriggerResponse& response);
 
 protected:
   /**
    * @brief Called if new trajectory should be handled
    * Behaviour: Uses currently active strategy, either
-   * updateStrategyDefault(const JointTrajectoryConstPtr&, RealtimeGoalHandlePtr)
-   * or updateStrategyWhileHolding(const JointTrajectoryConstPtr&, RealtimeGoalHandlePtr)
+   * updateStrategyDefault(const JointTrajectoryConstPtr&,
+   * RealtimeGoalHandlePtr) or updateStrategyWhileHolding(const
+   * JointTrajectoryConstPtr&, RealtimeGoalHandlePtr)
    */
-  bool updateTrajectoryCommand(const JointTrajectoryConstPtr&, RealtimeGoalHandlePtr,
+  bool updateTrajectoryCommand(const JointTrajectoryConstPtr&,
+                               RealtimeGoalHandlePtr,
                                std::string* error_string = 0) override;
 
   /**
-   * @brief Hands received JointTrajectory to parent class, normal handling of trajectory
+   * @brief Hands received JointTrajectory to parent class, normal handling of
+   * trajectory
    */
-  bool updateStrategyDefault(const JointTrajectoryConstPtr&, RealtimeGoalHandlePtr, std::string* error_string = 0);
+  bool updateStrategyDefault(const JointTrajectoryConstPtr&,
+                             RealtimeGoalHandlePtr,
+                             std::string* error_string = 0);
 
   /**
    * @brief Strategy applied if no new trajectory should be handled
    */
-  bool updateStrategyWhileHolding(const JointTrajectoryConstPtr&, RealtimeGoalHandlePtr, std::string* error_string = 0);
+  bool updateStrategyWhileHolding(const JointTrajectoryConstPtr&,
+                                  RealtimeGoalHandlePtr,
+                                  std::string* error_string = 0);
 
   void triggerMovementToHoldPosition();
 
