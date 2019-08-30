@@ -16,10 +16,10 @@ env:
   global:
     - ROS_DISTRO="melodic"
     - CATKIN_LINT=true
-    - CLANG_FORMAT_CHECK="file"
   matrix:
     - ROS_REPO=ros
     - ROS_REPO=ros-shadow-fixed
+    - CLANG_FORMAT_CHECK=file
 matrix:
   allow_failures:
     - env: ROS_REPO=ros
