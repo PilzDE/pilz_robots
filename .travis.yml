@@ -18,7 +18,7 @@ env:
     - CATKIN_LINT=true
   matrix:
     - ROS_REPO=ros
-    - ROS_REPO=ros-shadow-fixed
+    - ROS_REPO=testing
 matrix:
   allow_failures:
     - env: ROS_REPO=ros
