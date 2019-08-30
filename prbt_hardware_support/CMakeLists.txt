@@ -36,6 +36,7 @@ add_service_files(
   IsBrakeTestRequired.srv
   GetOperationMode.srv
   WriteModbusRegister.srv
+  SendBrakeTestResult.srv
 )
 
 generate_messages(
@@ -442,7 +443,10 @@ if(CATKIN_ENABLE_TESTING)
                           "*/ModbusRegisterBlock.h"
                           "*/WriteModbusRegister.h"
                           "*/WriteModbusRegisterRequest.h"
-                          "*/WriteModbusRegisterResponse.h")
+                          "*/WriteModbusRegisterResponse.h"
+                          "*/SendBrakeTestResult.h"
+                          "*/SendBrakeTestResultRequest.h"
+                          "*/SendBrakeTestResultResponse.h")
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
       DEPENDS tests

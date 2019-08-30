@@ -39,6 +39,7 @@
 #include <prbt_hardware_support/pilz_modbus_server_mock.h>
 #include <prbt_hardware_support/pilz_modbus_client.h>
 #include <prbt_hardware_support/register_container.h>
+#include <prbt_hardware_support/WriteModbusRegister.h>
 
 #include <prbt_hardware_support/ros_test_helper.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
@@ -55,6 +56,7 @@ using ::testing::InvokeWithoutArgs;
 
 static constexpr uint16_t MODBUS_API_VERSION_VALUE {2};
 static const std::string SERVICE_BRAKETEST_REQUIRED = "/prbt/brake_test_required";
+static const std::string MODBUS_SERVICE_NAME{"/pilz_modbus_client_node/modbus_write"};
 
 static constexpr unsigned int DEFAULT_RETRIES{10};
 
@@ -66,15 +68,26 @@ static constexpr unsigned int DEFAULT_RETRIES{10};
  */
 class BrakeTestRequiredIntegrationTest : public testing::Test, public testing::AsyncTest
 {
+public:
+  MOCK_METHOD2(modbusWrite, bool(WriteModbusRegister::Request &, WriteModbusRegister::Response &));
+
 protected:
   ros::NodeHandle nh_;
   ros::NodeHandle nh_priv_{"~"};
+
+  ros::ServiceServer modbus_service_
+  {
+    nh_.advertiseService(MODBUS_SERVICE_NAME,
+                         &BrakeTestRequiredIntegrationTest::modbusWrite,
+                         this)
+  };
+
 };
 
 ::testing::AssertionResult expectBrakeTestRequiredServiceCallResult
-                                             (ros::ServiceClient& brake_test_required_client,
-                                              IsBrakeTestRequiredResponse::_result_type expectation,
-                                              uint16_t retries = DEFAULT_RETRIES)
+(ros::ServiceClient& brake_test_required_client,
+ IsBrakeTestRequiredResponse::_result_type expectation,
+ uint16_t retries = DEFAULT_RETRIES)
 {
   prbt_hardware_support::IsBrakeTestRequired srv;
   for (int i = 0; i<= retries; i++) {
@@ -137,7 +150,7 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
 
   std::thread modbus_server_thread( &initalizeAndRun<prbt_hardware_support::PilzModbusServerMock>,
                                     std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port) );
-	prbt_hardware_support::IsBrakeTestRequired srv;
+  prbt_hardware_support::IsBrakeTestRequired srv;
 
   waitForNode("/pilz_modbus_client_node");
   waitForNode("/modbus_adapter_brake_test_node");
@@ -154,11 +167,11 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
   modbus_server.setHoldingRegister({{braketest_register, 1}, {version_register, MODBUS_API_VERSION_VALUE}});
 
   ros::ServiceClient is_brake_test_required_client =
-    nh_.serviceClient<prbt_hardware_support::IsBrakeTestRequired>(SERVICE_BRAKETEST_REQUIRED);
+      nh_.serviceClient<prbt_hardware_support::IsBrakeTestRequired>(SERVICE_BRAKETEST_REQUIRED);
   ASSERT_TRUE(is_brake_test_required_client.waitForExistence(ros::Duration(10)));
 
   EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(
-                                              is_brake_test_required_client, IsBrakeTestRequiredResponse::REQUIRED));
+                is_brake_test_required_client, IsBrakeTestRequiredResponse::REQUIRED));
 
   /**********
    * Step 2 *
@@ -168,8 +181,8 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
 
   modbus_server.setHoldingRegister({{sto_register, 1}});
 
-	EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(
-                                              is_brake_test_required_client, IsBrakeTestRequiredResponse::REQUIRED));
+  EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(
+                is_brake_test_required_client, IsBrakeTestRequiredResponse::REQUIRED));
 
   /**********
    * Step 3 *
@@ -177,7 +190,7 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
   modbus_server.setHoldingRegister({{braketest_register, 0}});
 
   EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(
-                                          is_brake_test_required_client, IsBrakeTestRequiredResponse::NOT_REQUIRED));
+                is_brake_test_required_client, IsBrakeTestRequiredResponse::NOT_REQUIRED));
 
   /**********
    * Step 4 *

@@ -28,6 +28,8 @@
 #include <prbt_hardware_support/register_container.h>
 #include <prbt_hardware_support/modbus_msg_brake_test_wrapper.h>
 #include <prbt_hardware_support/modbus_msg_brake_test_wrapper_exception.h>
+#include <prbt_hardware_support/WriteModbusRegister.h>
+#include <prbt_hardware_support/modbus_adapter_brake_test_exception.h>
 
 #include <pilz_testutils/async_test.h>
 
@@ -35,12 +37,19 @@ namespace prbt_hardware_support
 {
 static constexpr int DEFAULT_QUEUE_SIZE_MODBUS{1};
 static const std::string SERVICE_NAME_IS_BRAKE_TEST_REQUIRED = "/prbt/brake_test_required";
+static const std::string MODBUS_SERVICE_NAME{"/pilz_modbus_client_node/modbus_write"};
+static const std::string API_SPEC_PARAM_NAME{"/write_api_spec"};
+static const std::string BRAKETEST_PERFORMED_PARAM_NAME{"/BRAKETEST_PERFORMED"};
+static const std::string BRAKETEST_RESULT_PARAM_NAME{"/BRAKETEST_RESULT"};
 
 static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{2};
 static constexpr unsigned int DEFAULT_RETRIES{10};
 
 static const ModbusApiSpec TEST_API_SPEC{ {modbus_api_spec::VERSION, 969},
                                           {modbus_api_spec::BRAKETEST_REQUEST,973} };
+
+static const ModbusApiSpec TEST_API_WRITE_SPEC{ {modbus_api_spec::BRAKETEST_PERFORMED, 77},
+                                                {modbus_api_spec::BRAKETEST_RESULT, 78} };
 
 /**
  * @brief Test fixture for unit-tests of the ModbusAdapterBrakeTest.
@@ -55,6 +64,9 @@ public:
   ~ModbusAdapterBrakeTestTest() override;
 
 public:
+  MOCK_METHOD2(modbusWrite, bool(WriteModbusRegister::Request &, WriteModbusRegister::Response &));
+
+public:
   ModbusMsgInStampedPtr createDefaultBrakeTestModbusMsg(uint16_t brake_test_required_value,
                                                         unsigned int modbus_api_version = MODBUS_API_VERSION_REQUIRED,
                                                         uint32_t brake_test_required_index = TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
@@ -66,7 +78,8 @@ protected:
   ros::AsyncSpinner spinner_{2};
 
   ros::NodeHandle nh_;
-  std::unique_ptr<ModbusAdapterBrakeTest> adapter_brake_test_ {new ModbusAdapterBrakeTest(nh_, TEST_API_SPEC)};
+  ros::ServiceServer modbus_service_ = nh_.advertiseService(MODBUS_SERVICE_NAME, &ModbusAdapterBrakeTestTest::modbusWrite, this);
+  std::unique_ptr<ModbusAdapterBrakeTest> adapter_brake_test_ {new ModbusAdapterBrakeTest(nh_, TEST_API_SPEC, TEST_API_WRITE_SPEC)};
   ros::Publisher modbus_topic_pub_ {nh_.advertise<ModbusMsgInStamped>(TOPIC_MODBUS_READ, DEFAULT_QUEUE_SIZE_MODBUS)};
   ros::ServiceClient brake_test_required_client_ {nh_.serviceClient<prbt_hardware_support::IsBrakeTestRequired>(SERVICE_NAME_IS_BRAKE_TEST_REQUIRED)};//(969, 973, 974);
 };
@@ -312,6 +325,69 @@ TEST_F(ModbusAdapterBrakeTestTest, testBrakeTestRequiredRegisterUndefinedValue)
   sleep(1);
   ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
                                                        IsBrakeTestRequiredResponse::UNKNOWN));
+}
+
+/**
+ * @brief Test increases function coverage by ensuring that all Dtor variants
+ * are called.
+ */
+TEST_F(ModbusAdapterBrakeTestTest, testModbusApiSpecExceptionDtor)
+{
+  std::shared_ptr<ModbusAdapterBrakeTestException> ex {new ModbusAdapterBrakeTestException("Test msg")};
+}
+
+/**
+ * @brief Test execution of brake tests when there is a problem
+ * in the api definition.
+ *
+ * Test Sequence:
+ *  1. Execute a brake test with missing definition for BRAKETEST_PERFORMED
+ *  2. Execute a brake test with missing definition for BRAKETEST_RESULT
+ *  3. Execute a brake test with both values defined 1 apart
+ *  4. Execute a brake test with both values defined 2 apart
+ *
+ * Expected Results:
+ *  1. A BrakeTestExecutorException is thown
+ *  2. A BrakeTestExecutorException is thown
+ *  3. No Exception is thrown
+ *  4. A BrakeTestExecutorException is thown
+ */
+TEST_F(ModbusAdapterBrakeTestTest, testBrakeTestTriggeringWrongApiDef)
+{
+  /**********
+   * Step 1 *
+   **********/
+  {
+    ModbusApiSpec api_write_spec { {modbus_api_spec::BRAKETEST_RESULT, 78} };
+    ASSERT_THROW(ModbusAdapterBrakeTest bte_no_perf(nh_, TEST_API_SPEC, api_write_spec), ModbusAdapterBrakeTestException);
+  }
+
+  /**********
+   * Step 2 *
+   **********/
+  {
+    ModbusApiSpec api_write_spec{ {modbus_api_spec::BRAKETEST_PERFORMED, 77} };
+    ASSERT_THROW(ModbusAdapterBrakeTest bte_no_res(nh_, TEST_API_SPEC, api_write_spec), ModbusAdapterBrakeTestException);
+  }
+
+  /**********
+   * Step 3 *
+   **********/
+  {
+    ModbusApiSpec api_write_spec{ {modbus_api_spec::BRAKETEST_PERFORMED, 100},
+                                  {modbus_api_spec::BRAKETEST_RESULT, 99} };
+    ASSERT_NO_THROW(ModbusAdapterBrakeTest bte_one_apart(nh_, TEST_API_SPEC, api_write_spec));
+  }
+
+  /**********
+   * Step 4 *
+   **********/
+  {
+    ModbusApiSpec api_write_spec{ {modbus_api_spec::BRAKETEST_PERFORMED, 100},
+                                  {modbus_api_spec::BRAKETEST_RESULT, 98} };
+    ASSERT_THROW(ModbusAdapterBrakeTest bte_two_apart(nh_, TEST_API_SPEC, api_write_spec), ModbusAdapterBrakeTestException);
+  }
+
 }
 
 } // namespace prbt_hardware_support

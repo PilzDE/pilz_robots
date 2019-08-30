@@ -20,6 +20,8 @@
 #include <prbt_hardware_support/modbus_adapter_brake_test.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
 
+static const std::string API_SPEC_WRITE_PARAM_NAME("write_api_spec/");
+
 /**
  * @brief Starts a modbus brake test announcer and runs it until a failure occurs.
  */
@@ -29,9 +31,12 @@ int main(int argc, char **argv)
   ros::NodeHandle nh{};
   ros::NodeHandle pnh{"~"};
 
-  prbt_hardware_support::ModbusApiSpec api_spec(nh);
+  prbt_hardware_support::ModbusApiSpec read_api_spec(nh);
+  prbt_hardware_support::ModbusApiSpec write_api_spec(nh, API_SPEC_WRITE_PARAM_NAME);
 
-  prbt_hardware_support::ModbusAdapterBrakeTest adapter_brake_test(pnh, api_spec);
+  prbt_hardware_support::ModbusAdapterBrakeTest adapter_brake_test(pnh,
+                                                                   read_api_spec,
+                                                                   write_api_spec);
 
   ros::spin();
 
