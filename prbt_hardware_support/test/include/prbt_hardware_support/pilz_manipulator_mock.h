@@ -45,10 +45,12 @@ public:
   void advertiseServices(ros::NodeHandle nh, std::string hold_service_name, std::string unhold_service_name,
                          std::string halt_service_name, std::string recover_service_name);
 
-  MOCK_METHOD2(holdCb, bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
-  MOCK_METHOD2(unholdCb, bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
-  MOCK_METHOD2(haltCb, bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
-  MOCK_METHOD2(recoverCb, bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
+  // clang-format off
+  MOCK_METHOD2(holdCb,        bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
+  MOCK_METHOD2(unholdCb,      bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
+  MOCK_METHOD2(haltCb,        bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
+  MOCK_METHOD2(recoverCb,     bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
+  // clang-format on
 
 private:
   bool holdCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp);
