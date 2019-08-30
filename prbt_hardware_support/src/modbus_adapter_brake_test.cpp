@@ -25,16 +25,19 @@
 namespace prbt_hardware_support
 {
 
+static const std::string SERVICE_NAME_IS_BRAKE_TEST_REQUIRED = "/prbt/brake_test_required";
+
 static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {2};
 
 using std::placeholders::_1;
 
 ModbusAdapterBrakeTest::ModbusAdapterBrakeTest(ros::NodeHandle& nh, const ModbusApiSpec& api_spec)
-  : AdapterBrakeTest(nh)
-  , api_spec_(api_spec)
+  : api_spec_(api_spec)
   , filter_pipeline_(new FilterPipeline(nh, std::bind(&ModbusAdapterBrakeTest::modbusMsgCallback, this, _1 )) )
 {
-
+  is_brake_test_required_server_ = nh.advertiseService(SERVICE_NAME_IS_BRAKE_TEST_REQUIRED,
+                                                      &ModbusAdapterBrakeTest::isBrakeTestRequired,
+                                                      this);
 }
 
 void ModbusAdapterBrakeTest::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw)
@@ -69,6 +72,24 @@ void ModbusAdapterBrakeTest::modbusMsgCallback(const ModbusMsgInStampedConstPtr&
   }
 
   updateBrakeTestRequiredState(msg.getBrakeTestRequirementStatus());
+}
+
+void ModbusAdapterBrakeTest::updateBrakeTestRequiredState(IsBrakeTestRequiredResponse::_result_type brake_test_required)
+{
+  TBrakeTestRequired last_brake_test_flag {brake_test_required_};
+  brake_test_required_ = brake_test_required;
+  if(brake_test_required_ == IsBrakeTestRequiredResponse::REQUIRED
+     && last_brake_test_flag != IsBrakeTestRequiredResponse::REQUIRED)
+  {
+    ROS_INFO("Brake Test required.");
+  }
+}
+
+bool ModbusAdapterBrakeTest::isBrakeTestRequired(IsBrakeTestRequired::Request& /*req*/,
+                                                 IsBrakeTestRequired::Response& res)
+{
+  res.result = brake_test_required_;
+  return true;
 }
 
 } // namespace prbt_hardware_support

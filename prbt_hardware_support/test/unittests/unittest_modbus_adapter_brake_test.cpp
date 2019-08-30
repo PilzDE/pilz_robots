@@ -145,18 +145,6 @@ TEST_F(ModbusAdapterBrakeTestTest, testModbusMsgBrakeTestWrapperDtor)
 
 /**
  * @tests{Is_BrakeTest_required_mechanism,
- *  Test increases function coverage by ensuring that all Dtor variants
- *  are called.
- * }
- */
-TEST_F(ModbusAdapterBrakeTestTest, testAdapterBrakeTestDtor)
-{
-  std::shared_ptr<AdapterBrakeTest> adapter{new AdapterBrakeTest(nh_)};
-}
-
-
-/**
- * @tests{Is_BrakeTest_required_mechanism,
  *  Tests the value returned if no modbus messages are
  * }
  *

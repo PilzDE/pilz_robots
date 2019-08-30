@@ -98,7 +98,6 @@ target_link_libraries(stop1_executor_node ${catkin_LIBRARIES})
 add_executable(modbus_adapter_brake_test_node
   src/modbus_adapter_brake_test_node.cpp
   src/modbus_adapter_brake_test.cpp
-  src/adapter_brake_test.cpp
 )
 add_dependencies(modbus_adapter_brake_test_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
 target_link_libraries(modbus_adapter_brake_test_node ${catkin_LIBRARIES})
@@ -248,7 +247,6 @@ if(CATKIN_ENABLE_TESTING)
     test/unittests/unittest_modbus_adapter_brake_test.test
     test/unittests/unittest_modbus_adapter_brake_test.cpp
     src/modbus_adapter_brake_test.cpp
-    src/adapter_brake_test.cpp
     src/modbus_msg_in_builder.cpp
   )
   target_link_libraries(unittest_modbus_adapter_brake_test

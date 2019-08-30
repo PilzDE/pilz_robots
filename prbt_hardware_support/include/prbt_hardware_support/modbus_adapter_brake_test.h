@@ -22,10 +22,10 @@
 
 #include <ros/ros.h>
 
-#include <prbt_hardware_support/adapter_brake_test.h>
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/filter_pipeline.h>
+#include <prbt_hardware_support/IsBrakeTestRequired.h>
 
 namespace prbt_hardware_support
 {
@@ -34,11 +34,10 @@ namespace prbt_hardware_support
  * @brief Listens to the modbus_read topic and publishes a message
  * informing about a required brake test.
  */
-class ModbusAdapterBrakeTest : public AdapterBrakeTest
+class ModbusAdapterBrakeTest
 {
 public:
   ModbusAdapterBrakeTest(ros::NodeHandle& nh, const ModbusApiSpec& api_spec);
-  virtual ~ModbusAdapterBrakeTest() = default;
 
 private:
   /**
@@ -49,9 +48,27 @@ private:
    */
   void modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw);
 
+  void updateBrakeTestRequiredState(IsBrakeTestRequiredResponse::_result_type brake_test_required);
+
+  /**
+   * @brief Stores the brake test required flag and
+   * initializes the brake test service,
+   * the first time the function is called.
+   */
+  bool isBrakeTestRequired(IsBrakeTestRequired::Request&,
+                           IsBrakeTestRequired::Response& response);
+
 private:
   const ModbusApiSpec api_spec_;
   std::unique_ptr<FilterPipeline> filter_pipeline_;
+
+  using TBrakeTestRequired = IsBrakeTestRequiredResponse::_result_type;
+
+  //! Store the current state of whether a brake test is required
+  TBrakeTestRequired brake_test_required_ {IsBrakeTestRequiredResponse::UNKNOWN};
+
+  //! Server serving a service to ask whether a brake test is currently required
+  ros::ServiceServer is_brake_test_required_server_;
 
 };
 
