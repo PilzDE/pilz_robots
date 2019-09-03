@@ -21,17 +21,20 @@
 #include <memory>
 #include <map>
 #include <string>
+#include <functional>
 
 #include <ros/ros.h>
 
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
-#include <prbt_hardware_support/filter_pipeline.h>
 #include <prbt_hardware_support/IsBrakeTestRequired.h>
 #include <prbt_hardware_support/SendBrakeTestResult.h>
 
 namespace prbt_hardware_support
 {
+
+using TRegVec = std::vector<uint16_t>;
+using TWriteModbusRegister = std::function<bool(const uint16_t&, const TRegVec&)>;
 
 /**
  * @brief Listens to the modbus_read topic and publishes a message
@@ -40,11 +43,11 @@ namespace prbt_hardware_support
 class ModbusAdapterBrakeTest
 {
 public:
-  ModbusAdapterBrakeTest(ros::NodeHandle& nh,
+  ModbusAdapterBrakeTest(TWriteModbusRegister&& write_modbus_register_func,
                          const ModbusApiSpec& read_api_spec,
                          const ModbusApiSpec& write_api_spec);
 
-private:
+public:
   /**
    * @brief Called whenever a new modbus message arrives.
    *
@@ -52,9 +55,6 @@ private:
    * the number of incoming messages.
    */
   void modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw);
-
-  using TBrakeTestRequired = IsBrakeTestRequiredResponse::_result_type;
-  void updateBrakeTestRequiredState(TBrakeTestRequired brake_test_required);
 
   /**
    * @brief Stores the brake test required flag and
@@ -70,6 +70,9 @@ private:
   bool sendBrakeTestResult(SendBrakeTestResult::Request& req,
                            SendBrakeTestResult::Response& res);
 
+private:
+  using TBrakeTestRequired = IsBrakeTestRequiredResponse::_result_type;
+  void updateBrakeTestRequiredState(TBrakeTestRequired brake_test_required);
 
 private:
   using TRegIdx = uint16_t;
@@ -91,26 +94,21 @@ private:
 
 private:
   const ModbusApiSpec api_spec_;
-  std::unique_ptr<FilterPipeline> filter_pipeline_;
 
   //! Store the current state of whether a brake test is required
   TBrakeTestRequired brake_test_required_ {IsBrakeTestRequiredResponse::UNKNOWN};
-
-  //! Server serving a service to ask whether a brake test is currently required
-  ros::ServiceServer is_brake_test_required_server_;
-
-  ros::ServiceServer send_brake_test_result_;
-
-  ros::ServiceClient modbus_write_client_;
 
   //! Contains the indicies of the modbus registers, needed to write
   //! the brake test results back to the modbus.
   const TRegIdxCont reg_idx_cont_;
 
-  using TRegVec = std::vector<uint16_t>;
   const TRegIdx reg_start_idx_ {getMinRegisterIdx(reg_idx_cont_)};
   const TRegVec::size_type reg_block_size_ {getRegisterBlockSize(reg_idx_cont_)};
+
+  TWriteModbusRegister write_modbus_register_func_;
 };
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 inline bool ModbusAdapterBrakeTest::isBrakeTestRequired(IsBrakeTestRequired::Request& /*req*/,
                                                         IsBrakeTestRequired::Response& res)

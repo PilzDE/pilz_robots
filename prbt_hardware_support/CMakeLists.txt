@@ -244,8 +244,7 @@ if(CATKIN_ENABLE_TESTING)
   add_dependencies(unittest_pilz_modbus_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
   # --- ModbusAdapterBrakeTest unit test ---
-  add_rostest_gmock(unittest_modbus_adapter_brake_test
-    test/unittests/unittest_modbus_adapter_brake_test.test
+  catkin_add_gmock(unittest_modbus_adapter_brake_test
     test/unittests/unittest_modbus_adapter_brake_test.cpp
     src/modbus_adapter_brake_test.cpp
     src/modbus_msg_in_builder.cpp

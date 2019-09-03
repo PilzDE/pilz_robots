@@ -16,46 +16,27 @@
  */
 #include <prbt_hardware_support/modbus_adapter_brake_test.h>
 
-#include <functional>
 #include <sstream>
 #include <algorithm>
 
 #include <prbt_hardware_support/modbus_msg_brake_test_wrapper.h>
-#include <prbt_hardware_support/wait_for_service.h>
-#include <prbt_hardware_support/WriteModbusRegister.h>
 #include <prbt_hardware_support/modbus_adapter_brake_test_exception.h>
 
 namespace prbt_hardware_support
 {
 
-static const std::string SERVICE_NAME_IS_BRAKE_TEST_REQUIRED = "/prbt/brake_test_required";
-static const std::string SERVICE_SEND_BRAKE_TEST_RESULT = "/prbt/send_brake_test_result";
-static const std::string MODBUS_WRITE_SERVICE_NAME{"/pilz_modbus_client_node/modbus_write"};
-
 static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {2};
 
-using std::placeholders::_1;
-
-ModbusAdapterBrakeTest::ModbusAdapterBrakeTest(ros::NodeHandle& nh,
+ModbusAdapterBrakeTest::ModbusAdapterBrakeTest(TWriteModbusRegister&& write_modbus_register_func,
                                                const ModbusApiSpec& read_api_spec,
                                                const ModbusApiSpec& write_api_spec)
   : api_spec_(read_api_spec)
-  , filter_pipeline_(new FilterPipeline(nh, std::bind(&ModbusAdapterBrakeTest::modbusMsgCallback, this, _1 )) )
   , reg_idx_cont_(getRegisters(write_api_spec))
   , reg_start_idx_(getMinRegisterIdx(reg_idx_cont_))
   , reg_block_size_(getRegisterBlockSize(reg_idx_cont_))
+  , write_modbus_register_func_(write_modbus_register_func)
 {
-  is_brake_test_required_server_ = nh.advertiseService(SERVICE_NAME_IS_BRAKE_TEST_REQUIRED,
-                                                       &ModbusAdapterBrakeTest::isBrakeTestRequired,
-                                                       this);
 
-  send_brake_test_result_ = nh.advertiseService(SERVICE_SEND_BRAKE_TEST_RESULT,
-                                                &ModbusAdapterBrakeTest::sendBrakeTestResult,
-                                                this);
-
-  waitForService(MODBUS_WRITE_SERVICE_NAME);
-  ROS_DEBUG_STREAM("Done waiting for service: " << MODBUS_WRITE_SERVICE_NAME);
-  modbus_write_client_ = nh.serviceClient<WriteModbusRegister>(MODBUS_WRITE_SERVICE_NAME);
 }
 
 ModbusAdapterBrakeTest::TRegIdxCont ModbusAdapterBrakeTest::getRegisters(const ModbusApiSpec &write_api_spec)
@@ -67,14 +48,14 @@ ModbusAdapterBrakeTest::TRegIdxCont ModbusAdapterBrakeTest::getRegisters(const M
     throw ModbusAdapterBrakeTestException("Failed to read API spec for BRAKETEST_PERFORMED");
   }
   reg_idx_cont[modbus_api_spec::BRAKETEST_PERFORMED] =
-                       write_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED);
+      write_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED);
 
   if(!write_api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT))
   {
     throw ModbusAdapterBrakeTestException("Failed to read API spec for BRAKETEST_RESULT");
   }
   reg_idx_cont[modbus_api_spec::BRAKETEST_RESULT] =
-                       write_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT);
+      write_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT);
 
   if(abs(reg_idx_cont.at(modbus_api_spec::BRAKETEST_PERFORMED) - reg_idx_cont.at(modbus_api_spec::BRAKETEST_RESULT)) != 1)
   {
@@ -136,29 +117,25 @@ void ModbusAdapterBrakeTest::updateBrakeTestRequiredState(TBrakeTestRequired bra
 bool ModbusAdapterBrakeTest::sendBrakeTestResult(SendBrakeTestResult::Request& req,
                                                  SendBrakeTestResult::Response& res)
 {
+  if (!write_modbus_register_func_)
+  {
+    res.error_msg = "No callback available to send brake test result to FS control";
+    res.success = false;
+    return true;
+  }
+
   TRegVec reg_cont(reg_block_size_, 0);
   reg_cont.at(reg_idx_cont_.at(modbus_api_spec::BRAKETEST_PERFORMED) - reg_start_idx_) = req.performed;
   reg_cont.at(reg_idx_cont_.at(modbus_api_spec::BRAKETEST_RESULT) - reg_start_idx_) = req.result;
 
-  WriteModbusRegister srv;
-  srv.request.holding_register_block.start_idx = reg_start_idx_;
-  srv.request.holding_register_block.values = reg_cont;
-
-  ROS_DEBUG_STREAM("Calling service: " << modbus_write_client_.getService() << ")");
-  bool call_success = modbus_write_client_.call(srv);
-  if (!call_success)
+  if (!write_modbus_register_func_(reg_start_idx_, reg_cont))
   {
-    std::ostringstream os;
-    os << "No success calling service: " << modbus_write_client_.getService();
-    res.error_msg = os.str();
+    res.error_msg = "Sending of brake test result to FS control failed";
+    res.success = false;
+    return true;
   }
 
-  if (!srv.response.success)
-  {
-    res.error_msg = "Failed to send brake test result to FS control";
-  }
-
-  res.success = call_success && srv.response.success;
+  res.success = true;
   return true;
 }
 
