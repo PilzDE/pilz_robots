@@ -2,8 +2,8 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.10 (2019-09-03)
+-------------------
 * Add state machine for STO handling to allow skipping of hold/unhold if needed
 * add operation mode functionality
 * add write capability to PilzModbusReadClient, rename PilzModbusReadClient -> PilzModbusClient
