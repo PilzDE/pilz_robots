@@ -39,7 +39,7 @@ static const std::string SERVICE_NAME_IS_BRAKE_TEST_REQUIRED = "/prbt/brake_test
 static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{2};
 static constexpr unsigned int DEFAULT_RETRIES{10};
 
-static const ModbusApiSpec test_api_spec{ {modbus_api_spec::VERSION, 969},
+static const ModbusApiSpec TEST_API_SPEC{ {modbus_api_spec::VERSION, 969},
                                           {modbus_api_spec::BRAKETEST_REQUEST,973} };
 
 /**
@@ -57,7 +57,7 @@ public:
 public:
   ModbusMsgInStampedPtr createDefaultBrakeTestModbusMsg(uint16_t brake_test_required_value,
                                                         unsigned int modbus_api_version = MODBUS_API_VERSION_REQUIRED,
-                                                        uint32_t brake_test_required_index = test_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
+                                                        uint32_t brake_test_required_index = TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
   bool expectBrakeTestRequiredServiceCallResult(ros::ServiceClient& brake_test_required_client,
                                                 IsBrakeTestRequiredResponse::_result_type expectation,
                                                 uint16_t retries = DEFAULT_RETRIES);
@@ -66,7 +66,7 @@ protected:
   ros::AsyncSpinner spinner_{2};
 
   ros::NodeHandle nh_;
-  std::unique_ptr<ModbusAdapterBrakeTest> adapter_brake_test_ {new ModbusAdapterBrakeTest(nh_, test_api_spec)};
+  std::unique_ptr<ModbusAdapterBrakeTest> adapter_brake_test_ {new ModbusAdapterBrakeTest(nh_, TEST_API_SPEC)};
   ros::Publisher modbus_topic_pub_ {nh_.advertise<ModbusMsgInStamped>(TOPIC_MODBUS_READ, DEFAULT_QUEUE_SIZE_MODBUS)};
   ros::ServiceClient brake_test_required_client_ {nh_.serviceClient<prbt_hardware_support::IsBrakeTestRequired>(SERVICE_NAME_IS_BRAKE_TEST_REQUIRED)};//(969, 973, 974);
 };
@@ -90,7 +90,7 @@ ModbusMsgInStampedPtr ModbusAdapterBrakeTestTest::createDefaultBrakeTestModbusMs
                                                                                   unsigned int modbus_api_version,
                                                                                   uint32_t brake_test_required_index)
 {
-  uint32_t first_index_to_read{test_api_spec.getRegisterDefinition(modbus_api_spec::VERSION)};
+  uint32_t first_index_to_read{TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION)};
   uint32_t last_index_to_read{brake_test_required_index};
   static int msg_time_counter{1};
   RegCont tab_reg(last_index_to_read - first_index_to_read + 1);
