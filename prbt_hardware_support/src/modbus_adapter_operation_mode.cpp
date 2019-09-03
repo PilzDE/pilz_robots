@@ -70,4 +70,4 @@ void ModbusAdapterOperationMode::modbusMsgCallback(const ModbusMsgInStampedConst
   updateOperationMode(msg.getOperationMode());
 }
 
-}
+} // namespace prbt_hardware_support

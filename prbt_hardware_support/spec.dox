@@ -1,0 +1,141 @@
+/*
+ * Copyright (c) 2019 Pilz GmbH & Co. KG
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/** @page Spec
+ *
+ *  @tableofcontents
+ *  @section system_specification System Specification
+ *  @brief System Specification
+ *
+ *  @subsection ISO-10218-1
+ *
+ *
+ *
+ * @subsubsection sto_stop1 Safe torque off (STO) and  Stop 1
+ *
+ * @note STO == 1/TRUE  <-> manipulator is allowed to move freely
+ * @note STO == 0/FALSE <-> manipulator is NOT allowed to move (except for stop motion)
+ *
+ * @note A Stop 1 consists of holding the controller and halting the drives afterwards.
+ *  - Holding the controller starts with performing a stop motion (possibly replacing other prevailing motions).
+ *  - As long as the controller is holded, no new motions can be performed.
+ *
+ * @note The term "recovering" in the following section refers to a pending call on the respective service.
+ *
+ * @definereq{Stop1_Trigger}
+ *  - A Stop 1 is triggered, if at least one of the following cases is true:
+ *    - the state of the STO changes from TRUE -> FALSE (given that the
+ *      drives are currently not recovering, see \refspec{release_of_stop1}),
+ *    - connection to safety controller is lost,
+ *    - the messages informing about the STO (coming from the
+ *      safety controller) is incomplete or in any way corrupted,
+ *    - the communication protocol used by the safety controller
+ *      does not fulfill the expected specification
+ *      (defined by the version of the protocol).
+ *
+ * @definereq{execution_of_stop1}
+ * - If a stop1 is triggered, the system performs the following steps:
+ * Controller:hold (includes execution of Stop1 trajectory) -> Driver:halt
+ *
+ * - If the hold step fails, the system still tries to execute the halt service.
+ *    (see also \refspec{hold_service_fail})
+ *
+ * - If the STO changes to TRUE during the execution of the stop1 process, the
+ * system stops the stop1 process as soon as the currently active step is finished.
+ * For example:
+ *    If the state of the STO changes from TRUE -> FALSE while the drives
+ *    are recovering, the controller is kept in "holding" mode and
+ *    the execution of the stop trajectory is skipped.
+ *
+ * Please note:
+ * - While the controller is holded, the controller rejects all new trajectories.
+ * - The stop1 process can also be resumed by again chainging the STO to FALSE.
+ *
+ * @definereq{release_of_stop1}
+ * - If a stop1 is released, the system performs the follwing steps:
+ * Driver:recover -> Controller:unhold
+ *
+ * - If the STO changes to FALSE during the execution of the stop1-release process,
+ * the system stops the stop1-release process as soon as the currently active step
+ * is finished.
+ *
+ * - If the recover step fails, the system ends the stop1-release process.
+ *    (see also \refspec{unhold_service_fails})
+ *
+ * Please note:
+ * - The stop1-release process can also be resumed by again chainging the
+ * STO to TRUE.
+ *
+ *
+ * @definereq{unhold_service_fails}
+ *  - If the controller unhold service fails, Stop1 can still be triggered.
+ *
+ * @definereq{hold_service_fail}
+ *  - If the controller hold service fails during Stop1, the driver is still halted.
+ *
+ * @definereq{stop1_missing_services}
+ *  - The system is not allowed to complete the startup procedure until
+ *    all necessary services are available.
+ *
+ * @subsubsection brake_test Braketest
+ *
+ * @definereq{Is_BrakeTest_required_mechanism}
+ *  - The system provides a mechanism which allows to determine if
+ *    a braketest is requested by the safety controller.
+ *
+ *  - The value returned will indicate if a braketest is requested, not requested or
+ *    if it is currently unknown if a braketest has to be performed. It is unknown if a braketest
+ *    has to be performed if the communication with the safety control is lost or corrupted.
+ *
+ * @definereq{Execute_BrakeTest_mechanism}
+ * - The system provides a mechanism which allows to execute a brake test.
+ * - The brake test is performed for all axes.
+ * - The brake test mechanism returns a status stating if the
+ *    brake test was successful xor what error occured.
+ * - At the beginning of the brake test it is checked if the manipulator is
+ *    currently moving. In case the manipulator is moving, the brake test is not
+ *    performed and an error is retured.
+ * - As long as the brake test is performed no motion is allowed. Commands
+ *    send during the execution of the brake test are rejected.
+ * - Brake tests are only performed for drives which define that they require
+ *    a brake test (configurable via config file or parameter server).
+ * - After the brake test is performed the result of the brake test is
+ *    reported back to the safety controller. The result is also reported back
+ *    to the safety controller if the brake test was not required by the
+ *    safety controller.
+ * - If the connection to the safety controller is lost, no further
+ *    action regarding the sending of the brake test result is taken (e.g. NO
+ *    result sending as soon as the connection is established again).
+ *
+ *
+ *
+ * @subsubsection operation_mode Operation Mode
+ *
+ * @definereq{Get_OperationMode_mechanism}
+ *  - The system provides a mechanism which allows to request the current
+ *    operation mode of the safety controller.
+ *
+ *  - The mechanism to request the operation mode returns UNKNOWN,
+ *    if at least one of the following cases comes true:
+ *    - the connection to the safety controller is lost,
+ *    - the messages informing about the operation mode (coming from the
+ *      safety controller) is incomplete or in any way corrupted,
+ *    - the communication protocol used by the safety controller
+ *      does not fulfill the expected specification
+ *      (defined by the version of the protocol).
+ *
+ */

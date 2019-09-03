@@ -17,7 +17,6 @@
 
 #include <prbt_hardware_support/modbus_adapter_sto.h>
 
-#include <functional>
 #include <sstream>
 
 #include <prbt_hardware_support/modbus_msg_sto_wrapper.h>
@@ -25,15 +24,11 @@
 namespace prbt_hardware_support
 {
 
-using std::placeholders::_1;
-
-ModbusAdapterSto::ModbusAdapterSto(ros::NodeHandle& nh,
+ModbusAdapterSto::ModbusAdapterSto(UpdateStoFunc&& update_sto_func,
                                    const ModbusApiSpec& api_spec)
-  : AdapterSto(nh)
-  , api_spec_(api_spec)
-  , filter_pipeline_(new FilterPipeline(nh, std::bind(&ModbusAdapterSto::modbusMsgCallback, this, _1 )) )
+  : api_spec_(api_spec)
+  , update_sto_(std::move(update_sto_func))
 {
-
 }
 
 void ModbusAdapterSto::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw)
@@ -43,7 +38,7 @@ void ModbusAdapterSto::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_r
   if(msg.isDisconnect())
   {
     ROS_ERROR("A disconnect from the modbus server happend.");
-    performStop();
+    update_sto_(false);
     return;
   }
 
@@ -54,7 +49,7 @@ void ModbusAdapterSto::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_r
   catch(const ModbusMsgWrapperException &e)
   {
     ROS_ERROR_STREAM(e.what());
-    performStop();
+    update_sto_(false);
     return;
   }
 
@@ -65,12 +60,12 @@ void ModbusAdapterSto::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_r
        << msg.getVersion()
        << ", required Version: " << MODBUS_API_VERSION_REQUIRED;
     ROS_ERROR_STREAM(os.str());
-    performStop();
+    update_sto_(false);
     return;
   }
 
-  updateSto(msg.getSTO());
+  update_sto_(msg.getSTO());
 }
 
 
-}
+} // namespace prbt_hardware_support

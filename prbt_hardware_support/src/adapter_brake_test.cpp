@@ -25,32 +25,20 @@ namespace prbt_hardware_support
 static const std::string SERVICE_NAME_IS_BRAKE_TEST_REQUIRED = "/prbt/brake_test_required";
 
 AdapterBrakeTest::AdapterBrakeTest(ros::NodeHandle& nh)
-  : nh_(nh)
 {
-}
-
-void AdapterBrakeTest::initBrakeTestService()
-{
-  is_brake_test_required_server_ = nh_.advertiseService(SERVICE_NAME_IS_BRAKE_TEST_REQUIRED,
+    is_brake_test_required_server_ = nh.advertiseService(SERVICE_NAME_IS_BRAKE_TEST_REQUIRED,
                                                         &AdapterBrakeTest::isBrakeTestRequired,
                                                         this);
 }
 
-void AdapterBrakeTest::updateBrakeTestRequiredState(bool brake_test_required)
+void AdapterBrakeTest::updateBrakeTestRequiredState(IsBrakeTestRequiredResponse::_result_type brake_test_required)
 {
-  bool last_brake_test_flag {brake_test_required_};
+  IsBrakeTestRequiredResponse::_result_type last_brake_test_flag {brake_test_required_};
   brake_test_required_ = brake_test_required;
-  if(brake_test_required_ && !last_brake_test_flag)
+  if(brake_test_required_ == IsBrakeTestRequiredResponse::REQUIRED
+     && last_brake_test_flag != IsBrakeTestRequiredResponse::REQUIRED)
   {
     ROS_INFO("Brake Test required.");
-  }
-
-  // when the first data is received, the node is initialized
-  // (i.e. the service advertised) <-> "lazy initialization"
-  if(!service_initialized_)
-  {
-    initBrakeTestService();
-    service_initialized_ = true;
   }
 }
 
@@ -61,4 +49,4 @@ bool AdapterBrakeTest::isBrakeTestRequired(IsBrakeTestRequired::Request& /*req*/
   return true;
 }
 
-}
+} // namespace prbt_hardware_support

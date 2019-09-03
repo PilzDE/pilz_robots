@@ -15,16 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <prbt_hardware_support/canopen_braketest_adapter_exception.h>
+#ifndef SERVICE_FUNCTION_DECL_H
+#define SERVICE_FUNCTION_DECL_H
+
+#include <functional>
 
 namespace prbt_hardware_support
 {
 
-CANOpenBrakeTestAdapterException::CANOpenBrakeTestAdapterException(const std::string &what_arg,
-                                                                   const int8_t error_value)
-  : std::runtime_error(what_arg)
-  , error_value_(error_value)
-{
+using TServiceCallFunc = std::function<bool()>;
+
 }
 
-} // namespace prbt_hardware_support
+#endif // SERVICE_FUNCTION_DECL_H

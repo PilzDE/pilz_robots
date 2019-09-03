@@ -41,7 +41,6 @@ static const std::string IS_EXECUTING_SERVICE{"/is_executing"};
 static const std::string TRAJECTORY_COMMAND_TOPIC{"/command"};
 static const std::string STOP_TRAJECTORY_DURATION_PARAMETER{"stop_trajectory_duration"};
 
-static constexpr double DEFAULT_WAIT_FOR_ACTIVITY_TIMEOUT{3.0};
 static constexpr double SMALL_PERIOD{0.000001};
 static constexpr double STOP_TRAJECTORY_DURATION{0.2};
 
@@ -55,11 +54,9 @@ class PilzJointTrajectoryControllerTest : public testing::Test
 protected:
   void SetUp();
 
-  ::testing::AssertionResult waitForIsExecutingServiceResult(bool expectation,
-                                                             double timeout = DEFAULT_WAIT_FOR_ACTIVITY_TIMEOUT);
+  ::testing::AssertionResult waitForIsExecutingServiceResult(bool expectation);
 
-  ::testing::AssertionResult waitForIsExecutingResult(bool expectation,
-                                                      double timeout = DEFAULT_WAIT_FOR_ACTIVITY_TIMEOUT);
+  ::testing::AssertionResult waitForIsExecutingResult(bool expectation);
 
 protected:
   std::shared_ptr<Controller> controller_;
@@ -98,12 +95,10 @@ void PilzJointTrajectoryControllerTest::SetUp()
   controller_nh_.setParam(STOP_TRAJECTORY_DURATION_PARAMETER, STOP_TRAJECTORY_DURATION);
 }
 
-::testing::AssertionResult PilzJointTrajectoryControllerTest::waitForIsExecutingServiceResult(bool expectation,
-                                                                                              double timeout)
+::testing::AssertionResult PilzJointTrajectoryControllerTest::waitForIsExecutingServiceResult(bool expectation)
 {
   ros::Rate rate{10.0};
-  ros::Time start{ros::Time::now()};
-  while (ros::ok() && ros::Time::now() - start < ros::Duration(timeout))
+  while (ros::ok())
   {
     controller_->update(ros::Time::now(), ros::Duration(SMALL_PERIOD));
 
@@ -123,12 +118,10 @@ void PilzJointTrajectoryControllerTest::SetUp()
       << "Controller did not " << (expectation ? "start" : "stop") << " executing as expected.";
 }
 
-::testing::AssertionResult PilzJointTrajectoryControllerTest::waitForIsExecutingResult(bool expectation,
-                                                                                       double timeout)
+::testing::AssertionResult PilzJointTrajectoryControllerTest::waitForIsExecutingResult(bool expectation)
 {
   ros::Rate rate{10.0};
-  ros::Time start{ros::Time::now()};
-  while (ros::ok() && ros::Time::now() - start < ros::Duration(timeout))
+  while (ros::ok())
   {
     controller_->update(ros::Time::now(), ros::Duration(SMALL_PERIOD));
 

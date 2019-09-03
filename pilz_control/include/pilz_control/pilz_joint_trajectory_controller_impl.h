@@ -99,8 +99,7 @@ handleHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response
   JointTrajectoryController::preemptActiveGoal();
   triggerMovementToHoldPosition();
 
-  active_update_strategy_ = std::bind(&PilzJointTrajectoryController::updateStrategyWhileHolding, this,
-                                      ph::_1, ph::_2, ph::_3);
+  ros::Duration(JointTrajectoryController::stop_trajectory_duration_).sleep();
 
   response.message = "Holding mode enabled";
   response.success = true;

@@ -15,35 +15,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef WAIT_FOR_TOPIC_H
-#define WAIT_FOR_TOPIC_H
+#ifndef PRBT_HARDWARE_SUPPORT_BRAKE_TEST_EXECUTOR_EXCEPTION_H
+#define PRBT_HARDWARE_SUPPORT_BRAKE_TEST_EXECUTOR_EXCEPTION_H
 
-#include <string>
-
-#include <ros/ros.h>
-#include <ros/duration.h>
-
-#include <prbt_hardware_support/wait_for_timeouts.h>
+#include <stdexcept>
 
 namespace prbt_hardware_support
 {
-
 /**
- * @brief Waits until the specified topic is received.
+ * @brief Exception thrown by a BrakeTestExecutor function.
  */
-template<class T>
-static void waitForTopic(const std::string topic_name,
-                  const double retry_timeout = DEFAULT_RETRY_TIMEOUT,
-                  const double msg_output_period = DEFAULT_MSG_OUTPUT_PERIOD)
+class BrakeTestExecutorException : public std::runtime_error
 {
-  while ( (ros::topic::waitForMessage<T>(topic_name, ros::Duration(retry_timeout)) == nullptr) && ros::ok())
+public:
+  BrakeTestExecutorException(const std::string &what_arg) : std::runtime_error(what_arg)
   {
-    ROS_DEBUG_STREAM_DELAYED_THROTTLE(msg_output_period,
-                                     "Waiting for topic \""
-                                     + topic_name + "\"...");
   }
-}
+};
+} // namespace prbt_hardware_support
 
-}
-
-#endif // WAIT_FOR_TOPIC_H
+#endif // PRBT_HARDWARE_SUPPORT_BRAKE_TEST_EXECUTOR_EXCEPTION_H

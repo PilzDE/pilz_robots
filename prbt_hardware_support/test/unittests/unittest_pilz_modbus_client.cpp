@@ -17,12 +17,13 @@
 
 #include <gtest/gtest.h>
 
-#include <thread>
-#include <memory>
 #include <chrono>
-#include <vector>
-#include <string>
+#include <memory>
 #include <mutex>
+#include <numeric>
+#include <string>
+#include <thread>
+#include <vector>
 
 #include <ros/ros.h>
 #include <modbus/modbus.h>
@@ -153,7 +154,10 @@ TEST_F(PilzModbusClientTests, testInitialization)
       .Times(1)
       .WillOnce(Return(true));
 
-  PilzModbusClient client(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock),
+  std::vector<unsigned short> registers(REGISTER_SIZE_TEST);
+  std::iota(registers.begin(), registers.end(), REGISTER_FIRST_IDX_TEST);
+
+  PilzModbusClient client(nh_, registers, std::move(mock),
                           RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
                           prbt_hardware_support::SERVICE_MODBUS_WRITE);
 
@@ -172,7 +176,10 @@ TEST_F(PilzModbusClientTests, testInitializationWithRetry)
       .WillOnce(Return(false))
       .WillOnce(Return(true));
 
-  PilzModbusClient client(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock),
+  std::vector<unsigned short> registers(REGISTER_SIZE_TEST);
+  std::iota(registers.begin(), registers.end(), REGISTER_FIRST_IDX_TEST);
+
+  PilzModbusClient client(nh_,registers,std::move(mock),
                           RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
                           prbt_hardware_support::SERVICE_MODBUS_WRITE);
 
@@ -190,7 +197,10 @@ TEST_F(PilzModbusClientTests, doubleInitialization)
       .Times(1)
       .WillOnce(Return(true));
 
-  PilzModbusClient client(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock),
+  std::vector<unsigned short> registers(REGISTER_SIZE_TEST);
+  std::iota(registers.begin(), registers.end(), REGISTER_FIRST_IDX_TEST);
+
+  PilzModbusClient client(nh_,registers,std::move(mock),
                           RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
                           prbt_hardware_support::SERVICE_MODBUS_WRITE);
 
@@ -209,7 +219,10 @@ TEST_F(PilzModbusClientTests, failingInitialization)
       .Times(1)
       .WillOnce(Return(false));
 
-  PilzModbusClient client(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock),
+  std::vector<unsigned short> registers(REGISTER_SIZE_TEST);
+  std::iota(registers.begin(), registers.end(), REGISTER_FIRST_IDX_TEST);
+
+  PilzModbusClient client(nh_,registers,std::move(mock),
                           RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
                           prbt_hardware_support::SERVICE_MODBUS_WRITE);
 
@@ -228,7 +241,10 @@ TEST_F(PilzModbusClientTests, failingInitializationWithRetry)
       .WillOnce(Return(false))
       .WillOnce(Return(false));
 
-  PilzModbusClient client(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock),
+  std::vector<unsigned short> registers(REGISTER_SIZE_TEST);
+  std::iota(registers.begin(), registers.end(), REGISTER_FIRST_IDX_TEST);
+
+  PilzModbusClient client(nh_,registers,std::move(mock),
                           RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
                           prbt_hardware_support::SERVICE_MODBUS_WRITE);
 
@@ -244,11 +260,9 @@ TEST_F(PilzModbusClientTests, properReadingAndDisconnect)
 
   {
     InSequence s;
-
     EXPECT_CALL(*mock, init(_,_))
         .Times(1)
         .WillOnce(Return(true));
-
     EXPECT_CALL(*mock, readHoldingRegister(_,_))
         .WillOnce(Return(std::vector<uint16_t>{1, 2}))
         .WillOnce(Return(std::vector<uint16_t>{1, 2}))
@@ -259,16 +273,17 @@ TEST_F(PilzModbusClientTests, properReadingAndDisconnect)
     InSequence s;
     EXPECT_CALL(*this, modbus_read_cb(IsSuccessfullRead(std::vector<uint16_t>{1, 2})))
         .Times(2);
-
     EXPECT_CALL(*this, modbus_read_cb(IsSuccessfullRead(std::vector<uint16_t>{3, 4})))
         .Times(1);
-
     EXPECT_CALL(*this, modbus_read_cb(IsDisconnect()))
         .Times(1)
         .WillOnce(ACTION_OPEN_BARRIER_VOID("disconnected"));
   }
 
-  PilzModbusClient client(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock),
+  std::vector<unsigned short> registers(REGISTER_SIZE_TEST);
+  std::iota(registers.begin(), registers.end(), REGISTER_FIRST_IDX_TEST);
+
+  PilzModbusClient client(nh_,registers,std::move(mock),
                           RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
                           prbt_hardware_support::SERVICE_MODBUS_WRITE);
 
@@ -288,7 +303,10 @@ TEST_F(PilzModbusClientTests, runningWithoutInit)
   EXPECT_CALL(*mock, readHoldingRegister(_,_)).Times(0);
   EXPECT_CALL(*this, modbus_read_cb(_)).Times(0);
 
-  PilzModbusClient client(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock),
+  std::vector<unsigned short> registers(REGISTER_SIZE_TEST);
+  std::iota(registers.begin(), registers.end(), REGISTER_FIRST_IDX_TEST);
+
+  PilzModbusClient client(nh_,registers,std::move(mock),
                           RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
                           prbt_hardware_support::SERVICE_MODBUS_WRITE);
 
@@ -309,7 +327,10 @@ TEST_F(PilzModbusClientTests, terminateRunningClient)
   ON_CALL(*this, modbus_read_cb(IsSuccessfullRead(std::vector<uint16_t>{3,4})))
       .WillByDefault(Return());
 
-  auto client = std::make_shared< PilzModbusClient >(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock),
+  std::vector<unsigned short> registers(REGISTER_SIZE_TEST);
+  std::iota(registers.begin(), registers.end(), REGISTER_FIRST_IDX_TEST);
+
+  auto client = std::make_shared< PilzModbusClient >(nh_,registers,std::move(mock),
                                                      RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
                                                      prbt_hardware_support::SERVICE_MODBUS_WRITE);
 
@@ -333,7 +354,10 @@ TEST_F(PilzModbusClientTests, testTopicNameChange)
 
   const std::string topic_name {"test_topic_name"};
 
-  auto client = std::make_shared< PilzModbusClient >(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock),
+  std::vector<unsigned short> registers(REGISTER_SIZE_TEST);
+  std::iota(registers.begin(), registers.end(), REGISTER_FIRST_IDX_TEST);
+
+  auto client = std::make_shared< PilzModbusClient >(nh_,registers,std::move(mock),
                                                      RESPONSE_TIMEOUT, topic_name, prbt_hardware_support::SERVICE_MODBUS_WRITE);
   // Wait for a moment to ensure the topic is "up and running"
   ros::Duration(WAIT_SLEEPTIME_S).sleep();
@@ -356,7 +380,10 @@ TEST_F(PilzModbusClientTests, testSettingOfTimeOut)
 
   EXPECT_CALL(*mock, setResponseTimeoutInMs(response_timeout)).Times(1);
 
-  auto client = std::make_shared< PilzModbusClient >(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock),
+  std::vector<unsigned short> registers(REGISTER_SIZE_TEST);
+  std::iota(registers.begin(), registers.end(), REGISTER_FIRST_IDX_TEST);
+
+  auto client = std::make_shared< PilzModbusClient >(nh_,registers,std::move(mock),
                                                      response_timeout, prbt_hardware_support::TOPIC_MODBUS_READ,
                                                      prbt_hardware_support::SERVICE_MODBUS_WRITE);
 
@@ -418,7 +445,7 @@ private:
  *
  *
  * Test Sequence:
- * - 1. Choose low read frequency (f1). The last received "modbus_read" messages
+ * - 1. Choose low read frequency (f1). The last received "modbus_read" message
  *      is stored in a buffer.
  * - 2. Choose "modbus_read" topic check frequency f2, with f2 slightly bigger than f1.
  * - 3. Start a loop (running exactly for \#f1 iterations), which checks with
@@ -428,11 +455,11 @@ private:
  * Expected Results:
  * - 1. -
  * - 2. -
- * - 3. The last received "modbus_read" messges must fullfill the condition:
+ * - 3. The last received "modbus_read" message must fullfill the condition:
  *      "new_register_value = last_register_value + 1".
  *      If the condition does not hold, the read fequency could not be
  *      set properly and is probably to high.
- * - 4. Check that the number of received messages is creater than \#f1. If the
+ * - 4. Check that the number of received messages is greater than \#f1. If the
  *      condition does not hold, the read fequency is not set properly
  *      and is probably to low.
  */
@@ -452,8 +479,11 @@ TEST_F(PilzModbusClientTests, testSettingReadFrequency)
   ON_CALL(*this, modbus_read_cb(_))
       .WillByDefault(Invoke(&buffer, &RegisterBuffer::add));
 
+  std::vector<unsigned short> registers(REGISTER_SIZE_TEST);
+  std::iota(registers.begin(), registers.end(), REGISTER_FIRST_IDX_TEST);
+
   const double expected_read_frequency {30.0};
-  auto client = std::make_shared< PilzModbusClient >(nh_,REGISTER_SIZE_TEST,REGISTER_FIRST_IDX_TEST,std::move(mock),
+  auto client = std::make_shared< PilzModbusClient >(nh_,registers,std::move(mock),
                                                      RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
                                                      prbt_hardware_support::SERVICE_MODBUS_WRITE,
                                                      expected_read_frequency);
@@ -476,25 +506,23 @@ TEST_F(PilzModbusClientTests, testSettingReadFrequency)
   ros::Rate rate(msg_check_frequency);
   for(unsigned int counter = 0; (counter < N_TIMEOUT) && ros::ok(); ++counter )
   {
-    rate.sleep();
+    uint16_t curr_value = buffer.get();
     if (!first_value_set)
     {
-      last = buffer.get();
+      last = curr_value;
       first_value_set = true;
-      continue;
+    }
+    else if (curr_value != last)
+    {
+      uint16_t expected_value = static_cast<uint16_t>(last + 1);
+      EXPECT_EQ(expected_value, curr_value) << "Frequency used by PilzModbusClient is probably too high";
+      last = curr_value;
     }
 
-    uint16_t curr_value = buffer.get();
-    if (curr_value == last)
-    {
-      continue;
-    }
-    uint16_t expected_value = static_cast<uint16_t>(last + 1);
-    EXPECT_EQ(expected_value, curr_value) << "Frequency used by PilzModbusClient is probably too higher";
-    last = curr_value;
+    rate.sleep();
   }
 
-  EXPECT_GE(buffer.get(), static_cast<uint16_t>(expected_read_frequency)) << "Frequency used by PilzModbusClient is probably too lower";
+  EXPECT_GE(buffer.get(), static_cast<uint16_t>(expected_read_frequency)) << "Frequency used by PilzModbusClient is probably too low";
 
   executor.stop();
   EXPECT_FALSE(client->isRunning());
@@ -536,7 +564,10 @@ TEST_F(PilzModbusClientTests, testWritingOfHoldingRegister)
   EXPECT_CALL(*this, modbus_read_cb(IsSuccessfullRead(expected_read_reg)))
       .Times(AtLeast(1));
 
-  auto modbus_client = std::make_shared< PilzModbusClient >(nh_, expected_read_reg.size(),REGISTER_FIRST_IDX_TEST, std::move(mock),
+  std::vector<unsigned short> registers(expected_read_reg.size());
+  std::iota(registers.begin(), registers.end(), REGISTER_FIRST_IDX_TEST);
+
+  auto modbus_client = std::make_shared< PilzModbusClient >(nh_, registers, std::move(mock),
                                                             RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
                                                             prbt_hardware_support::SERVICE_MODBUS_WRITE);
 
@@ -558,6 +589,28 @@ TEST_F(PilzModbusClientTests, testWritingOfHoldingRegister)
   EXPECT_FALSE(modbus_client->isRunning());
 }
 
+
+/**
+ * @brief Tests the split_into_blocks method
+ */
+TEST_F(PilzModbusClientTests, testSplitIntoBlocksFcn){
+  // lists with same elements will throw exception
+  std::vector<unsigned short> in_throw = {1, 2, 1};
+  ASSERT_THROW(PilzModbusClient::split_into_blocks(in_throw),
+               PilzModbusClientException);
+
+  // properly splitting into blocks
+  std::vector<unsigned short> in_split = {1, 2, 4, 5};
+  std::vector<std::vector<unsigned short>> out_split = PilzModbusClient::split_into_blocks(in_split);
+  std::vector<std::vector<unsigned short>> expected_out_split = {{1, 2}, {4, 5}};
+  EXPECT_EQ(out_split, expected_out_split);
+
+  // not splitting already consecutive blocks
+  std::vector<unsigned short> in_nosplit = {1, 2, 3};
+  std::vector<std::vector<unsigned short>> out_nosplit = PilzModbusClient::split_into_blocks(in_nosplit);
+  std::vector<std::vector<unsigned short>> expected_out_nosplit = {{1, 2, 3}};
+  EXPECT_EQ(out_nosplit, expected_out_nosplit);
+}
 }  // namespace pilz_modbus_client_test
 
 int main(int argc, char *argv[])

@@ -45,8 +45,7 @@ public:
   /**
    * @brief Sets up publisher. To open the modbus connection call PilzModbusClient::init.
    * @param nh Node handle.
-   * @param num_registers_to_read Size of the data array.
-   * @param index_of_first_register Offset of the modbus data.
+   * @param registers_to_read Registers which have to be read.
    * @param modbus_client ModbusClient to use
    * @param response_timeout_ms Time to wait for a response from Modbus server.
    * @param modbus_read_topic_name Name of the topic to which is published.
@@ -54,8 +53,7 @@ public:
    * @param read_frequency_hz Defines how often Modbus registers are read in.
    */
   PilzModbusClient(ros::NodeHandle& nh,
-                   const unsigned int num_registers_to_read,
-                   const unsigned int index_of_first_register,
+                   const std::vector<unsigned short>& registers_to_read,
                    ModbusClientUniquePtr modbus_client,
                    unsigned int response_timeout_ms,
                    const std::string& modbus_read_topic_name,
@@ -102,6 +100,11 @@ public:
    */
   bool isRunning();
 
+  /**
+   * @brief Splits a vector of integers into a vector of vectors with consecutive groups
+   */
+  std::vector<std::vector<unsigned short>> static split_into_blocks(std::vector<unsigned short> &in);
+
 private:
   void sendDisconnectMsg();
 
@@ -113,7 +116,6 @@ private:
                                WriteModbusRegister::Response& res);
 
 private:
-
   /**
      * @brief States of the Modbus-client.
      */
@@ -125,10 +127,8 @@ private:
     running,
   };
 
-  //! Number of registers which have to be read.
-  const uint32_t NUM_REGISTERS_TO_READ;
-  //! Index from which the registers have to be read.
-  const uint32_t INDEX_OF_FIRST_REGISTER;
+  //! Registers which have to be read.
+  std::vector<unsigned short> registers_to_read;
 
   //! Defines how long we wait for a response from the Modbus-server.
   const unsigned int RESPONSE_TIMEOUT_MS;
