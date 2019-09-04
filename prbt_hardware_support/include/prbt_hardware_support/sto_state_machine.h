@@ -352,6 +352,7 @@ public:
   Row< Stopping                  , sto_updated  , EnableRequestDuringStop   , none         , sto_true >,
   Row< Stopping                  , hold_done    , none                      , halt_start   , none     >,
   Row< Stopping                  , halt_done    , RobotInactive             , none         , none     >,
+  Row< EnableRequestDuringStop   , hold_done    , none                      , halt_start   , none     >,
   Row< EnableRequestDuringStop   , halt_done    , Enabling                  , recover_start, none     >,
   Row< EnableRequestDuringStop   , sto_updated  , Stopping                  , none         , sto_false>,
   Row< EnableRequestDuringStop   , sto_updated  , none                      , none         , sto_true >
