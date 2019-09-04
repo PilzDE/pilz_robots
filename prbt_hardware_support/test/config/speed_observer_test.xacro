@@ -22,19 +22,19 @@ limitations under the License.
 
   <link name="world"/>
 
-  <joint name="$(arg robot_prefix)world-a" type="fixed">
-  <origin xyz="0 0 1" rpy="1.57079632679 0 0" />
+  <joint name="$(arg robot_prefix)world-a" type="continuous">
+  <origin xyz="0 0 1" rpy="0 1.57079632679 0" />
     <parent link="world"/>
     <child link="$(arg robot_prefix)a"/>
+    <limit effort="999" velocity="99" />
   </joint>
 
   <link name="$(arg robot_prefix)a" />
 
-  <joint name="$(arg robot_prefix)a-b" type="continuous">
-    <origin xyz="1 0 0" rpy="1.57079632679 0 0" />
+  <joint name="$(arg robot_prefix)a-b" type="fixed">
+    <origin xyz="0 1 0" rpy="0 0 0" />
     <parent link="$(arg robot_prefix)a" />
     <child link="$(arg robot_prefix)b" />
-    <limit effort="999" velocity="99" />
   </joint>
 
   <link name="$(arg robot_prefix)b" />

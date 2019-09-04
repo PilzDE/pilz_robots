@@ -44,7 +44,8 @@ void SpeedObserver::waitTillTFReady(const std::string& frame, const ros::Time& t
   while (!terminate_ && (retries < max_num_retries) && !tf_buffer_.canTransform(reference_frame_, frame, time))
   {
     ros::spinOnce();
-    ROS_WARN("Waiting for transform %s -> %s", reference_frame_.c_str(), frame.c_str());
+    if(retries > 0)  // when trying for the first time, we do not warn the user
+      ROS_WARN("Waiting for transform %s -> %s", reference_frame_.c_str(), frame.c_str());
     ros::Duration(WAITING_TIME_FOR_TRANSFORM_S).sleep();
     ++retries;
   }

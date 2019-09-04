@@ -41,6 +41,7 @@ OperationModeSetupExecutor::OperationModeSetupExecutor(const double& speed_limit
 
 void OperationModeSetupExecutor::updateOperationMode(const OperationModes& operation_mode)
 {
+  ROS_DEBUG("updateOperationMode: %d", operation_mode.value);
   if (operation_mode.time_stamp <= time_stamp_last_op_mode_)
   {
     return;

@@ -63,6 +63,7 @@ public:
   MOCK_METHOD1(frame_speeds_cb, void(FrameSpeeds msg));
   void publishJointStatesAtSpeed(double v);
   void stopJointStatePublisher();
+  void advertiseOmService();
 
 protected:
   ros::NodeHandle nh_;
@@ -79,9 +80,6 @@ void SpeedObserverIntegarionTest::SetUp()
   subscriber_ = nh_.subscribe<FrameSpeeds>(
       FRAME_SPEEDS_TOPIC_NAME, 1, &SpeedObserverIntegarionTest::frame_speeds_cb,
       this);
-  operation_mode_srv_ = nh_.advertiseService(
-      OPERATION_MODE_SERVICE, &SpeedObserverIntegarionTest::operation_mode_cb,
-      this);
   fake_controller_joint_states_pub_ = nh_.advertise<sensor_msgs::JointState>(
       FAKE_CONTROLLER_JOINT_STATES_TOPIC_NAME, 1);
 
@@ -96,25 +94,34 @@ void SpeedObserverIntegarionTest::SetUp()
 
 void SpeedObserverIntegarionTest::TearDown()
 {
+  joint_publisher_running_ = false;
+  nh_.shutdown();
+}
+
+void SpeedObserverIntegarionTest::advertiseOmService()
+{
+  operation_mode_srv_ = nh_.advertiseService(
+      OPERATION_MODE_SERVICE, &SpeedObserverIntegarionTest::operation_mode_cb,
+      this);
 }
 
 void SpeedObserverIntegarionTest::publishJointStatesAtSpeed(double v)
 {
   sensor_msgs::JointState js;
-  js.name = {"testing_a-b"};
+  js.name = { "testing_world-a" };
   ros::Rate r = ros::Rate(TEST_FREQUENCY * 3);  // publishing definitely faster
                                                 // then observing
   ros::Time start = ros::Time::now();
   double t = 0;
   joint_publisher_running_ = true;
-  while (joint_publisher_running_)
+  while (joint_publisher_running_ & nh_.ok())
   {
     ros::Time current = ros::Time::now();
     t = (current - start).toSec();
-    js.position = {t * v};
+    js.position = { t * v };
 
     fake_controller_joint_states_pub_.publish(js);
-    if (joint_publisher_running_)  // ending faster
+    if (joint_publisher_running_ & nh_.ok())  // ending fasteroperation_mode_cb
       r.sleep();
   }
 }
@@ -147,6 +154,7 @@ TEST_F(SpeedObserverIntegarionTest, testT1)
   EXPECT_CALL(*this, operation_mode_cb(_, _))
       .WillOnce(DoAll(SetArgReferee<1>(omr),
                       ACTION_OPEN_BARRIER(BARRIER_OPERATION_MODE_SET)));
+  advertiseOmService();
 
   BARRIER({ BARRIER_OPERATION_MODE_SET });
 
@@ -169,6 +177,9 @@ int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "unittest_speed_observer");
   ros::NodeHandle nh;
+
+  ros::AsyncSpinner spinner{ 1 };
+  spinner.start();
 
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
