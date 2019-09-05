@@ -16,6 +16,7 @@ env:
   global:
     - ROS_DISTRO="melodic"
     - CATKIN_LINT=true
+    - ADDITIONAL_DEBS="libclang-dev"
   matrix:
     - ROS_REPO=ros
     - ROS_REPO=testing

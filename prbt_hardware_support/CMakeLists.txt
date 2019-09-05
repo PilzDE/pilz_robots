@@ -100,14 +100,6 @@ add_executable(stop1_executor_node
 add_dependencies(stop1_executor_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
 target_link_libraries(stop1_executor_node ${catkin_LIBRARIES})
 
-# OPERATION_MODE_SETUP_EXECUTOR_NODE
-add_executable(operation_mode_setup_executor_node
-  src/operation_mode_setup_executor.cpp
-  src/operation_mode_setup_executor_node.cpp
-)
-add_dependencies(operation_mode_setup_executor_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
-target_link_libraries(operation_mode_setup_executor_node ${catkin_LIBRARIES})
-
 # BRAKE_TEST_NODE
 add_executable(modbus_adapter_brake_test_node
   src/modbus_adapter_brake_test_node.cpp
@@ -483,20 +475,9 @@ if(CATKIN_ENABLE_TESTING)
   if(ENABLE_COVERAGE_TESTING)
     include(CodeCoverage)
     APPEND_COVERAGE_COMPILER_FLAGS()
-    set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*"
-                          "*/BrakeTestErrorCodes.h"
-                          "*/ModbusMsgInStamped.h"
-                          "*/BrakeTest.h"
-                          "*/BrakeTestRequest.h"
-                          "*/BrakeTestResponse.h"
-                          "*/FrameSpeeds.h"
-                          "*/IsBrakeTestRequired.h"
-                          "*/IsBrakeTestRequiredRequest.h"
-                          "*/IsBrakeTestRequiredResponse.h"
-                          "*/ModbusRegisterBlock.h"
-                          "*/WriteModbusRegister.h"
-                          "*/WriteModbusRegisterRequest.h"
-                          "*/WriteModbusRegisterResponse.h")
+    set(COVERAGE_EXCLUDES
+        "*/${PROJECT_NAME}/test*"
+        "*/.private/${PROJECT_NAME}/include/${PROJECT_NAME}/*.h")
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
       DEPENDS tests
