@@ -41,25 +41,19 @@ inline std::string className(std::string fullName)
 #define COLOR_GREEN "\033[32m"
 #define COLOR_GREEN_BOLD "\033[1;32m"
 
-#define STATE_ENTER_OUTPUT                                                     \
-  ROS_DEBUG_STREAM_NAMED(                                                      \
-      "STOStateMachine",                                                       \
-      "Event: " << className(boost::core::demangle(typeid(ev).name()))         \
-                << " - Entering: " << COLOR_GREEN_BOLD                         \
-                << className(boost::core::demangle(typeid(*this).name()))      \
-                << COLOR_GREEN);
-#define STATE_EXIT_OUTPUT                                                      \
-  ROS_DEBUG_STREAM_NAMED(                                                      \
-      "STOStateMachine",                                                       \
-      "Event: " << className(boost::core::demangle(typeid(ev).name()))         \
-                << " - Leaving: "                                              \
-                << className(boost::core::demangle(typeid(*this).name())));
-#define ACTION_OUTPUT                                                          \
-  ROS_DEBUG_STREAM_NAMED(                                                      \
-      "STOStateMachine",                                                       \
-      "Event: " << className(boost::core::demangle(typeid(ev).name()))         \
-                << " - Action: "                                               \
-                << className(boost::core::demangle(typeid(*this).name())));
+#define STATE_ENTER_OUTPUT                                                                                             \
+  ROS_DEBUG_STREAM_NAMED("STOStateMachine", "Event: " << className(boost::core::demangle(typeid(ev).name()))           \
+                                                      << " - Entering: " << COLOR_GREEN_BOLD                           \
+                                                      << className(boost::core::demangle(typeid(*this).name()))        \
+                                                      << COLOR_GREEN);
+#define STATE_EXIT_OUTPUT                                                                                              \
+  ROS_DEBUG_STREAM_NAMED("STOStateMachine",                                                                            \
+                         "Event: " << className(boost::core::demangle(typeid(ev).name()))                              \
+                                   << " - Leaving: " << className(boost::core::demangle(typeid(*this).name())));
+#define ACTION_OUTPUT                                                                                                  \
+  ROS_DEBUG_STREAM_NAMED("STOStateMachine",                                                                            \
+                         "Event: " << className(boost::core::demangle(typeid(ev).name()))                              \
+                                   << " - Action: " << className(boost::core::demangle(typeid(*this).name())));
 
 /**
  * @brief An AsyncStoTask is represented by a task execution and a completion
@@ -72,8 +66,7 @@ inline std::string className(std::string fullName)
 class AsyncStoTask
 {
 public:
-  AsyncStoTask(const TServiceCallFunc& operation,
-               const std::function<void()>& finished_handler)
+  AsyncStoTask(const TServiceCallFunc& operation, const std::function<void()>& finished_handler)
     : operation_(operation), finished_handler_(finished_handler)
   {
   }
@@ -118,8 +111,7 @@ using namespace msm::front;
  * @note
  * This code is not thread-safe.
  */
-class StoStateMachine_
-  : public msm::front::state_machine_def<StoStateMachine_>  // CRTP
+class StoStateMachine_ : public msm::front::state_machine_def<StoStateMachine_>  // CRTP
 {
 public:
   /**
@@ -131,14 +123,9 @@ public:
    * @param hold_operation The execution function of the hold-task.
    * @param unhold_operation The execution function of the unhold-task.
    */
-  StoStateMachine_(const TServiceCallFunc& recover_operation,
-                   const TServiceCallFunc& halt_operation,
-                   const TServiceCallFunc& hold_operation,
-                   const TServiceCallFunc& unhold_operation)
-    : recover_op_(recover_operation)
-    , halt_op_(halt_operation)
-    , hold_op_(hold_operation)
-    , unhold_op_(unhold_operation)
+  StoStateMachine_(const TServiceCallFunc& recover_operation, const TServiceCallFunc& halt_operation,
+                   const TServiceCallFunc& hold_operation, const TServiceCallFunc& unhold_operation)
+    : recover_op_(recover_operation), halt_op_(halt_operation), hold_op_(hold_operation), unhold_op_(unhold_operation)
   {
   }
 
@@ -303,8 +290,7 @@ public:
     {
       ACTION_OUTPUT
 
-      fsm.task_queue_.push(AsyncStoTask(
-          fsm.recover_op_, [&fsm]() { fsm.process_event(recover_done()); }));
+      fsm.task_queue_.push(AsyncStoTask(fsm.recover_op_, [&fsm]() { fsm.process_event(recover_done()); }));
     }
   };
 
@@ -321,8 +307,7 @@ public:
     {
       ACTION_OUTPUT
 
-      fsm.task_queue_.push(AsyncStoTask(
-          fsm.halt_op_, [&fsm]() { fsm.process_event(halt_done()); }));
+      fsm.task_queue_.push(AsyncStoTask(fsm.halt_op_, [&fsm]() { fsm.process_event(halt_done()); }));
     }
   };
 
@@ -339,8 +324,7 @@ public:
     {
       ACTION_OUTPUT
 
-      fsm.task_queue_.push(AsyncStoTask(
-          fsm.hold_op_, [&fsm]() { fsm.process_event(hold_done()); }));
+      fsm.task_queue_.push(AsyncStoTask(fsm.hold_op_, [&fsm]() { fsm.process_event(hold_done()); }));
     }
   };
 
@@ -357,8 +341,7 @@ public:
     {
       ACTION_OUTPUT
 
-      fsm.task_queue_.push(AsyncStoTask(
-          fsm.unhold_op_, [&fsm]() { fsm.process_event(unhold_done()); }));
+      fsm.task_queue_.push(AsyncStoTask(fsm.unhold_op_, [&fsm]() { fsm.process_event(unhold_done()); }));
     }
   };
 

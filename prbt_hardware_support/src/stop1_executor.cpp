@@ -19,13 +19,11 @@
 
 namespace prbt_hardware_support
 {
-Stop1Executor::Stop1Executor(const TServiceCallFunc& hold_func,
-                             const TServiceCallFunc& unhold_func,
-                             const TServiceCallFunc& recover_func,
-                             const TServiceCallFunc& halt_func)
+Stop1Executor::Stop1Executor(const TServiceCallFunc& hold_func, const TServiceCallFunc& unhold_func,
+                             const TServiceCallFunc& recover_func, const TServiceCallFunc& halt_func)
 {
-  state_machine_ = std::unique_ptr<StoStateMachine>(
-      new StoStateMachine(recover_func, halt_func, hold_func, unhold_func));
+  state_machine_ =
+      std::unique_ptr<StoStateMachine>(new StoStateMachine(recover_func, halt_func, hold_func, unhold_func));
 
   state_machine_->start();
 
@@ -49,8 +47,7 @@ Stop1Executor::~Stop1Executor()
 
 void Stop1Executor::updateSto(const bool sto)
 {
-  ROS_DEBUG_STREAM("updateSto(" << std::boolalpha << sto << std::noboolalpha
-                                << ")");
+  ROS_DEBUG_STREAM("updateSto(" << std::boolalpha << sto << std::noboolalpha << ")");
   {
     std::lock_guard<std::mutex> lock(sm_mutex_);
     state_machine_->process_event(typename StoStateMachine::sto_updated(sto));
@@ -58,8 +55,7 @@ void Stop1Executor::updateSto(const bool sto)
   worker_cv_.notify_one();
 }
 
-bool Stop1Executor::updateStoCallback(std_srvs::SetBool::Request& req,
-                                      std_srvs::SetBool::Response& res)
+bool Stop1Executor::updateStoCallback(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res)
 {
   updateSto(req.data);
   res.success = true;
@@ -71,9 +67,7 @@ void Stop1Executor::workerThreadFun()
   std::unique_lock<std::mutex> sm_lock(sm_mutex_);
   while (!terminate_)
   {
-    worker_cv_.wait(sm_lock, [this]() {
-      return (!this->state_machine_->task_queue_.empty() || this->terminate_);
-    });
+    worker_cv_.wait(sm_lock, [this]() { return (!this->state_machine_->task_queue_.empty() || this->terminate_); });
     if (terminate_)
     {
       break;

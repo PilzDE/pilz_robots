@@ -42,8 +42,7 @@ SystemInfo::SystemInfo(ros::NodeHandle& nh) : joint_names_(getNodeNames(nh))
   waitForTopic<sensor_msgs::JointState>(JOINT_STATE_TOPIC);
 
   waitForService(CANOPEN_GETOBJECT_SERVICE_NAME);
-  canopen_srv_get_client_ = nh.serviceClient<canopen_chain_node::GetObject>(
-      CANOPEN_GETOBJECT_SERVICE_NAME);
+  canopen_srv_get_client_ = nh.serviceClient<canopen_chain_node::GetObject>(CANOPEN_GETOBJECT_SERVICE_NAME);
 }
 
 std::string SystemInfo::getFirmwareVersionOfJoint(const std::string& joint_name)

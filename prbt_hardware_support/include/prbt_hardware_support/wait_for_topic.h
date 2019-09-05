@@ -31,17 +31,12 @@ namespace prbt_hardware_support
  * @brief Waits until the specified topic is received.
  */
 template <class T>
-static void
-waitForTopic(const std::string topic_name,
-             const double retry_timeout = DEFAULT_RETRY_TIMEOUT,
-             const double msg_output_period = DEFAULT_MSG_OUTPUT_PERIOD)
+static void waitForTopic(const std::string topic_name, const double retry_timeout = DEFAULT_RETRY_TIMEOUT,
+                         const double msg_output_period = DEFAULT_MSG_OUTPUT_PERIOD)
 {
-  while ((ros::topic::waitForMessage<T>(
-              topic_name, ros::Duration(retry_timeout)) == nullptr) &&
-         ros::ok())
+  while ((ros::topic::waitForMessage<T>(topic_name, ros::Duration(retry_timeout)) == nullptr) && ros::ok())
   {
-    ROS_DEBUG_STREAM_DELAYED_THROTTLE(
-        msg_output_period, "Waiting for topic \"" + topic_name + "\"...");
+    ROS_DEBUG_STREAM_DELAYED_THROTTLE(msg_output_period, "Waiting for topic \"" + topic_name + "\"...");
   }
 }
 

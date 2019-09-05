@@ -88,12 +88,10 @@ public:
   virtual void GetSolution(T* solution, const T* freevalues) const = 0;
 
   /// \brief std::vector version of \ref GetSolution
-  virtual void GetSolution(std::vector<T>& solution,
-                           const std::vector<T>& freevalues) const
+  virtual void GetSolution(std::vector<T>& solution, const std::vector<T>& freevalues) const
   {
     solution.resize(GetDOF());
-    GetSolution(&solution.at(0),
-                freevalues.size() > 0 ? &freevalues.at(0) : NULL);
+    GetSolution(&solution.at(0), freevalues.size() > 0 ? &freevalues.at(0) : NULL);
   }
 
   /// \brief Gets the indices of the configuration space that have to be preset
@@ -120,9 +118,7 @@ public:
   /// \param vinfos Solution data for each degree of freedom of the manipulator
   /// \param vfree If the solution represents an infinite space, holds free
   /// parameters of the solution that users can freely set.
-  virtual size_t
-  AddSolution(const std::vector<IkSingleDOFSolutionBase<T> >& vinfos,
-              const std::vector<int>& vfree) = 0;
+  virtual size_t AddSolution(const std::vector<IkSingleDOFSolutionBase<T> >& vinfos, const std::vector<int>& vfree) = 0;
 
   /// \brief returns the solution pointer
   virtual const IkSolutionBase<T>& GetSolution(size_t index) const = 0;
@@ -155,8 +151,7 @@ public:
   virtual ~IkFastFunctions()
   {
   }
-  typedef bool (*ComputeIkFn)(const T*, const T*, const T*,
-                              IkSolutionListBase<T>&);
+  typedef bool (*ComputeIkFn)(const T*, const T*, const T*, IkSolutionListBase<T>&);
   ComputeIkFn _ComputeIk;
   typedef void (*ComputeFkFn)(const T*, T*, T*);
   ComputeFkFn _ComputeFk;
@@ -183,8 +178,7 @@ template <typename T>
 class IkSolution : public IkSolutionBase<T>
 {
 public:
-  IkSolution(const std::vector<IkSingleDOFSolutionBase<T> >& vinfos,
-             const std::vector<int>& vfree)
+  IkSolution(const std::vector<IkSingleDOFSolutionBase<T> >& vinfos, const std::vector<int>& vfree)
   {
     _vbasesol = vinfos;
     _vfree = vfree;
@@ -198,8 +192,7 @@ public:
         solution[i] = _vbasesol[i].foffset;
       else
       {
-        solution[i] = freevalues[_vbasesol[i].freeind] * _vbasesol[i].fmul +
-                      _vbasesol[i].foffset;
+        solution[i] = freevalues[_vbasesol[i].freeind] * _vbasesol[i].fmul + _vbasesol[i].foffset;
         if (solution[i] > T(3.14159265358979))
         {
           solution[i] -= T(6.28318530717959);
@@ -212,12 +205,10 @@ public:
     }
   }
 
-  virtual void GetSolution(std::vector<T>& solution,
-                           const std::vector<T>& freevalues) const
+  virtual void GetSolution(std::vector<T>& solution, const std::vector<T>& freevalues) const
   {
     solution.resize(GetDOF());
-    GetSolution(&solution.at(0),
-                freevalues.size() > 0 ? &freevalues.at(0) : NULL);
+    GetSolution(&solution.at(0), freevalues.size() > 0 ? &freevalues.at(0) : NULL);
   }
 
   virtual const std::vector<int>& GetFree() const
@@ -243,8 +234,7 @@ public:
         {
           throw std::runtime_error("index >= max solutions for joint");
         }
-        if (_vbasesol[i].indices[1] != (unsigned char)-1 &&
-            _vbasesol[i].indices[1] >= _vbasesol[i].maxsolutions)
+        if (_vbasesol[i].indices[1] != (unsigned char)-1 && _vbasesol[i].indices[1] >= _vbasesol[i].maxsolutions)
         {
           throw std::runtime_error("2nd index >= max solutions for joint");
         }
@@ -258,8 +248,7 @@ public:
     v.push_back(0);
     for (int i = (int)_vbasesol.size() - 1; i >= 0; --i)
     {
-      if (_vbasesol[i].maxsolutions != (unsigned char)-1 &&
-          _vbasesol[i].maxsolutions > 1)
+      if (_vbasesol[i].maxsolutions != (unsigned char)-1 && _vbasesol[i].maxsolutions > 1)
       {
         for (size_t j = 0; j < v.size(); ++j)
         {
@@ -295,9 +284,7 @@ template <typename T>
 class IkSolutionList : public IkSolutionListBase<T>
 {
 public:
-  virtual size_t
-  AddSolution(const std::vector<IkSingleDOFSolutionBase<T> >& vinfos,
-              const std::vector<int>& vfree)
+  virtual size_t AddSolution(const std::vector<IkSingleDOFSolutionBase<T> >& vinfos, const std::vector<int>& vfree)
   {
     size_t index = _listsolutions.size();
     _listsolutions.push_back(IkSolution<T>(vinfos, vfree));
@@ -310,8 +297,7 @@ public:
     {
       throw std::runtime_error("GetSolution index is invalid");
     }
-    typename std::list<IkSolution<T> >::const_iterator it =
-        _listsolutions.begin();
+    typename std::list<IkSolution<T> >::const_iterator it = _listsolutions.begin();
     std::advance(it, index);
     return *it;
   }
@@ -372,8 +358,7 @@ typedef double IkReal;
    - For **TranslationLocalGlobal6D**, the diagonal elements ([0],[4],[8]) are
    the local translation inside the end effector coordinate system.
  */
-IKFAST_API bool ComputeIk(const IkReal* eetrans, const IkReal* eerot,
-                          const IkReal* pfree,
+IKFAST_API bool ComputeIk(const IkReal* eetrans, const IkReal* eerot, const IkReal* pfree,
                           ikfast::IkSolutionListBase<IkReal>& solutions);
 
 /// \brief Computes the end effector coordinates given the joint values. This

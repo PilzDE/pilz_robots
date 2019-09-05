@@ -24,18 +24,14 @@ namespace prbt_hardware_support
 {
 using std::placeholders::_1;
 
-ModbusAdapterOperationMode::ModbusAdapterOperationMode(
-    ros::NodeHandle& nh, const ModbusApiSpec& api_spec)
+ModbusAdapterOperationMode::ModbusAdapterOperationMode(ros::NodeHandle& nh, const ModbusApiSpec& api_spec)
   : AdapterOperationMode(nh)
   , api_spec_(api_spec)
-  , filter_pipeline_(new FilterPipeline(
-        nh,
-        std::bind(&ModbusAdapterOperationMode::modbusMsgCallback, this, _1)))
+  , filter_pipeline_(new FilterPipeline(nh, std::bind(&ModbusAdapterOperationMode::modbusMsgCallback, this, _1)))
 {
 }
 
-void ModbusAdapterOperationMode::modbusMsgCallback(
-    const ModbusMsgInStampedConstPtr& msg_raw)
+void ModbusAdapterOperationMode::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw)
 {
   ModbusMsgOperationModeWrapper msg{ msg_raw, api_spec_ };
 
@@ -59,8 +55,7 @@ void ModbusAdapterOperationMode::modbusMsgCallback(
   if (msg.getVersion() != MODBUS_API_VERSION_REQUIRED)
   {
     std::ostringstream os;
-    os << "Received Modbus message of unsupported API Version: "
-       << msg.getVersion()
+    os << "Received Modbus message of unsupported API Version: " << msg.getVersion()
        << ", required Version: " << MODBUS_API_VERSION_REQUIRED;
     os << "\n";
     os << "Can not determine OperationMode from Modbus message.";

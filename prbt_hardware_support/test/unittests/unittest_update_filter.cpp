@@ -31,8 +31,7 @@
 
 namespace mf = message_filters;
 
-template class message_filters::UpdateFilter<
-    prbt_hardware_support::ModbusMsgInStamped>;
+template class message_filters::UpdateFilter<prbt_hardware_support::ModbusMsgInStamped>;
 
 namespace update_filter_test
 {
@@ -45,8 +44,7 @@ using namespace prbt_hardware_support;
 class CallbackReceiver
 {
 public:
-  MOCK_METHOD1(modbusInMsgCallback,
-               void(const ModbusMsgInStampedConstPtr& msg));
+  MOCK_METHOD1(modbusInMsgCallback, void(const ModbusMsgInStampedConstPtr& msg));
 };
 
 class TestPublisher : public ros::Publisher
@@ -96,18 +94,15 @@ TEST_F(UpdateFilterTest, testFilteringThroughSubscriber)
   ros::NodeHandle nh;
   ros::Publisher pub = nh.advertise<ModbusMsgInStamped>(test_topic_name, 1);
   TestPublisher test_pub(pub);
-  message_filters::Subscriber<ModbusMsgInStamped> modbus_sub(
-      nh, test_topic_name, 1);
+  message_filters::Subscriber<ModbusMsgInStamped> modbus_sub(nh, test_topic_name, 1);
 
   mf::UpdateFilter<ModbusMsgInStamped> update_filter(modbus_sub);
 
   // Register to modbus callback
-  update_filter.registerCallback(boost::bind(
-      &CallbackReceiver::modbusInMsgCallback, this->callback_receiver_, _1));
+  update_filter.registerCallback(boost::bind(&CallbackReceiver::modbusInMsgCallback, this->callback_receiver_, _1));
 
   // 3 Messages will be send, only two are new
-  EXPECT_CALL(*(this->callback_receiver_.get()), modbusInMsgCallback(_))
-      .Times(3);
+  EXPECT_CALL(*(this->callback_receiver_.get()), modbusInMsgCallback(_)).Times(3);
 
   ModbusMsgInStampedPtr msg(new ModbusMsgInStamped());
 

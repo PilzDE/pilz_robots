@@ -24,8 +24,7 @@
 
 namespace prbt_hardware_support
 {
-PilzModbusServerMock::PilzModbusServerMock(
-    const unsigned int& holding_register_size)
+PilzModbusServerMock::PilzModbusServerMock(const unsigned int& holding_register_size)
   : holding_register_size_(holding_register_size)
 {
   // Create the needed mapping
@@ -33,9 +32,8 @@ PilzModbusServerMock::PilzModbusServerMock(
   static constexpr unsigned BITS_NB{ 0x00 };
   static constexpr unsigned INPUT_BITS_NB{ 0x00 };
   static constexpr unsigned int INPUT_REGISTERS_NB{ 0x0 };
-  mb_mapping_ = modbus_mapping_new(BITS_NB, INPUT_BITS_NB,
-                                   static_cast<int>(holding_register_size_),
-                                   INPUT_REGISTERS_NB);
+  mb_mapping_ =
+      modbus_mapping_new(BITS_NB, INPUT_BITS_NB, static_cast<int>(holding_register_size_), INPUT_REGISTERS_NB);
   if (mb_mapping_ == nullptr)
   {
     ROS_ERROR_NAMED("ServerMock", "mb_mapping_ is NULL.");
@@ -64,23 +62,20 @@ bool PilzModbusServerMock::init(const char* ip, unsigned int port)
   }
   modbus_set_debug(modbus_connection_, true);
 
-  ROS_DEBUG_STREAM_NAMED("ServerMock",
-                         "Starting Listening on Port " << ip << ":" << port);
+  ROS_DEBUG_STREAM_NAMED("ServerMock", "Starting Listening on Port " << ip << ":" << port);
   return true;
 }
 
-void PilzModbusServerMock::setHoldingRegister(
-    std::initializer_list<std::pair<unsigned int, uint16_t> > reg_list)
+void PilzModbusServerMock::setHoldingRegister(std::initializer_list<std::pair<unsigned int, uint16_t> > reg_list)
 {
   for (auto entry : reg_list)
   {
     if (entry.first >= holding_register_size_)
     {
-      ROS_ERROR_STREAM_NAMED(
-          "ServerMock", "Holding Register is defined from: 0 ... "
-                            << (holding_register_size_ - 1) << "."
-                            << " Setting Register " << entry.first << " ... "
-                            << " is not possible");
+      ROS_ERROR_STREAM_NAMED("ServerMock", "Holding Register is defined from: 0 ... "
+                                               << (holding_register_size_ - 1) << "."
+                                               << " Setting Register " << entry.first << " ... "
+                                               << " is not possible");
       return;
     }
   }
@@ -95,8 +90,7 @@ void PilzModbusServerMock::setHoldingRegister(
   ROS_DEBUG_STREAM_NAMED("ServerMock", "Modbus data for Modbus-Server set.");
 }
 
-void PilzModbusServerMock::setHoldingRegister(const RegCont& data,
-                                              unsigned int start_index)
+void PilzModbusServerMock::setHoldingRegister(const RegCont& data, unsigned int start_index)
 {
   if (data.empty())
   {
@@ -106,12 +100,10 @@ void PilzModbusServerMock::setHoldingRegister(const RegCont& data,
 
   if ((start_index + data.size()) > holding_register_size_)
   {
-    ROS_ERROR_STREAM_NAMED("ServerMock",
-                           "Holding Register is defined from: 0 ... "
-                               << (holding_register_size_ - 1) << "."
-                               << " Setting Register " << start_index << " ... "
-                               << start_index + data.size() - 1
-                               << " is not possible");
+    ROS_ERROR_STREAM_NAMED("ServerMock", "Holding Register is defined from: 0 ... "
+                                             << (holding_register_size_ - 1) << "."
+                                             << " Setting Register " << start_index << " ... "
+                                             << start_index + data.size() - 1 << " is not possible");
     return;
   }
 
@@ -125,9 +117,8 @@ void PilzModbusServerMock::setHoldingRegister(const RegCont& data,
   ROS_DEBUG_STREAM_NAMED("ServerMock", "Modbus data for Modbus-Server set.");
 }
 
-RegCont PilzModbusServerMock::readHoldingRegister(
-    const RegCont::size_type start_index,
-    const RegCont::size_type num_reg_to_read)
+RegCont PilzModbusServerMock::readHoldingRegister(const RegCont::size_type start_index,
+                                                  const RegCont::size_type num_reg_to_read)
 {
   RegCont ret_val(num_reg_to_read, 0);
   modbus_register_access_mutex.lock();
@@ -158,8 +149,7 @@ void PilzModbusServerMock::run()
 {
 #if LIBMODBUS_VERSION_CHECK(3, 1, 2)  // API changed from timeval to uint,uint)
                                       // in version >= 3.1.2
-  modbus_set_response_timeout(modbus_connection_, RESPONSE_TIMEOUT_IN_SEC,
-                              RESPONSE_TIMEOUT_IN_USEC);
+  modbus_set_response_timeout(modbus_connection_, RESPONSE_TIMEOUT_IN_SEC, RESPONSE_TIMEOUT_IN_USEC);
 #else
   struct timeval response_timeout;
   response_timeout.tv_sec = RESPONSE_TIMEOUT_IN_SEC;
@@ -188,8 +178,7 @@ void PilzModbusServerMock::run()
     while (result < 0)
     {
       result = modbus_tcp_accept(modbus_connection_, &socket_);
-      ROS_DEBUG_NAMED("ServerMock", "Accepted new connection, result: %i",
-                      result);
+      ROS_DEBUG_NAMED("ServerMock", "Accepted new connection, result: %i", result);
 
       if (terminate_)
         break;

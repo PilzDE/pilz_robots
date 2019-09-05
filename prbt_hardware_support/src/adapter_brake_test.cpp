@@ -27,16 +27,12 @@ static const std::string SERVICE_NAME_IS_BRAKE_TEST_REQUIRED = "/prbt/"
 AdapterBrakeTest::AdapterBrakeTest(ros::NodeHandle& nh)
 {
   is_brake_test_required_server_ =
-      nh.advertiseService(SERVICE_NAME_IS_BRAKE_TEST_REQUIRED,
-                          &AdapterBrakeTest::isBrakeTestRequired, this);
+      nh.advertiseService(SERVICE_NAME_IS_BRAKE_TEST_REQUIRED, &AdapterBrakeTest::isBrakeTestRequired, this);
 }
 
-void AdapterBrakeTest::updateBrakeTestRequiredState(
-    IsBrakeTestRequiredResponse::_result_type brake_test_required)
+void AdapterBrakeTest::updateBrakeTestRequiredState(IsBrakeTestRequiredResponse::_result_type brake_test_required)
 {
-  IsBrakeTestRequiredResponse::_result_type last_brake_test_flag{
-    brake_test_required_
-  };
+  IsBrakeTestRequiredResponse::_result_type last_brake_test_flag{ brake_test_required_ };
   brake_test_required_ = brake_test_required;
   if (brake_test_required_ == IsBrakeTestRequiredResponse::REQUIRED &&
       last_brake_test_flag != IsBrakeTestRequiredResponse::REQUIRED)
@@ -45,8 +41,7 @@ void AdapterBrakeTest::updateBrakeTestRequiredState(
   }
 }
 
-bool AdapterBrakeTest::isBrakeTestRequired(
-    IsBrakeTestRequired::Request& /*req*/, IsBrakeTestRequired::Response& res)
+bool AdapterBrakeTest::isBrakeTestRequired(IsBrakeTestRequired::Request& /*req*/, IsBrakeTestRequired::Response& res)
 {
   res.result = brake_test_required_;
   return true;

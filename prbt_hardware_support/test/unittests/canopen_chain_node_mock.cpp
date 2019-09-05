@@ -39,10 +39,8 @@ using canopen_chain_node::SetObjectResponse;
 
 CANOpenChainNodeMock::CANOpenChainNodeMock()
 {
-  get_obj_serv_ = nh_.advertiseService(CANOPEN_GETOBJECT_SERVICE_NAME,
-                                       &CANOpenChainNodeMock::get_obj, this);
-  set_obj_serv_ = nh_.advertiseService(CANOPEN_SETOBJECT_SERVICE_NAME,
-                                       &CANOpenChainNodeMock::set_obj, this);
+  get_obj_serv_ = nh_.advertiseService(CANOPEN_GETOBJECT_SERVICE_NAME, &CANOpenChainNodeMock::get_obj, this);
+  set_obj_serv_ = nh_.advertiseService(CANOPEN_SETOBJECT_SERVICE_NAME, &CANOpenChainNodeMock::set_obj, this);
 
   setDefaultActions();
 }
@@ -67,21 +65,15 @@ void CANOpenChainNodeMock::setDefaultActions()
   status_resp.value = "\x02";
 
   // Set response for service calls getting the brake_test_duration object
-  ON_CALL(*this, get_obj(Field(&GetObjectRequest::object,
-                               BRAKE_TEST_DURATION_OBJECT_INDEX),
-                         _))
+  ON_CALL(*this, get_obj(Field(&GetObjectRequest::object, BRAKE_TEST_DURATION_OBJECT_INDEX), _))
       .WillByDefault(DoAll(SetArgReferee<1>(duration_resp), Return(true)));
 
   // Set response for service calls setting the start_brake_test object
-  ON_CALL(*this, set_obj(Field(&SetObjectRequest::object,
-                               START_BRAKE_TEST_OBJECT_INDEX),
-                         _))
+  ON_CALL(*this, set_obj(Field(&SetObjectRequest::object, START_BRAKE_TEST_OBJECT_INDEX), _))
       .WillByDefault(DoAll(SetArgReferee<1>(start_resp), Return(true)));
 
   // Set response for service calls getting the brake_test_status object
-  ON_CALL(*this, get_obj(Field(&GetObjectRequest::object,
-                               BRAKE_TEST_STATUS_OBJECT_INDEX),
-                         _))
+  ON_CALL(*this, get_obj(Field(&GetObjectRequest::object, BRAKE_TEST_STATUS_OBJECT_INDEX), _))
       .WillByDefault(DoAll(SetArgReferee<1>(status_resp), Return(true)));
 }
 
@@ -95,13 +87,9 @@ void CANOpenChainNodeMock::expectAnything()
   EXPECT_CALL(*this, set_obj(_, _)).Times(AnyNumber());
 
   // Gripper should not be called
-  EXPECT_CALL(*this,
-              get_obj(Field(&GetObjectRequest::node, "gripper_joint"), _))
-      .Times(0);
+  EXPECT_CALL(*this, get_obj(Field(&GetObjectRequest::node, "gripper_joint"), _)).Times(0);
 
-  EXPECT_CALL(*this,
-              set_obj(Field(&SetObjectRequest::node, "gripper_joint"), _))
-      .Times(0);
+  EXPECT_CALL(*this, set_obj(Field(&SetObjectRequest::node, "gripper_joint"), _)).Times(0);
 }
 
 void CANOpenChainNodeMock::shutdown()

@@ -64,8 +64,7 @@ public:
    */
   void startAsync(const char* ip, const unsigned int port);
 
-  void setHoldingRegister(
-      std::initializer_list<std::pair<unsigned int, uint16_t> > reg_list);
+  void setHoldingRegister(std::initializer_list<std::pair<unsigned int, uint16_t> > reg_list);
 
   /**
    * @brief Set the values in the holding register
@@ -85,8 +84,7 @@ public:
    *
    * @returns the registers which were read.
    */
-  RegCont readHoldingRegister(const RegCont::size_type start_index,
-                              const RegCont::size_type num_reg_to_read);
+  RegCont readHoldingRegister(const RegCont::size_type start_index, const RegCont::size_type num_reg_to_read);
 
   /**
    * @brief Terminate the Server. Reading or connecting to it will fail.

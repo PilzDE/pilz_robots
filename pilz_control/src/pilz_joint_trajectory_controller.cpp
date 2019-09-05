@@ -28,11 +28,9 @@ namespace position_controllers
  * <b>quintic splines</b> and sends commands to a \b position interface.
  */
 typedef pilz_joint_trajectory_controller::PilzJointTrajectoryController<
-    trajectory_interface::QuinticSplineSegment<double>,
-    hardware_interface::PositionJointInterface>
+    trajectory_interface::QuinticSplineSegment<double>, hardware_interface::PositionJointInterface>
     PilzJointTrajectoryController;
 
 }  // namespace position_controllers
 
-PLUGINLIB_EXPORT_CLASS(position_controllers::PilzJointTrajectoryController,
-                       controller_interface::ControllerBase)
+PLUGINLIB_EXPORT_CLASS(position_controllers::PilzJointTrajectoryController, controller_interface::ControllerBase)

@@ -37,8 +37,7 @@ namespace prbt_hardware_support
 class ModbusAdapterOperationMode : public AdapterOperationMode
 {
 public:
-  ModbusAdapterOperationMode(ros::NodeHandle& nh,
-                             const ModbusApiSpec& api_spec);
+  ModbusAdapterOperationMode(ros::NodeHandle& nh, const ModbusApiSpec& api_spec);
   virtual ~ModbusAdapterOperationMode() = default;
 
 private:

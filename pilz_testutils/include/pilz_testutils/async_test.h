@@ -101,13 +101,12 @@ protected:
 // for better readability in tests
 #define BARRIER(...) barricade(__VA_ARGS__)
 
-#define ACTION_OPEN_BARRIER(str)                                               \
-  ::testing::InvokeWithoutArgs([this](void) {                                  \
-    this->triggerClearEvent(str);                                              \
-    return true;                                                               \
+#define ACTION_OPEN_BARRIER(str)                                                                                       \
+  ::testing::InvokeWithoutArgs([this](void) {                                                                          \
+    this->triggerClearEvent(str);                                                                                      \
+    return true;                                                                                                       \
   })
-#define ACTION_OPEN_BARRIER_VOID(str)                                          \
-  ::testing::InvokeWithoutArgs([this](void) { this->triggerClearEvent(str); })
+#define ACTION_OPEN_BARRIER_VOID(str) ::testing::InvokeWithoutArgs([this](void) { this->triggerClearEvent(str); })
 }  // namespace testing
 
 #endif  // ASYNC_TEST_H

@@ -48,8 +48,7 @@ private:
    */
   void initOperationModeService();
 
-  bool getOperationMode(GetOperationMode::Request& req,
-                        GetOperationMode::Response& res);
+  bool getOperationMode(GetOperationMode::Request& req, GetOperationMode::Response& res);
 
 private:
   //! Is the service advertising the operation mode initialized?

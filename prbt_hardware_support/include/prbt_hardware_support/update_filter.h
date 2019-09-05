@@ -61,8 +61,7 @@ public:
   {
     incoming_connection_.disconnect();
     incoming_connection_ =
-        f.registerCallback(typename UpdateFilter<M>::EventCallback(
-            boost::bind(&UpdateFilter::cb, this, _1)));
+        f.registerCallback(typename UpdateFilter<M>::EventCallback(boost::bind(&UpdateFilter::cb, this, _1)));
   }
 
 private:

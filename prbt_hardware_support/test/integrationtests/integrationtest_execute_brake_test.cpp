@@ -49,17 +49,14 @@ static constexpr uint16_t MODBUS_BRAKE_TEST_EXPECTED_VALUE{ 1 };
 
 namespace prbt_hardware_support
 {
-bool brakeTestRegisterSetOnServer(PilzModbusServerMock& server,
-                                  unsigned short register_perf,
-                                  unsigned short register_res,
-                                  uint16_t expectation, float sleep_per_try_s,
+bool brakeTestRegisterSetOnServer(PilzModbusServerMock& server, unsigned short register_perf,
+                                  unsigned short register_res, uint16_t expectation, float sleep_per_try_s,
                                   unsigned short retries)
 {
   RegCont content_perf, content_res;
   for (int i = 0; i <= retries; i++)
   {
-    ROS_INFO("Retry %d, waited for %.1fs so far", i,
-             sleep_per_try_s * static_cast<float>(i));
+    ROS_INFO("Retry %d, waited for %.1fs so far", i, sleep_per_try_s * static_cast<float>(i));
     content_perf = server.readHoldingRegister(register_perf, 1);
     content_res = server.readHoldingRegister(register_res, 1);
     if (content_perf[0] == expectation && content_res[0] == expectation)
@@ -104,26 +101,17 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
   ASSERT_TRUE(nh_private.getParam("modbus_server_port", port));
 
   ModbusApiSpec write_api_spec{ nh, "write_api_spec/" };
-  unsigned int modbus_register_size{ write_api_spec.getMaxRegisterDefinition() +
-                                     1U };
-  prbt_hardware_support::PilzModbusServerMock modbus_server(
-      modbus_register_size);
-  std::thread modbus_server_thread(
-      &initalizeAndRun<prbt_hardware_support::PilzModbusServerMock>,
-      std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port));
-  ASSERT_TRUE(write_api_spec.hasRegisterDefinition(
-      modbus_api_spec::BRAKETEST_PERFORMED));
-  unsigned short register_perf = write_api_spec.getRegisterDefinition(
-      modbus_api_spec::BRAKETEST_PERFORMED);
-  ASSERT_TRUE(
-      write_api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT));
-  unsigned short register_res =
-      write_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT);
+  unsigned int modbus_register_size{ write_api_spec.getMaxRegisterDefinition() + 1U };
+  prbt_hardware_support::PilzModbusServerMock modbus_server(modbus_register_size);
+  std::thread modbus_server_thread(&initalizeAndRun<prbt_hardware_support::PilzModbusServerMock>,
+                                   std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port));
+  ASSERT_TRUE(write_api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED));
+  unsigned short register_perf = write_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED);
+  ASSERT_TRUE(write_api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT));
+  unsigned short register_res = write_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT);
 
-  modbus_server.setHoldingRegister(
-      { { register_perf, MODBUS_BRAKE_TEST_PREPARE_VALUE } });
-  modbus_server.setHoldingRegister(
-      { { register_res, MODBUS_BRAKE_TEST_PREPARE_VALUE } });
+  modbus_server.setHoldingRegister({ { register_perf, MODBUS_BRAKE_TEST_PREPARE_VALUE } });
+  modbus_server.setHoldingRegister({ { register_res, MODBUS_BRAKE_TEST_PREPARE_VALUE } });
 
   /**********
    * Step 1 *
@@ -140,10 +128,8 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
   /**********
    * Step 2 *
    **********/
-  ros::ServiceClient brake_test_srv_client =
-      nh.serviceClient<BrakeTest>(EXECUTE_BRAKE_TEST_SERVICE_NAME);
-  EXPECT_TRUE(brake_test_srv_client.waitForExistence(
-      ros::Duration(WAIT_FOR_BRAKE_TEST_SERVICE_TIMEOUT_S)));
+  ros::ServiceClient brake_test_srv_client = nh.serviceClient<BrakeTest>(EXECUTE_BRAKE_TEST_SERVICE_NAME);
+  EXPECT_TRUE(brake_test_srv_client.waitForExistence(ros::Duration(WAIT_FOR_BRAKE_TEST_SERVICE_TIMEOUT_S)));
 
   /**********
    * Step 3 *
@@ -154,9 +140,8 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
   /**********
    * Step 4 *
    **********/
-  EXPECT_TRUE(
-      brakeTestRegisterSetOnServer(modbus_server, register_perf, register_res,
-                                   MODBUS_BRAKE_TEST_EXPECTED_VALUE, 1, 10));
+  EXPECT_TRUE(brakeTestRegisterSetOnServer(modbus_server, register_perf, register_res, MODBUS_BRAKE_TEST_EXPECTED_VALUE,
+                                           1, 10));
 
   /**********
    * Step 5 *

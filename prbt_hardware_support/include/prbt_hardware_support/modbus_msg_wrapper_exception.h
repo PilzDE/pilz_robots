@@ -31,8 +31,7 @@ namespace prbt_hardware_support
 class ModbusMsgWrapperException : public std::runtime_error
 {
 public:
-  ModbusMsgWrapperException(const std::string& what_arg)
-    : std::runtime_error(what_arg)
+  ModbusMsgWrapperException(const std::string& what_arg) : std::runtime_error(what_arg)
   {
   }
 };

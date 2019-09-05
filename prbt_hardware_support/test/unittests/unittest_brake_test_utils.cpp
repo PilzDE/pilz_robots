@@ -40,17 +40,16 @@ using sensor_msgs::JointStatePtr;
 /**
  * @brief Checks for identical names and positions in joint state messages.
  */
-static ::testing::AssertionResult compareJointStateMessages(
-    const JointStateConstPtr& msg1, const JointStateConstPtr& msg2)
+static ::testing::AssertionResult compareJointStateMessages(const JointStateConstPtr& msg1,
+                                                            const JointStateConstPtr& msg2)
 {
   if (msg1->name.size() != msg2->name.size())
   {
     return ::testing::AssertionFailure() << "Joint numbers in joint state "
                                             "messages do not match.";
   }
-  if (!std::equal(
-          msg1->name.begin(), msg1->name.end(), msg2->name.begin(),
-          [](std::string name1, std::string name2) { return name1 == name2; }))
+  if (!std::equal(msg1->name.begin(), msg1->name.end(), msg2->name.begin(),
+                  [](std::string name1, std::string name2) { return name1 == name2; }))
   {
     return ::testing::AssertionFailure() << "Joint names in joint state "
                                             "messages do not match.";
@@ -76,14 +75,11 @@ static ::testing::AssertionResult compareJointStateMessages(
 TEST(BrakeTestUtilsTest, testExceptionDtor)
 {
   {
-    std::shared_ptr<BrakeTestUtilsException> ex{ new BrakeTestUtilsException(
-        "Test msg") };
+    std::shared_ptr<BrakeTestUtilsException> ex{ new BrakeTestUtilsException("Test msg") };
   }
 
   {
-    std::shared_ptr<GetCurrentJointStatesException> ex{
-      new GetCurrentJointStatesException("Test msg")
-    };
+    std::shared_ptr<GetCurrentJointStatesException> ex{ new GetCurrentJointStatesException("Test msg") };
   }
 }
 
@@ -126,8 +122,7 @@ TEST(BrakeTestUtilsTest, testCompareJointStatePositions)
     pos += 0.9 * tolerance;
   }
 
-  EXPECT_TRUE(
-      BrakeTestUtils::compareJointStatePositions(msg1, msg2, tolerance));
+  EXPECT_TRUE(BrakeTestUtils::compareJointStatePositions(msg1, msg2, tolerance));
 
   /**********
    * Step 3 *
@@ -140,8 +135,7 @@ TEST(BrakeTestUtilsTest, testCompareJointStatePositions)
     }
     msg2->position[i] += 1.1 * tolerance;
 
-    EXPECT_FALSE(
-        BrakeTestUtils::compareJointStatePositions(msg1, msg2, tolerance));
+    EXPECT_FALSE(BrakeTestUtils::compareJointStatePositions(msg1, msg2, tolerance));
   }
 }
 
@@ -162,8 +156,7 @@ TEST(BrakeTestUtilsTest, testGetCurrentJointStates)
   /**********
    * Step 1 *
    **********/
-  EXPECT_THROW(BrakeTestUtils::getCurrentJointStates(),
-               GetCurrentJointStatesException);
+  EXPECT_THROW(BrakeTestUtils::getCurrentJointStates(), GetCurrentJointStatesException);
 
   /**********
    * Step 2 *

@@ -30,8 +30,7 @@ class NodeHandleMock
 {
 public:
   MOCK_CONST_METHOD0(getNamespace, std::string(void));
-  MOCK_CONST_METHOD2(getParam,
-                     bool(const std::string& key, XmlRpc::XmlRpcValue& v));
+  MOCK_CONST_METHOD2(getParam, bool(const std::string& key, XmlRpc::XmlRpcValue& v));
 };
 
 /**
@@ -84,8 +83,7 @@ TEST(ModbusApiSpecTest, NodeHandleConstructionSimpleRead)
   rpc_value["A"] = 123;
 
   NodeHandleMock nh;
-  EXPECT_CALL(nh, getParam("read_api_spec/", _))
-      .WillOnce(DoAll(SetArgReferee<1>(rpc_value), Return(true)));
+  EXPECT_CALL(nh, getParam("read_api_spec/", _)).WillOnce(DoAll(SetArgReferee<1>(rpc_value), Return(true)));
 
   ModbusApiSpecTemplated<NodeHandleMock> api_spec{ nh };
 
@@ -99,15 +97,12 @@ TEST(ModbusApiSpecTest, NodeHandleConstructionMissingApiSpec)
   rpc_value["A"] = 123;
 
   NodeHandleMock nh;
-  EXPECT_CALL(nh, getParam("read_api_spec/", _))
-      .Times(1)
-      .WillOnce(Return(false));
+  EXPECT_CALL(nh, getParam("read_api_spec/", _)).Times(1).WillOnce(Return(false));
 
   // Just for the error message in the exception
   EXPECT_CALL(nh, getNamespace()).Times(1).WillOnce(Return("testnamespace"));
 
-  EXPECT_THROW(ModbusApiSpecTemplated<NodeHandleMock>{ nh },
-               ModbusApiSpecException);
+  EXPECT_THROW(ModbusApiSpecTemplated<NodeHandleMock>{ nh }, ModbusApiSpecException);
 }
 
 int main(int argc, char** argv)

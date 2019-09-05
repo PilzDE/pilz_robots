@@ -43,8 +43,7 @@ bool callService(ros::ServiceClient& srv_client)
 
   if (!trigger.response.success)
   {
-    ROS_ERROR_STREAM("Service: " << srv_client.getService()
-                                 << " failed with error message:\n"
+    ROS_ERROR_STREAM("Service: " << srv_client.getService() << " failed with error message:\n"
                                  << trigger.response.message);
   }
   return call_success && trigger.response.success;
@@ -60,20 +59,16 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
 
   waitForService(HOLD_SERVICE);
-  ros::ServiceClient hold_srv =
-      nh.serviceClient<std_srvs::Trigger>(HOLD_SERVICE);
+  ros::ServiceClient hold_srv = nh.serviceClient<std_srvs::Trigger>(HOLD_SERVICE);
 
   waitForService(UNHOLD_SERVICE);
-  ros::ServiceClient unhold_srv =
-      nh.serviceClient<std_srvs::Trigger>(UNHOLD_SERVICE);
+  ros::ServiceClient unhold_srv = nh.serviceClient<std_srvs::Trigger>(UNHOLD_SERVICE);
 
   waitForService(RECOVER_SERVICE);
-  ros::ServiceClient recover_srv =
-      nh.serviceClient<std_srvs::Trigger>(RECOVER_SERVICE);
+  ros::ServiceClient recover_srv = nh.serviceClient<std_srvs::Trigger>(RECOVER_SERVICE);
 
   waitForService(HALT_SERVICE);
-  ros::ServiceClient halt_srv =
-      nh.serviceClient<std_srvs::Trigger>(HALT_SERVICE);
+  ros::ServiceClient halt_srv = nh.serviceClient<std_srvs::Trigger>(HALT_SERVICE);
 
   TServiceCallFunc hold_func = std::bind(callService, hold_srv);
   TServiceCallFunc unhold_func = std::bind(callService, unhold_srv);
@@ -81,8 +76,8 @@ int main(int argc, char** argv)
   TServiceCallFunc halt_func = std::bind(callService, halt_srv);
 
   Stop1Executor stop1_executor(hold_func, unhold_func, recover_func, halt_func);
-  ros::ServiceServer sto_serv = nh.advertiseService(
-      "safe_torque_off", &Stop1Executor::updateStoCallback, &stop1_executor);
+  ros::ServiceServer sto_serv =
+      nh.advertiseService("safe_torque_off", &Stop1Executor::updateStoCallback, &stop1_executor);
 
   ros::spin();
 

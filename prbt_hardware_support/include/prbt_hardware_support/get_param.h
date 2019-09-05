@@ -35,8 +35,7 @@ public:
   GetParamException(const std::string& msg);
 };
 
-inline GetParamException::GetParamException(const std::string& msg)
-  : std::runtime_error(msg)
+inline GetParamException::GetParamException(const std::string& msg) : std::runtime_error(msg)
 {
 }
 

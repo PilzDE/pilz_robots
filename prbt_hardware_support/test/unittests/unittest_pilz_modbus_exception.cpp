@@ -29,8 +29,7 @@ namespace pilz_modbus_exception_test
 TEST(PilzModbusExceptionTests, testMsgWhat)
 {
   const std::string test_string{ "TEST_STRING" };
-  std::shared_ptr<ModbusExceptionDisconnect> exception(
-      new ModbusExceptionDisconnect(test_string));
+  std::shared_ptr<ModbusExceptionDisconnect> exception(new ModbusExceptionDisconnect(test_string));
   EXPECT_EQ(test_string, exception->what());
 }
 

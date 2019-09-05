@@ -40,9 +40,7 @@ public:
 
   ServiceClientMock(const std::string& name, const CallFunction& call_callback,
                     const LogicalOperatorFunction& negation_operator_callback)
-    : name_(name)
-    , call_callback_(call_callback)
-    , negation_operator_callback_(negation_operator_callback)
+    : name_(name), call_callback_(call_callback), negation_operator_callback_(negation_operator_callback)
   {
   }
 
@@ -93,9 +91,8 @@ public:
   {
     using std::placeholders::_1;
     using std::placeholders::_2;
-    return ServiceClientMock<S>(
-        name, std::bind(&ServiceClientMockFactory::call_named, this, _1, _2),
-        std::bind(&ServiceClientMockFactory::handle_invalid_named, this, _1));
+    return ServiceClientMock<S>(name, std::bind(&ServiceClientMockFactory::call_named, this, _1, _2),
+                                std::bind(&ServiceClientMockFactory::handle_invalid_named, this, _1));
   }
 
   // service call mock method

@@ -34,9 +34,7 @@ namespace prbt_hardware_support
 class ModbusMsgOperationModeWrapper : public ModbusMsgWrapper
 {
 public:
-  ModbusMsgOperationModeWrapper(
-      const ModbusMsgInStampedConstPtr& modbus_msg_raw,
-      const ModbusApiSpec& api_spec);
+  ModbusMsgOperationModeWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw, const ModbusApiSpec& api_spec);
 
   /**
    * @brief Calls ModbusMsgWrapper::checkStructuralIntegrity().
@@ -62,23 +60,20 @@ private:
   bool hasOperationMode() const;
 };
 
-inline ModbusMsgOperationModeWrapper::ModbusMsgOperationModeWrapper(
-    const ModbusMsgInStampedConstPtr& modbus_msg_raw,
-    const ModbusApiSpec& api_spec)
+inline ModbusMsgOperationModeWrapper::ModbusMsgOperationModeWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
+                                                                    const ModbusApiSpec& api_spec)
   : ModbusMsgWrapper(modbus_msg_raw, api_spec)
 {
 }
 
 inline bool ModbusMsgOperationModeWrapper::hasOperationMode() const
 {
-  return hasRegister(
-      getApiSpec().getRegisterDefinition(modbus_api_spec::OPERATION_MODE));
+  return hasRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::OPERATION_MODE));
 }
 
 inline int8_t ModbusMsgOperationModeWrapper::getOperationMode() const
 {
-  switch (getRegister(
-      getApiSpec().getRegisterDefinition(modbus_api_spec::OPERATION_MODE)))
+  switch (getRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::OPERATION_MODE)))
   {
     case 0:
       return OperationModes::UNKNOWN;

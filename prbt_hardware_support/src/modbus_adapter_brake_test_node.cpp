@@ -32,8 +32,7 @@ int main(int argc, char** argv)
 
   prbt_hardware_support::ModbusApiSpec api_spec(nh);
 
-  prbt_hardware_support::ModbusAdapterBrakeTest adapter_brake_test(pnh,
-                                                                   api_spec);
+  prbt_hardware_support::ModbusAdapterBrakeTest adapter_brake_test(pnh, api_spec);
 
   ros::spin();
 

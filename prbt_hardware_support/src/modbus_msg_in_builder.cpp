@@ -23,8 +23,7 @@
 
 namespace prbt_hardware_support
 {
-ModbusMsgInBuilder::ModbusMsgInBuilder(const ModbusApiSpec& api_spec)
-  : api_spec_(api_spec)
+ModbusMsgInBuilder::ModbusMsgInBuilder(const ModbusApiSpec& api_spec) : api_spec_(api_spec)
 {
 }
 
@@ -41,19 +40,16 @@ ModbusMsgInStampedPtr ModbusMsgInBuilder::build(const ros::Time& time) const
     tab_reg[reg.first - first_index_to_read] = reg.second;
   }
 
-  ModbusMsgInStampedPtr msg{ createDefaultModbusMsgIn(first_index_to_read,
-                                                      tab_reg) };
+  ModbusMsgInStampedPtr msg{ createDefaultModbusMsgIn(first_index_to_read, tab_reg) };
   msg->header.stamp = time;
   return msg;
 }
 
-void ModbusMsgInBuilder::setDefaultLayout(
-    std_msgs::MultiArrayLayout* layout,
-    const std_msgs::MultiArrayLayout::_data_offset_type& offset,
-    const RegCont::size_type& size)
+void ModbusMsgInBuilder::setDefaultLayout(std_msgs::MultiArrayLayout* layout,
+                                          const std_msgs::MultiArrayLayout::_data_offset_type& offset,
+                                          const RegCont::size_type& size)
 {
-  if (size >
-      std::numeric_limits<std_msgs::MultiArrayDimension::_size_type>::max())
+  if (size > std::numeric_limits<std_msgs::MultiArrayDimension::_size_type>::max())
   {
     throw std::invalid_argument("Argument \"size\" must not exceed max value "
                                 "of type "
@@ -63,19 +59,16 @@ void ModbusMsgInBuilder::setDefaultLayout(
 
   layout->data_offset = offset;
   layout->dim.push_back(std_msgs::MultiArrayDimension());
-  layout->dim.back().size =
-      static_cast<std_msgs::MultiArrayDimension::_size_type>(size);
+  layout->dim.back().size = static_cast<std_msgs::MultiArrayDimension::_size_type>(size);
   layout->dim.back().stride = 1;
   layout->dim.back().label = "Data in holding register";
 }
 
 ModbusMsgInStampedPtr ModbusMsgInBuilder::createDefaultModbusMsgIn(
-    const std_msgs::MultiArrayLayout::_data_offset_type& offset,
-    const RegCont& holding_register)
+    const std_msgs::MultiArrayLayout::_data_offset_type& offset, const RegCont& holding_register)
 {
   ModbusMsgInStampedPtr msg{ new ModbusMsgInStamped() };
-  setDefaultLayout(&(msg->holding_registers.layout), offset,
-                   holding_register.size());
+  setDefaultLayout(&(msg->holding_registers.layout), offset, holding_register.size());
   msg->holding_registers.data = holding_register;
   msg->disconnect.data = false;
 

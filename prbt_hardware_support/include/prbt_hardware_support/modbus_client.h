@@ -71,9 +71,7 @@ public:
    */
   virtual RegCont readHoldingRegister(int addr, int nb) = 0;
 
-  virtual RegCont writeReadHoldingRegister(const int write_addr,
-                                           const RegCont& write_reg,
-                                           const int read_addr,
+  virtual RegCont writeReadHoldingRegister(const int write_addr, const RegCont& write_reg, const int read_addr,
                                            const int read_nb) = 0;
 };
 

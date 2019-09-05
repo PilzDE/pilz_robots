@@ -36,13 +36,10 @@ void AsyncTest::barricade(std::initializer_list<std::string> clear_events)
   {
     events_stringstream << event << ", ";
   }
-  ROS_DEBUG_NAMED("Test", "Adding Barricade[%s]",
-                  events_stringstream.str().c_str());
+  ROS_DEBUG_NAMED("Test", "Adding Barricade[%s]", events_stringstream.str().c_str());
 
-  std::copy_if(
-      clear_events.begin(), clear_events.end(),
-      std::inserter(clear_events_, clear_events_.end()),
-      [this](std::string event) { return this->waitlist_.count(event) == 0; });
+  std::copy_if(clear_events.begin(), clear_events.end(), std::inserter(clear_events_, clear_events_.end()),
+               [this](std::string event) { return this->waitlist_.count(event) == 0; });
   waitlist_.clear();
 
   while (!clear_events_.empty())
@@ -62,8 +59,7 @@ void AsyncTest::triggerClearEvent(const std::string& event)
   }
   else if (clear_events_.erase(event) < 1)
   {
-    ROS_WARN_STREAM("Triggered event " << event
-                                       << " despite not waiting for it.");
+    ROS_WARN_STREAM("Triggered event " << event << " despite not waiting for it.");
   }
   cv_.notify_one();
 }

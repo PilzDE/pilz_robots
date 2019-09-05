@@ -39,9 +39,7 @@ bool LibModbusClient::init(const char* ip, unsigned int port)
 
   if (modbus_connect(modbus_connection_) == -1)
   {
-    ROS_ERROR_STREAM_NAMED("LibModbusClient",
-                           "Could not establish modbus connection."
-                               << modbus_strerror(errno));
+    ROS_ERROR_STREAM_NAMED("LibModbusClient", "Could not establish modbus connection." << modbus_strerror(errno));
     modbus_free(modbus_connection_);
     modbus_connection_ = nullptr;
     return false;
@@ -61,8 +59,7 @@ unsigned long LibModbusClient::getResponseTimeoutInMs()
 {
   struct timeval response_timeout;
   modbus_get_response_timeout(modbus_connection_, &response_timeout);
-  return static_cast<unsigned long>(response_timeout.tv_sec * 1000L +
-                                    (response_timeout.tv_usec / 1000L));
+  return static_cast<unsigned long>(response_timeout.tv_sec * 1000L + (response_timeout.tv_usec / 1000L));
 }
 
 RegCont LibModbusClient::readHoldingRegister(int addr, int nb)
@@ -90,9 +87,7 @@ RegCont LibModbusClient::readHoldingRegister(int addr, int nb)
   return tab_reg;
 }
 
-RegCont LibModbusClient::writeReadHoldingRegister(const int write_addr,
-                                                  const RegCont& write_reg,
-                                                  const int read_addr,
+RegCont LibModbusClient::writeReadHoldingRegister(const int write_addr, const RegCont& write_reg, const int read_addr,
                                                   const int read_nb)
 {
   if (modbus_connection_ == nullptr)
@@ -113,14 +108,11 @@ RegCont LibModbusClient::writeReadHoldingRegister(const int write_addr,
   }
 
   int rc{ -1 };
-  rc = modbus_write_and_read_registers(
-      modbus_connection_, write_addr, static_cast<int>(write_reg.size()),
-      write_reg.data(), read_addr, read_nb, read_reg.data());
-  ROS_DEBUG_NAMED(
-      "LibModbusClient",
-      "modbus_write_and_read_registers: writing from %i %i registers\
+  rc = modbus_write_and_read_registers(modbus_connection_, write_addr, static_cast<int>(write_reg.size()),
+                                       write_reg.data(), read_addr, read_nb, read_reg.data());
+  ROS_DEBUG_NAMED("LibModbusClient", "modbus_write_and_read_registers: writing from %i %i registers\
                                       and reading from %i %i registers",
-      write_addr, static_cast<int>(write_reg.size()), read_addr, read_nb);
+                  write_addr, static_cast<int>(write_reg.size()), read_addr, read_nb);
   if (rc == -1)
   {
     std::string err = "Failed to write and read modbus registers";

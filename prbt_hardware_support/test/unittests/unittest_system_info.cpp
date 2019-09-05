@@ -58,8 +58,7 @@ public:
   void publishJointState();
 
 protected:
-  MOCK_METHOD2(executeGetObject,
-               bool(GetObject::Request&, GetObject::Response&));
+  MOCK_METHOD2(executeGetObject, bool(GetObject::Request&, GetObject::Response&));
 
   void advertiseGetObjectService();
 
@@ -77,8 +76,7 @@ protected:
 void SystemInfoTests::advertiseGetObjectService()
 {
   ros::NodeHandle driver_nh{ "/prbt/driver/" };
-  get_obj_service_ = driver_nh.advertiseService(
-      GET_OBJECT_TOPIC_NAME, &SystemInfoTests::executeGetObject, this);
+  get_obj_service_ = driver_nh.advertiseService(GET_OBJECT_TOPIC_NAME, &SystemInfoTests::executeGetObject, this);
 }
 
 void SystemInfoTests::SetUp()
@@ -89,8 +87,7 @@ void SystemInfoTests::SetUp()
   ros::NodeHandle driver_nh{ "/prbt/driver/" };
   for (unsigned int i = 0; i < joint_names_.size(); ++i)
   {
-    driver_nh.setParam("nodes/" + joint_names_.at(i) + "/id",
-                       static_cast<int>(i));
+    driver_nh.setParam("nodes/" + joint_names_.at(i) + "/id", static_cast<int>(i));
   }
 
   publisher_thread_ = std::thread(&SystemInfoTests::publishJointState, this);
@@ -109,8 +106,8 @@ void SystemInfoTests::TearDown()
 void SystemInfoTests::publishJointState()
 {
   ros::NodeHandle global_nh{ "/" };
-  ros::Publisher joint_state_pub = global_nh.advertise<sensor_msgs::JointState>(
-      JOINT_STATES_TOPIC_NAME, JOINT_STATES_TOPIC_QUEUE_SIZE);
+  ros::Publisher joint_state_pub =
+      global_nh.advertise<sensor_msgs::JointState>(JOINT_STATES_TOPIC_NAME, JOINT_STATES_TOPIC_QUEUE_SIZE);
 
   while (!terminate_ && ros::ok())
   {
@@ -221,11 +218,10 @@ TEST_F(SystemInfoTests, testServiceResponseFalse)
 {
   EXPECT_CALL(*this, executeGetObject(_, _))
       .Times(1)
-      .WillRepeatedly(
-          testing::Invoke([](GetObject::Request&, GetObject::Response& res) {
-            res.success = false;
-            return true;
-          }));
+      .WillRepeatedly(testing::Invoke([](GetObject::Request&, GetObject::Response& res) {
+        res.success = false;
+        return true;
+      }));
 
   ros::NodeHandle nh{ "~" };
   SystemInfo info{ nh };
@@ -239,8 +235,7 @@ TEST_F(SystemInfoTests, testServiceFail)
 {
   EXPECT_CALL(*this, executeGetObject(_, _))
       .Times(1)
-      .WillRepeatedly(testing::Invoke(
-          [](GetObject::Request&, GetObject::Response&) { return false; }));
+      .WillRepeatedly(testing::Invoke([](GetObject::Request&, GetObject::Response&) { return false; }));
 
   ros::NodeHandle nh{ "~" };
   SystemInfo info{ nh };
@@ -256,17 +251,15 @@ TEST_F(SystemInfoTests, testGetFirmwareVersions)
   ASSERT_EQ(2u, joint_names_.size()) << "Number of joints in test set-up have "
                                         "changed => Change expected version "
                                         "container in test accordingly.";
-  const FirmwareCont exp_versions{ { joint_names_.at(0), "101" },
-                                   { joint_names_.at(1), "777" } };
+  const FirmwareCont exp_versions{ { joint_names_.at(0), "101" }, { joint_names_.at(1), "777" } };
 
   EXPECT_CALL(*this, executeGetObject(_, _))
       .Times(2)
-      .WillRepeatedly(testing::Invoke(
-          [exp_versions](GetObject::Request& req, GetObject::Response& res) {
-            res.value = exp_versions.at(req.node);
-            res.success = true;
-            return true;
-          }));
+      .WillRepeatedly(testing::Invoke([exp_versions](GetObject::Request& req, GetObject::Response& res) {
+        res.value = exp_versions.at(req.node);
+        res.success = true;
+        return true;
+      }));
 
   // Check that returned versions from service are correct
   ros::NodeHandle nh{ "~" };
@@ -274,8 +267,7 @@ TEST_F(SystemInfoTests, testGetFirmwareVersions)
   FirmwareCont actual_version_cont{ info.getFirmwareVersions() };
   for (const auto& joint : joint_names_)
   {
-    EXPECT_TRUE(actual_version_cont.find(joint) != actual_version_cont.cend())
-        << "No version for joint found";
+    EXPECT_TRUE(actual_version_cont.find(joint) != actual_version_cont.cend()) << "No version for joint found";
     EXPECT_EQ(exp_versions.at(joint), actual_version_cont.at(joint)) << "Expect"
                                                                         "ed "
                                                                         "and "

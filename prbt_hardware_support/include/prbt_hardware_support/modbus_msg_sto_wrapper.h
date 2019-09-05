@@ -34,8 +34,7 @@ namespace prbt_hardware_support
 class ModbusMsgStoWrapper : public ModbusMsgWrapper
 {
 public:
-  ModbusMsgStoWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
-                      const ModbusApiSpec& api_spec);
+  ModbusMsgStoWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw, const ModbusApiSpec& api_spec);
 
   /**
    * @brief Calls ModbusMsgWrapper::checkStructuralIntegrity().

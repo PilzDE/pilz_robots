@@ -36,8 +36,7 @@ static constexpr double DELTA{ 1.0e-10 };
 
 const std::string PARAM_MODEL{ "robot_description" };
 
-typedef std::tuple<std::string, std::vector<double>, Eigen::Vector3d>
-    TestDataPoint;
+typedef std::tuple<std::string, std::vector<double>, Eigen::Vector3d> TestDataPoint;
 
 inline std::string getName(TestDataPoint& tdp)
 {
@@ -70,9 +69,7 @@ protected:
 protected:
   // ros stuff
   ros::NodeHandle ph_{ "~" };
-  robot_model::RobotModelConstPtr robot_model_{
-    robot_model_loader::RobotModelLoader(GetParam()).getModel()
-  };
+  robot_model::RobotModelConstPtr robot_model_{ robot_model_loader::RobotModelLoader(GetParam()).getModel() };
 
   // parameters
   std::string group_name_, tip_link_name_;
@@ -88,40 +85,27 @@ void URDFKinematicsTest::SetUp()
   ASSERT_TRUE(ph_.getParam(ARM_GROUP_TIP_LINK_NAME, tip_link_name_));
 
   // Fill the testdata
+  testDataSet_.push_back(TestDataPoint("HomePos ", { 0, 0, 0, 0, 0, 0 }, Eigen::Vector3d(0, 0, L0 + L1 + L2 + L3)));
+  testDataSet_.push_back(TestDataPoint("TestPos1", { 0, M_PI_2, 0, 0, 0, 0 }, Eigen::Vector3d(L1 + L2 + L3, 0, L0)));
   testDataSet_.push_back(
-      TestDataPoint("HomePos ", { 0, 0, 0, 0, 0, 0 },
-                    Eigen::Vector3d(0, 0, L0 + L1 + L2 + L3)));
-  testDataSet_.push_back(TestDataPoint("TestPos1", { 0, M_PI_2, 0, 0, 0, 0 },
-                                       Eigen::Vector3d(L1 + L2 + L3, 0, L0)));
-  testDataSet_.push_back(TestDataPoint("TestPos2",
-                                       { 0, -M_PI_2, M_PI_2, 0, 0, 0 },
-                                       Eigen::Vector3d(-L1, 0, L0 - L2 - L3)));
-  testDataSet_.push_back(TestDataPoint("TestPos3",
-                                       { 0, -M_PI_2, -M_PI_2, 0, 0, 0 },
-                                       Eigen::Vector3d(-L1, 0, L0 + L2 + L3)));
-  testDataSet_.push_back(TestDataPoint("TestPos4", { 0, 0, M_PI_2, 0, 0, 0 },
-                                       Eigen::Vector3d(-L2 - L3, 0, L0 + L1)));
-  testDataSet_.push_back(TestDataPoint("TestPos5",
-                                       { -M_PI_2, 0, -M_PI_2, 0, 0, 0 },
-                                       Eigen::Vector3d(0, -L2 - L3, L0 + L1)));
-  testDataSet_.push_back(TestDataPoint("TestPos6",
-                                       { -M_PI_2, -M_PI_2, -M_PI_2, 0, 0, 0 },
-                                       Eigen::Vector3d(0, L1, L0 + L2 + L3)));
-  testDataSet_.push_back(TestDataPoint("TestPos7",
-                                       { M_PI_2, -M_PI_2, 0, 0, 0, 0 },
-                                       Eigen::Vector3d(0, -L1 - L2 - L3, L0)));
-  testDataSet_.push_back(TestDataPoint("TestPos8", { 0, 0, 0, 0, -M_PI_2, 0 },
-                                       Eigen::Vector3d(L3, 0, L0 + L1 + L2)));
-  testDataSet_.push_back(TestDataPoint("TestPos9",
-                                       { M_PI_2, 0, 0, 0, -M_PI_2, 0 },
-                                       Eigen::Vector3d(0, L3, L0 + L1 + L2)));
+      TestDataPoint("TestPos2", { 0, -M_PI_2, M_PI_2, 0, 0, 0 }, Eigen::Vector3d(-L1, 0, L0 - L2 - L3)));
   testDataSet_.push_back(
-      TestDataPoint("TestPos10", { 0, 0, 0, 0, 0, M_PI_2 },
-                    Eigen::Vector3d(0, 0, L0 + L1 + L2 + L3)));
+      TestDataPoint("TestPos3", { 0, -M_PI_2, -M_PI_2, 0, 0, 0 }, Eigen::Vector3d(-L1, 0, L0 + L2 + L3)));
+  testDataSet_.push_back(TestDataPoint("TestPos4", { 0, 0, M_PI_2, 0, 0, 0 }, Eigen::Vector3d(-L2 - L3, 0, L0 + L1)));
+  testDataSet_.push_back(
+      TestDataPoint("TestPos5", { -M_PI_2, 0, -M_PI_2, 0, 0, 0 }, Eigen::Vector3d(0, -L2 - L3, L0 + L1)));
+  testDataSet_.push_back(
+      TestDataPoint("TestPos6", { -M_PI_2, -M_PI_2, -M_PI_2, 0, 0, 0 }, Eigen::Vector3d(0, L1, L0 + L2 + L3)));
+  testDataSet_.push_back(
+      TestDataPoint("TestPos7", { M_PI_2, -M_PI_2, 0, 0, 0, 0 }, Eigen::Vector3d(0, -L1 - L2 - L3, L0)));
+  testDataSet_.push_back(TestDataPoint("TestPos8", { 0, 0, 0, 0, -M_PI_2, 0 }, Eigen::Vector3d(L3, 0, L0 + L1 + L2)));
+  testDataSet_.push_back(
+      TestDataPoint("TestPos9", { M_PI_2, 0, 0, 0, -M_PI_2, 0 }, Eigen::Vector3d(0, L3, L0 + L1 + L2)));
+  testDataSet_.push_back(
+      TestDataPoint("TestPos10", { 0, 0, 0, 0, 0, M_PI_2 }, Eigen::Vector3d(0, 0, L0 + L1 + L2 + L3)));
 }
 
-INSTANTIATE_TEST_CASE_P(InstantiationName, URDFKinematicsTest,
-                        ::testing::Values(PARAM_MODEL));
+INSTANTIATE_TEST_CASE_P(InstantiationName, URDFKinematicsTest, ::testing::Values(PARAM_MODEL));
 /**
  * \brief test the kinematics of urdf model
  *
@@ -150,13 +134,11 @@ TEST_P(URDFKinematicsTest, forwardKinematics)
 
     // Test the position
     double error_norm = (transform.translation() - pos_exp).norm();
-    EXPECT_NEAR(error_norm, 0, DELTA)
-        << "TestPosition \"" << name << "\" failed\n"
-        << "\t Joints: ["
-        << Eigen::VectorXd::Map(joints.data(), joints.size()).transpose()
-        << "]\n"
-        << "\t Expected position [" << pos_exp.transpose() << "]\n"
-        << "\t Real position [" << transform.translation().transpose() << "]";
+    EXPECT_NEAR(error_norm, 0, DELTA) << "TestPosition \"" << name << "\" failed\n"
+                                      << "\t Joints: ["
+                                      << Eigen::VectorXd::Map(joints.data(), joints.size()).transpose() << "]\n"
+                                      << "\t Expected position [" << pos_exp.transpose() << "]\n"
+                                      << "\t Real position [" << transform.translation().transpose() << "]";
   }
 }
 

@@ -34,9 +34,8 @@ public:
   MOCK_METHOD1(setResponseTimeoutInMs, void(unsigned long timeout_ms));
   MOCK_METHOD2(readHoldingRegister, std::vector<uint16_t>(int addr, int nb));
   MOCK_METHOD4(writeReadHoldingRegister,
-               std::vector<uint16_t>(const int write_addr,
-                                     const std::vector<uint16_t>& write_reg,
-                                     const int read_addr, const int read_nb));
+               std::vector<uint16_t>(const int write_addr, const std::vector<uint16_t>& write_reg, const int read_addr,
+                                     const int read_nb));
   MOCK_METHOD0(getResponseTimeoutInMs, unsigned long());
 };
 

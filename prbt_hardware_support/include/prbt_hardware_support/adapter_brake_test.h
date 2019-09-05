@@ -36,8 +36,7 @@ public:
   virtual ~AdapterBrakeTest() = default;
 
 protected:
-  void updateBrakeTestRequiredState(
-      IsBrakeTestRequiredResponse::_result_type brake_test_required);
+  void updateBrakeTestRequiredState(IsBrakeTestRequiredResponse::_result_type brake_test_required);
 
 private:
   /**
@@ -45,14 +44,11 @@ private:
    * initializes the brake test service,
    * the first time the function is called.
    */
-  bool isBrakeTestRequired(IsBrakeTestRequired::Request&,
-                           IsBrakeTestRequired::Response& response);
+  bool isBrakeTestRequired(IsBrakeTestRequired::Request&, IsBrakeTestRequired::Response& response);
 
 private:
   //! Store the current state of whether a brake test is required
-  IsBrakeTestRequiredResponse::_result_type brake_test_required_{
-    IsBrakeTestRequiredResponse::UNKNOWN
-  };
+  IsBrakeTestRequiredResponse::_result_type brake_test_required_{ IsBrakeTestRequiredResponse::UNKNOWN };
 
   //! Server serving a service to ask whether a brake test is currently required
   ros::ServiceServer is_brake_test_required_server_;

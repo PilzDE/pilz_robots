@@ -36,8 +36,7 @@ using UpdateStoFunc = std::function<void(const bool)>;
 class ModbusAdapterSto
 {
 public:
-  ModbusAdapterSto(UpdateStoFunc&& update_sto_func,
-                   const ModbusApiSpec& api_spec);
+  ModbusAdapterSto(UpdateStoFunc&& update_sto_func, const ModbusApiSpec& api_spec);
 
 public:
   /**

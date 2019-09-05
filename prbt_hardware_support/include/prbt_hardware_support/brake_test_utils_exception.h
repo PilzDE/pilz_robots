@@ -28,8 +28,7 @@ namespace prbt_hardware_support
 class BrakeTestUtilsException : public std::runtime_error
 {
 public:
-  BrakeTestUtilsException(const std::string& what_arg)
-    : std::runtime_error(what_arg)
+  BrakeTestUtilsException(const std::string& what_arg) : std::runtime_error(what_arg)
   {
   }
 };
@@ -40,8 +39,7 @@ public:
 class GetCurrentJointStatesException : public BrakeTestUtilsException
 {
 public:
-  GetCurrentJointStatesException(const std::string& what_arg)
-    : BrakeTestUtilsException(what_arg)
+  GetCurrentJointStatesException(const std::string& what_arg) : BrakeTestUtilsException(what_arg)
   {
   }
 };

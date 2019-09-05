@@ -65,10 +65,8 @@ class BrakeTestExecutorTest : public Test
 public:
   BrakeTestExecutorTest();
 
-  MOCK_METHOD2(triggerBrakeTest,
-               bool(BrakeTest::Request&, BrakeTest::Response&));
-  MOCK_METHOD2(modbusWrite, bool(WriteModbusRegister::Request&,
-                                 WriteModbusRegister::Response&));
+  MOCK_METHOD2(triggerBrakeTest, bool(BrakeTest::Request&, BrakeTest::Response&));
+  MOCK_METHOD2(modbusWrite, bool(WriteModbusRegister::Request&, WriteModbusRegister::Response&));
 
 protected:
   ros::NodeHandle nh_;
@@ -87,9 +85,7 @@ BrakeTestExecutorTest::BrakeTestExecutorTest()
  */
 TEST(ModbusApiSpecTest, testModbusApiSpecExceptionDtor)
 {
-  std::shared_ptr<BrakeTestExecutorException> ex{
-    new BrakeTestExecutorException("Test msg")
-  };
+  std::shared_ptr<BrakeTestExecutorException> ex{ new BrakeTestExecutorException("Test msg") };
 }
 
 /**
@@ -118,19 +114,15 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
    * Step 0 *
    **********/
   ros::ServiceServer brake_test_service =
-      nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request,
-                           BrakeTest::Response>(
-          BRAKETEST_ADAPTER_SERVICE_NAME,
-          &BrakeTestExecutorTest::triggerBrakeTest, this);
+      nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>(
+          BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
   ros::ServiceServer modbus_service =
-      nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request,
-                           WriteModbusRegister::Response>(
+      nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>(
           MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
 
   BrakeTestExecutor brake_test_executor(this->nh_);
 
-  ros::ServiceClient brake_test_srv_client =
-      nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);
+  ros::ServiceClient brake_test_srv_client = nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);
   ASSERT_TRUE(brake_test_srv_client.exists()) << "Brake test service not "
                                                  "available.";
 
@@ -144,11 +136,10 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
 
     EXPECT_CALL(*this, triggerBrakeTest(_, _))
         .Times(1)
-        .WillOnce(
-            testing::Invoke([](BrakeTest::Request&, BrakeTest::Response& res) {
-              res.success = true;
-              return true;
-            }));
+        .WillOnce(testing::Invoke([](BrakeTest::Request&, BrakeTest::Response& res) {
+          res.success = true;
+          return true;
+        }));
 
     EXPECT_CALL(manipulator_, unholdCb(_, _)).WillOnce(Return(true));
   }
@@ -165,8 +156,7 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
   BrakeTest srv;
   EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test "
                                                   "service.";
-  EXPECT_TRUE(srv.response.success)
-      << "Brake tests failed unexpectedly. Message: " << srv.response.error_msg;
+  EXPECT_TRUE(srv.response.success) << "Brake tests failed unexpectedly. Message: " << srv.response.error_msg;
 }
 
 /**
@@ -189,20 +179,15 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
  */
 TEST_F(BrakeTestExecutorTest, testBrakeTestServiceWithRobotMotion)
 {
-  ros::ServiceServer service =
-      nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request,
-                           BrakeTest::Response>(
-          BRAKETEST_ADAPTER_SERVICE_NAME,
-          &BrakeTestExecutorTest::triggerBrakeTest, this);
+  ros::ServiceServer service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>(
+      BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
   ros::ServiceServer modbus_service =
-      nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request,
-                           WriteModbusRegister::Response>(
+      nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>(
           MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
 
   BrakeTestExecutor brake_test_executor(this->nh_);
 
-  ros::ServiceClient brake_test_srv_client =
-      nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);
+  ros::ServiceClient brake_test_srv_client = nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);
   ASSERT_TRUE(brake_test_srv_client.exists()) << "Brake test service not "
                                                  "available.";
   /**********
@@ -222,8 +207,7 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestServiceWithRobotMotion)
   EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test "
                                                   "service.";
   EXPECT_FALSE(srv.response.success);
-  EXPECT_EQ(BrakeTestErrorCodes::ROBOT_MOTION_DETECTED,
-            srv.response.error_code.value);
+  EXPECT_EQ(BrakeTestErrorCodes::ROBOT_MOTION_DETECTED, srv.response.error_code.value);
 }
 
 /**
@@ -251,20 +235,15 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestServiceTriggerFails)
   /**********
    * Step 0 *
    **********/
-  ros::ServiceServer service =
-      nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request,
-                           BrakeTest::Response>(
-          BRAKETEST_ADAPTER_SERVICE_NAME,
-          &BrakeTestExecutorTest::triggerBrakeTest, this);
+  ros::ServiceServer service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>(
+      BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
   ros::ServiceServer modbus_service =
-      nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request,
-                           WriteModbusRegister::Response>(
+      nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>(
           MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
 
   BrakeTestExecutor brake_test_executor(this->nh_);
 
-  ros::ServiceClient brake_test_srv_client =
-      nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);
+  ros::ServiceClient brake_test_srv_client = nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);
   ASSERT_TRUE(brake_test_srv_client.exists()) << "Brake test service not "
                                                  "available.";
 
@@ -294,8 +273,7 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestServiceTriggerFails)
   EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test "
                                                   "service.";
   EXPECT_FALSE(srv.response.success) << "Brake tests succeded unexpectedly.";
-  EXPECT_EQ(BrakeTestErrorCodes::TRIGGER_BRAKETEST_SERVICE_FAILURE,
-            srv.response.error_code.value);
+  EXPECT_EQ(BrakeTestErrorCodes::TRIGGER_BRAKETEST_SERVICE_FAILURE, srv.response.error_code.value);
 }
 
 /**
@@ -324,20 +302,15 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringHoldFailing)
   /**********
    * Step 0 *
    **********/
-  ros::ServiceServer service =
-      nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request,
-                           BrakeTest::Response>(
-          BRAKETEST_ADAPTER_SERVICE_NAME,
-          &BrakeTestExecutorTest::triggerBrakeTest, this);
+  ros::ServiceServer service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>(
+      BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
   ros::ServiceServer modbus_service =
-      nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request,
-                           WriteModbusRegister::Response>(
+      nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>(
           MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
 
   BrakeTestExecutor brake_test_executor(this->nh_);
 
-  ros::ServiceClient brake_test_srv_client =
-      nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);
+  ros::ServiceClient brake_test_srv_client = nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);
   ASSERT_TRUE(brake_test_srv_client.exists()) << "Brake test service not "
                                                  "available.";
 
@@ -351,11 +324,10 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringHoldFailing)
 
     EXPECT_CALL(*this, triggerBrakeTest(_, _))
         .Times(1)
-        .WillOnce(
-            testing::Invoke([](BrakeTest::Request&, BrakeTest::Response& res) {
-              res.success = true;
-              return true;
-            }));
+        .WillOnce(testing::Invoke([](BrakeTest::Request&, BrakeTest::Response& res) {
+          res.success = true;
+          return true;
+        }));
 
     EXPECT_CALL(manipulator_, unholdCb(_, _)).WillOnce(Return(false));
   }
@@ -372,8 +344,7 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringHoldFailing)
   BrakeTest srv;
   EXPECT_TRUE(brake_test_srv_client.call(srv)) << "Failed to call brake test "
                                                   "service.";
-  EXPECT_TRUE(srv.response.success)
-      << "Brake tests failed unexpectedly. Message: " << srv.response.error_msg;
+  EXPECT_TRUE(srv.response.success) << "Brake tests failed unexpectedly. Message: " << srv.response.error_msg;
 }
 
 /**
@@ -402,13 +373,10 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringWrongApiDef)
    * Step 0 *
    **********/
   ros::ServiceServer brake_test_service =
-      nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request,
-                           BrakeTest::Response>(
-          BRAKETEST_ADAPTER_SERVICE_NAME,
-          &BrakeTestExecutorTest::triggerBrakeTest, this);
+      nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>(
+          BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
   ros::ServiceServer modbus_service =
-      nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request,
-                           WriteModbusRegister::Response>(
+      nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>(
           MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
   ASSERT_NO_THROW(BrakeTestExecutor bte_default_params(nh_));
   XmlRpc::XmlRpcValue api_spec_backup;
@@ -437,8 +405,7 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringWrongApiDef)
    * Step 4 *
    **********/
   nh_.setParam(API_SPEC_PARAM_NAME + BRAKETEST_RESULT_PARAM_NAME, 98);
-  ASSERT_THROW(BrakeTestExecutor bte_two_apart(nh_),
-               BrakeTestExecutorException);
+  ASSERT_THROW(BrakeTestExecutor bte_two_apart(nh_), BrakeTestExecutorException);
 
   /**********
    * Step 5 *

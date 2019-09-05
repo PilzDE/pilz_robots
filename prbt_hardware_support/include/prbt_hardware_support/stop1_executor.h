@@ -65,10 +65,8 @@ public:
    * start worker-thread and state machine.
    *
    */
-  Stop1Executor(const TServiceCallFunc& hold_func,
-                const TServiceCallFunc& unhold_func,
-                const TServiceCallFunc& recover_func,
-                const TServiceCallFunc& halt_func);
+  Stop1Executor(const TServiceCallFunc& hold_func, const TServiceCallFunc& unhold_func,
+                const TServiceCallFunc& recover_func, const TServiceCallFunc& halt_func);
 
   /**
    * @brief Stop state machine and terminate worker-thread.
@@ -87,8 +85,7 @@ public:
    * @param sto The updated sto value.
    */
   void updateSto(const bool sto);
-  bool updateStoCallback(std_srvs::SetBool::Request& req,
-                         std_srvs::SetBool::Response& res);
+  bool updateStoCallback(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res);
 
 protected:
   /**

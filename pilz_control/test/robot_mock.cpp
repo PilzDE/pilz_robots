@@ -35,8 +35,7 @@ public:
     pos_ = new double();
     vel_ = new double();
     eff_ = new double();
-    hardware_interface::JointStateHandle jnt_state_handle{ JOINT_NAME, pos_,
-                                                           vel_, eff_ };
+    hardware_interface::JointStateHandle jnt_state_handle{ JOINT_NAME, pos_, vel_, eff_ };
     cmd_ = new double();
     hardware_interface::JointHandle jnt_handle{ jnt_state_handle, cmd_ };
 

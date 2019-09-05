@@ -36,8 +36,7 @@ inline void waitForNode(std::string node_name, double loop_frequency = 10.0)
   ROS_ERROR_STREAM("Waiting for Node " << node_name);
   std::vector<std::string> node_names;
   while (ros::master::getNodes(node_names) &&
-         std::find(node_names.begin(), node_names.end(), node_name) ==
-             node_names.end())
+         std::find(node_names.begin(), node_names.end(), node_name) == node_names.end())
   {
     ros::Rate(loop_frequency).sleep();
   }
@@ -50,20 +49,18 @@ inline void waitForNode(std::string node_name, double loop_frequency = 10.0)
  * @param timeout
  * @param loop_frequency Frequency at which the system is checked for the node.
  */
-inline ::testing::AssertionResult waitForNodeShutdown(
-    std::string node_name, double timeout = 1.0, double loop_frequency = 10.0)
+inline ::testing::AssertionResult waitForNodeShutdown(std::string node_name, double timeout = 1.0,
+                                                      double loop_frequency = 10.0)
 {
   std::vector<std::string> node_names;
   auto start_time = ros::Time::now();
   while (ros::master::getNodes(node_names) &&
-         std::find(node_names.begin(), node_names.end(), node_name) !=
-             node_names.end())
+         std::find(node_names.begin(), node_names.end(), node_name) != node_names.end())
   {
     node_names.clear();
     if (ros::Time::now() > start_time + ros::Duration(timeout))
     {
-      return ::testing::AssertionFailure()
-             << "Timed out waiting for shutdown of Node " << node_name;
+      return ::testing::AssertionFailure() << "Timed out waiting for shutdown of Node " << node_name;
     }
     ros::Rate(loop_frequency).sleep();
   }

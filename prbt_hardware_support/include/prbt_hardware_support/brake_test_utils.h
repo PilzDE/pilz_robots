@@ -43,8 +43,7 @@ public:
    * This function periodically checks if the robot has moved by comparing joint
    * positions from the joint_states topic until the timeout is reached.
    */
-  static bool
-  detectRobotMotion(double timeout_s = DEFAULT_ROBOT_MOTION_TIMEOUT_S);
+  static bool detectRobotMotion(double timeout_s = DEFAULT_ROBOT_MOTION_TIMEOUT_S);
 
   /**
    * @brief wait for a single message on the joint_states topic and return it.
@@ -57,10 +56,9 @@ public:
    * @brief return true if the joint state positions are equal up to a given
    * tolerance, false otherwise.
    */
-  inline static bool compareJointStatePositions(
-      const sensor_msgs::JointStateConstPtr& msg1,
-      const sensor_msgs::JointStateConstPtr& msg2,
-      const double tol = DEFAULT_JOINT_STATES_COMPARISON_TOLERANCE);
+  inline static bool compareJointStatePositions(const sensor_msgs::JointStateConstPtr& msg1,
+                                                const sensor_msgs::JointStateConstPtr& msg2,
+                                                const double tol = DEFAULT_JOINT_STATES_COMPARISON_TOLERANCE);
 };
 
 bool BrakeTestUtils::detectRobotMotion(double timeout_s)
@@ -84,8 +82,8 @@ bool BrakeTestUtils::detectRobotMotion(double timeout_s)
 
 sensor_msgs::JointStateConstPtr BrakeTestUtils::getCurrentJointStates()
 {
-  auto msg{ ros::topic::waitForMessage<sensor_msgs::JointState>(
-      TOPIC_NAME, ros::Duration(JOINT_STATES_TOPIC_TIMEOUT)) };
+  auto msg{ ros::topic::waitForMessage<sensor_msgs::JointState>(TOPIC_NAME,
+                                                                ros::Duration(JOINT_STATES_TOPIC_TIMEOUT)) };
   if (msg == nullptr)
   {
     throw GetCurrentJointStatesException("Could not obtain message from "
@@ -94,13 +92,11 @@ sensor_msgs::JointStateConstPtr BrakeTestUtils::getCurrentJointStates()
   return msg;
 }
 
-bool BrakeTestUtils::compareJointStatePositions(
-    const sensor_msgs::JointStateConstPtr& msg1,
-    const sensor_msgs::JointStateConstPtr& msg2, const double tol)
+bool BrakeTestUtils::compareJointStatePositions(const sensor_msgs::JointStateConstPtr& msg1,
+                                                const sensor_msgs::JointStateConstPtr& msg2, const double tol)
 {
-  return std::equal(
-      msg1->position.begin(), msg1->position.end(), msg2->position.begin(),
-      [tol](double pos1, double pos2) { return (fabs(pos1 - pos2) < tol); });
+  return std::equal(msg1->position.begin(), msg1->position.end(), msg2->position.begin(),
+                    [tol](double pos1, double pos2) { return (fabs(pos1 - pos2) < tol); });
 }
 
 }  // namespace prbt_hardware_support
