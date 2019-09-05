@@ -80,8 +80,9 @@ public:
   }
 
   FRIEND_TEST(Stop1ExecutorTest, testExitInStateEnabling);
+  FRIEND_TEST(Stop1ExecutorTest, testExitInStateStopping);
+  FRIEND_TEST(Stop1ExecutorTest, testExitInStateEnableRequestDuringStop);
   FRIEND_TEST(Stop1ExecutorTest, testExitInStateStopRequestedDuringEnable);
-  FRIEND_TEST(Stop1ExecutorTest, testExitDuringPendingHaltCall);
 };
 
 class Stop1ExecutorTest : public ::testing::Test, public ::testing::AsyncTest
@@ -832,7 +833,7 @@ TEST_F(Stop1ExecutorTest, testHoldImmediatelyAfterUnhold)
  * @note This test exists mainly for full function coverage.
  *
  * Test Sequence:
- *  1. Run the sto adapter and call updateSto(true)),
+ *  1. Run the sto adapter and call updateSto(true),
  *     call stopStateMachine() during recover service call and return success,
  *     let unhold service return success
  *
@@ -867,29 +868,23 @@ TEST_F(Stop1ExecutorTest, testExitInStateEnabling)
 }
 
 /**
- * @brief Test stopping the state machine in state StopRequestedDuringRecover.
+ * @brief Test stopping the state machine in state Stopping.
  *
  * @note This test exists mainly for full function coverage.
  *
  * Test Sequence:
- *  1. Run the sto adapter and call updateSto(true)),
- *     call updateSto(false)) and stopStateMachine() during unhold service call,
- *     let hold and halt services return success
+ *  1. Run the sto adapter and call updateSto(true),
+ *     let recover and unhold services return success.
+ *  2. Call updateSto(false) and call stopStateMachine() during hold service call,
+ *     let hold and halt services return success.
  *
  * Expected Results:
- *  1. Recover and unhold services are called successively
+ *  1. Recover and unhold services are called
+ *  2. Hold service is called
  */
-TEST_F(Stop1ExecutorTest, testExitInStateStopRequestedDuringEnable)
+TEST_F(Stop1ExecutorTest, testExitInStateStopping)
 {
   std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
-
-  // define function for unhold-invoke action
-  auto unhold_action = [this, &adapter_sto]() {
-    adapter_sto->updateSto(false);
-    adapter_sto->stopStateMachine();
-    this->triggerClearEvent(UNHOLD_SRV_CALLED_EVENT);
-    return true;
-  };
 
   /**********
    * Step 1 *
@@ -898,54 +893,61 @@ TEST_F(Stop1ExecutorTest, testExitInStateStopRequestedDuringEnable)
     InSequence dummy;
 
     EXPECT_RECOVER;
-    EXPECT_CALL(*this, unhold_func())
-        .WillOnce(InvokeWithoutArgs(unhold_action));
-
-    // do not exclude other service calls as stopping the state machine does not prevent further actions
-    EXPECT_CALL(*this, hold_func())
-        .WillRepeatedly(Return(true));
-
-    EXPECT_HALT;
+    EXPECT_UNHOLD;
   }
 
   adapter_sto->updateSto(true);
 
-  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
+  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+
+  /**********
+   * Step 2 *
+   **********/
+  // define function for hold-invoke action
+  auto hold_action = [this, &adapter_sto]() {
+    adapter_sto->stopStateMachine();
+    this->triggerClearEvent(HOLD_SRV_CALLED_EVENT);
+    return true;
+  };
+
+  {
+    InSequence dummy;
+
+    EXPECT_CALL(*this, hold_func())
+        .WillOnce(InvokeWithoutArgs(hold_action));
+
+    // do not exclude other service calls as stopping the state machine does not prevent further actions
+    EXPECT_CALL(*this, halt_func())
+        .WillRepeatedly(Return(true));
+  }
+
+  adapter_sto->updateSto(false);
+
+  BARRIER({HOLD_SRV_CALLED_EVENT});
 }
 
 /**
- * @brief Test stopping the state machine in state StopRequestedDuringRecover.
+ * @brief Test stopping the state machine in state StopRequestedDuringEnable.
  *
  * @note This test exists mainly for full function coverage.
  *
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)),
- *    call updateSto(false)) and stopStateMachine() during unhold service call
- *    and return success,
- *    let hold and halt services return success
+ *     call updateSto(false)) and stopStateMachine() during recover service call,
+ *     let recover and halt services return success.
  *
  * Expected Results:
- *  1. Recover and unhold services are called successively
+ *  1. Recover is called.
  */
-TEST_F(Stop1ExecutorTest, testExitDuringPendingHaltCall)
+TEST_F(Stop1ExecutorTest, testExitInStateStopRequestedDuringEnable)
 {
   std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
 
   // define function for recover-invoke action
-  auto sto_false_during_recover_action = [this, &adapter_sto]() {
-    this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT);
+  auto recover_action = [this, &adapter_sto]() {
     adapter_sto->updateSto(false);
-    return true;
-  };
-
-  auto false_recover_action = []() {
-    return false;
-  };
-
-  auto enable_during_halt_action = [this, &adapter_sto]() {
-    adapter_sto->updateSto(true);
     adapter_sto->stopStateMachine();
-    this->triggerClearEvent(HALT_SRV_CALLED_EVENT);
+    this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT);
     return true;
   };
 
@@ -956,19 +958,81 @@ TEST_F(Stop1ExecutorTest, testExitDuringPendingHaltCall)
     InSequence dummy;
 
     EXPECT_CALL(*this, recover_func())
-        .WillOnce(InvokeWithoutArgs(sto_false_during_recover_action));
+        .WillOnce(InvokeWithoutArgs(recover_action));
 
+    // do not exclude other service calls as stopping the state machine does not prevent further actions
     EXPECT_CALL(*this, halt_func())
-        .WillOnce(InvokeWithoutArgs(enable_during_halt_action));
-
-    EXPECT_CALL(*this, recover_func())
-        .Times(AtLeast(0)) // Not nice but at this point not easy to say...
-        .WillOnce(InvokeWithoutArgs(false_recover_action));
+        .WillRepeatedly(Return(true));
   }
 
   adapter_sto->updateSto(true);
 
-  BARRIER({RECOVER_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
+  BARRIER(RECOVER_SRV_CALLED_EVENT);
+}
+
+/**
+ * @brief Test stopping the state machine in state EnableRequestDuringStop.
+ *
+ * @note This test exists mainly for full function coverage.
+ *
+ * Test Sequence:
+ *  1. Run the sto adapter and call updateSto(true),
+ *     let recover and unhold services return success
+ *  2. Call updateSto(false),
+ *     call updateSto(true) and stopStateMachine() during hold service call
+ *     and return success, let halt, recover and unhold services also return success
+ *
+ * Expected Results:
+ *  1. Recover and unhold services are called successively
+ *  2. Hold service is called
+ */
+TEST_F(Stop1ExecutorTest, testExitInStateEnableRequestDuringStop)
+{
+  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
+
+  /**********
+   * Step 1 *
+   **********/
+  {
+    InSequence dummy;
+
+    EXPECT_RECOVER;
+    EXPECT_UNHOLD;
+  }
+
+  adapter_sto->updateSto(true);
+
+  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+
+  /**********
+   * Step 2 *
+   **********/
+
+  auto enable_during_hold_action = [this, &adapter_sto]() {
+    adapter_sto->updateSto(true);
+    adapter_sto->stopStateMachine();
+    this->triggerClearEvent(HOLD_SRV_CALLED_EVENT);
+    return true;
+  };
+
+  {
+    InSequence dummy;
+
+    EXPECT_CALL(*this, hold_func())
+        .WillOnce(InvokeWithoutArgs(enable_during_hold_action));
+
+    // do not exclude other service calls as stopping the state machine does not prevent further actions
+    EXPECT_CALL(*this, halt_func())
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*this, recover_func())
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*this, unhold_func())
+        .WillRepeatedly(Return(true));
+  }
+
+  adapter_sto->updateSto(false);
+
+  BARRIER(HOLD_SRV_CALLED_EVENT);
 }
 
 
