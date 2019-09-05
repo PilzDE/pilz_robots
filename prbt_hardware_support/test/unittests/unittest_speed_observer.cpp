@@ -53,7 +53,7 @@ static const double TEST_FREQUENCY{ 20 };
 static const double SQRT_2_HALF{ 1 / sqrt(2) };
 static const double PI_2{ 2 * M_PI };
 
-class SpeedObserverIntegarionTest : public testing::Test, public testing::AsyncTest
+class SpeedObserverUnitTest : public testing::Test, public testing::AsyncTest
 {
 public:
   void SetUp() override;
@@ -73,20 +73,20 @@ protected:
   bool tf_publisher_running_{ false };
 };
 
-void SpeedObserverIntegarionTest::SetUp()
+void SpeedObserverUnitTest::SetUp()
 {
   speed_subscriber_ =
-      nh_.subscribe<FrameSpeeds>(FRAME_SPEEDS_TOPIC_NAME, 1, &SpeedObserverIntegarionTest::frame_speeds_cb_mock, this);
-  stop_subscriber_ = nh_.advertiseService(STOP_TOPIC_NAME, &SpeedObserverIntegarionTest::stop_cb_mock, this);
+      nh_.subscribe<FrameSpeeds>(FRAME_SPEEDS_TOPIC_NAME, 1, &SpeedObserverUnitTest::frame_speeds_cb_mock, this);
+  stop_subscriber_ = nh_.advertiseService(STOP_TOPIC_NAME, &SpeedObserverUnitTest::stop_cb_mock, this);
 
   waitForService(STOP_TOPIC_NAME);
 }
 
-void SpeedObserverIntegarionTest::TearDown()
+void SpeedObserverUnitTest::TearDown()
 {
 }
 
-void SpeedObserverIntegarionTest::publishTfAtSpeed(double v)
+void SpeedObserverUnitTest::publishTfAtSpeed(double v)
 {
   static tf2_ros::TransformBroadcaster br;
   ros::Rate r = ros::Rate(TEST_FREQUENCY * 3);  // publishing definitely faster then observing
@@ -124,7 +124,7 @@ void SpeedObserverIntegarionTest::publishTfAtSpeed(double v)
   }
 }
 
-void SpeedObserverIntegarionTest::stopTfPublisher()
+void SpeedObserverUnitTest::stopTfPublisher()
 {
   tf_publisher_running_ = false;
 }
@@ -162,7 +162,7 @@ MATCHER_P2(SpeedAtILe, i, x,
  *    1. Correct values are publshed on the speed topic.
  *       *No* stop is published
  */
-TEST_F(SpeedObserverIntegarionTest, testStartupAndTopic)
+TEST_F(SpeedObserverUnitTest, testStartupAndTopic)
 {
   using ::testing::AllOf;
   using ::testing::AtLeast;
@@ -196,7 +196,7 @@ TEST_F(SpeedObserverIntegarionTest, testStartupAndTopic)
 
   EXPECT_CALL(*this, stop_cb_mock(_, _)).Times(0);
 
-  std::thread pubisher_thread_slow = std::thread(&SpeedObserverIntegarionTest::publishTfAtSpeed, this, 0.24);
+  std::thread pubisher_thread_slow = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.24);
   BARRIER({ BARRIER_SLOW });
   stopTfPublisher();
   pubisher_thread_slow.join();
@@ -221,7 +221,7 @@ TEST_F(SpeedObserverIntegarionTest, testStartupAndTopic)
  *    1. Correct values are publshed on the speed topic.
  *       A stop is published
  */
-TEST_F(SpeedObserverIntegarionTest, testTooHighSpeed)
+TEST_F(SpeedObserverUnitTest, testTooHighSpeed)
 {
   using ::testing::AllOf;
   using ::testing::AtLeast;
@@ -267,7 +267,7 @@ TEST_F(SpeedObserverIntegarionTest, testTooHighSpeed)
       .Times(AtLeast(1))
       .WillOnce(DoAll(SetArgReferee<1>(sto_srv_resp), Return(true)));
 
-  std::thread pubisher_thread_fast = std::thread(&SpeedObserverIntegarionTest::publishTfAtSpeed, this, 0.3);
+  std::thread pubisher_thread_fast = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.3);
   BARRIER({ BARRIER_FAST });
   stopTfPublisher();
   pubisher_thread_fast.join();
@@ -294,7 +294,7 @@ TEST_F(SpeedObserverIntegarionTest, testTooHighSpeed)
  *       *No* stop is published
  *    2  A stop is published
  */
-TEST_F(SpeedObserverIntegarionTest, testSetSpeedLimit)
+TEST_F(SpeedObserverUnitTest, testSetSpeedLimit)
 {
   using ::testing::AllOf;
   using ::testing::AtLeast;
@@ -337,7 +337,7 @@ TEST_F(SpeedObserverIntegarionTest, testSetSpeedLimit)
       .InSequence(s_speeds)
       .WillRepeatedly(ACTION_OPEN_BARRIER_VOID(BARRIER_LIMIT));
   EXPECT_CALL(*this, stop_cb_mock(_, _)).Times(AtMost(0));
-  std::thread pubisher_thread_fast = std::thread(&SpeedObserverIntegarionTest::publishTfAtSpeed, this, 0.3);
+  std::thread pubisher_thread_fast = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.3);
   BARRIER({ BARRIER_LIMIT });
 
   /**********
@@ -375,7 +375,7 @@ TEST_F(SpeedObserverIntegarionTest, testSetSpeedLimit)
  *    0. -
  *    1. observe method just finishes (without throw)
  */
-TEST_F(SpeedObserverIntegarionTest, testTimeout)
+TEST_F(SpeedObserverUnitTest, testTimeout)
 {
   /**********
    * Step 0 *

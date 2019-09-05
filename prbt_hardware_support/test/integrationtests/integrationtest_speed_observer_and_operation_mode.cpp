@@ -15,10 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <thread>
+
 #include <gmock/gmock.h>
 
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
+#include <std_srvs/SetBool.h>
 
 #include <pilz_testutils/async_test.h>
 #include <prbt_hardware_support/ros_test_helper.h>
@@ -26,10 +29,13 @@
 #include <prbt_hardware_support/FrameSpeeds.h>
 #include <prbt_hardware_support/GetOperationMode.h>
 #include <prbt_hardware_support/OperationModes.h>
+#include <prbt_hardware_support/wait_for_service.h>
 
 namespace speed_observer_test
 {
 using ::testing::_;
+using ::testing::AtLeast;
+using ::testing::PrintToString;
 using ::testing::Return;
 using ::testing::SetArgReferee;
 using namespace prbt_hardware_support;
@@ -39,7 +45,7 @@ static const std::string FAKE_CONTROLLER_JOINT_STATES_TOPIC_NAME{ "/fake_"
                                                                   "controller_"
                                                                   "joint_"
                                                                   "states" };
-static const std::string STOP_TOPIC_NAME{ "/stop" };
+static const std::string STO_SERVICE{ "safe_torque_off" };
 
 static const std::string OPERATION_MODE_SERVICE{ "/prbt/get_operation_mode" };
 
@@ -51,8 +57,31 @@ static const std::string BARRIER_STOP_HAPPENED{ "BARRIER_STOP_HAPPENED" };
 
 static const double TEST_FREQUENCY{ 10 };
 
-class SpeedObserverIntegarionTest : public testing::Test,
-                                    public testing::AsyncTest
+MATCHER_P(StoState, x,
+          "Sto state " + std::string(negation ? "is not" : "is") + ": " +
+              PrintToString(x) + ".")
+{
+  return arg.data == x;
+}
+
+MATCHER_P(ContainsAllNames, names,
+          "Names" + PrintToString(names) +
+              std::string(negation ? "are not" : "are") + " in message.")
+{
+  for (auto n : names)
+  {
+    bool found{ false };
+    for (auto& argn : arg.name)
+      if (argn.compare(n) == 0)
+        found = true;
+    if (!found)
+      return false;
+  }
+
+  return true;
+}
+
+class SpeedObserverIntegrationTest : public testing::Test, public testing::AsyncTest
 {
 public:
   void SetUp() override;
@@ -60,26 +89,31 @@ public:
 
   MOCK_METHOD2(operation_mode_cb, bool(GetOperationMode::Request& req,
                                        GetOperationMode::Response& res));
+  MOCK_METHOD2(sto_cb, bool(std_srvs::SetBool::Request& req,
+                            std_srvs::SetBool::Response& res));
   MOCK_METHOD1(frame_speeds_cb, void(FrameSpeeds msg));
+
   void publishJointStatesAtSpeed(double v);
   void stopJointStatePublisher();
   void advertiseOmService();
+  void advertiseStoService();
 
 protected:
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_{ "~" };
   ros::Subscriber subscriber_;
   ros::ServiceServer operation_mode_srv_;
+  ros::ServiceServer sto_srv_;
   ros::Publisher fake_controller_joint_states_pub_;
   std::vector<std::string> additional_frames_;
   bool joint_publisher_running_{ false };
 };
 
-void SpeedObserverIntegarionTest::SetUp()
+void SpeedObserverIntegrationTest::SetUp()
 {
-  subscriber_ = nh_.subscribe<FrameSpeeds>(
-      FRAME_SPEEDS_TOPIC_NAME, 1, &SpeedObserverIntegarionTest::frame_speeds_cb,
-      this);
+  subscriber_ =
+      nh_.subscribe<FrameSpeeds>(FRAME_SPEEDS_TOPIC_NAME, 1,
+                                 &SpeedObserverIntegrationTest::frame_speeds_cb, this);
   fake_controller_joint_states_pub_ = nh_.advertise<sensor_msgs::JointState>(
       FAKE_CONTROLLER_JOINT_STATES_TOPIC_NAME, 1);
 
@@ -92,20 +126,25 @@ void SpeedObserverIntegarionTest::SetUp()
   }
 }
 
-void SpeedObserverIntegarionTest::TearDown()
+void SpeedObserverIntegrationTest::TearDown()
 {
   joint_publisher_running_ = false;
   nh_.shutdown();
 }
 
-void SpeedObserverIntegarionTest::advertiseOmService()
+void SpeedObserverIntegrationTest::advertiseOmService()
 {
   operation_mode_srv_ = nh_.advertiseService(
-      OPERATION_MODE_SERVICE, &SpeedObserverIntegarionTest::operation_mode_cb,
-      this);
+      OPERATION_MODE_SERVICE, &SpeedObserverIntegrationTest::operation_mode_cb, this);
 }
 
-void SpeedObserverIntegarionTest::publishJointStatesAtSpeed(double v)
+void SpeedObserverIntegrationTest::advertiseStoService()
+{
+  sto_srv_ =
+      nh_.advertiseService(STO_SERVICE, &SpeedObserverIntegrationTest::sto_cb, this);
+}
+
+void SpeedObserverIntegrationTest::publishJointStatesAtSpeed(double v)
 {
   sensor_msgs::JointState js;
   js.name = { "testing_world-a" };
@@ -126,7 +165,7 @@ void SpeedObserverIntegarionTest::publishJointStatesAtSpeed(double v)
   }
 }
 
-void SpeedObserverIntegarionTest::stopJointStatePublisher()
+void SpeedObserverIntegrationTest::stopJointStatePublisher()
 {
   joint_publisher_running_ = false;
 }
@@ -141,7 +180,7 @@ void SpeedObserverIntegarionTest::stopJointStatePublisher()
  *    0. -
  *    1. Operation mode not to be called any more
  */
-TEST_F(SpeedObserverIntegarionTest, testT1)
+TEST_F(SpeedObserverIntegrationTest, testT1)
 {
   /**********
    * Step 0 *
@@ -149,12 +188,18 @@ TEST_F(SpeedObserverIntegarionTest, testT1)
   ROS_DEBUG("Step 0");
 
   // Set OM to T1
-  GetOperationMode::Response omr;
-  omr.mode.value = OperationModes::T1;
+  GetOperationMode::Response om_res;
+  om_res.mode.value = OperationModes::T1;
   EXPECT_CALL(*this, operation_mode_cb(_, _))
-      .WillOnce(DoAll(SetArgReferee<1>(omr),
+      .WillOnce(DoAll(SetArgReferee<1>(om_res),
                       ACTION_OPEN_BARRIER(BARRIER_OPERATION_MODE_SET)));
+  EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_)))
+      .Times(AtLeast(1));
+  EXPECT_CALL(*this, sto_cb(_, _)).Times(0);
+
   advertiseOmService();
+  advertiseStoService();
+  waitForService(STO_SERVICE);
 
   BARRIER({ BARRIER_OPERATION_MODE_SET });
 
@@ -165,10 +210,18 @@ TEST_F(SpeedObserverIntegarionTest, testT1)
 
   // Now the service should not be called any more
   EXPECT_CALL(*this, operation_mode_cb(_, _)).Times(0);
+  std_srvs::SetBool::Response sto_res;
+  sto_res.success = true;
+  sto_res.message = "testing ...";
+  EXPECT_CALL(*this, sto_cb(StoState(true), _))
+      .WillRepeatedly(DoAll(SetArgReferee<1>(sto_res),
+                            ACTION_OPEN_BARRIER(BARRIER_STOP_HAPPENED)));
 
-  publishJointStatesAtSpeed(1);
+  std::thread pubisher_thread =
+      std::thread(&SpeedObserverIntegrationTest::publishJointStatesAtSpeed, this, 1.0);
   BARRIER({ BARRIER_STOP_HAPPENED });
   stopJointStatePublisher();
+  pubisher_thread.join();
 }
 
 }  // namespace speed_observer_test
@@ -178,7 +231,7 @@ int main(int argc, char* argv[])
   ros::init(argc, argv, "unittest_speed_observer");
   ros::NodeHandle nh;
 
-  ros::AsyncSpinner spinner{ 1 };
+  ros::AsyncSpinner spinner{ 2 };
   spinner.start();
 
   testing::InitGoogleTest(&argc, argv);

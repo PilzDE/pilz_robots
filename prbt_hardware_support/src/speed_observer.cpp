@@ -22,6 +22,7 @@
 #include <tf2/convert.h>
 
 #include <prbt_hardware_support/speed_observer.h>
+#include <prbt_hardware_support/wait_for_service.h>
 
 namespace prbt_hardware_support
 {
@@ -33,6 +34,7 @@ SpeedObserver::SpeedObserver(ros::NodeHandle& nh, std::string& reference_frame,
   : nh_(nh), reference_frame_(reference_frame), frames_to_observe_(frames_to_observe)
 {
   frame_speeds_pub_ = nh.advertise<FrameSpeeds>(FRAME_SPEEDS_TOPIC_NAME, DEFAULT_QUEUE_SIZE);
+  waitForService(STO_SERVICE);
   sto_client_ = nh.serviceClient<std_srvs::SetBool>(STO_SERVICE, DEFAULT_QUEUE_SIZE);
 }
 
@@ -165,8 +167,7 @@ void SpeedObserver::triggerStop1()
   {
     ROS_ERROR_STREAM("No success calling service: " << sto_client_.getService());
   }
-
-  if (!sto_srv.response.success)
+  else if (!sto_srv.response.success)
   {
     ROS_ERROR_STREAM("Service: " << sto_client_.getService() << " failed with error message:\n"
                                  << sto_srv.response.message);
