@@ -38,40 +38,34 @@ using ::testing::AtLeast;
 using ::testing::PrintToString;
 using ::testing::Return;
 using ::testing::SetArgReferee;
+using ::testing::Sequence;
 using namespace prbt_hardware_support;
 
 static const std::string FRAME_SPEEDS_TOPIC_NAME{ "/frame_speeds" };
-static const std::string FAKE_CONTROLLER_JOINT_STATES_TOPIC_NAME{ "/fake_"
-                                                                  "controller_"
-                                                                  "joint_"
-                                                                  "states" };
+static const std::string FAKE_CONTROLLER_JOINT_STATES_TOPIC_NAME{ "/fake_controller_joint_states" };
+static const std::string OPERATION_MODE_TOPIC{"operation_mode"};
 static const std::string STO_SERVICE{ "safe_torque_off" };
-
 static const std::string OPERATION_MODE_SERVICE{ "/prbt/get_operation_mode" };
-
 static const std::string ADDITIONAL_FRAMES_PARAM_NAME{ "additional_frames" };
 
-static const std::string BARRIER_OPERATION_MODE_SET{ "BARRIER_OPERATION_MODE_"
-                                                     "SET" };
+static const std::string BARRIER_OPERATION_MODE_SET{ "BARRIER_OPERATION_MODE_SET" };
 static const std::string BARRIER_STOP_HAPPENED{ "BARRIER_STOP_HAPPENED" };
+static const std::string BARRIER_NO_STOP_HAPPENED{ "BARRIER_NO_STOP_HAPPENED" };
 
 static const double TEST_FREQUENCY{ 10 };
 
-MATCHER_P(StoState, x,
-          "Sto state " + std::string(negation ? "is not" : "is") + ": " +
-              PrintToString(x) + ".")
+MATCHER_P(StoState, x, "Sto state " + std::string(negation ? "is not" : "is") + ": " + PrintToString(x) + ".")
 {
   return arg.data == x;
 }
 
 MATCHER_P(ContainsAllNames, names,
-          "Names" + PrintToString(names) +
-              std::string(negation ? "are not" : "are") + " in message.")
+          "Names" + PrintToString(names) + std::string(negation ? "are not" : "are") + " in message.")
 {
-  for (auto n : names)
+  for (auto& n : names)
   {
     bool found{ false };
-    for (auto& argn : arg.name)
+    for (auto& argn : arg->name)
       if (argn.compare(n) == 0)
         found = true;
     if (!found)
@@ -87,11 +81,9 @@ public:
   void SetUp() override;
   void TearDown() override;
 
-  MOCK_METHOD2(operation_mode_cb, bool(GetOperationMode::Request& req,
-                                       GetOperationMode::Response& res));
-  MOCK_METHOD2(sto_cb, bool(std_srvs::SetBool::Request& req,
-                            std_srvs::SetBool::Response& res));
-  MOCK_METHOD1(frame_speeds_cb, void(FrameSpeeds msg));
+  MOCK_METHOD2(operation_mode_cb, bool(GetOperationMode::Request& req, GetOperationMode::Response& res));
+  MOCK_METHOD2(sto_cb, bool(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res));
+  MOCK_METHOD1(frame_speeds_cb, void(const FrameSpeeds::ConstPtr& msg));
 
   void publishJointStatesAtSpeed(double v);
   void stopJointStatePublisher();
@@ -105,6 +97,7 @@ protected:
   ros::ServiceServer operation_mode_srv_;
   ros::ServiceServer sto_srv_;
   ros::Publisher fake_controller_joint_states_pub_;
+  ros::Publisher operation_mode_pub_;
   std::vector<std::string> additional_frames_;
   bool joint_publisher_running_{ false };
 };
@@ -112,14 +105,14 @@ protected:
 void SpeedObserverIntegrationTest::SetUp()
 {
   subscriber_ =
-      nh_.subscribe<FrameSpeeds>(FRAME_SPEEDS_TOPIC_NAME, 1,
-                                 &SpeedObserverIntegrationTest::frame_speeds_cb, this);
-  fake_controller_joint_states_pub_ = nh_.advertise<sensor_msgs::JointState>(
-      FAKE_CONTROLLER_JOINT_STATES_TOPIC_NAME, 1);
+      nh_.subscribe<FrameSpeeds>(FRAME_SPEEDS_TOPIC_NAME, 1, &SpeedObserverIntegrationTest::frame_speeds_cb, this);
+  fake_controller_joint_states_pub_ =
+      nh_.advertise<sensor_msgs::JointState>(FAKE_CONTROLLER_JOINT_STATES_TOPIC_NAME, 1);
+  operation_mode_pub_ =
+      nh_.advertise<OperationModes>(OPERATION_MODE_TOPIC, 1);
 
   pnh_.getParam(ADDITIONAL_FRAMES_PARAM_NAME, additional_frames_);
-  ROS_DEBUG_STREAM("SetUp pnh:" << pnh_.getNamespace()
-                                << " nh:" << nh_.getNamespace());
+  ROS_DEBUG_STREAM("SetUp pnh:" << pnh_.getNamespace() << " nh:" << nh_.getNamespace());
   for (auto& f : additional_frames_)
   {
     ROS_DEBUG_STREAM("- " << f);
@@ -134,14 +127,13 @@ void SpeedObserverIntegrationTest::TearDown()
 
 void SpeedObserverIntegrationTest::advertiseOmService()
 {
-  operation_mode_srv_ = nh_.advertiseService(
-      OPERATION_MODE_SERVICE, &SpeedObserverIntegrationTest::operation_mode_cb, this);
+  operation_mode_srv_ =
+      nh_.advertiseService(OPERATION_MODE_SERVICE, &SpeedObserverIntegrationTest::operation_mode_cb, this);
 }
 
 void SpeedObserverIntegrationTest::advertiseStoService()
 {
-  sto_srv_ =
-      nh_.advertiseService(STO_SERVICE, &SpeedObserverIntegrationTest::sto_cb, this);
+  sto_srv_ = nh_.advertiseService(STO_SERVICE, &SpeedObserverIntegrationTest::sto_cb, this);
 }
 
 void SpeedObserverIntegrationTest::publishJointStatesAtSpeed(double v)
@@ -171,14 +163,16 @@ void SpeedObserverIntegrationTest::stopJointStatePublisher()
 }
 
 /**
- * @tests{System behaviour in T1}
+ * @tests{Stop1_on_violation_of_speed_limit}
  *
  * Test Sequence:
  *    0. Set Operation Mode to T1 by answering the service call
+ *    1. Joint motion with a speed higher than the T1 limit is faked.
  *
  * Expected Results:
  *    0. -
  *    1. Operation mode not to be called any more
+ *       Sto is triggered
  */
 TEST_F(SpeedObserverIntegrationTest, testT1)
 {
@@ -190,11 +184,13 @@ TEST_F(SpeedObserverIntegrationTest, testT1)
   // Set OM to T1
   GetOperationMode::Response om_res;
   om_res.mode.value = OperationModes::T1;
+  OperationModes om;
+  om.value = om_res.mode.value;
+  om.time_stamp = ros::Time::now();
+  operation_mode_pub_.publish(om);
   EXPECT_CALL(*this, operation_mode_cb(_, _))
-      .WillOnce(DoAll(SetArgReferee<1>(om_res),
-                      ACTION_OPEN_BARRIER(BARRIER_OPERATION_MODE_SET)));
-  EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_)))
-      .Times(AtLeast(1));
+      .WillOnce(DoAll(SetArgReferee<1>(om_res), ACTION_OPEN_BARRIER(BARRIER_OPERATION_MODE_SET)));
+  EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_))).Times(AtLeast(1));
   EXPECT_CALL(*this, sto_cb(_, _)).Times(0);
 
   advertiseOmService();
@@ -214,11 +210,78 @@ TEST_F(SpeedObserverIntegrationTest, testT1)
   sto_res.success = true;
   sto_res.message = "testing ...";
   EXPECT_CALL(*this, sto_cb(StoState(true), _))
-      .WillRepeatedly(DoAll(SetArgReferee<1>(sto_res),
-                            ACTION_OPEN_BARRIER(BARRIER_STOP_HAPPENED)));
+      .WillRepeatedly(DoAll(SetArgReferee<1>(sto_res), ACTION_OPEN_BARRIER(BARRIER_STOP_HAPPENED)));
 
-  std::thread pubisher_thread =
-      std::thread(&SpeedObserverIntegrationTest::publishJointStatesAtSpeed, this, 1.0);
+  std::thread pubisher_thread = std::thread(&SpeedObserverIntegrationTest::publishJointStatesAtSpeed, this, 1.0);
+  BARRIER({ BARRIER_STOP_HAPPENED });
+  stopJointStatePublisher();
+  pubisher_thread.join();
+}
+
+/**
+ * @tests{Stop1_on_violation_of_speed_limit}
+ *
+ * Test Sequence:
+ *    0. Set Operation Mode to Auto by answering the service call
+ *    1. Joint motion with a speed lower than the Auto limit is faked.
+ *
+ * Expected Results:
+ *    0. -
+ *    1. Operation mode not to be called any more
+ *       Sto is *not* triggered
+ */
+TEST_F(SpeedObserverIntegrationTest, testAutoAndTopic)
+{
+  /**********
+   * Step 0 *
+   **********/
+  ROS_DEBUG("Step 0");
+
+  // Set OM to T1
+  GetOperationMode::Response om_res;
+  om_res.mode.value = OperationModes::AUTO;
+  OperationModes om;
+  om.value = om_res.mode.value;
+  om.time_stamp = ros::Time::now();
+  operation_mode_pub_.publish(om);
+  EXPECT_CALL(*this, operation_mode_cb(_, _))
+      .WillOnce(DoAll(SetArgReferee<1>(om_res), ACTION_OPEN_BARRIER(BARRIER_OPERATION_MODE_SET)));
+  EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_))).Times(AtLeast(1));
+  EXPECT_CALL(*this, sto_cb(_, _)).Times(0);
+
+  advertiseOmService();
+  advertiseStoService();
+  waitForService(STO_SERVICE);
+
+  BARRIER({ BARRIER_OPERATION_MODE_SET });
+
+  /**********
+   * Step 1 *
+   **********/
+  ROS_DEBUG("Step 1");
+  Sequence s;
+
+  EXPECT_CALL(*this, operation_mode_cb(_, _)).Times(0);
+  EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_))).InSequence(s).Times(AtLeast(5));
+  EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_))).InSequence(s).WillOnce(ACTION_OPEN_BARRIER_VOID(BARRIER_NO_STOP_HAPPENED));
+
+  std::thread pubisher_thread = std::thread(&SpeedObserverIntegrationTest::publishJointStatesAtSpeed, this, 1.0);
+  BARRIER({ BARRIER_NO_STOP_HAPPENED });
+
+  /**********
+   * Step 2 *
+   **********/
+  ROS_DEBUG("Step 2");
+
+  om.value = OperationModes::T1;
+  om.time_stamp = ros::Time::now();
+  operation_mode_pub_.publish(om);
+  std_srvs::SetBool::Response sto_res;
+  sto_res.success = true;
+  sto_res.message = "testing ...";
+  EXPECT_CALL(*this, sto_cb(StoState(true), _))
+      .WillRepeatedly(DoAll(SetArgReferee<1>(sto_res), ACTION_OPEN_BARRIER(BARRIER_STOP_HAPPENED)));
+
   BARRIER({ BARRIER_STOP_HAPPENED });
   stopJointStatePublisher();
   pubisher_thread.join();

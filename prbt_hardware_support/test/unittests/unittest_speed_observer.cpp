@@ -51,7 +51,6 @@ static const std::string TEST_FRAME_A{ "a" };
 static const std::string TEST_FRAME_B{ "b" };
 static const double TEST_FREQUENCY{ 20 };
 static const double SQRT_2_HALF{ 1 / sqrt(2) };
-static const double PI_2{ 2 * M_PI };
 
 class SpeedObserverUnitTest : public testing::Test, public testing::AsyncTest
 {
@@ -59,7 +58,7 @@ public:
   void SetUp() override;
   void TearDown() override;
 
-  MOCK_METHOD1(frame_speeds_cb_mock, void(FrameSpeeds msg));
+  MOCK_METHOD1(frame_speeds_cb_mock, void(const FrameSpeeds::ConstPtr& msg));
   MOCK_METHOD2(stop_cb_mock, bool(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res));
   void publishTfAtSpeed(double v);
   void stopTfPublisher();
@@ -133,21 +132,21 @@ using ::testing::PrintToString;
 MATCHER_P2(NameAtI, i, name,
            "Name at index " + PrintToString(i) + std::string(negation ? "is not" : "is") + ": " + name + ".")
 {
-  return arg.name[i].compare(name) == 0;
+  return arg->name[(unsigned) i].compare(name) == 0;
 }
 
 MATCHER_P2(SpeedAtIGe, i, x,
            "Speed at index " + PrintToString(i) + std::string(negation ? "is not" : "is") + " greater or equal to" +
                PrintToString(x) + ".")
 {
-  return arg.speed[i] >= x;
+  return arg->speed[i] >= x;
 }
 
 MATCHER_P2(SpeedAtILe, i, x,
            "Speed at index " + PrintToString(i) + std::string(negation ? "is not" : "is") + " less or equal to" +
                PrintToString(x) + ".")
 {
-  return arg.speed[i] <= x;
+  return arg->speed[i] <= x;
 }
 
 /**
