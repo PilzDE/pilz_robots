@@ -54,19 +54,12 @@
  * - If the hold step fails, the system still tries to execute the halt service.
  *    (see also \refspec{hold_service_fail})
  *
- * - If the STO changes to TRUE during the execution of the stop1 process, the
- * system stops the stop1 process as soon as the currently active step is finished.
- * For example:
- *    If the state of the STO changes from TRUE -> FALSE while the drives
- *    are recovering, the controller is kept in "holding" mode and
- *    the execution of the stop trajectory is skipped.
- *
  * Please note:
  * - While the controller is holded, the controller rejects all new trajectories.
- * - The stop1 process can also be resumed by again chainging the STO to FALSE.
+ * - The stop1 process cannot be interrupted, even if the STO changes to TRUE.
  *
  * @definereq{release_of_stop1}
- * - If a stop1 is released, the system performs the follwing steps:
+ * - If a stop1 is released, the system performs the following steps:
  * Driver:recover -> Controller:unhold
  *
  * - If the STO changes to FALSE during the execution of the stop1-release process,
@@ -75,10 +68,6 @@
  *
  * - If the recover step fails, the system ends the stop1-release process.
  *    (see also \refspec{unhold_service_fails})
- *
- * Please note:
- * - The stop1-release process can also be resumed by again chainging the
- * STO to TRUE.
  *
  *
  * @definereq{unhold_service_fails}
