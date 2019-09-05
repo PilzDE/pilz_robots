@@ -371,6 +371,14 @@ TEST_F(Stop1ExecutorTest, testSpamStoActivePlusEnable)
  * Test skipping hold when sto changes to false during recover.
  * }
  *
+ * @tests{release_of_stop1,
+ * Test skipping hold when sto changes to false during recover.
+ * }
+ *
+ * @tests{release_of_stop1_interrupt,
+ * Test skipping hold when sto changes to false during recover.
+ * }
+ *
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)),
  *     call updateSto(false)) during recover service call and return success, let halt service return success
@@ -433,6 +441,10 @@ TEST_F(Stop1ExecutorTest, testSkippingHoldPlusEnable)
 }
 
 /**
+ * @tests{execution_of_stop1,
+ * Test sending sto change to true while hold call is still pending.
+ * }
+ *
  * @tests{release_of_stop1,
  * Test sending sto change to true while hold call is still pending.
  * }
@@ -488,6 +500,10 @@ TEST_F(Stop1ExecutorTest, testEnableDuringHoldService)
 }
 
 /**
+ * @tests{execution_of_stop1,
+ * Test sending sto change to true while halt call is still pending.
+ * }
+ *
  * @tests{release_of_stop1,
  * Test sending sto change to true while halt call is still pending.
  * }
@@ -557,6 +573,11 @@ TEST_F(Stop1ExecutorTest, testEnableDuringHaltService)
  * is still pending.
  * }
  *
+ * @tests{release_of_stop1,
+ * Test sending sto change to true and back to false while halt call
+ * is still pending.
+ * }
+ *
  * Test Sequence:
  *  1. Run the sto adapter and call updateSto(true)).
  *     Call updateSto(false)) during recover service call and return success. (This is not essential for the test)
@@ -609,6 +630,9 @@ TEST_F(Stop1ExecutorTest, testEnableDisableDuringHaltService)
  * Test enabling with failing recover service and retry (stop plus enable).
  * }
  * @tests{release_of_stop1,
+ * Test enabling with failing recover service and retry (stop plus enable).
+ * }
+ * @tests{release_of_stop1_interrupt,
  * Test enabling with failing recover service and retry (stop plus enable).
  * }
  *
