@@ -433,6 +433,61 @@ TEST_F(Stop1ExecutorTest, testSkippingHoldPlusEnable)
 
 /**
  * @tests{release_of_stop1,
+ * Test sending sto change to true while hold call is still pending.
+ * }
+ *
+ * Test Sequence:
+ *  1.  Run the sto adapter and call updateSto(true),
+ *      let recover and unhold service return success.
+ *  2.  Call updateSto(false) and updateSto(true) during hold service call,
+ *      let hold, halt, recover and unhold service return success.
+ *
+ * Expected Results:
+ *  1.  Recover and unhold services are called successively.
+ *  2.  Hold, halt, recover and unhold services are called successively.
+ */
+TEST_F(Stop1ExecutorTest, testEnableDuringHoldService)
+{
+  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
+
+  auto enable_during_hold_action = [this, &adapter_sto]() {
+    adapter_sto->updateSto(true);
+    this->triggerClearEvent(HOLD_SRV_CALLED_EVENT);
+    return true;
+  };
+
+  /**********
+   * Step 1 *
+   **********/
+  {
+    InSequence dummy;
+
+    EXPECT_RECOVER;
+    EXPECT_UNHOLD;
+  }
+
+  adapter_sto->updateSto(true);
+
+  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+
+  {
+    InSequence dummy;
+
+    EXPECT_CALL(*this, hold_func())
+        .WillOnce(InvokeWithoutArgs(enable_during_hold_action));
+
+    EXPECT_HALT;
+    EXPECT_RECOVER;
+    EXPECT_UNHOLD;
+  }
+
+  adapter_sto->updateSto(false);
+
+  BARRIER({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT, RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+}
+
+/**
+ * @tests{release_of_stop1,
  * Test sending sto change to true while halt call is still pending.
  * }
  *
