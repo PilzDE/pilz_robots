@@ -16,9 +16,10 @@ env:
   global:
     - ROS_DISTRO="melodic"
     - CATKIN_LINT=true
+    - ADDITIONAL_DEBS="libclang-dev"
   matrix:
     - ROS_REPO=ros
-    - ROS_REPO=ros-shadow-fixed
+    - ROS_REPO=testing
     - CLANG_FORMAT_CHECK=file
 matrix:
   allow_failures:
