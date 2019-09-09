@@ -51,6 +51,7 @@ static const std::string ADDITIONAL_FRAMES_PARAM_NAME{ "additional_frames" };
 static const std::string BARRIER_OPERATION_MODE_SET{ "BARRIER_OPERATION_MODE_SET" };
 static const std::string BARRIER_STOP_HAPPENED{ "BARRIER_STOP_HAPPENED" };
 static const std::string BARRIER_NO_STOP_HAPPENED{ "BARRIER_NO_STOP_HAPPENED" };
+static const std::string BARRIER_NO_SVC_SUCESS{ "BARRIER_NO_SVC_SUCESS" };
 
 static const double TEST_FREQUENCY{ 10 };
 
@@ -175,6 +176,7 @@ void SpeedObserverIntegrationTest::stopJointStatePublisher()
  *       Wait for stop calls that may occurr from previous run
  *    3. Joint motion with a speed lower than the Auto limit is faked.
  *    4. Switching back to T1
+ *    5. Set up the STO service to return success = false
  *
  * Expected Results:
  *    0. -
@@ -184,6 +186,7 @@ void SpeedObserverIntegrationTest::stopJointStatePublisher()
  *    3. Operation mode not to be called any more
  *       Sto is *not* triggered
  *    4. Sto is triggered
+ *    5. Sto is triggered and error message is produced
  */
 TEST_F(SpeedObserverIntegrationTest, testT1)
 {
@@ -257,6 +260,17 @@ TEST_F(SpeedObserverIntegrationTest, testT1)
 
   publishOm(OperationModes::T1);
   BARRIER({ BARRIER_STOP_HAPPENED });
+
+  /**********
+   * Step 5 *
+   **********/
+  ROS_DEBUG("Step 5");
+
+  sto_res.success = false;
+  EXPECT_CALL(*this, sto_cb(StoState(true), _)).InSequence(s_stop)
+      .WillRepeatedly(DoAll(SetArgReferee<1>(sto_res), ACTION_OPEN_BARRIER(BARRIER_NO_SVC_SUCESS)));
+
+  BARRIER({BARRIER_NO_SVC_SUCESS});
   stopJointStatePublisher();
   pubisher_thread.join();
 }
