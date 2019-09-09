@@ -136,11 +136,6 @@ void SpeedObserverIntegrationTest::publishOm(OperationModes::_value_type omv){
   OperationModes om;
   om.value = omv;
   om.time_stamp = ros::Time::now();
-  while(operation_mode_pub_.getNumSubscribers() == 0){
-    // Sometimes the publisher has no subscribers at this point. I have no idea, why.
-    ROS_WARN("waiting for subscribers ..");
-    ros::Duration(1).sleep();
-  }
   operation_mode_pub_.publish(om);
 }
 
