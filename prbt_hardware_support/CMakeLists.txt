@@ -479,6 +479,17 @@ if(CATKIN_ENABLE_TESTING)
   add_dependencies(unittest_modbus_msg_in_builder ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------------
 
+  #--- OperationModeSetupExecutor unit test ---
+  catkin_add_gmock(unittest_operation_mode_setup_executor
+      test/unittests/unittest_operation_mode_setup_executor.cpp
+      src/operation_mode_setup_executor.cpp
+  )
+  target_link_libraries(unittest_operation_mode_setup_executor
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  add_dependencies(unittest_operation_mode_setup_executor ${${PROJECT_NAME}_EXPORTED_TARGETS})
+  #----------------------------------------
+
   # to run: catkin_make -DENABLE_COVERAGE_TESTING=ON package_name_coverage (adding -j1 recommended)
   if(ENABLE_COVERAGE_TESTING)
     include(CodeCoverage)
