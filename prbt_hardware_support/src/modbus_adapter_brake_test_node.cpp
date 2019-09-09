@@ -24,6 +24,7 @@
 #include <prbt_hardware_support/wait_for_service.h>
 #include <prbt_hardware_support/filter_pipeline.h>
 #include <prbt_hardware_support/WriteModbusRegister.h>
+#include <prbt_hardware_support/write_modbus_register_call.h>
 
 static const std::string API_SPEC_WRITE_PARAM_NAME("write_api_spec/");
 static const std::string SERVICE_NAME_IS_BRAKE_TEST_REQUIRED = "/prbt/brake_test_required";
@@ -31,32 +32,6 @@ static const std::string SERVICE_SEND_BRAKE_TEST_RESULT = "/prbt/send_brake_test
 static const std::string MODBUS_WRITE_SERVICE_NAME{"/pilz_modbus_client_node/modbus_write"};
 
 using namespace prbt_hardware_support;
-
-static bool writeModbusRegisterCall(ros::ServiceClient& modbus_service,
-                                    const uint16_t& start_idx,
-                                    const TRegVec& values)
-{
-  WriteModbusRegister srv;
-  srv.request.holding_register_block.start_idx = start_idx;
-  srv.request.holding_register_block.values = values;
-
-  ROS_DEBUG_STREAM("Calling service: " << modbus_service.getService() << ")");
-  bool call_success = modbus_service.call(srv);
-  if (!call_success)
-  {
-    ROS_ERROR_STREAM("Service call " << modbus_service.getService() << " failed.");
-    return false;
-  }
-
-  if (!srv.response.success)
-  {
-    ROS_ERROR_STREAM("Writing of modbus register failed.");
-    return false;
-  }
-
-  return true;
-}
-
 
 /**
  * @brief Starts a modbus brake test announcer and runs it until a failure occurs.
@@ -77,7 +52,7 @@ int main(int argc, char **argv)
   using std::placeholders::_1;
   using std::placeholders::_2;
   ModbusAdapterBrakeTest adapter_brake_test(
-        std::bind(writeModbusRegisterCall, modbus_write_client, _1, _2),
+        std::bind(writeModbusRegisterCall<ros::ServiceClient>, modbus_write_client, _1, _2),
         read_api_spec, write_api_spec);
 
   FilterPipeline filter_pipeline(pnh, std::bind(&ModbusAdapterBrakeTest::modbusMsgCallback, &adapter_brake_test, _1) );

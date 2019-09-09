@@ -29,12 +29,12 @@
 #include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/IsBrakeTestRequired.h>
 #include <prbt_hardware_support/SendBrakeTestResult.h>
+#include <prbt_hardware_support/register_container.h>
 
 namespace prbt_hardware_support
 {
 
-using TRegVec = std::vector<uint16_t>;
-using TWriteModbusRegister = std::function<bool(const uint16_t&, const TRegVec&)>;
+using TWriteModbusRegister = std::function<bool(const uint16_t&, const RegCont&)>;
 
 /**
  * @brief Listens to the modbus_read topic and publishes a message
@@ -103,7 +103,7 @@ private:
   const TRegIdxCont reg_idx_cont_;
 
   const TRegIdx reg_start_idx_ {getMinRegisterIdx(reg_idx_cont_)};
-  const TRegVec::size_type reg_block_size_ {getRegisterBlockSize(reg_idx_cont_)};
+  const RegCont::size_type reg_block_size_ {getRegisterBlockSize(reg_idx_cont_)};
 
   TWriteModbusRegister write_modbus_register_func_;
 };
@@ -117,6 +117,9 @@ inline bool ModbusAdapterBrakeTest::isBrakeTestRequired(IsBrakeTestRequired::Req
   return true;
 }
 
+// The following is excluded because lambda functions are not marked properly with gcc-7
+// see https://github.com/gcc-mirror/gcc/commit/7de708f
+// LCOV_EXCL_START
 inline const ModbusAdapterBrakeTest::TRegIdxCont::mapped_type& ModbusAdapterBrakeTest::getMinRegisterIdx(const TRegIdxCont& reg_idx_cont)
 {
   return std::min_element(
@@ -132,6 +135,7 @@ inline const ModbusAdapterBrakeTest::TRegIdxCont::mapped_type& ModbusAdapterBrak
         [](const TRegIdxCont::value_type& l, const TRegIdxCont::value_type& r) -> bool { return l.second < r.second; })
       ->second;
 }
+// LCVO EXCL_STOP
 
 inline unsigned long ModbusAdapterBrakeTest::getRegisterBlockSize(const ModbusAdapterBrakeTest::TRegIdxCont& reg_idx_cont)
 {

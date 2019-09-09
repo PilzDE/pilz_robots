@@ -26,6 +26,8 @@
 #include <prbt_hardware_support/modbus_msg_brake_test_wrapper.h>
 #include <prbt_hardware_support/modbus_msg_brake_test_wrapper_exception.h>
 #include <prbt_hardware_support/modbus_adapter_brake_test_exception.h>
+#include <prbt_hardware_support/register_container.h>
+#include <prbt_hardware_support/write_modbus_register_call.h>
 
 #include <pilz_testutils/async_test.h>
 
@@ -42,10 +44,15 @@ static const ModbusApiSpec TEST_API_WRITE_SPEC{ {modbus_api_spec::BRAKETEST_PERF
 using std::placeholders::_1;
 using std::placeholders::_2;
 
+using ::testing::_;
+using ::testing::Return;
+using ::testing::DoAll;
+using ::testing::SetArgReferee;
+
 class ModbusMock
 {
 public:
-  MOCK_METHOD2(modbsWriteRegisterFunc, bool(const uint16_t&, const TRegVec&));
+  MOCK_METHOD2(modbsWriteRegisterFunc, bool(const uint16_t&, const RegCont&));
 };
 
 static ModbusMsgInStampedPtr createDefaultBrakeTestModbusMsg(
@@ -367,6 +374,74 @@ TEST(ModbusAdapterBrakeTestTest, testBrakeTestTriggeringWrongApiDef)
                    TEST_API_SPEC, api_write_spec), ModbusAdapterBrakeTestException);
   }
 
+}
+
+/**
+ * @brief Tests that missing modbus register write functions leads to
+ * response.success==false.
+ */
+TEST(ModbusAdapterBrakeTestTest, testMissingModbusWriteFunc)
+{
+  ModbusMock mock;
+  ModbusAdapterBrakeTest brake_test_adapter(nullptr,
+                                            TEST_API_SPEC, TEST_API_WRITE_SPEC);
+
+  SendBrakeTestResult srv;
+  EXPECT_TRUE(brake_test_adapter.sendBrakeTestResult(srv.request, srv.response));
+  EXPECT_FALSE(srv.response.success);
+}
+
+/**
+ * @brief Tests that failing modbus register write functions leads to
+ * response.success==false.
+ */
+TEST(ModbusAdapterBrakeTestTest, testFailingModbusWriteFunc)
+{
+  ModbusMock mock;
+  EXPECT_CALL(mock, modbsWriteRegisterFunc(_,_)).Times(1).WillOnce(Return(false));
+  ModbusAdapterBrakeTest brake_test_adapter(std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
+                                            TEST_API_SPEC, TEST_API_WRITE_SPEC);
+
+  SendBrakeTestResult srv;
+  EXPECT_TRUE(brake_test_adapter.sendBrakeTestResult(srv.request, srv.response));
+  EXPECT_FALSE(srv.response.success);
+}
+
+class ServiceMock
+{
+public:
+  MOCK_METHOD1(call, bool(WriteModbusRegister& srv));
+  MOCK_METHOD0(getService, std::string());
+};
+
+/**
+ * @brief Tests that a service.response=false leads to return value false.
+ */
+TEST(ModbusAdapterBrakeTestTest, testWriteModbusRegisterCallResponseFalse)
+{
+  WriteModbusRegister res_exp;
+  res_exp.response.success = false;
+
+  ServiceMock mock;
+  EXPECT_CALL(mock, getService()).WillRepeatedly(Return("TestServiceName"));
+  EXPECT_CALL(mock, call(_)).Times(1).WillOnce(DoAll(SetArgReferee<0>(res_exp), Return(true)));
+
+  EXPECT_FALSE(writeModbusRegisterCall<ServiceMock>(mock, 0, {}));
+}
+
+/**
+ * @brief Tests that a service call failure leads to return value false.
+ */
+TEST(ModbusAdapterBrakeTestTest, testWriteModbusRegisterCallFailure)
+{
+  WriteModbusRegister res_exp;
+  res_exp.response.success = false;
+
+  ServiceMock mock;
+  EXPECT_CALL(mock, getService()).WillRepeatedly(Return("TestServiceName"));
+  EXPECT_CALL(mock, call(_)).Times(1).WillOnce(Return(false));
+
+  EXPECT_FALSE(writeModbusRegisterCall<ServiceMock>(mock, 0, {}));
 }
 
 } // namespace prbt_hardware_support

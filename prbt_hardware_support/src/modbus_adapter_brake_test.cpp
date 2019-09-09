@@ -124,7 +124,7 @@ bool ModbusAdapterBrakeTest::sendBrakeTestResult(SendBrakeTestResult::Request& r
     return true;
   }
 
-  TRegVec reg_cont(reg_block_size_, 0);
+  RegCont reg_cont(reg_block_size_, 0);
   reg_cont.at(reg_idx_cont_.at(modbus_api_spec::BRAKETEST_PERFORMED) - reg_start_idx_) = req.performed;
   reg_cont.at(reg_idx_cont_.at(modbus_api_spec::BRAKETEST_RESULT) - reg_start_idx_) = req.result;
 
