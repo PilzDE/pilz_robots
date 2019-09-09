@@ -16,7 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <launch>
-    <arg name="timeout" default="5" />
+    <arg name="timeout" default="60" />
     <arg name="testing_frame" value="another_frame"
          doc="a user definded frame to test how it is handled" />
 

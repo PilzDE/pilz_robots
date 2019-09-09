@@ -44,7 +44,6 @@ bool setSpeedLimitSrv(ros::ServiceClient& srv_client, const double& speed_limit)
 {
   SetSpeedLimit srv_msg;
   srv_msg.request.speed_limit = speed_limit;
-  ROS_DEBUG_STREAM("Calling service: " << srv_client.getService() << ")");
   bool call_success = srv_client.call(srv_msg);
   if (!call_success)
   {
@@ -56,7 +55,6 @@ bool setSpeedLimitSrv(ros::ServiceClient& srv_client, const double& speed_limit)
 OperationModes getOperationMode(ros::ServiceClient& srv_client)
 {
   GetOperationMode srv_msg;
-  ROS_DEBUG_STREAM("Calling service: " << srv_client.getService() << ")");
   bool call_success = srv_client.call(srv_msg);
   if (!call_success)
   {
@@ -79,11 +77,9 @@ int main(int argc, char **argv)
   ros::ServiceClient speed_limit_srv = nh.serviceClient<SetSpeedLimit>(SET_SPEED_LIMIT_SERVICE);
   TSetSpeedLimit set_speed_limit_func = std::bind(setSpeedLimitSrv, speed_limit_srv, _1);
 
-  ROS_DEBUG("waitForService(OPERATION_MODE_SERVICE)");
   waitForService(OPERATION_MODE_SERVICE);
   ros::ServiceClient op_mode_srv = nh.serviceClient<GetOperationMode>(OPERATION_MODE_SERVICE);
   TGetOpMode get_op_mode_func = std::bind(getOperationMode, op_mode_srv);
-  ROS_DEBUG("DONE waitForService(OPERATION_MODE_SERVICE)");
 
   double speed_limit_t1 {0};
   double speed_limit_auto {0};
@@ -103,7 +99,7 @@ int main(int argc, char **argv)
                                               set_speed_limit_func,
                                               get_op_mode_func);
 
-  ros::Subscriber unhold_srv = nh.subscribe(OPERATION_MODE_TOPIC, DEFAULT_QUEUE_SIZE,
+  ros::Subscriber operation_mode_sub = nh.subscribe(OPERATION_MODE_TOPIC, DEFAULT_QUEUE_SIZE,
                                             &OperationModeSetupExecutor::updateOperationMode,
                                             &op_mode_executor);
   ros::spin();

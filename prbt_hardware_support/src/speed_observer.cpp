@@ -133,6 +133,7 @@ void SpeedObserver::startObserving(double frequency)
     }
     previous_t = now;
     frame_speeds_pub_.publish(createFrameSpeedsMessage(speeds));
+    ros::spinOnce();
     if (!terminate_)
     {
       r.sleep();
@@ -176,6 +177,7 @@ void SpeedObserver::triggerStop1()
 
 bool SpeedObserver::setSpeedLimitCb(SetSpeedLimit::Request& req, SetSpeedLimit::Response& res)
 {
+  ROS_DEBUG_STREAM("setSpeedLimitCb " << req.speed_limit);
   current_speed_limit_ = req.speed_limit;
   return true;
 }

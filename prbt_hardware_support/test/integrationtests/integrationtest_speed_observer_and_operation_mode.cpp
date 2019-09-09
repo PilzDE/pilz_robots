@@ -87,8 +87,7 @@ public:
 
   void publishJointStatesAtSpeed(double v);
   void stopJointStatePublisher();
-  void advertiseOmService();
-  void advertiseStoService();
+  void publishOm(OperationModes::_value_type omv);
 
 protected:
   ros::NodeHandle nh_;
@@ -100,6 +99,7 @@ protected:
   ros::Publisher operation_mode_pub_;
   std::vector<std::string> additional_frames_;
   bool joint_publisher_running_{ false };
+  std_srvs::SetBool::Response sto_res;
 };
 
 void SpeedObserverIntegrationTest::SetUp()
@@ -109,7 +109,7 @@ void SpeedObserverIntegrationTest::SetUp()
   fake_controller_joint_states_pub_ =
       nh_.advertise<sensor_msgs::JointState>(FAKE_CONTROLLER_JOINT_STATES_TOPIC_NAME, 1);
   operation_mode_pub_ =
-      nh_.advertise<OperationModes>(OPERATION_MODE_TOPIC, 1);
+      nh_.advertise<OperationModes>(OPERATION_MODE_TOPIC, 10);
 
   pnh_.getParam(ADDITIONAL_FRAMES_PARAM_NAME, additional_frames_);
   ROS_DEBUG_STREAM("SetUp pnh:" << pnh_.getNamespace() << " nh:" << nh_.getNamespace());
@@ -117,6 +117,13 @@ void SpeedObserverIntegrationTest::SetUp()
   {
     ROS_DEBUG_STREAM("- " << f);
   }
+
+  operation_mode_srv_ =
+      nh_.advertiseService(OPERATION_MODE_SERVICE, &SpeedObserverIntegrationTest::operation_mode_cb, this);
+  sto_srv_ = nh_.advertiseService(STO_SERVICE, &SpeedObserverIntegrationTest::sto_cb, this);
+
+  sto_res.success = true;
+  sto_res.message = "testing ...";
 }
 
 void SpeedObserverIntegrationTest::TearDown()
@@ -125,15 +132,16 @@ void SpeedObserverIntegrationTest::TearDown()
   nh_.shutdown();
 }
 
-void SpeedObserverIntegrationTest::advertiseOmService()
-{
-  operation_mode_srv_ =
-      nh_.advertiseService(OPERATION_MODE_SERVICE, &SpeedObserverIntegrationTest::operation_mode_cb, this);
-}
-
-void SpeedObserverIntegrationTest::advertiseStoService()
-{
-  sto_srv_ = nh_.advertiseService(STO_SERVICE, &SpeedObserverIntegrationTest::sto_cb, this);
+void SpeedObserverIntegrationTest::publishOm(OperationModes::_value_type omv){
+  OperationModes om;
+  om.value = omv;
+  om.time_stamp = ros::Time::now();
+  while(operation_mode_pub_.getNumSubscribers() == 0){
+    // Sometimes the publisher has no subscribers at this point. I have no idea, why.
+    ROS_WARN("waiting for subscribers ..");
+    ros::Duration(1).sleep();
+  }
+  operation_mode_pub_.publish(om);
 }
 
 void SpeedObserverIntegrationTest::publishJointStatesAtSpeed(double v)
@@ -168,14 +176,23 @@ void SpeedObserverIntegrationTest::stopJointStatePublisher()
  * Test Sequence:
  *    0. Set Operation Mode to T1 by answering the service call
  *    1. Joint motion with a speed higher than the T1 limit is faked.
+ *    2. Set Operation Mode to Auto by publihsing on the topic
+ *       Wait for stop calls that may occurr from previous run
+ *    3. Joint motion with a speed lower than the Auto limit is faked.
+ *    4. Switching back to T1
  *
  * Expected Results:
  *    0. -
  *    1. Operation mode not to be called any more
  *       Sto is triggered
+ *    2. -
+ *    3. Operation mode not to be called any more
+ *       Sto is *not* triggered
+ *    4. Sto is triggered
  */
 TEST_F(SpeedObserverIntegrationTest, testT1)
 {
+  Sequence s_speeds, s_stop;
   /**********
    * Step 0 *
    **********/
@@ -184,18 +201,11 @@ TEST_F(SpeedObserverIntegrationTest, testT1)
   // Set OM to T1
   GetOperationMode::Response om_res;
   om_res.mode.value = OperationModes::T1;
-  OperationModes om;
-  om.value = om_res.mode.value;
-  om.time_stamp = ros::Time::now();
-  operation_mode_pub_.publish(om);
-  EXPECT_CALL(*this, operation_mode_cb(_, _))
+  om_res.mode.time_stamp = ros::Time::now();
+  EXPECT_CALL(*this, operation_mode_cb(_, _)).InSequence(s_stop)
       .WillOnce(DoAll(SetArgReferee<1>(om_res), ACTION_OPEN_BARRIER(BARRIER_OPERATION_MODE_SET)));
-  EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_))).Times(AtLeast(1));
+  EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_))).Times(AtLeast(1)).InSequence(s_speeds);
   EXPECT_CALL(*this, sto_cb(_, _)).Times(0);
-
-  advertiseOmService();
-  advertiseStoService();
-  waitForService(STO_SERVICE);
 
   BARRIER({ BARRIER_OPERATION_MODE_SET });
 
@@ -205,10 +215,7 @@ TEST_F(SpeedObserverIntegrationTest, testT1)
   ROS_DEBUG("Step 1");
 
   // Now the service should not be called any more
-  EXPECT_CALL(*this, operation_mode_cb(_, _)).Times(0);
-  std_srvs::SetBool::Response sto_res;
-  sto_res.success = true;
-  sto_res.message = "testing ...";
+  EXPECT_CALL(*this, operation_mode_cb(_, _)).Times(0).InSequence(s_stop);
   EXPECT_CALL(*this, sto_cb(StoState(true), _))
       .WillRepeatedly(DoAll(SetArgReferee<1>(sto_res), ACTION_OPEN_BARRIER(BARRIER_STOP_HAPPENED)));
 
@@ -216,72 +223,44 @@ TEST_F(SpeedObserverIntegrationTest, testT1)
   BARRIER({ BARRIER_STOP_HAPPENED });
   stopJointStatePublisher();
   pubisher_thread.join();
-}
-
-/**
- * @tests{Stop1_on_violation_of_speed_limit}
- *
- * Test Sequence:
- *    0. Set Operation Mode to Auto by answering the service call
- *    1. Joint motion with a speed lower than the Auto limit is faked.
- *
- * Expected Results:
- *    0. -
- *    1. Operation mode not to be called any more
- *       Sto is *not* triggered
- */
-TEST_F(SpeedObserverIntegrationTest, testAutoAndTopic)
-{
-  /**********
-   * Step 0 *
-   **********/
-  ROS_DEBUG("Step 0");
-
-  // Set OM to T1
-  GetOperationMode::Response om_res;
-  om_res.mode.value = OperationModes::AUTO;
-  OperationModes om;
-  om.value = om_res.mode.value;
-  om.time_stamp = ros::Time::now();
-  operation_mode_pub_.publish(om);
-  EXPECT_CALL(*this, operation_mode_cb(_, _))
-      .WillOnce(DoAll(SetArgReferee<1>(om_res), ACTION_OPEN_BARRIER(BARRIER_OPERATION_MODE_SET)));
-  EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_))).Times(AtLeast(1));
-  EXPECT_CALL(*this, sto_cb(_, _)).Times(0);
-
-  advertiseOmService();
-  advertiseStoService();
-  waitForService(STO_SERVICE);
-
-  BARRIER({ BARRIER_OPERATION_MODE_SET });
-
-  /**********
-   * Step 1 *
-   **********/
-  ROS_DEBUG("Step 1");
-  Sequence s;
-
-  EXPECT_CALL(*this, operation_mode_cb(_, _)).Times(0);
-  EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_))).InSequence(s).Times(AtLeast(5));
-  EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_))).InSequence(s).WillOnce(ACTION_OPEN_BARRIER_VOID(BARRIER_NO_STOP_HAPPENED));
-
-  std::thread pubisher_thread = std::thread(&SpeedObserverIntegrationTest::publishJointStatesAtSpeed, this, 1.0);
-  BARRIER({ BARRIER_NO_STOP_HAPPENED });
 
   /**********
    * Step 2 *
    **********/
   ROS_DEBUG("Step 2");
 
-  om.value = OperationModes::T1;
-  om.time_stamp = ros::Time::now();
-  operation_mode_pub_.publish(om);
-  std_srvs::SetBool::Response sto_res;
-  sto_res.success = true;
-  sto_res.message = "testing ...";
-  EXPECT_CALL(*this, sto_cb(StoState(true), _))
-      .WillRepeatedly(DoAll(SetArgReferee<1>(sto_res), ACTION_OPEN_BARRIER(BARRIER_STOP_HAPPENED)));
+  EXPECT_CALL(*this, sto_cb(StoState(true), _)).InSequence(s_stop)
+      .WillRepeatedly(SetArgReferee<1>(sto_res));
+  EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_))).Times(AtLeast(2)).InSequence(s_speeds);
+  EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_))).InSequence(s_speeds).WillOnce(ACTION_OPEN_BARRIER_VOID(BARRIER_OPERATION_MODE_SET));
 
+  // Set OM to Auto
+  publishOm(OperationModes::AUTO);
+  BARRIER({ BARRIER_OPERATION_MODE_SET });
+
+  /**********
+   * Step 3 *
+   **********/
+  ROS_DEBUG("Step 3");
+
+  EXPECT_CALL(*this, sto_cb(StoState(true), _)).InSequence(s_stop)
+      .WillOnce(SetArgReferee<1>(sto_res));  // may be called once at start of publisher
+  EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_))).Times(AtLeast(2)).InSequence(s_speeds);
+  EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_))).InSequence(s_speeds).WillOnce(ACTION_OPEN_BARRIER_VOID(BARRIER_NO_STOP_HAPPENED));
+
+  pubisher_thread = std::thread(&SpeedObserverIntegrationTest::publishJointStatesAtSpeed, this, 1.0);
+  BARRIER({ BARRIER_NO_STOP_HAPPENED });
+
+  /**********
+   * Step 4 *
+   **********/
+  ROS_DEBUG("Step 4");
+
+  EXPECT_CALL(*this, sto_cb(StoState(true), _)).InSequence(s_stop)
+      .WillRepeatedly(DoAll(SetArgReferee<1>(sto_res), ACTION_OPEN_BARRIER(BARRIER_STOP_HAPPENED)));
+  EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_))).Times(AtLeast(1)).InSequence(s_speeds);
+
+  publishOm(OperationModes::T1);
   BARRIER({ BARRIER_STOP_HAPPENED });
   stopJointStatePublisher();
   pubisher_thread.join();

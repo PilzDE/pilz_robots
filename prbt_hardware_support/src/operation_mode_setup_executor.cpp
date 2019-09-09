@@ -34,7 +34,9 @@ OperationModeSetupExecutor::OperationModeSetupExecutor(const double& speed_limit
   // (which might not happen for a long time).
   if (get_op_mode_func)
   {
-    updateOperationMode(get_op_mode_func());
+    OperationModes om = get_op_mode_func();
+    ROS_DEBUG("Operation Mode at init: %d", om.value);
+    updateOperationMode(om);
   }
 }
 
