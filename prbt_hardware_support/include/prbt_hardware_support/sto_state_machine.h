@@ -196,7 +196,7 @@ public:
     }
   };
 
-  struct EnableRequestDuringStop : public msm::front::state<>
+  struct EnableRequestedDuringStop : public msm::front::state<>
   {
     template <class Event, class FSM>
     void on_entry(Event const &ev, FSM &)
@@ -349,12 +349,13 @@ public:
   Row< StopRequestedDuringEnable , unhold_done  , Stopping                  , hold_start   , none     >,
   Row< RobotActive               , sto_updated  , none                      , none         , sto_true >,
   Row< RobotActive               , sto_updated  , Stopping                  , hold_start   , sto_false>,
-  Row< Stopping                  , sto_updated  , EnableRequestDuringStop   , none         , sto_true >,
+  Row< Stopping                  , sto_updated  , EnableRequestedDuringStop , none         , sto_true >,
   Row< Stopping                  , hold_done    , none                      , halt_start   , none     >,
   Row< Stopping                  , halt_done    , RobotInactive             , none         , none     >,
-  Row< EnableRequestDuringStop   , halt_done    , Enabling                  , recover_start, none     >,
-  Row< EnableRequestDuringStop   , sto_updated  , Stopping                  , none         , sto_false>,
-  Row< EnableRequestDuringStop   , sto_updated  , none                      , none         , sto_true >
+  Row< EnableRequestedDuringStop , hold_done    , none                      , halt_start   , none     >,
+  Row< EnableRequestedDuringStop , halt_done    , Enabling                  , recover_start, none     >,
+  Row< EnableRequestedDuringStop , sto_updated  , Stopping                  , none         , sto_false>,
+  Row< EnableRequestedDuringStop , sto_updated  , none                      , none         , sto_true >
   // +---------------------------+--------------+---------------------------+--------------+----------+
   > {};
 
