@@ -16,6 +16,7 @@ env:
   global:
     - ROS_DISTRO="melodic"
     - CATKIN_LINT=true
+    - CMAKE_ARGS="-DCATKIN_ENABLE_CLANG_TIDY=true"
   matrix:
     - ROS_REPO=ros
     - ROS_REPO=testing
