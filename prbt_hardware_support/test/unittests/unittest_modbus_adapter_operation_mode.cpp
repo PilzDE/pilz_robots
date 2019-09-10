@@ -37,7 +37,7 @@ static const ModbusApiSpec TEST_API_SPEC{ {modbus_api_spec::VERSION, 1},
                                           {modbus_api_spec::OPERATION_MODE, 11} };
 
 static constexpr double OPERATION_MODE_CHANGE_WAIT_TIME_S{2.0};
-static const std::vector<uint16_t> OPERATION_MODES{1, 2, 3};
+static const std::vector<uint16_t> OPERATION_MODES{0, 1, 2, 3};
 
 /**
  * @brief Test fixture for unit-tests of the ModbusAdapterOperationMode.
