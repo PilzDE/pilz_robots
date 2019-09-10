@@ -16,6 +16,8 @@ env:
   global:
     - ROS_DISTRO="kinetic"
     - CATKIN_LINT=true
+    - CMAKE_ARGS="-DCATKIN_ENABLE_CLANG_TIDY=true"
+    - ADDITIONAL_DEBS="clang-tidy libclang-dev"
   matrix:
     - ROS_REPO=ros
     - ROS_REPO=testing
