@@ -437,7 +437,7 @@ if(CATKIN_ENABLE_TESTING)
     APPEND_COVERAGE_COMPILER_FLAGS()
     set(COVERAGE_EXCLUDES
         "*/${PROJECT_NAME}/test*"
-        "*/.private/${PROJECT_NAME}/include/${PROJECT_NAME}/*.h")
+        "*/devel/include/${PROJECT_NAME}/*.h")
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
       DEPENDS tests
