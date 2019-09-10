@@ -447,7 +447,11 @@ if(CATKIN_ENABLE_TESTING)
                           "*/ModbusRegisterBlock.h"
                           "*/WriteModbusRegister.h"
                           "*/WriteModbusRegisterRequest.h"
-                          "*/WriteModbusRegisterResponse.h")
+                          "*/WriteModbusRegisterResponse.h"
+                          "*/GetOperationMode.h"
+                          "*/GetOperationModeRequest.h"
+                          "*/GetOperationModeResponse.h"
+                          "*/OperationModes.h")
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
       DEPENDS tests
