@@ -34,7 +34,6 @@ namespace prbt_hardware_support
 {
 
 static constexpr uint16_t MODBUS_API_VERSION_VALUE {2};
-static const std::string SERVICE_OPERATION_MODE = "/prbt/get_operation_mode";
 
 /**
  * @brief OperationModeIntegrationTest checks if the chain

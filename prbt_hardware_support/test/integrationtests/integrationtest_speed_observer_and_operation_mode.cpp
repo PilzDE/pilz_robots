@@ -45,7 +45,6 @@ static const std::string FRAME_SPEEDS_TOPIC_NAME{ "/frame_speeds" };
 static const std::string FAKE_CONTROLLER_JOINT_STATES_TOPIC_NAME{ "/fake_controller_joint_states" };
 static const std::string OPERATION_MODE_TOPIC{"operation_mode"};
 static const std::string STO_SERVICE{ "safe_torque_off" };
-static const std::string OPERATION_MODE_SERVICE{ "/prbt/get_operation_mode" };
 static const std::string ADDITIONAL_FRAMES_PARAM_NAME{ "additional_frames" };
 
 static const std::string BARRIER_OPERATION_MODE_SET{ "BARRIER_OPERATION_MODE_SET" };
@@ -82,7 +81,6 @@ public:
   void SetUp() override;
   void TearDown() override;
 
-  MOCK_METHOD2(operation_mode_cb, bool(GetOperationMode::Request& req, GetOperationMode::Response& res));
   MOCK_METHOD2(sto_cb, bool(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res));
   MOCK_METHOD1(frame_speeds_cb, void(const FrameSpeeds::ConstPtr& msg));
 
@@ -113,14 +111,7 @@ void SpeedObserverIntegrationTest::SetUp()
       nh_.advertise<OperationModes>(OPERATION_MODE_TOPIC, 10);
 
   pnh_.getParam(ADDITIONAL_FRAMES_PARAM_NAME, additional_frames_);
-  ROS_DEBUG_STREAM("SetUp pnh:" << pnh_.getNamespace() << " nh:" << nh_.getNamespace());
-  for (auto& f : additional_frames_)
-  {
-    ROS_DEBUG_STREAM("- " << f);
-  }
 
-  operation_mode_srv_ =
-      nh_.advertiseService(OPERATION_MODE_SERVICE, &SpeedObserverIntegrationTest::operation_mode_cb, this);
   sto_srv_ = nh_.advertiseService(STO_SERVICE, &SpeedObserverIntegrationTest::sto_cb, this);
 
   sto_res.success = true;
@@ -197,11 +188,7 @@ TEST_F(SpeedObserverIntegrationTest, testT1)
   ROS_DEBUG("Step 0");
 
   // Set OM to T1
-  GetOperationMode::Response om_res;
-  om_res.mode.value = OperationModes::T1;
-  om_res.mode.time_stamp = ros::Time::now();
-  EXPECT_CALL(*this, operation_mode_cb(_, _)).InSequence(s_stop)
-      .WillOnce(DoAll(SetArgReferee<1>(om_res), ACTION_OPEN_BARRIER(BARRIER_OPERATION_MODE_SET)));
+  publishOm(OperationModes::T1);
   EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_))).Times(AtLeast(1)).InSequence(s_speeds);
   EXPECT_CALL(*this, sto_cb(_, _)).Times(0);
 
@@ -212,8 +199,6 @@ TEST_F(SpeedObserverIntegrationTest, testT1)
    **********/
   ROS_DEBUG("Step 1");
 
-  // Now the service should not be called any more
-  EXPECT_CALL(*this, operation_mode_cb(_, _)).Times(0).InSequence(s_stop);
   EXPECT_CALL(*this, sto_cb(StoState(true), _))
       .WillRepeatedly(DoAll(SetArgReferee<1>(sto_res), ACTION_OPEN_BARRIER(BARRIER_STOP_HAPPENED)));
 

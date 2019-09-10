@@ -54,9 +54,6 @@ private:
   //! The node handle
   ros::NodeHandle& nh_;
 
-  //! Service informing about the current operation mode.
-  ros::ServiceServer operation_mode_server_;
-
   //! Informs about operation mode changes via topic.
   ros::Publisher operation_mode_pub;
 

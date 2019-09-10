@@ -28,7 +28,6 @@
 #include <prbt_hardware_support/get_param.h>
 
 static const std::string SET_SPEED_LIMIT_SERVICE{"set_speed_limit"};
-static const std::string OPERATION_MODE_SERVICE{"/prbt/get_operation_mode"};
 static const std::string OPERATION_MODE_TOPIC{"operation_mode"};
 
 static const std::string PARAM_SPEED_LIMIT_T1_STR {"speed_limit_t1"};
