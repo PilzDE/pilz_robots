@@ -136,8 +136,8 @@
  *  - (New) The user can define additional tf frames to be monitored.
  *
  * @definereq{Stop1_on_violation_of_speed_limit}
- *  - (New) When one of the montired speeds exceeds 250mms^-1
- *    the robot performs a Stop 1 (\ref sto_stop1).
+ *  - (New) When in operation mode T1 and one of the monitored speeds exceeds
+ *    250mms^-1 the robot performs a Stop 1 (\ref sto_stop1).
  *
  *
  */
