@@ -36,7 +36,7 @@
   <element>
     <id>UMLState</id>
     <coordinates>
-      <x>690</x>
+      <x>590</x>
       <y>230</y>
       <w>320</w>
       <h>40</h>
@@ -49,7 +49,7 @@
     <coordinates>
       <x>270</x>
       <y>240</y>
-      <w>440</w>
+      <w>340</w>
       <h>190</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
@@ -57,28 +57,28 @@ fg=green
 sto_updated
 [sto_true]
 /recover_start</panel_attributes>
-    <additional_attributes>10.0;170.0;420.0;10.0</additional_attributes>
+    <additional_attributes>10.0;170.0;320.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>270</x>
       <y>440</y>
-      <w>440</w>
+      <w>300</w>
       <h>200</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
 
 halt_done
 </panel_attributes>
-    <additional_attributes>420.0;180.0;10.0;10.0</additional_attributes>
+    <additional_attributes>280.0;180.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>UMLState</id>
     <coordinates>
-      <x>690</x>
+      <x>550</x>
       <y>600</y>
-      <w>320</w>
+      <w>360</w>
       <h>40</h>
     </coordinates>
     <panel_attributes>Stopping</panel_attributes>
@@ -87,9 +87,9 @@ halt_done
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1000</x>
+      <x>900</x>
       <y>440</y>
-      <w>180</w>
+      <w>260</w>
       <h>200</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
@@ -98,7 +98,7 @@ sto_updated
 [sto_false]
 /hold_start
 </panel_attributes>
-    <additional_attributes>140.0;10.0;10.0;180.0</additional_attributes>
+    <additional_attributes>240.0;10.0;10.0;180.0</additional_attributes>
   </element>
   <element>
     <id>UMLState</id>
@@ -114,20 +114,20 @@ sto_updated
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1000</x>
+      <x>900</x>
       <y>240</y>
-      <w>180</w>
+      <w>260</w>
       <h>190</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
 unhold_done
 </panel_attributes>
-    <additional_attributes>10.0;10.0;140.0;170.0</additional_attributes>
+    <additional_attributes>10.0;10.0;240.0;170.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>870</x>
+      <x>770</x>
       <y>170</y>
       <w>100</w>
       <h>80</h>
@@ -169,12 +169,14 @@ sto_updated
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>770</x>
+      <x>780</x>
       <y>440</y>
       <w>120</w>
       <h>180</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
+
+
 recover_done
 /halt_start</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;160.0</additional_attributes>
@@ -208,14 +210,19 @@ sto_updated
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>890</x>
+      <x>860</x>
       <y>440</y>
       <w>120</w>
       <h>180</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
 unhold_done
-/hold_start</panel_attributes>
+/hold_start
+
+
+
+
+</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;160.0</additional_attributes>
   </element>
   <element>
@@ -235,7 +242,7 @@ sto_updated
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>850</x>
+      <x>750</x>
       <y>630</y>
       <w>130</w>
       <h>80</h>
@@ -248,7 +255,7 @@ hold_done
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>720</x>
+      <x>620</x>
       <y>170</y>
       <w>140</w>
       <h>80</h>
@@ -272,44 +279,51 @@ recover_done
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>600</x>
+      <x>620</x>
       <y>440</y>
-      <w>150</w>
+      <w>110</w>
       <h>180</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
 fg=green
 sto_updated
-[sto_true]</panel_attributes>
-    <additional_attributes>130.0;160.0;130.0;40.0;10.0;40.0;10.0;10.0</additional_attributes>
+[sto_true]
+
+
+
+</panel_attributes>
+    <additional_attributes>10.0;160.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>560</x>
+      <x>570</x>
       <y>440</y>
-      <w>160</w>
+      <w>110</w>
       <h>180</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
 fg=red
+
+
+
 sto_updated
 [sto_false]</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;100.0;140.0;100.0;140.0;160.0</additional_attributes>
+    <additional_attributes>10.0;10.0;10.0;160.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>550</x>
+      <x>610</x>
       <y>260</y>
-      <w>190</w>
+      <w>130</w>
       <h>170</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
 halt_done
 /recover_start
 </panel_attributes>
-    <additional_attributes>10.0;150.0;170.0;10.0</additional_attributes>
+    <additional_attributes>10.0;150.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
@@ -324,5 +338,18 @@ fg=green
 sto_updated
 [sto_true]</panel_attributes>
     <additional_attributes>70.0;10.0;70.0;40.0;20.0;40.0;20.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>480</x>
+      <y>350</y>
+      <w>120</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+hold_done
+/halt_start</panel_attributes>
+    <additional_attributes>10.0;60.0;10.0;20.0;100.0;20.0;100.0;60.0</additional_attributes>
   </element>
 </diagram>

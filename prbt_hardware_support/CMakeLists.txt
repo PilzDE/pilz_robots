@@ -55,17 +55,20 @@ catkin_package(
 ################
 ## Clang tidy ##
 ################
-find_program(
-  CLANG_TIDY_EXE
-  NAMES "clang-tidy"
-  DOC "Path to clang-tidy executable"
-  )
-if(NOT CLANG_TIDY_EXE)
-  message(FATAL_ERROR "clang-tidy not found.")
-else()
-  message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
-  set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
+if(CATKIN_ENABLE_CLANG_TIDY)
+  find_program(
+    CLANG_TIDY_EXE
+    NAMES "clang-tidy"
+    DOC "Path to clang-tidy executable"
+    )
+  if(NOT CLANG_TIDY_EXE)
+    message(FATAL_ERROR "clang-tidy not found.")
+  else()
+    message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
+    set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
+  endif()
 endif()
+
 
 ###########
 ## Build ##
@@ -430,22 +433,9 @@ if(CATKIN_ENABLE_TESTING)
   if(ENABLE_COVERAGE_TESTING)
     include(CodeCoverage)
     APPEND_COVERAGE_COMPILER_FLAGS()
-    set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*"
-                          "*/BrakeTestErrorCodes.h"
-                          "*/ModbusMsgInStamped.h"
-                          "*/BrakeTest.h"
-                          "*/BrakeTestRequest.h"
-                          "*/BrakeTestResponse.h"
-                          "*/IsBrakeTestRequired.h"
-                          "*/IsBrakeTestRequiredRequest.h"
-                          "*/IsBrakeTestRequiredResponse.h"
-                          "*/ModbusRegisterBlock.h"
-                          "*/WriteModbusRegister.h"
-                          "*/WriteModbusRegisterRequest.h"
-                          "*/WriteModbusRegisterResponse.h"
-                          "*/SendBrakeTestResult.h"
-                          "*/SendBrakeTestResultRequest.h"
-                          "*/SendBrakeTestResultResponse.h")
+    set(COVERAGE_EXCLUDES
+        "*/${PROJECT_NAME}/test*"
+        "*/.private/${PROJECT_NAME}/include/${PROJECT_NAME}/*.h")
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
       DEPENDS tests
