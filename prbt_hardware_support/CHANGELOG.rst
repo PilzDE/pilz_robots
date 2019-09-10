@@ -2,8 +2,8 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.8 (2019-09-10)
+------------------
 * add missing transition to STO state machine
 * revise STO specification
 * integrate clang-tidy via CMake flag

@@ -2,8 +2,8 @@
 Changelog for package pilz_testutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.8 (2019-09-10)
+------------------
 * integrate clang-tidy via CMake flag
 * Contributors: Pilz GmbH and Co. KG
 
