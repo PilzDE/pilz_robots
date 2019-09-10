@@ -18,8 +18,6 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>canopen_chain_node</build_depend>
-  <build_depend>clang-tidy</build_depend>
-  <build_depend>libclang-dev</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>libmodbus-dev</build_depend>
   <build_depend>message_generation</build_depend>
