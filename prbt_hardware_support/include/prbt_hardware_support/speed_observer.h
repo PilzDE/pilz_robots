@@ -144,6 +144,7 @@ private:
 
 inline double SpeedObserver::speedFromTwoPoses(const tf2::Vector3& a, const tf2::Vector3& b, const double& t)
 {
+  ROS_ASSERT(t != 0);
   double d = tf2::tf2Distance(a, b);
   return d / t;
 }
