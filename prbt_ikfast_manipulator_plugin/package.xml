@@ -15,8 +15,6 @@
   <export>
     <moveit_core plugin="${prefix}/prbt_manipulator_moveit_ikfast_plugin_description.xml"/>
   </export>
-  <build_depend>clang-tidy</build_depend>
-  <build_depend>libclang-dev</build_depend>
   <build_depend>eigen_conversions</build_depend>
   <build_depend>liblapack-dev</build_depend>
   <build_depend>moveit_core</build_depend>
