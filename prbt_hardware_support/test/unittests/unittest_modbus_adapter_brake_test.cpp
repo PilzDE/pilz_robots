@@ -407,6 +407,22 @@ TEST(ModbusAdapterBrakeTestTest, testFailingModbusWriteFunc)
   EXPECT_FALSE(srv.response.success);
 }
 
+/**
+ * @brief Tests that failing modbus register write functions leads to
+ * response.success==false.
+ */
+TEST(ModbusAdapterBrakeTestTest, testSecondTimeFailingModbusWriteFunc)
+{
+  ModbusMock mock;
+  EXPECT_CALL(mock, modbsWriteRegisterFunc(_,_)).Times(2).WillOnce(Return(true)).WillOnce(Return(false));
+  ModbusAdapterBrakeTest brake_test_adapter(std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
+                                            TEST_API_SPEC, TEST_API_WRITE_SPEC);
+
+  SendBrakeTestResult srv;
+  EXPECT_TRUE(brake_test_adapter.sendBrakeTestResult(srv.request, srv.response));
+  EXPECT_FALSE(srv.response.success);
+}
+
 class ServiceMock
 {
 public:

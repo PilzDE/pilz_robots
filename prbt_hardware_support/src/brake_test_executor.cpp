@@ -95,21 +95,12 @@ bool BrakeTestExecutor::executeBrakeTest(BrakeTest::Request& /*req*/,
     ROS_WARN_STREAM("Failed to trigger unhold via service " << controller_unhold_client_.getService());
   }
 
-  if(response.success)
+  SendBrakeTestResult send_resul_srv;
+  send_resul_srv.request.result = braketest_srv.response.success;
+  brake_test_result_client_.call(send_resul_srv);
+  if(!send_resul_srv.response.success)
   {
-    std::vector<unsigned short> values_to_set = {0, 1}; // Note: The FS controller needs a positive edge, so we first send 0s.
-    for(const auto& value : values_to_set)
-    {
-      SendBrakeTestResult srv;
-      srv.request.performed = value;
-      srv.request.result = value;
-      brake_test_result_client_.call(srv);
-      if(!srv.response.success)
-      {
-        ROS_ERROR_STREAM("Failed to send brake test result");
-        break;
-      }
-    }
+    ROS_ERROR_STREAM("Failed to send brake test result");
   }
 
   return true;
