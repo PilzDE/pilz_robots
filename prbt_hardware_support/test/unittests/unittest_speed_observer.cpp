@@ -157,7 +157,7 @@ MATCHER_P2(SpeedAtILe, i, x,
  *
  * Test Sequence:
  *    0. Starting up
- *    1. Publishing tf movements that *not* have a too high speed
+ *    1. Publishing tf movements that are withing the speed limit
  *
  * Expected Results:
  *    0. -
