@@ -258,15 +258,15 @@ lt=[subscribe]-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>768</x>
+      <x>780</x>
       <y>174</y>
-      <w>96</w>
+      <w>84</w>
       <h>360</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
-lt=()-[publish]
+lt=()-
 /safe_torque_off</panel_attributes>
-    <additional_attributes>30.0;10.0;30.0;580.0</additional_attributes>
+    <additional_attributes>10.0;10.0;10.0;580.0</additional_attributes>
   </element>
   <element>
     <id>UMLGeneric</id>
@@ -309,14 +309,14 @@ lt=-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>762</x>
+      <x>768</x>
       <y>132</y>
-      <w>54</w>
+      <w>42</w>
       <h>42</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
-lt=[subscribe]-(</panel_attributes>
-    <additional_attributes>40.0;10.0;40.0;40.0</additional_attributes>
+lt=[Service]-(</panel_attributes>
+    <additional_attributes>30.0;10.0;30.0;40.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
@@ -660,15 +660,15 @@ lt=-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>600</x>
+      <x>612</x>
       <y>174</y>
-      <w>198</w>
+      <w>186</w>
       <h>42</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
-lt=()-[publish]
+lt=()-
 /safe_torque_off</panel_attributes>
-    <additional_attributes>310.0;10.0;30.0;50.0</additional_attributes>
+    <additional_attributes>290.0;10.0;10.0;50.0</additional_attributes>
   </element>
   <element>
     <id>UMLPackage</id>
