@@ -449,7 +449,11 @@ if(CATKIN_ENABLE_TESTING)
                           "*/GetOperationMode.h"
                           "*/GetOperationModeRequest.h"
                           "*/GetOperationModeResponse.h"
-                          "*/OperationModes.h")
+                          "*/OperationModes.h"
+                          "*/SendBrakeTestResult.h"
+                          "*/SendBrakeTestResultRequest.h"
+                          "*/SendBrakeTestResultResponse.h"
+                          )
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
       DEPENDS tests
