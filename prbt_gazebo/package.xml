@@ -17,9 +17,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>clang-tidy</build_depend>
-  <build_depend>libclang-dev</build_depend>
-  
+
   <exec_depend>xacro</exec_depend>
   <exec_depend>roslaunch</exec_depend>
   <exec_depend>gazebo_ros</exec_depend>
