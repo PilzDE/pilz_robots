@@ -161,7 +161,7 @@ MATCHER_P2(SpeedAtILe, i, x,
  *
  * Expected Results:
  *    0. -
- *    1. Correct values are publshed on the speed topic.
+ *    1. Correct values are published on the speed topic.
  *       *No* stop is published
  */
 TEST_F(SpeedObserverUnitTest, testStartupAndTopic)
