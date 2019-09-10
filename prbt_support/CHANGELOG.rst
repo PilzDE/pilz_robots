@@ -2,6 +2,11 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* integrate clang-tidy via CMake flag
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.7 (2019-08-29)
 ------------------
 * Add default modbus server ip for pss4000
