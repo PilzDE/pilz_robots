@@ -100,26 +100,26 @@ void SpeedObserverUnitTest::publishTfAtSpeed(double v)
     ros::Time current = ros::Time::now();
     t = (current - start).toSec();
     // a has no speed
-    geometry_msgs::TransformStamped tfsa;
-    tfsa.header.stamp = current;
-    tfsa.header.frame_id = TEST_BASE_FRAME;
-    tfsa.child_frame_id = TEST_FRAME_A;
-    tfsa.transform.translation.x = 99.0;
-    tfsa.transform.translation.y = 99.0;
-    tfsa.transform.translation.z = 99.0;
-    tfsa.transform.rotation.w = 1;
+    geometry_msgs::TransformStamped tranformStampedA;
+    tranformStampedA.header.stamp = current;
+    tranformStampedA.header.frame_id = TEST_BASE_FRAME;
+    tranformStampedA.child_frame_id = TEST_FRAME_A;
+    tranformStampedA.transform.translation.x = 99.0;
+    tranformStampedA.transform.translation.y = 99.0;
+    tranformStampedA.transform.translation.z = 99.0;
+    tranformStampedA.transform.rotation.w = 1;
     // b has speed v
-    geometry_msgs::TransformStamped tfsb;
-    tfsb.header.stamp = current;
-    tfsb.header.frame_id = TEST_BASE_FRAME;
-    tfsb.child_frame_id = TEST_FRAME_B;
+    geometry_msgs::TransformStamped tranformStampedB;
+    tranformStampedB.header.stamp = current;
+    tranformStampedB.header.frame_id = TEST_BASE_FRAME;
+    tranformStampedB.child_frame_id = TEST_FRAME_B;
     // rotation in a tilted circle to cover all axis
-    tfsb.transform.translation.x = v * cos(t);
-    tfsb.transform.translation.y = v * SQRT_2_HALF * -sin(t);
-    tfsb.transform.translation.z = v * SQRT_2_HALF * sin(t);
-    tfsb.transform.rotation.w = 1;
-    br.sendTransform(tfsa);
-    br.sendTransform(tfsb);
+    tranformStampedB.transform.translation.x = v * cos(t);
+    tranformStampedB.transform.translation.y = v * SQRT_2_HALF * -sin(t);
+    tranformStampedB.transform.translation.z = v * SQRT_2_HALF * sin(t);
+    tranformStampedB.transform.rotation.w = 1;
+    br.sendTransform(tranformStampedA);
+    br.sendTransform(tranformStampedB);
 
     if (tf_publisher_running_)  // ending faster
       r.sleep();

@@ -63,14 +63,20 @@ MATCHER_P(StoState, x, "Sto state " + std::string(negation ? "is not" : "is") + 
 MATCHER_P(ContainsAllNames, names,
           "Names" + PrintToString(names) + std::string(negation ? "are not" : "are") + " in message.")
 {
-  for (auto& n : names)
+  for (auto& name : names)
   {
     bool found{ false };
     for (auto& argn : arg->name)
-      if (argn.compare(n) == 0)
+    {
+      if (argn.compare(name) == 0)
+      {
         found = true;
+      }
+    }
     if (!found)
+    {
       return false;
+    }
   }
 
   return true;
@@ -88,7 +94,7 @@ public:
 
   void publishJointStatesAtSpeed(double v);
   void stopJointStatePublisher();
-  void publishOm(OperationModes::_value_type omv);
+  void publishOperationMode(OperationModes::_value_type omv);
 
 protected:
   ros::NodeHandle nh_;
@@ -114,9 +120,9 @@ void SpeedObserverIntegrationTest::SetUp()
 
   pnh_.getParam(ADDITIONAL_FRAMES_PARAM_NAME, additional_frames_);
   ROS_DEBUG_STREAM("SetUp pnh:" << pnh_.getNamespace() << " nh:" << nh_.getNamespace());
-  for (auto& f : additional_frames_)
+  for (auto& frame : additional_frames_)
   {
-    ROS_DEBUG_STREAM("- " << f);
+    ROS_DEBUG_STREAM("- " << frame);
   }
 
   operation_mode_srv_ =
@@ -133,14 +139,14 @@ void SpeedObserverIntegrationTest::TearDown()
   nh_.shutdown();
 }
 
-void SpeedObserverIntegrationTest::publishOm(OperationModes::_value_type omv){
+void SpeedObserverIntegrationTest::publishOperationMode(OperationModes::_value_type omv){
   OperationModes om;
   om.value = omv;
   om.time_stamp = ros::Time::now();
   operation_mode_pub_.publish(om);
 }
 
-void SpeedObserverIntegrationTest::publishJointStatesAtSpeed(double v)
+void SpeedObserverIntegrationTest::publishJointStatesAtSpeed(double speed)
 {
   sensor_msgs::JointState js;
   js.name = { "testing_world-a" };
@@ -153,7 +159,7 @@ void SpeedObserverIntegrationTest::publishJointStatesAtSpeed(double v)
   {
     ros::Time current = ros::Time::now();
     t = (current - start).toSec();
-    js.position = { t * v };
+    js.position = { t * speed };
 
     fake_controller_joint_states_pub_.publish(js);
     if (joint_publisher_running_ & nh_.ok())  // ending fasteroperation_mode_cb
@@ -233,7 +239,7 @@ TEST_F(SpeedObserverIntegrationTest, testT1)
   EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_))).InSequence(s_speeds).WillOnce(ACTION_OPEN_BARRIER_VOID(BARRIER_OPERATION_MODE_SET));
 
   // Set OM to Auto
-  publishOm(OperationModes::AUTO);
+  publishOperationMode(OperationModes::AUTO);
   BARRIER({ BARRIER_OPERATION_MODE_SET });
 
   /**********
@@ -258,7 +264,7 @@ TEST_F(SpeedObserverIntegrationTest, testT1)
       .WillRepeatedly(DoAll(SetArgReferee<1>(sto_res), ACTION_OPEN_BARRIER(BARRIER_STOP_HAPPENED)));
   EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_))).Times(AtLeast(1)).InSequence(s_speeds);
 
-  publishOm(OperationModes::T1);
+  publishOperationMode(OperationModes::T1);
   BARRIER({ BARRIER_STOP_HAPPENED });
 
   /**********
