@@ -38,8 +38,8 @@ SpeedObserver::SpeedObserver(ros::NodeHandle& nh, std::string& reference_frame,
   sto_client_ = nh.serviceClient<std_srvs::SetBool>(STO_SERVICE, DEFAULT_QUEUE_SIZE);
 }
 
-void SpeedObserver::waitTillTFReady(const std::string& frame, const ros::Time& time,
-                                    const unsigned short int max_num_retries) const
+void SpeedObserver::waitUntillCanTransform(const std::string& frame, const ros::Time& time,
+                                           const unsigned short int max_num_retries) const
 {
   unsigned short int retries{ 0 };
 
@@ -80,7 +80,7 @@ void SpeedObserver::startObserving(double frequency)
   {
     for (const auto& frame : frames_to_observe_)
     {
-      waitTillTFReady(frame, now);
+      waitUntillCanTransform(frame, now);
       previous_poses[frame] = getPose(frame, now);
     }
   }
@@ -111,7 +111,7 @@ void SpeedObserver::startObserving(double frequency)
       }
       try
       {
-        waitTillTFReady(frame, now);
+        waitUntillCanTransform(frame, now);
         curr_pos = getPose(frame, now);
       }
       catch (std::runtime_error& ex)

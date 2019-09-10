@@ -31,44 +31,111 @@ namespace prbt_hardware_support {
 
 class SpeedObserver {
 public:
+  /**
+   * @brief Create an observer to observe the speed of a list of frames in refernce to a reference frame.
+   * @param nh NodeHandle to handle node
+   * @param reference_frame Reference frame for all transformations
+   * @param frames_to_observe List of frames to observer
+   */
   SpeedObserver(ros::NodeHandle &nh, std::string &reference_frame,
                 std::vector<std::string> &frames_to_observe);
 
 public:
+  /**
+   * @brief Starts the observation cycle. The function blocks until `!ros::ok()`.
+   * @param frequency [Hz] Will check all frame once per cycle
+   */
   void startObserving(double frequency);
+
+  /**
+   * @brief Callback for service to set the currently active speed limit.
+   * @param req Service request
+   * @param res Service response
+   * @return True if the limit was set succesfully
+   */
   bool setSpeedLimitCb(SetSpeedLimit::Request& req, SetSpeedLimit::Response& res);
+
+  /**
+   * @brief This method will terminate the observation cycle started by `startObserving()`.
+   */
   void terminateNow();
 
 private:
+  /**
+   * @brief Used to trigger stop of the robot when speed limit is exceeded.
+   */
   void triggerStop1();
-  FrameSpeeds
-  createFrameSpeedsMessage(const std::vector<double> &speeds_) const;
-  void waitTillTFReady(const std::string &frame, const ros::Time &now,
-                       const unsigned short int max_num_retries = 10) const;
-  tf2::Vector3 getPose(const std::string &frame, const ros::Time &now) const;
+
+  /**
+   * @brief Creates a message to be sent to the 'frame_speeds' topic.
+   * @param speeds Vector containing one speed per observed frame
+   * @return The message
+   */
+  FrameSpeeds createFrameSpeedsMessage(const std::vector<double> &speeds) const;
+
+  /**
+   * @brief Helper method waiting until TF transformation is available.
+   * @note Refernce frame is always `reference_frame_`
+   * @param frame Which fram should be transformed
+   * @param time At what time is the transfomration needed
+   * @param max_num_retries How many times should the method wait for `WAITING_TIME_FOR_TRANSFORM_S` seconds
+   */
+  void waitUntillCanTransform(const std::string &frame, const ros::Time &time,
+                              const unsigned short int max_num_retries = 10) const;
+
+  /**
+   * @brief Using tf to get the Pose of a frame at a specific time as `tf::Vector3`.
+   * @note Refernce frame is always `reference_frame_`
+   * @param frame Which fram should be transformed
+   * @param time At what time is the transfomration needed
+   * @return The pose as Vector
+   */
+  tf2::Vector3 getPose(const std::string &frame, const ros::Time &time) const;
+
+  /**
+   * @brief Check if a speed value is within the currently set limit.
+   * @note Needed for unittest
+   * @param speed The speed to check
+   * @return True iff speed is within limit
+   */
   bool isWithinLimit(const double &speed) const;
 
 private:
-  static double speedFromTwoPoses(const tf2::Vector3 &a, const tf2::Vector3 &b,
-                                  const double &t);
+  /**
+   * @brief Calculate the minimal speed that a trajectory between two poses had if the motion was performed within a given time.
+   * @param a Pose at the beginning of the trajectory
+   * @param b Pose at the end of the trajectory
+   * @param t The time the motion took
+   * @return The minimal speed for the trajectory
+   */
+  static double speedFromTwoPoses(const tf2::Vector3 &a, const tf2::Vector3 &b, const double &t);
 
 private:
   ros::NodeHandle nh_;
-  const std::string reference_frame_;
-  const std::vector<std::string> frames_to_observe_;
+  //! Publisher for frame speed message
   ros::Publisher frame_speeds_pub_;
+  //! Client for sto service
   ros::ServiceClient sto_client_;
-  std::atomic_bool terminate_{false};
-
+  //! Needed to receive tf2 transformations over the wire, see https://wiki.ros.org/tf2/Tutorials/
   tf2_ros::Buffer tf_buffer_;
-  // Needed to receive tf2 transformations over the wire
-  // For more infor see https://wiki.ros.org/tf2/Tutorials/
+  //! Listing to TF Transforms
   tf2_ros::TransformListener tf_listener{tf_buffer_};
+
+  //! Reference frame for all speeds
+  const std::string reference_frame_;
+  //! All frames to observe
+  const std::vector<std::string> frames_to_observe_;
+  //! Helper variable to stop observation cycle
+  std::atomic_bool terminate_{false};
+  //! Currently active speed limit
   double current_speed_limit_{DEFAULT_SPEED_LIMIT};
 
 private:
+  //! Speed limit to be set at launch
   static constexpr double DEFAULT_SPEED_LIMIT{.25};
+  //! Default queue size for publisher
   static constexpr uint32_t DEFAULT_QUEUE_SIZE{10};
+  //! Waiting time for `waitUntillCanTransform()`
   static constexpr uint32_t WAITING_TIME_FOR_TRANSFORM_S{1};
 };
 
@@ -85,7 +152,6 @@ inline bool SpeedObserver::isWithinLimit(const double &speed) const {
   return speed < current_speed_limit_;
 }
 
-// This method is only needed for the unittest
 inline void SpeedObserver::terminateNow() {
   ROS_DEBUG("terminateNow");
   terminate_ = true;
