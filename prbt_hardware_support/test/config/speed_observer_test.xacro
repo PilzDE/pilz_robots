@@ -23,7 +23,7 @@ limitations under the License.
   <link name="world"/>
 
   <joint name="$(arg robot_prefix)world-a" type="continuous">
-  <origin xyz="0 0 1" rpy="0 1.57079632679 0" />
+  <origin xyz="0 0 1" rpy="0 ${pi/2} 0" />
     <parent link="world"/>
     <child link="$(arg robot_prefix)a"/>
     <limit effort="999" velocity="99" />
