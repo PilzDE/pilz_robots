@@ -439,29 +439,16 @@ private:
  * @brief Tests that the frequency with which the registers are read,
  * can be changed.
  *
- * This test does NOT precisly check (tolerance ca. 10Hz) if the exact
+ * This test does NOT precisly check (tolerance ca. 10%) if the exact
  * frequency could be set. It just checks that the frequency was
  * changed.
  *
  *
  * Test Sequence:
- * - 1. Choose low read frequency (f1). The last received "modbus_read" message
- *      is stored in a buffer.
- * - 2. Choose "modbus_read" topic check frequency f2, with f2 slightly bigger than f1.
- * - 3. Start a loop (running exactly for \#f1 iterations), which checks with
- *      frequency f2 the last received "modbus_read" message.
- * - 4. Stop all loops and the PilzModbusClient.
+ * - 1. Choose a read frequency. Measure the number of register accesses within ~3 seconds.
  *
  * Expected Results:
- * - 1. -
- * - 2. -
- * - 3. The last received "modbus_read" message must fullfill the condition:
- *      "new_register_value = last_register_value + 1".
- *      If the condition does not hold, the read fequency could not be
- *      set properly and is probably to high.
- * - 4. Check that the number of received messages is greater than \#f1. If the
- *      condition does not hold, the read fequency is not set properly
- *      and is probably to low.
+ * - 1. The measured frequence is within a 10% tolerance
  */
 TEST_F(PilzModbusClientTests, testSettingReadFrequency)
 {
@@ -491,40 +478,21 @@ TEST_F(PilzModbusClientTests, testSettingReadFrequency)
   EXPECT_TRUE(client->init(LOCALHOST, DEFAULT_MODBUS_PORT_TEST));
 
   PilzModbusClientExecutor executor(client.get());
+  auto time_start = ros::Time::now();
   executor.start();
-  EXPECT_TRUE(client->isRunning());
 
-  // The "modbus_read" messages from the PilzModbusClient are checked
-  // faster as the set read frequency, to ensure that
-  // all messages from the PilzModbusClient are processed by the test.
-  const double msg_check_frequency {1.2*expected_read_frequency};
-  // The timeout indirectly defines how many messages are checked
-  // for "correctness".
-  const unsigned int n_timeout { static_cast<unsigned int>(msg_check_frequency) + 1u };
-  uint16_t last {0};
-  bool first_value_set {false};
-  ros::Rate rate(msg_check_frequency);
-  for(unsigned int counter = 0; (counter < n_timeout) && ros::ok(); ++counter )
-  {
-    uint16_t curr_value = buffer.get();
-    if (!first_value_set)
-    {
-      last = curr_value;
-      first_value_set = true;
-    }
-    else if (curr_value != last)
-    {
-      uint16_t expected_value = static_cast<uint16_t>(last + 1);
-      EXPECT_EQ(expected_value, curr_value) << "Frequency used by PilzModbusClient is probably too high";
-      last = curr_value;
-    }
+  ASSERT_TRUE(client->isRunning());
 
-    rate.sleep();
-  }
+  // Time for measuring
+  ros::Duration(3).sleep();
 
-  EXPECT_GE(buffer.get(), static_cast<uint16_t>(expected_read_frequency)) << "Frequency used by PilzModbusClient is probably too low";
-
+  auto final_value = buffer.get();
+  auto time_stop = ros::Time::now();
   executor.stop();
+
+  // Checks
+  EXPECT_NEAR(expected_read_frequency, (final_value - 1) / (time_stop - time_start).toSec(), 0.1 * expected_read_frequency);
+
   EXPECT_FALSE(client->isRunning());
 }
 
