@@ -51,7 +51,7 @@ public:
 class BrakeTestExecutor
 {
 public:
-  BrakeTestExecutor(DetectRobotMotionFunc detect_robot_motion_func,
+  BrakeTestExecutor(DetectRobotMotionFunc&& detect_robot_motion_func,
                     ControllerHoldFunc&& controller_hold_func,
                     TriggerBrakeTestFunc&& trigger_brake_test_func,
                     ControllerUnholdFunc&& unhold_func,
