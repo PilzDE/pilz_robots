@@ -16,14 +16,16 @@ env:
   global:
     - ROS_DISTRO="kinetic"
     - CATKIN_LINT=true
+    - CMAKE_ARGS="-DCATKIN_ENABLE_CLANG_TIDY=true"
+    - ADDITIONAL_DEBS="clang-tidy libclang-dev"
   matrix:
     - ROS_REPO=ros
-    - ROS_REPO=ros-shadow-fixed
+    - ROS_REPO=testing
 matrix:
   allow_failures:
     - env: ROS_REPO=ros
   fast_finish: true
 install:
-  - git clone --depth=1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
+  - git clone --depth=1 --branch master https://github.com/ros-industrial/industrial_ci.git .industrial_ci
 script:
   - .industrial_ci/travis.sh
