@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <node name="pilz_modbus_client_node" pkg="prbt_hardware_support" type="pilz_modbus_client_node">
   <param name="modbus_server_ip" value="$(arg modbus_server_ip)"/>
   <param name="modbus_server_port" value="$(arg modbus_server_port)"/>
+  <param name="modbus_response_timeout" value="100"/>
 </node>
 
 <node name="modbus_adapter_operation_mode_node" pkg="prbt_hardware_support" type="modbus_adapter_operation_mode_node">
