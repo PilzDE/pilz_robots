@@ -410,6 +410,11 @@ public:
     return vec;
   }
 
+  void reset()
+  {
+    curr_count_ = 0;
+  }
+
 private:
   const unsigned int register_index_;
   uint16_t curr_count_ {0};
@@ -445,55 +450,63 @@ private:
  *
  *
  * Test Sequence:
- * - 1. Choose a read frequency. Measure the number of register accesses within ~3 seconds.
+ * - 1. Various frequencies are checked. Measure the number of register accesses within ~1 seconds.
  *
  * Expected Results:
  * - 1. The measured frequence is within a 10% tolerance
  */
 TEST_F(PilzModbusClientTests, testSettingReadFrequency)
 {
-  std::unique_ptr<PilzModbusClientMock> mock(new PilzModbusClientMock());
+  std::vector<double> checked_frequencies {20.0, 40.0, 60.0};
 
-  EXPECT_CALL(*mock, init(_,_))
-      .Times(1)
-      .WillOnce(Return(true));
+  for(const auto& expected_read_frequency : checked_frequencies)
+  {
+    std::unique_ptr<PilzModbusClientMock> mock(new PilzModbusClientMock());
 
-  HoldingRegisterIncreaser fake_holding_register;
-  ON_CALL(*mock, readHoldingRegister(_, _))
-      .WillByDefault(Invoke(&fake_holding_register, &HoldingRegisterIncreaser::readHoldingRegister));
+    EXPECT_CALL(*mock, init(_,_))
+        .Times(1)
+        .WillOnce(Return(true));
 
-  RegisterBuffer buffer;
-  ON_CALL(*this, modbus_read_cb(_))
-      .WillByDefault(Invoke(&buffer, &RegisterBuffer::add));
+    HoldingRegisterIncreaser fake_holding_register;
+    ON_CALL(*mock, readHoldingRegister(_, _))
+        .WillByDefault(Invoke(&fake_holding_register, &HoldingRegisterIncreaser::readHoldingRegister));
 
-  std::vector<unsigned short> registers(REGISTER_SIZE_TEST);
-  std::iota(registers.begin(), registers.end(), REGISTER_FIRST_IDX_TEST);
 
-  const double expected_read_frequency {30.0};
-  auto client = std::make_shared< PilzModbusClient >(nh_,registers,std::move(mock),
-                                                     RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
-                                                     prbt_hardware_support::SERVICE_MODBUS_WRITE,
-                                                     expected_read_frequency);
+    RegisterBuffer buffer;
+    ON_CALL(*this, modbus_read_cb(_))
+        .WillByDefault(Invoke(&buffer, &RegisterBuffer::add));
 
-  EXPECT_TRUE(client->init(LOCALHOST, DEFAULT_MODBUS_PORT_TEST));
+    std::vector<unsigned short> registers(REGISTER_SIZE_TEST);
+    std::iota(registers.begin(), registers.end(), REGISTER_FIRST_IDX_TEST);
 
-  PilzModbusClientExecutor executor(client.get());
-  auto time_start = ros::Time::now();
-  executor.start();
+    auto client = std::make_shared< PilzModbusClient >(nh_,registers,std::move(mock),
+                                                      RESPONSE_TIMEOUT, prbt_hardware_support::TOPIC_MODBUS_READ,
+                                                      prbt_hardware_support::SERVICE_MODBUS_WRITE,
+                                                      expected_read_frequency);
 
-  ASSERT_TRUE(client->isRunning());
+    EXPECT_TRUE(client->init(LOCALHOST, DEFAULT_MODBUS_PORT_TEST));
 
-  // Time for measuring
-  ros::Duration(3).sleep();
+    PilzModbusClientExecutor executor(client.get());
+    auto time_start = ros::Time::now();
+    executor.start();
 
-  auto final_value = buffer.get();
-  auto time_stop = ros::Time::now();
-  executor.stop();
+    ASSERT_TRUE(client->isRunning());
 
-  // Checks
-  EXPECT_NEAR(expected_read_frequency, (final_value - 1) / (time_stop - time_start).toSec(), 0.1 * expected_read_frequency);
+    // Time for measuring
+    ros::Duration(1).sleep();
 
-  EXPECT_FALSE(client->isRunning());
+    auto final_value = buffer.get();
+    auto time_stop = ros::Time::now();
+    executor.stop();
+
+    // Checks
+    auto actual_frequency = (final_value - 1) / (time_stop - time_start).toSec();
+    EXPECT_NEAR(expected_read_frequency, actual_frequency, 0.1 * expected_read_frequency);
+
+    EXPECT_FALSE(client->isRunning());
+  }
+
+
 }
 
 /**
