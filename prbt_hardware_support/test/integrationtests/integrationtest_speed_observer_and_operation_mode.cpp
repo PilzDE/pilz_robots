@@ -97,7 +97,7 @@ public:
   MOCK_METHOD2(sto_cb, bool(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res));
   MOCK_METHOD1(frame_speeds_cb, void(const FrameSpeeds::ConstPtr& msg));
 
-  void publishTfAtSpeed(double speed, std::string frame);
+  void publishTfAtSpeed(double speed, const std::string &frame);
   void publishJointStatesAtSpeed(double v);
   void stopJointStatePublisher();
   void stopTfPublisher();
@@ -147,7 +147,7 @@ void SpeedObserverIntegrationTest::TearDown()
   nh_.shutdown();
 }
 
-void SpeedObserverIntegrationTest::publishTfAtSpeed(double speed, std::string frame)
+void SpeedObserverIntegrationTest::publishTfAtSpeed(double speed, const std::string& frame)
 {
   static tf2_ros::TransformBroadcaster br;
   ros::Rate r = ros::Rate(TEST_FREQUENCY * 3);  // publishing definitely faster then observing
@@ -158,16 +158,16 @@ void SpeedObserverIntegrationTest::publishTfAtSpeed(double speed, std::string fr
   {
     ros::Time current = ros::Time::now();
     t = (current - start).toSec();
-    geometry_msgs::TransformStamped tranformStampedB;
-    tranformStampedB.header.stamp = current;
-    tranformStampedB.header.frame_id = TEST_WORLD_FRAME;
-    tranformStampedB.child_frame_id = frame;
+    geometry_msgs::TransformStamped tranform_stamped_b;
+    tranform_stamped_b.header.stamp = current;
+    tranform_stamped_b.header.frame_id = TEST_WORLD_FRAME;
+    tranform_stamped_b.child_frame_id = frame;
     // rotation in a tilted circle to cover all axis
-    tranformStampedB.transform.translation.x = speed * cos(t);
-    tranformStampedB.transform.translation.y = speed * SQRT_2_HALF * -sin(t);
-    tranformStampedB.transform.translation.z = speed * SQRT_2_HALF * sin(t);
-    tranformStampedB.transform.rotation.w = 1;
-    br.sendTransform(tranformStampedB);
+    tranform_stamped_b.transform.translation.x = speed * cos(t);
+    tranform_stamped_b.transform.translation.y = speed * SQRT_2_HALF * -sin(t);
+    tranform_stamped_b.transform.translation.z = speed * SQRT_2_HALF * sin(t);
+    tranform_stamped_b.transform.rotation.w = 1;
+    br.sendTransform(tranform_stamped_b);
 
     if (tf_publisher_running_)  // ending faster
       r.sleep();
