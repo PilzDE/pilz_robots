@@ -214,6 +214,9 @@ TEST_F(SpeedObserverUnitTest, testStartupAndTopic)
  * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
  * Tests the correct handling of too high speeds.
  * }
+ * @tests{Stop1_on_violation_of_speed_limit,
+ * Tests that Stop 1 is triggered if speed limit is violated.
+ * }
  *
  * Test Sequence:
  *    0. Starting up
@@ -287,6 +290,12 @@ TEST_F(SpeedObserverUnitTest, testTooHighSpeed)
  * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
  * Tests the correct handling of changed speed limits.
  * }
+ * @tests{Speed_limits_per_operation_mode,
+ * Test that speed limits can be changes.
+ * }
+ * @tests{Stop1_on_violation_of_speed_limit,
+ * Tests that Stop 1 is triggered if after changing the speed limit.
+ * }
  *
  * Test Sequence:
  *    0. Starting up
@@ -296,8 +305,8 @@ TEST_F(SpeedObserverUnitTest, testTooHighSpeed)
  * Expected Results:
  *    0. -
  *    1. Correct values are published on the speed topic.
- *       *No* stop is published
- *    2  A stop is published
+ *       *No* stop is called
+ *    2  A stop is called
  */
 TEST_F(SpeedObserverUnitTest, testSetSpeedLimit)
 {
@@ -369,6 +378,9 @@ TEST_F(SpeedObserverUnitTest, testSetSpeedLimit)
  * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
  * Tests the correct handling of no tf.
  * }
+ * @tests{Monitor_Speed_of_user_defined_tf_frames,
+ * Tests the correct handling of no tf.
+ * }
  *
  * Test Sequence:
  *    0. Starting up
@@ -397,6 +409,9 @@ TEST_F(SpeedObserverUnitTest, testTimeout)
 
 /**
  * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
+ * Tests the correct handling of too fast observation.
+ * }
+ * @tests{Monitor_Speed_of_user_defined_tf_frames,
  * Tests the correct handling of too fast observation.
  * }
  *

@@ -213,19 +213,29 @@ void SpeedObserverIntegrationTest::stopTfPublisher()
 }
 
 /**
+ * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
+ * Tests that robot model is read correctly by providing a custom xacro.
+ * }
+ * @tests{Monitor_Speed_of_user_defined_tf_frames,
+ * Tests that user defined frames are monitored correctly.
+ * }
  * @tests{Stop1_on_violation_of_speed_limit,
  * Tests that Stop 1 is triggered if speed limit is violated.
  * }
+ * @tests{Speed_limits_per_operation_mode,
+ * Tests the existance of the right limits, by setting the mode and
+ * moving in speeds belowe and above the expected limit.
+ * }
  *
  * Test Sequence:
- *    0. Set Operation Mode to T1 by answering the service call
+ *    0. Set Operation Mode to T1 by answering the service call.
  *    1. Joint motion with a speed higher than the T1 limit is faked.
- *    2. Set Operation Mode to Auto by publihsing on the topic
- *       Wait for stop calls that may occurr from previous run
+ *    2. Set Operation Mode to Auto by publihsing on the topic.
+ *       Wait for stop calls that may occurr from previous run.
  *    3. Joint motion with a speed lower than the Auto limit is faked.
- *    4. Switching back to T1
- *    5. Publish the additionally defined TF tree at speed
- *    6. Set up the STO service to return success = false
+ *    4. Switching back to T1.
+ *    5. Publish the additionally defined TF tree at speed.
+ *    6. Set up the STO service to return success = false.
  *
  * Expected Results:
  *    0. -
@@ -238,7 +248,7 @@ void SpeedObserverIntegrationTest::stopTfPublisher()
  *    5. Sto is triggered
  *    6. Sto is triggered and error message is produced
  */
-TEST_F(SpeedObserverIntegrationTest, testT1)
+TEST_F(SpeedObserverIntegrationTest, test)
 {
   Sequence s_speeds, s_stop;
   /**********
