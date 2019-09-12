@@ -72,7 +72,9 @@ void OperationModeSetupExecutorTest::TearDown()
 }
 
 /**
+ * @tests{Speed_limits_per_operation_mode,
  * Test constructor of OperationModeSetupExecutor with operation mode T1.
+ * }
  */
 TEST_F(OperationModeSetupExecutorTest, testConstructor)
 {
@@ -91,7 +93,9 @@ TEST_F(OperationModeSetupExecutorTest, testConstructor)
 }
 
 /**
- * Test updateOperationMode().
+ * @tests{Speed_limits_per_operation_mode,
+ * Tests that speed limit is set according to current operation mode.
+ * }
  *
  * Test Sequence:
  *  1. Call updateOperationMode() with operation mode T1 and current time stamp.
@@ -127,7 +131,9 @@ TEST_F(OperationModeSetupExecutorTest, testUpdateOperationMode)
 }
 
 /**
+ * @tests{Speed_limits_per_operation_mode,
  * Test updateOperationMode() with no change in operation mode.
+ * }
  *
  * Test Sequence:
  *  1. Call updateOperationMode() with operation mode T1 and current time stamp.
@@ -163,7 +169,9 @@ TEST_F(OperationModeSetupExecutorTest, testUpdateOperationModeSameMode)
 }
 
 /**
+ * @tests{Speed_limits_per_operation_mode,
  * Test updateOperationMode() with no change in time.
+ * }
  * 
  * Test Sequence:
  *  1. Call updateOperationMode() with operation mode T1 and current time stamp.
@@ -199,7 +207,9 @@ TEST_F(OperationModeSetupExecutorTest, testUpdateOperationModeSameTime)
 }
 
 /**
- * Test updateOperationMode() with unknown operation mode
+ * @tests{Speed_limits_per_operation_mode,
+ * Test updateOperationMode() with unknown operation mode.
+ * }
  * 
  * Test Sequence:
  *  1. Call updateOperationMode() with operation mode UNKNOWN and current time stamp.
