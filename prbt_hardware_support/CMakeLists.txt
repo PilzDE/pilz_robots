@@ -515,6 +515,9 @@ if(CATKIN_ENABLE_TESTING)
                           "*/SendBrakeTestResultRequest.h"
                           "*/SendBrakeTestResultResponse.h"
                           "*/FrameSpeeds.h"
+                          "*/SetSpeedLimit.h"
+                          "*/SetSpeedLimitRequest.h"
+                          "*/SetSpeedLimitResponse.h"
                           )
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
