@@ -28,13 +28,30 @@
 namespace prbt_hardware_support
 {
 
+/**
+ * @brief Sets the allowed speed limit for each frame based on
+ * the current operation mode.
+ */
 class OperationModeSetupExecutor
 {
 public:
+  /**
+   * @brief Ctor.
+   *
+   * @param speed_limit_t1 limit Max allowed speed for each frame in operation mode T1.
+   *
+   * @param speed_limit_auto limit Max allowed speed for each frame in operation mode AUTOMATIC.
+   *
+   * @param set_speed_limit_func Function allowing to report the speed limit
+   * change to the system
+   *
+   * @param get_op_mode_func Function Function which allows to determine the
+   * current operation mode of the system.
+   */
   OperationModeSetupExecutor(const double& speed_limit_t1,
                              const double& speed_limit_auto,
-                             const TSetSpeedLimit& set_speed_limit_func,
-                             const TGetOpMode& get_op_mode_func);
+                             const SetSpeedLimitFunc& set_speed_limit_func,
+                             const GetOpModeFunc& get_op_mode_func);
 
 public:
   /**
@@ -49,7 +66,7 @@ private:
   const double speed_limit_auto_;
 
   //! Function used to propagate speed limit changes into the system.
-  TSetSpeedLimit set_speed_limit_func_;
+  SetSpeedLimitFunc set_speed_limit_func_;
   //! Time stamp of the last received operation mode.
   ros::Time time_stamp_last_op_mode_ {ros::Time(0)};
 };

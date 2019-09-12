@@ -75,11 +75,11 @@ int main(int argc, char **argv)
   using std::placeholders::_1;
   waitForService(SET_SPEED_LIMIT_SERVICE);
   ros::ServiceClient speed_limit_srv = nh.serviceClient<SetSpeedLimit>(SET_SPEED_LIMIT_SERVICE);
-  TSetSpeedLimit set_speed_limit_func = std::bind(setSpeedLimitSrv, speed_limit_srv, _1);
+  SetSpeedLimitFunc set_speed_limit_func = std::bind(setSpeedLimitSrv, speed_limit_srv, _1);
 
   waitForService(OPERATION_MODE_SERVICE);
   ros::ServiceClient op_mode_srv = nh.serviceClient<GetOperationMode>(OPERATION_MODE_SERVICE);
-  TGetOpMode get_op_mode_func = std::bind(getOperationMode, op_mode_srv);
+  GetOpModeFunc get_op_mode_func = std::bind(getOperationMode, op_mode_srv);
 
   double speed_limit_t1 {0};
   double speed_limit_auto {0};

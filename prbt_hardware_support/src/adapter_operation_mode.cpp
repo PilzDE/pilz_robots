@@ -23,7 +23,7 @@ namespace prbt_hardware_support
 static const std::string SERVICE_NAME_GET_OPERATION_MODE = "/prbt/get_operation_mode";
 static const std::string TOPIC_OPERATION_MODE = "/prbt/operation_mode";
 
-static constexpr int DEFAULT_QUEUE_SIZE_MODBUS{10};
+static constexpr int DEFAULT_QUEUE_SIZE{10};
 
 AdapterOperationMode::AdapterOperationMode(ros::NodeHandle& nh)
   : nh_(nh)
@@ -36,7 +36,7 @@ AdapterOperationMode::AdapterOperationMode(ros::NodeHandle& nh)
                                                 this);
 
   operation_mode_pub = nh_.advertise<OperationModes>(TOPIC_OPERATION_MODE,
-                                                     DEFAULT_QUEUE_SIZE_MODBUS);
+                                                     DEFAULT_QUEUE_SIZE);
 }
 
 void AdapterOperationMode::updateOperationMode(const OperationModes& new_op_mode)
