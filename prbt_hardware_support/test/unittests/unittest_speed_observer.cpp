@@ -88,7 +88,7 @@ void SpeedObserverUnitTest::TearDown()
 {
 }
 
-void SpeedObserverUnitTest::publishTfAtSpeed(double v)
+void SpeedObserverUnitTest::publishTfAtSpeed(double speed)
 {
   static tf2_ros::TransformBroadcaster br;
   ros::Rate r = ros::Rate(TEST_FREQUENCY * 3);  // publishing definitely faster then observing
@@ -114,9 +114,9 @@ void SpeedObserverUnitTest::publishTfAtSpeed(double v)
     tranformStampedB.header.frame_id = TEST_BASE_FRAME;
     tranformStampedB.child_frame_id = TEST_FRAME_B;
     // rotation in a tilted circle to cover all axis
-    tranformStampedB.transform.translation.x = v * cos(t);
-    tranformStampedB.transform.translation.y = v * SQRT_2_HALF * -sin(t);
-    tranformStampedB.transform.translation.z = v * SQRT_2_HALF * sin(t);
+    tranformStampedB.transform.translation.x = speed * cos(t);
+    tranformStampedB.transform.translation.y = speed * SQRT_2_HALF * -sin(t);
+    tranformStampedB.transform.translation.z = speed * SQRT_2_HALF * sin(t);
     tranformStampedB.transform.rotation.w = 1;
     br.sendTransform(tranformStampedA);
     br.sendTransform(tranformStampedB);
