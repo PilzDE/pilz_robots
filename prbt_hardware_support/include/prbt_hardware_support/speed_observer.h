@@ -42,7 +42,7 @@ public:
 
 public:
   /**
-   * @brief Starts the observation cycle. The function blocks until `!ros::ok()`.
+   * @brief Starts the observation cycle. The function blocks until ros shutsdown.
    * @param frequency [Hz] Will check all frame once per cycle
    */
   void startObserving(double frequency);
