@@ -24,7 +24,7 @@
 namespace prbt_hardware_support
 {
 
-using TGetOpMode = std::function<OperationModes()>;
+using GetOpModeFunc = std::function<OperationModes()>;
 
 }
 

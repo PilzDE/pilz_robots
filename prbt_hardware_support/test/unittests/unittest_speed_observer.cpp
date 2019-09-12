@@ -33,6 +33,9 @@
 namespace speed_observer_test
 {
 using ::testing::_;
+using ::testing::AllOf;
+using ::testing::AtLeast;
+using ::testing::AtMost;
 using ::testing::DoAll;
 using ::testing::Return;
 using ::testing::SetArgReferee;
@@ -85,7 +88,7 @@ void SpeedObserverUnitTest::TearDown()
 {
 }
 
-void SpeedObserverUnitTest::publishTfAtSpeed(double v)
+void SpeedObserverUnitTest::publishTfAtSpeed(double speed)
 {
   static tf2_ros::TransformBroadcaster br;
   ros::Rate r = ros::Rate(TEST_FREQUENCY * 3);  // publishing definitely faster then observing
@@ -97,26 +100,26 @@ void SpeedObserverUnitTest::publishTfAtSpeed(double v)
     ros::Time current = ros::Time::now();
     t = (current - start).toSec();
     // a has no speed
-    geometry_msgs::TransformStamped tfsa;
-    tfsa.header.stamp = current;
-    tfsa.header.frame_id = TEST_BASE_FRAME;
-    tfsa.child_frame_id = TEST_FRAME_A;
-    tfsa.transform.translation.x = 99.0;
-    tfsa.transform.translation.y = 99.0;
-    tfsa.transform.translation.z = 99.0;
-    tfsa.transform.rotation.w = 1;
+    geometry_msgs::TransformStamped transform_stamped_a;
+    transform_stamped_a.header.stamp = current;
+    transform_stamped_a.header.frame_id = TEST_BASE_FRAME;
+    transform_stamped_a.child_frame_id = TEST_FRAME_A;
+    transform_stamped_a.transform.translation.x = 99.0;
+    transform_stamped_a.transform.translation.y = 99.0;
+    transform_stamped_a.transform.translation.z = 99.0;
+    transform_stamped_a.transform.rotation.w = 1;
     // b has speed v
-    geometry_msgs::TransformStamped tfsb;
-    tfsb.header.stamp = current;
-    tfsb.header.frame_id = TEST_BASE_FRAME;
-    tfsb.child_frame_id = TEST_FRAME_B;
+    geometry_msgs::TransformStamped transform_stamped_b;
+    transform_stamped_b.header.stamp = current;
+    transform_stamped_b.header.frame_id = TEST_BASE_FRAME;
+    transform_stamped_b.child_frame_id = TEST_FRAME_B;
     // rotation in a tilted circle to cover all axis
-    tfsb.transform.translation.x = v * cos(t);
-    tfsb.transform.translation.y = v * SQRT_2_HALF * -sin(t);
-    tfsb.transform.translation.z = v * SQRT_2_HALF * sin(t);
-    tfsb.transform.rotation.w = 1;
-    br.sendTransform(tfsa);
-    br.sendTransform(tfsb);
+    transform_stamped_b.transform.translation.x = speed * cos(t);
+    transform_stamped_b.transform.translation.y = speed * SQRT_2_HALF * -sin(t);
+    transform_stamped_b.transform.translation.z = speed * SQRT_2_HALF * sin(t);
+    transform_stamped_b.transform.rotation.w = 1;
+    br.sendTransform(transform_stamped_a);
+    br.sendTransform(transform_stamped_b);
 
     if (tf_publisher_running_)  // ending faster
       r.sleep();
@@ -132,7 +135,7 @@ using ::testing::PrintToString;
 MATCHER_P2(NameAtI, i, name,
            "Name at index " + PrintToString(i) + std::string(negation ? "is not" : "is") + ": " + name + ".")
 {
-  return arg->name[(unsigned) i].compare(name) == 0;
+  return arg->name[(unsigned)i].compare(name) == 0;
 }
 
 MATCHER_P2(SpeedAtIGe, i, x,
@@ -150,22 +153,21 @@ MATCHER_P2(SpeedAtILe, i, x,
 }
 
 /**
- * @tests{The correct observation of frames and handling of slwo speeds}
+ * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
+ * Tests the correct observation of frames and handling of slow speeds.
+ * }
  *
  * Test Sequence:
  *    0. Starting up
- *    1. Publishing tf movements that *not* have a too high speed
+ *    1. Publishing tf movements that are withing the speed limit
  *
  * Expected Results:
  *    0. -
- *    1. Correct values are publshed on the speed topic.
+ *    1. Correct values are published on the speed topic.
  *       *No* stop is published
  */
 TEST_F(SpeedObserverUnitTest, testStartupAndTopic)
 {
-  using ::testing::AllOf;
-  using ::testing::AtLeast;
-
   /**********
    * Step 0 *
    **********/
@@ -209,7 +211,12 @@ TEST_F(SpeedObserverUnitTest, testStartupAndTopic)
 }
 
 /**
- * @tests{The correct handling of too high speeds}
+ * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
+ * Tests the correct handling of too high speeds.
+ * }
+ * @tests{Stop1_on_violation_of_speed_limit,
+ * Tests that Stop 1 is triggered if speed limit is violated.
+ * }
  *
  * Test Sequence:
  *    0. Starting up
@@ -280,7 +287,15 @@ TEST_F(SpeedObserverUnitTest, testTooHighSpeed)
 }
 
 /**
- * @tests{The correct handling of changed speed limits}
+ * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
+ * Tests the correct handling of changed speed limits.
+ * }
+ * @tests{Speed_limits_per_operation_mode,
+ * Test that speed limits can be changes.
+ * }
+ * @tests{Stop1_on_violation_of_speed_limit,
+ * Tests that Stop 1 is triggered if after changing the speed limit.
+ * }
  *
  * Test Sequence:
  *    0. Starting up
@@ -290,15 +305,11 @@ TEST_F(SpeedObserverUnitTest, testTooHighSpeed)
  * Expected Results:
  *    0. -
  *    1. Correct values are published on the speed topic.
- *       *No* stop is published
- *    2  A stop is published
+ *       *No* stop is called
+ *    2  A stop is called
  */
 TEST_F(SpeedObserverUnitTest, testSetSpeedLimit)
 {
-  using ::testing::AllOf;
-  using ::testing::AtLeast;
-  using ::testing::AtMost;
-
   /**********
    * Step 0 *
    **********/
@@ -335,7 +346,7 @@ TEST_F(SpeedObserverUnitTest, testSetSpeedLimit)
       .Times(AtLeast(1))
       .InSequence(s_speeds)
       .WillRepeatedly(ACTION_OPEN_BARRIER_VOID(BARRIER_LIMIT));
-  EXPECT_CALL(*this, stop_cb_mock(_, _)).Times(AtMost(0));
+  EXPECT_CALL(*this, stop_cb_mock(_, _)).Times(0);
   std::thread pubisher_thread_fast = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.3);
   BARRIER({ BARRIER_LIMIT });
 
@@ -364,7 +375,12 @@ TEST_F(SpeedObserverUnitTest, testSetSpeedLimit)
 }
 
 /**
- * @tests{The correct handling of no tf}
+ * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
+ * Tests the correct handling of no tf.
+ * }
+ * @tests{Monitor_Speed_of_user_defined_tf_frames,
+ * Tests the correct handling of no tf.
+ * }
  *
  * Test Sequence:
  *    0. Starting up
@@ -381,7 +397,7 @@ TEST_F(SpeedObserverUnitTest, testTimeout)
    **********/
   ROS_DEBUG_STREAM("Step 0");
   std::string reference_frame{ TEST_BASE_FRAME };
-  std::vector<std::string> frames_to_observe{ TEST_FRAME_A, TEST_FRAME_B };
+  std::vector<std::string> frames_to_observe{ TEST_FRAME_A };
   prbt_hardware_support::SpeedObserver observer(nh_, reference_frame, frames_to_observe);
 
   /**********
@@ -389,6 +405,52 @@ TEST_F(SpeedObserverUnitTest, testTimeout)
    **********/
   ROS_DEBUG_STREAM("Step 1");
   EXPECT_NO_THROW(observer.startObserving(TEST_FREQUENCY));
+}
+
+/**
+ * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
+ * Tests the correct handling of too fast observation.
+ * }
+ * @tests{Monitor_Speed_of_user_defined_tf_frames,
+ * Tests the correct handling of too fast observation.
+ * }
+ *
+ * Test Sequence:
+ *    0. Observing at a rate >> the publisher rate
+ *
+ * Expected Results:
+ *    0. No too fast speeds ocurr
+ */
+TEST_F(SpeedObserverUnitTest, testFastObservation)
+{
+  ::testing::Sequence s_speeds;
+
+  /**********
+   * Step 0 *
+   **********/
+  ROS_DEBUG_STREAM("Step 0");
+  std::string reference_frame{ TEST_BASE_FRAME };
+  std::vector<std::string> frames_to_observe{ TEST_FRAME_A };
+  prbt_hardware_support::SpeedObserver observer(nh_, reference_frame, frames_to_observe);
+
+  EXPECT_CALL(*this, stop_cb_mock(_, _)).Times(0);
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), SpeedAtILe((unsigned long)0, .25),
+                                                SpeedAtIGe((unsigned long)0, 0))))
+      .Times(AtLeast(2))
+      .InSequence(s_speeds);
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), SpeedAtILe((unsigned long)0, .25),
+                                                SpeedAtIGe((unsigned long)0, 0))))
+      .Times(AtLeast(1))
+      .InSequence(s_speeds)
+      .WillRepeatedly(ACTION_OPEN_BARRIER_VOID(BARRIER_LIMIT));
+
+  std::thread pubisher_thread = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.2);
+  std::thread observer_thread = std::thread(&SpeedObserver::startObserving, &observer, 100 * TEST_FREQUENCY);
+  BARRIER({ BARRIER_LIMIT });
+  stopTfPublisher();
+  pubisher_thread.join();
+  observer.terminateNow();
+  observer_thread.join();
 }
 
 }  // namespace speed_observer_test

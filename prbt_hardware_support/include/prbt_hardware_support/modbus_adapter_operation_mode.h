@@ -56,7 +56,6 @@ private:
   void modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw);
 
 private:
-  static OperationModes createOperationMode(const ModbusMsgOperationModeWrapper& msg);
   static OperationModes createUnknownOperationMode();
 
 private:

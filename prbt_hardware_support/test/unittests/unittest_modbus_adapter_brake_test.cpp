@@ -20,78 +20,49 @@
 #include <functional>
 #include <memory>
 
-#include <std_msgs/Bool.h>
-
 #include <prbt_hardware_support/modbus_adapter_brake_test.h>
-#include <prbt_hardware_support/modbus_topic_definitions.h>
 #include <prbt_hardware_support/modbus_msg_in_builder.h>
 #include <prbt_hardware_support/register_container.h>
 #include <prbt_hardware_support/modbus_msg_brake_test_wrapper.h>
 #include <prbt_hardware_support/modbus_msg_brake_test_wrapper_exception.h>
+#include <prbt_hardware_support/modbus_adapter_brake_test_exception.h>
+#include <prbt_hardware_support/register_container.h>
+#include <prbt_hardware_support/write_modbus_register_call.h>
 
 #include <pilz_testutils/async_test.h>
 
 namespace prbt_hardware_support
 {
-static constexpr int DEFAULT_QUEUE_SIZE_MODBUS{1};
-static const std::string SERVICE_NAME_IS_BRAKE_TEST_REQUIRED = "/prbt/brake_test_required";
-
 static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{2};
-static constexpr unsigned int DEFAULT_RETRIES{10};
 
 static const ModbusApiSpec TEST_API_SPEC{ {modbus_api_spec::VERSION, 969},
                                           {modbus_api_spec::BRAKETEST_REQUEST,973} };
 
-/**
- * @brief Test fixture for unit-tests of the ModbusAdapterBrakeTest.
- *
- * Publish messages on the modbus topic and call the brake_test_required service
- * in order to check if the expectations are met.
- */
-class ModbusAdapterBrakeTestTest : public testing::Test, public testing::AsyncTest
+static const ModbusApiSpec TEST_API_WRITE_SPEC{ {modbus_api_spec::BRAKETEST_PERFORMED, 77},
+                                                {modbus_api_spec::BRAKETEST_RESULT, 78} };
+
+using std::placeholders::_1;
+using std::placeholders::_2;
+
+using ::testing::_;
+using ::testing::Return;
+using ::testing::DoAll;
+using ::testing::SetArgReferee;
+
+class ModbusMock
 {
 public:
-  ModbusAdapterBrakeTestTest();
-  ~ModbusAdapterBrakeTestTest() override;
-
-public:
-  ModbusMsgInStampedPtr createDefaultBrakeTestModbusMsg(uint16_t brake_test_required_value,
-                                                        unsigned int modbus_api_version = MODBUS_API_VERSION_REQUIRED,
-                                                        uint32_t brake_test_required_index = TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
-  bool expectBrakeTestRequiredServiceCallResult(ros::ServiceClient& brake_test_required_client,
-                                                IsBrakeTestRequiredResponse::_result_type expectation,
-                                                uint16_t retries = DEFAULT_RETRIES);
-
-protected:
-  ros::AsyncSpinner spinner_{2};
-
-  ros::NodeHandle nh_;
-  std::unique_ptr<ModbusAdapterBrakeTest> adapter_brake_test_ {new ModbusAdapterBrakeTest(nh_, TEST_API_SPEC)};
-  ros::Publisher modbus_topic_pub_ {nh_.advertise<ModbusMsgInStamped>(TOPIC_MODBUS_READ, DEFAULT_QUEUE_SIZE_MODBUS)};
-  ros::ServiceClient brake_test_required_client_ {nh_.serviceClient<prbt_hardware_support::IsBrakeTestRequired>(SERVICE_NAME_IS_BRAKE_TEST_REQUIRED)};//(969, 973, 974);
+  MOCK_METHOD2(modbsWriteRegisterFunc, bool(const uint16_t&, const RegCont&));
 };
 
-ModbusAdapterBrakeTestTest::ModbusAdapterBrakeTestTest()
+static ModbusMsgInStampedPtr createDefaultBrakeTestModbusMsg(
+    const uint16_t brake_test_required_value,
+    const unsigned int modbus_api_version = MODBUS_API_VERSION_REQUIRED,
+    const uint32_t brake_test_required_index = TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST)
+    )
 {
-  spinner_.start();
-}
-
-ModbusAdapterBrakeTestTest::~ModbusAdapterBrakeTestTest()
-{
-  // Before the destructors of the class members are called, we have
-  // to ensure that all topic and service calls done by the AsyncSpinner
-  // threads are finished. Otherwise, we sporadically will see threading
-  // exceptions like:
-  // "boost::mutex::~mutex(): Assertion `!res' failed".
-  spinner_.stop();
-}
-
-ModbusMsgInStampedPtr ModbusAdapterBrakeTestTest::createDefaultBrakeTestModbusMsg(uint16_t brake_test_required_value,
-                                                                                  unsigned int modbus_api_version,
-                                                                                  uint32_t brake_test_required_index)
-{
-  uint32_t first_index_to_read{TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION)};
-  uint32_t last_index_to_read{brake_test_required_index};
+  const uint32_t first_index_to_read{TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION)};
+  const uint32_t last_index_to_read{brake_test_required_index};
   static int msg_time_counter{1};
   RegCont tab_reg(last_index_to_read - first_index_to_read + 1);
   tab_reg[0] = static_cast<uint16_t>(modbus_api_version);
@@ -101,32 +72,11 @@ ModbusMsgInStampedPtr ModbusAdapterBrakeTestTest::createDefaultBrakeTestModbusMs
   return msg;
 }
 
-bool ModbusAdapterBrakeTestTest::expectBrakeTestRequiredServiceCallResult(ros::ServiceClient& brake_test_required_client,
-                                                                          IsBrakeTestRequiredResponse::_result_type expectation,
-                                                                          uint16_t retries)
-{
-  for (int i = 0; i<= retries; ++i)
-  {
-    prbt_hardware_support::IsBrakeTestRequired srv;
-    brake_test_required_client.call(srv);
-    if(srv.response.result == expectation)
-    {
-      ROS_INFO_STREAM("It took " << i+1 << " tries for the service call.");
-      return true;
-    }
-    sleep(1); // This then may take {retries*1}seconds.
-  }
-  return false;
-}
-
-MATCHER(InformsAboutRequired, "") { return arg.data; }
-MATCHER(InformsAboutNotRequired, "") { return !arg.data; }
-
 /**
  * @brief Test increases function coverage by ensuring that all Dtor variants
  * are called.
  */
-TEST_F(ModbusAdapterBrakeTestTest, testModbusMsgBrakeTestWrapperExceptionDtor)
+TEST(ModbusAdapterBrakeTestTest, testModbusMsgBrakeTestWrapperExceptionDtor)
 {
   std::shared_ptr<ModbusMsgBrakeTestWrapperException> msg_wrapper{new ModbusMsgBrakeTestWrapperException("Test msg")};
 }
@@ -135,25 +85,13 @@ TEST_F(ModbusAdapterBrakeTestTest, testModbusMsgBrakeTestWrapperExceptionDtor)
  * @brief Test increases function coverage by ensuring that all Dtor variants
  * are called.
  */
-TEST_F(ModbusAdapterBrakeTestTest, testModbusMsgBrakeTestWrapperDtor)
+TEST(ModbusAdapterBrakeTestTest, testModbusMsgBrakeTestWrapperDtor)
 {
   {
     std::shared_ptr<ModbusMsgBrakeTestWrapper> msg_wrapper{
       new ModbusMsgBrakeTestWrapper(createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_REQUIRED), TEST_API_SPEC)};
   }
 }
-
-/**
- * @tests{Is_BrakeTest_required_mechanism,
- *  Test increases function coverage by ensuring that all Dtor variants
- *  are called.
- * }
- */
-TEST_F(ModbusAdapterBrakeTestTest, testAdapterBrakeTestDtor)
-{
-  std::shared_ptr<AdapterBrakeTest> adapter{new AdapterBrakeTest(nh_)};
-}
-
 
 /**
  * @tests{Is_BrakeTest_required_mechanism,
@@ -166,10 +104,16 @@ TEST_F(ModbusAdapterBrakeTestTest, testAdapterBrakeTestDtor)
  * Expected Results:
  *  1. The service returns true, and the it is unknown if a braketest has to be performed
  */
-TEST_F(ModbusAdapterBrakeTestTest, testNoMessageReceived)
+TEST(ModbusAdapterBrakeTestTest, testNoMessageReceived)
 {
-  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
-                                                       IsBrakeTestRequiredResponse::UNKNOWN));
+  ModbusMock mock;
+  ModbusAdapterBrakeTest brake_test_adapter(std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
+                                            TEST_API_SPEC, TEST_API_WRITE_SPEC);
+
+
+  prbt_hardware_support::IsBrakeTestRequired srv;
+  EXPECT_TRUE(brake_test_adapter.isBrakeTestRequired(srv.request, srv.response));
+  EXPECT_EQ(IsBrakeTestRequiredResponse::UNKNOWN, srv.response.result);
 }
 
 /**
@@ -184,12 +128,17 @@ TEST_F(ModbusAdapterBrakeTestTest, testNoMessageReceived)
  * Expected Results:
  *  1. The service returns true
  */
-TEST_F(ModbusAdapterBrakeTestTest, testBrakeTestRequired)
+TEST(ModbusAdapterBrakeTestTest, testBrakeTestRequired)
 {
-  modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_REQUIRED));
-  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
-                                                       IsBrakeTestRequiredResponse::REQUIRED,
-                                                       50));
+  ModbusMock mock;
+  ModbusAdapterBrakeTest brake_test_adapter(std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
+                                            TEST_API_SPEC, TEST_API_WRITE_SPEC);
+
+  brake_test_adapter.modbusMsgCallback(createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_REQUIRED));
+
+  prbt_hardware_support::IsBrakeTestRequired srv;
+  EXPECT_TRUE(brake_test_adapter.isBrakeTestRequired(srv.request, srv.response));
+  EXPECT_EQ(IsBrakeTestRequiredResponse::REQUIRED, srv.response.result);
 }
 
 /**
@@ -204,11 +153,17 @@ TEST_F(ModbusAdapterBrakeTestTest, testBrakeTestRequired)
  * Expected Results:
  *  1. The service returns false
  */
-TEST_F(ModbusAdapterBrakeTestTest, testBrakeTestNotRequired)
+TEST(ModbusAdapterBrakeTestTest, testBrakeTestNotRequired)
 {
-  modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_NOT_REQUIRED));
-  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
-                                                       IsBrakeTestRequiredResponse::NOT_REQUIRED));
+  ModbusMock mock;
+  ModbusAdapterBrakeTest brake_test_adapter(std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
+                                            TEST_API_SPEC, TEST_API_WRITE_SPEC);
+
+  brake_test_adapter.modbusMsgCallback(createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_NOT_REQUIRED));
+
+  prbt_hardware_support::IsBrakeTestRequired srv;
+  EXPECT_TRUE(brake_test_adapter.isBrakeTestRequired(srv.request, srv.response));
+  EXPECT_EQ(IsBrakeTestRequiredResponse::NOT_REQUIRED, srv.response.result);
 }
 
 /**
@@ -223,18 +178,22 @@ TEST_F(ModbusAdapterBrakeTestTest, testBrakeTestNotRequired)
  * Expected Results:
  *  1. The state is unknown
  */
-TEST_F(ModbusAdapterBrakeTestTest, testDisconnect)
+TEST(ModbusAdapterBrakeTestTest, testDisconnect)
 {
-
-  uint32_t offset{0};
-  RegCont holding_register;
+  constexpr uint32_t offset{0};
+  const RegCont holding_register;
   ModbusMsgInStampedPtr msg{ModbusMsgInBuilder::createDefaultModbusMsgIn(offset, holding_register)};
   msg->disconnect.data = true;
-  modbus_topic_pub_.publish(msg);
 
-  sleep(1);
-  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
-                                                       IsBrakeTestRequiredResponse::UNKNOWN));
+  ModbusMock mock;
+  ModbusAdapterBrakeTest brake_test_adapter(std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
+                                            TEST_API_SPEC, TEST_API_WRITE_SPEC);
+
+  brake_test_adapter.modbusMsgCallback(msg);
+
+  prbt_hardware_support::IsBrakeTestRequired srv;
+  EXPECT_TRUE(brake_test_adapter.isBrakeTestRequired(srv.request, srv.response));
+  EXPECT_EQ(IsBrakeTestRequiredResponse::UNKNOWN, srv.response.result);
 }
 
 /**
@@ -249,14 +208,17 @@ TEST_F(ModbusAdapterBrakeTestTest, testDisconnect)
  * Expected Results:
  *  1. The state is unknown
  */
-TEST_F(ModbusAdapterBrakeTestTest, testModbusIncorrectApiVersion)
+TEST(ModbusAdapterBrakeTestTest, testModbusIncorrectApiVersion)
 {
-  RegCont holding_register;
-  modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_REQUIRED, 0));
+  ModbusMock mock;
+  ModbusAdapterBrakeTest brake_test_adapter(std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
+                                            TEST_API_SPEC, TEST_API_WRITE_SPEC);
 
-  sleep(1);
-  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
-                                                       IsBrakeTestRequiredResponse::UNKNOWN));
+  brake_test_adapter.modbusMsgCallback(createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_REQUIRED, 0));
+
+  prbt_hardware_support::IsBrakeTestRequired srv;
+  EXPECT_TRUE(brake_test_adapter.isBrakeTestRequired(srv.request, srv.response));
+  EXPECT_EQ(IsBrakeTestRequiredResponse::UNKNOWN, srv.response.result);
 }
 
 /**
@@ -270,17 +232,22 @@ TEST_F(ModbusAdapterBrakeTestTest, testModbusIncorrectApiVersion)
  * Expected Results:
  *  1. The state is unknown
  */
-TEST_F(ModbusAdapterBrakeTestTest, testModbusWithoutApiVersion)
+TEST(ModbusAdapterBrakeTestTest, testModbusWithoutApiVersion)
 {
   auto msg{createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_REQUIRED,
                                            TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION),
                                            TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST))};
   msg->holding_registers.data.clear();
-  modbus_topic_pub_.publish(msg);
 
-  sleep(1);
-  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
-                                                       IsBrakeTestRequiredResponse::UNKNOWN));
+  ModbusMock mock;
+  ModbusAdapterBrakeTest brake_test_adapter(std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
+                                            TEST_API_SPEC, TEST_API_WRITE_SPEC);
+
+  brake_test_adapter.modbusMsgCallback(msg);
+
+  prbt_hardware_support::IsBrakeTestRequired srv;
+  EXPECT_TRUE(brake_test_adapter.isBrakeTestRequired(srv.request, srv.response));
+  EXPECT_EQ(IsBrakeTestRequiredResponse::UNKNOWN, srv.response.result);
 }
 
 /**
@@ -295,15 +262,19 @@ TEST_F(ModbusAdapterBrakeTestTest, testModbusWithoutApiVersion)
  * Expected Results:
  *  1. The state is unknown
  */
-TEST_F(ModbusAdapterBrakeTestTest, testBrakeTestRequiredRegisterMissing)
+TEST(ModbusAdapterBrakeTestTest, testBrakeTestRequiredRegisterMissing)
 {
-  modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_REQUIRED,
-                                                            TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION),
-                                                            TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST) - 1));
+  ModbusMock mock;
+  ModbusAdapterBrakeTest brake_test_adapter(std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
+                                            TEST_API_SPEC, TEST_API_WRITE_SPEC);
 
-  sleep(1);
-  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
-                                                       IsBrakeTestRequiredResponse::UNKNOWN));
+  brake_test_adapter.modbusMsgCallback(createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_REQUIRED,
+                                                                       TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION),
+                                                                       TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST) - 1));
+
+  prbt_hardware_support::IsBrakeTestRequired srv;
+  EXPECT_TRUE(brake_test_adapter.isBrakeTestRequired(srv.request, srv.response));
+  EXPECT_EQ(IsBrakeTestRequiredResponse::UNKNOWN, srv.response.result);
 }
 
 /**
@@ -317,22 +288,182 @@ TEST_F(ModbusAdapterBrakeTestTest, testBrakeTestRequiredRegisterMissing)
  * Expected Results:
  *  1. The state is unknown
  */
-TEST_F(ModbusAdapterBrakeTestTest, testBrakeTestRequiredRegisterUndefinedValue)
+TEST(ModbusAdapterBrakeTestTest, testBrakeTestRequiredRegisterUndefinedValue)
 {
-  modbus_topic_pub_.publish(createDefaultBrakeTestModbusMsg(555 /* some arbitrary value */));
+  ModbusMock mock;
+  ModbusAdapterBrakeTest brake_test_adapter(std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
+                                            TEST_API_SPEC, TEST_API_WRITE_SPEC);
 
-  sleep(1);
-  ASSERT_TRUE(expectBrakeTestRequiredServiceCallResult(brake_test_required_client_,
-                                                       IsBrakeTestRequiredResponse::UNKNOWN));
+  brake_test_adapter.modbusMsgCallback(createDefaultBrakeTestModbusMsg(555 /* some arbitrary value */));
+
+  prbt_hardware_support::IsBrakeTestRequired srv;
+  EXPECT_TRUE(brake_test_adapter.isBrakeTestRequired(srv.request, srv.response));
+  EXPECT_EQ(IsBrakeTestRequiredResponse::UNKNOWN, srv.response.result);
+}
+
+/**
+ * @brief Test increases function coverage by ensuring that all Dtor variants
+ * are called.
+ */
+TEST(ModbusAdapterBrakeTestTest, testModbusApiSpecExceptionDtor)
+{
+  std::shared_ptr<ModbusAdapterBrakeTestException> ex {new ModbusAdapterBrakeTestException("Test msg")};
+}
+
+/**
+ * @brief Test execution of brake tests when there is a problem
+ * in the api definition.
+ *
+ * Test Sequence:
+ *  1. Execute a brake test with missing definition for BRAKETEST_PERFORMED
+ *  2. Execute a brake test with missing definition for BRAKETEST_RESULT
+ *  3. Execute a brake test with both values defined 1 apart
+ *  4. Execute a brake test with both values defined 2 apart
+ *
+ * Expected Results:
+ *  1. A BrakeTestExecutorException is thown
+ *  2. A BrakeTestExecutorException is thown
+ *  3. No Exception is thrown
+ *  4. A BrakeTestExecutorException is thown
+ */
+TEST(ModbusAdapterBrakeTestTest, testBrakeTestTriggeringWrongApiDef)
+{
+  /**********
+   * Step 1 *
+   **********/
+  {
+    ModbusApiSpec api_write_spec { {modbus_api_spec::BRAKETEST_RESULT, 78} };
+    ModbusMock mock;
+    ASSERT_THROW(ModbusAdapterBrakeTest bte_no_perf(
+                   std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
+                   TEST_API_SPEC, api_write_spec), ModbusAdapterBrakeTestException);
+  }
+
+  /**********
+   * Step 2 *
+   **********/
+  {
+    ModbusApiSpec api_write_spec{ {modbus_api_spec::BRAKETEST_PERFORMED, 77} };
+    ModbusMock mock;
+    ASSERT_THROW(ModbusAdapterBrakeTest bte_no_res(
+                   std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
+                   TEST_API_SPEC, api_write_spec), ModbusAdapterBrakeTestException);
+  }
+
+  /**********
+   * Step 3 *
+   **********/
+  {
+    ModbusApiSpec api_write_spec{ {modbus_api_spec::BRAKETEST_PERFORMED, 100},
+                                  {modbus_api_spec::BRAKETEST_RESULT, 99} };
+    ModbusMock mock;
+    ASSERT_NO_THROW(ModbusAdapterBrakeTest bte_one_apart(
+                      std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
+                      TEST_API_SPEC, api_write_spec));
+  }
+
+  /**********
+   * Step 4 *
+   **********/
+  {
+    ModbusApiSpec api_write_spec{ {modbus_api_spec::BRAKETEST_PERFORMED, 100},
+                                  {modbus_api_spec::BRAKETEST_RESULT, 98} };
+    ModbusMock mock;
+    ASSERT_THROW(ModbusAdapterBrakeTest bte_two_apart(
+                   std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
+                   TEST_API_SPEC, api_write_spec), ModbusAdapterBrakeTestException);
+  }
+
+}
+
+/**
+ * @brief Tests that missing modbus register write functions leads to
+ * response.success==false.
+ */
+TEST(ModbusAdapterBrakeTestTest, testMissingModbusWriteFunc)
+{
+  ModbusMock mock;
+  ModbusAdapterBrakeTest brake_test_adapter(nullptr,
+                                            TEST_API_SPEC, TEST_API_WRITE_SPEC);
+
+  SendBrakeTestResult srv;
+  EXPECT_TRUE(brake_test_adapter.sendBrakeTestResult(srv.request, srv.response));
+  EXPECT_FALSE(srv.response.success);
+}
+
+/**
+ * @brief Tests that failing modbus register write functions leads to
+ * response.success==false.
+ */
+TEST(ModbusAdapterBrakeTestTest, testFailingModbusWriteFunc)
+{
+  ModbusMock mock;
+  EXPECT_CALL(mock, modbsWriteRegisterFunc(_,_)).Times(1).WillOnce(Return(false));
+  ModbusAdapterBrakeTest brake_test_adapter(std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
+                                            TEST_API_SPEC, TEST_API_WRITE_SPEC);
+
+  SendBrakeTestResult srv;
+  EXPECT_TRUE(brake_test_adapter.sendBrakeTestResult(srv.request, srv.response));
+  EXPECT_FALSE(srv.response.success);
+}
+
+/**
+ * @brief Tests that failing modbus register write functions leads to
+ * response.success==false.
+ */
+TEST(ModbusAdapterBrakeTestTest, testSecondTimeFailingModbusWriteFunc)
+{
+  ModbusMock mock;
+  EXPECT_CALL(mock, modbsWriteRegisterFunc(_,_)).Times(2).WillOnce(Return(true)).WillOnce(Return(false));
+  ModbusAdapterBrakeTest brake_test_adapter(std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
+                                            TEST_API_SPEC, TEST_API_WRITE_SPEC);
+
+  SendBrakeTestResult srv;
+  EXPECT_TRUE(brake_test_adapter.sendBrakeTestResult(srv.request, srv.response));
+  EXPECT_FALSE(srv.response.success);
+}
+
+class ServiceMock
+{
+public:
+  MOCK_METHOD1(call, bool(WriteModbusRegister& srv));
+  MOCK_METHOD0(getService, std::string());
+};
+
+/**
+ * @brief Tests that a service.response=false leads to return value false.
+ */
+TEST(ModbusAdapterBrakeTestTest, testWriteModbusRegisterCallResponseFalse)
+{
+  WriteModbusRegister res_exp;
+  res_exp.response.success = false;
+
+  ServiceMock mock;
+  EXPECT_CALL(mock, getService()).WillRepeatedly(Return("TestServiceName"));
+  EXPECT_CALL(mock, call(_)).Times(1).WillOnce(DoAll(SetArgReferee<0>(res_exp), Return(true)));
+
+  EXPECT_FALSE(writeModbusRegisterCall<ServiceMock>(mock, 0, {}));
+}
+
+/**
+ * @brief Tests that a service call failure leads to return value false.
+ */
+TEST(ModbusAdapterBrakeTestTest, testWriteModbusRegisterCallFailure)
+{
+  WriteModbusRegister res_exp;
+  res_exp.response.success = false;
+
+  ServiceMock mock;
+  EXPECT_CALL(mock, getService()).WillRepeatedly(Return("TestServiceName"));
+  EXPECT_CALL(mock, call(_)).Times(1).WillOnce(Return(false));
+
+  EXPECT_FALSE(writeModbusRegisterCall<ServiceMock>(mock, 0, {}));
 }
 
 } // namespace prbt_hardware_support
 
 int main(int argc, char *argv[])
 {
-  ros::init(argc, argv, "unittest_modbus_adapter_brake_test");
-  ros::NodeHandle nh;
-
-  testing::InitGoogleTest(&argc, argv);
+  testing::InitGoogleMock(&argc, argv);
   return RUN_ALL_TESTS();
 }

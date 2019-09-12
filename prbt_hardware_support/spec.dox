@@ -136,8 +136,13 @@
  *  - (New) The user can define additional tf frames to be monitored.
  *
  * @definereq{Stop1_on_violation_of_speed_limit}
- *  - (New) When one of the montired speeds exceeds 250mms^-1
+ *  - (New) If the speed limit for the current operation mode is violated,
  *    the robot performs a Stop 1 (\ref sto_stop1).
  *
+ * @definereq{Speed_limits_per_operation_mode}
+ *  - (New) The currently allowed speed limit depends on the operation mode.
+ *  - In T1 the speed limit is 250mms^-1.
+ *  - In T2 and AUTOMATIC the robot is allowed to move with maximum speed.
+ *  - If the operation mode is unknown, the speed limit is set to zero.
  *
  */

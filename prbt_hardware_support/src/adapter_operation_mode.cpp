@@ -22,7 +22,7 @@ namespace prbt_hardware_support
 
 static const std::string TOPIC_OPERATION_MODE = "/prbt/operation_mode";
 
-static constexpr int DEFAULT_QUEUE_SIZE_MODBUS{10};
+static constexpr int DEFAULT_QUEUE_SIZE{10};
 
 AdapterOperationMode::AdapterOperationMode(ros::NodeHandle& nh)
   : nh_(nh)

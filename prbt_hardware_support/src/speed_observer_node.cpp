@@ -39,28 +39,28 @@ int main(int argc, char** argv)
   ros::NodeHandle pnh{ "~" };
   ros::NodeHandle nh;
 
-  urdf::Model m;
-  m.initParam(ROBOT_DESCRIPTION_PARAM_NAME);
-  ROS_DEBUG_STREAM("reference_frame: " << m.getRoot()->name);
-  std::string reference_frame = m.getRoot()->name;
+  urdf::Model model;
+  model.initParam(ROBOT_DESCRIPTION_PARAM_NAME);
+  ROS_DEBUG_STREAM("reference_frame: " << model.getRoot()->name);
+  std::string reference_frame = model.getRoot()->name;
   std::vector<urdf::LinkSharedPtr> links;
   std::vector<std::string> frames_to_observe;
-  m.getLinks(links);
-  ROS_DEBUG_STREAM("frames_to_observe (from urdf):");
-  for (const auto& l : links)
+  model.getLinks(links);
+  ROS_DEBUG_STREAM("Received the following frames to observer from urdf:");
+  for (const auto& link : links)
   {
-    if (l->name != reference_frame)  // no need to monitor the ref frame
+    if (link->name != reference_frame)  // no need to monitor the ref frame
     {
-      ROS_DEBUG_STREAM(" - " << l->name);
-      frames_to_observe.push_back(l->name);
+      ROS_DEBUG_STREAM(" - " << link->name);
+      frames_to_observe.push_back(link->name);
     }
   }
   std::vector<std::string> additional_frames;
   pnh.getParam(ADDITIONAL_FRAMES_PARAM_NAME, additional_frames);
-  ROS_DEBUG_STREAM("frames_to_observe (additional_frames): ");
-  for (const auto& f : additional_frames)
+  ROS_DEBUG_STREAM("Additional frames defined by user:");
+  for (const auto& frame : additional_frames)
   {
-    ROS_DEBUG_STREAM(" - " << f);
+    ROS_DEBUG_STREAM(" - " << frame);
   }
   frames_to_observe.insert(frames_to_observe.end(), additional_frames.begin(), additional_frames.end());
 

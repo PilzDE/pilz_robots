@@ -24,6 +24,7 @@
 
 #include <prbt_hardware_support/OperationModes.h>
 #include <prbt_hardware_support/operation_mode_setup_executor.h>
+#include <prbt_hardware_support/operation_mode_setup_executor_node_service_calls.h>
 
 namespace operation_mode_setup_executor_tests
 {
@@ -32,6 +33,8 @@ using namespace prbt_hardware_support;
 using ::testing::_;
 using ::testing::Le;
 using ::testing::Return;
+using ::testing::SetArgReferee;
+using ::testing::DoAll;
 
 class OperationModeSetupExecutorTest : public ::testing::Test
 {
@@ -60,10 +63,10 @@ void OperationModeSetupExecutorTest::SetUp()
   ON_CALL(*this, setSpeedLimit(_)).WillByDefault(Return(true));
 
   executor_ = std::unique_ptr<OperationModeSetupExecutor>(new OperationModeSetupExecutor(
-      t1_limit_,
-      auto_limit_,
-      std::bind(&OperationModeSetupExecutorTest::setSpeedLimit, this, std::placeholders::_1),
-      std::bind(&OperationModeSetupExecutorTest::getOperationMode, this)));
+                                                            t1_limit_,
+                                                            auto_limit_,
+                                                            std::bind(&OperationModeSetupExecutorTest::setSpeedLimit, this, std::placeholders::_1),
+                                                            std::bind(&OperationModeSetupExecutorTest::getOperationMode, this)));
 }
 
 void OperationModeSetupExecutorTest::TearDown()
@@ -72,7 +75,9 @@ void OperationModeSetupExecutorTest::TearDown()
 }
 
 /**
+ * @tests{Speed_limits_per_operation_mode,
  * Test constructor of OperationModeSetupExecutor with operation mode T1.
+ * }
  */
 TEST_F(OperationModeSetupExecutorTest, testConstructor)
 {
@@ -84,14 +89,16 @@ TEST_F(OperationModeSetupExecutorTest, testConstructor)
   EXPECT_CALL(*this, setSpeedLimit(_)).WillOnce(Return(true));
 
   OperationModeSetupExecutor executor(
-      t1_limit_,
-      auto_limit_,
-      std::bind(&OperationModeSetupExecutorTest::setSpeedLimit, this, std::placeholders::_1),
-      std::bind(&OperationModeSetupExecutorTest::getOperationMode, this));
+        t1_limit_,
+        auto_limit_,
+        std::bind(&OperationModeSetupExecutorTest::setSpeedLimit, this, std::placeholders::_1),
+        std::bind(&OperationModeSetupExecutorTest::getOperationMode, this));
 }
 
 /**
- * Test updateOperationMode().
+ * @tests{Speed_limits_per_operation_mode,
+ * Tests that speed limit is set according to current operation mode.
+ * }
  *
  * Test Sequence:
  *  1. Call updateOperationMode() with operation mode T1 and current time stamp.
@@ -127,7 +134,9 @@ TEST_F(OperationModeSetupExecutorTest, testUpdateOperationMode)
 }
 
 /**
+ * @tests{Speed_limits_per_operation_mode,
  * Test updateOperationMode() with no change in operation mode.
+ * }
  *
  * Test Sequence:
  *  1. Call updateOperationMode() with operation mode T1 and current time stamp.
@@ -163,8 +172,10 @@ TEST_F(OperationModeSetupExecutorTest, testUpdateOperationModeSameMode)
 }
 
 /**
+ * @tests{Speed_limits_per_operation_mode,
  * Test updateOperationMode() with no change in time.
- * 
+ * }
+ *
  * Test Sequence:
  *  1. Call updateOperationMode() with operation mode T1 and current time stamp.
  *  2. Call updateOperationMode() with operation mode AUTO and previous time stamp.
@@ -199,8 +210,10 @@ TEST_F(OperationModeSetupExecutorTest, testUpdateOperationModeSameTime)
 }
 
 /**
- * Test updateOperationMode() with unknown operation mode
- * 
+ * @tests{Speed_limits_per_operation_mode,
+ * Test updateOperationMode() with unknown operation mode.
+ * }
+ *
  * Test Sequence:
  *  1. Call updateOperationMode() with operation mode UNKNOWN and current time stamp.
  *
@@ -219,6 +232,88 @@ TEST_F(OperationModeSetupExecutorTest, testUpdateOperationModeUnknownMode)
   EXPECT_CALL(*this, setSpeedLimit(Le(0.0))).WillOnce(Return(true));
 
   executor_->updateOperationMode(op_mode);
+}
+
+class SetSpeedLimitServiceMock
+{
+public:
+  MOCK_METHOD1(call, bool(SetSpeedLimit& srv));
+  MOCK_METHOD0(getService, std::string());
+};
+
+MATCHER_P(IsCorrectSpeedLimitSet, speed_limit, "") { return arg.request.speed_limit == speed_limit; }
+
+/**
+ * @brief Tests the correct behavior in case the SetSpeedLimit service
+ * succeeds.
+ */
+TEST_F(OperationModeSetupExecutorTest, testSetSpeedLimitSrvSuccess)
+{
+  const double exp_limit {7.7};
+  SetSpeedLimit exp_srv;
+  exp_srv.request.speed_limit = exp_limit;
+
+  SetSpeedLimitServiceMock mock;
+  EXPECT_CALL(mock, getService()).WillRepeatedly(Return("TestServiceName"));
+  EXPECT_CALL(mock, call(IsCorrectSpeedLimitSet(exp_limit))).Times(1).WillOnce(Return(true));
+
+  EXPECT_TRUE(setSpeedLimitSrv<SetSpeedLimitServiceMock>(mock, exp_limit));
+}
+
+/**
+ * @brief Tests the correct behavior in case the SetSpeedLimit service fails.
+ */
+TEST_F(OperationModeSetupExecutorTest, testSetSpeedLimitSrvFailure)
+{
+  SetSpeedLimitServiceMock mock;
+  EXPECT_CALL(mock, getService()).WillRepeatedly(Return("TestServiceName"));
+  EXPECT_CALL(mock, call(_)).Times(1).WillOnce(Return(false));
+
+  const double exp_limit {7.7};
+  EXPECT_FALSE(setSpeedLimitSrv<SetSpeedLimitServiceMock>(mock, exp_limit));
+}
+
+class GetOperationModeServiceMock
+{
+public:
+  MOCK_METHOD1(call, bool(GetOperationMode& srv));
+  MOCK_METHOD0(getService, std::string());
+};
+
+/**
+ * @brief Tests the correct behavior in case the GetOperationMode service
+ * succeeds.
+ */
+TEST_F(OperationModeSetupExecutorTest, testGetOperationModeSuccess)
+{
+  GetOperationMode exp_srv;
+  exp_srv.response.mode.value = OperationModes::T1;
+  exp_srv.response.mode.time_stamp = ros::Time(7.7);
+
+  GetOperationModeServiceMock mock;
+  EXPECT_CALL(mock, getService()).WillRepeatedly(Return("TestServiceName"));
+  EXPECT_CALL(mock, call(_)).Times(1).WillOnce(DoAll(SetArgReferee<0>(exp_srv), Return(true)));
+
+  OperationModes mode {prbt_hardware_support::getOperationMode<GetOperationModeServiceMock>(mock)};
+  EXPECT_EQ(mode.value, exp_srv.response.mode.value);
+  EXPECT_EQ(mode.time_stamp, exp_srv.response.mode.time_stamp);
+}
+
+/**
+ * @brief Tests the correct behavior in case the GetOperationMode service fails.
+ */
+TEST_F(OperationModeSetupExecutorTest, testGetOperationModeFailure)
+{
+  GetOperationMode exp_srv;
+  exp_srv.response.mode.value = OperationModes::T2;
+  exp_srv.response.mode.time_stamp = ros::Time(7.7);
+
+  GetOperationModeServiceMock mock;
+  EXPECT_CALL(mock, getService()).WillRepeatedly(Return("TestServiceName"));
+  EXPECT_CALL(mock, call(_)).Times(1).WillOnce(Return(false));
+
+  OperationModes mode {prbt_hardware_support::getOperationMode<GetOperationModeServiceMock>(mock)};
+  EXPECT_EQ(OperationModes::UNKNOWN, mode.value);
 }
 
 }  // namespace operation_mode_setup_executor_tests

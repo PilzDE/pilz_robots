@@ -22,7 +22,7 @@
 namespace prbt_hardware_support
 {
 
-using TSetSpeedLimit = std::function<bool(const double&)>;
+using SetSpeedLimitFunc = std::function<bool(const double&)>;
 
 }
 

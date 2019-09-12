@@ -35,14 +35,6 @@ ModbusAdapterOperationMode::ModbusAdapterOperationMode(ros::NodeHandle& nh, cons
 
 }
 
-OperationModes ModbusAdapterOperationMode::createOperationMode(const ModbusMsgOperationModeWrapper& msg)
-{
-  OperationModes op_mode;
-  op_mode.time_stamp = msg.getTimeStamp();
-  op_mode.value = msg.getOperationMode();
-  return op_mode;
-}
-
 OperationModes ModbusAdapterOperationMode::createUnknownOperationMode()
 {
   OperationModes op_mode;
@@ -85,7 +77,7 @@ void ModbusAdapterOperationMode::modbusMsgCallback(const ModbusMsgInStampedConst
     return;
   }
 
-  updateOperationMode(createOperationMode(msg));
+  updateOperationMode(msg.getTimeStampedOperationMode());
 }
 
 } // namespace prbt_hardware_support

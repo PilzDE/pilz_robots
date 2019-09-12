@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <package format="2">
   <name>prbt_ikfast_manipulator_plugin</name>
-  <version>0.5.7</version>
+  <version>0.5.8</version>
   <description>The prbt_ikfast_manipulator_plugin package</description>
   <maintainer email="a.gutenkunst@pilz.de">Alexander Gutenkunst</maintainer>
   <maintainer email="c.henkel@pilz.de">Christian Henkel</maintainer>
@@ -15,8 +15,6 @@
   <export>
     <moveit_core plugin="${prefix}/prbt_manipulator_moveit_ikfast_plugin_description.xml"/>
   </export>
-  <build_depend>clang-tidy</build_depend>
-  <build_depend>libclang-dev</build_depend>
   <build_depend>eigen_conversions</build_depend>
   <build_depend>liblapack-dev</build_depend>
   <build_depend>moveit_core</build_depend>
