@@ -153,7 +153,9 @@ MATCHER_P2(SpeedAtILe, i, x,
 }
 
 /**
- * @tests{The correct observation of frames and handling of slwo speeds}
+ * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
+ * Tests the correct observation of frames and handling of slow speeds.
+ * }
  *
  * Test Sequence:
  *    0. Starting up
@@ -209,7 +211,9 @@ TEST_F(SpeedObserverUnitTest, testStartupAndTopic)
 }
 
 /**
- * @tests{The correct handling of too high speeds}
+ * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
+ * Tests the correct handling of too high speeds.
+ * }
  *
  * Test Sequence:
  *    0. Starting up
@@ -280,7 +284,9 @@ TEST_F(SpeedObserverUnitTest, testTooHighSpeed)
 }
 
 /**
- * @tests{The correct handling of changed speed limits}
+ * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
+ * Tests the correct handling of changed speed limits.
+ * }
  *
  * Test Sequence:
  *    0. Starting up
@@ -360,7 +366,9 @@ TEST_F(SpeedObserverUnitTest, testSetSpeedLimit)
 }
 
 /**
- * @tests{The correct handling of no tf}
+ * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
+ * Tests the correct handling of no tf.
+ * }
  *
  * Test Sequence:
  *    0. Starting up
@@ -388,7 +396,9 @@ TEST_F(SpeedObserverUnitTest, testTimeout)
 }
 
 /**
- * @tests{The correct handling of too fast observation}
+ * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
+ * Tests the correct handling of too fast observation.
+ * }
  *
  * Test Sequence:
  *    0. Observing at a rate >> the publisher rate

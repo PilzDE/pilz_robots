@@ -213,7 +213,9 @@ void SpeedObserverIntegrationTest::stopTfPublisher()
 }
 
 /**
- * @tests{Stop1_on_violation_of_speed_limit}
+ * @tests{Stop1_on_violation_of_speed_limit,
+ * Tests that Stop 1 is triggered if speed limit is violated.
+ * }
  *
  * Test Sequence:
  *    0. Set Operation Mode to T1 by answering the service call

@@ -53,7 +53,7 @@ public:
   int8_t getOperationMode() const;
 
   /**
-   * @returs the operation mode and the corresponding time stamp.
+   * @returns the operation mode and the corresponding time stamp.
    */
   OperationModes getTimeStampedOperationMode() const;
 
