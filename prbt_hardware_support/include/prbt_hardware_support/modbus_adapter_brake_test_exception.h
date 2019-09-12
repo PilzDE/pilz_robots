@@ -15,23 +15,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PRBT_HARDWARE_SUPPORT_BRAKE_TEST_EXECUTOR_EXCEPTION_H
-#define PRBT_HARDWARE_SUPPORT_BRAKE_TEST_EXECUTOR_EXCEPTION_H
+#ifndef MODBUS_ADAPTER_BRAKE_TEST_EXCEPTION_H
+#define MODBUS_ADAPTER_BRAKE_TEST_EXCEPTION_H
 
 #include <stdexcept>
 
 namespace prbt_hardware_support
 {
 /**
- * @brief Exception thrown by a BrakeTestExecutor function.
+ * @brief Exception thrown by the ModbusAdapterBrakeTest class.
  */
-class BrakeTestExecutorException : public std::runtime_error
+class ModbusAdapterBrakeTestException : public std::runtime_error
 {
 public:
-  BrakeTestExecutorException(const std::string &what_arg) : std::runtime_error(what_arg)
+  ModbusAdapterBrakeTestException(const std::string &what_arg) : std::runtime_error(what_arg)
   {
   }
 };
 } // namespace prbt_hardware_support
 
-#endif // PRBT_HARDWARE_SUPPORT_BRAKE_TEST_EXECUTOR_EXCEPTION_H
+#endif // MODBUS_ADAPTER_BRAKE_TEST_EXCEPTION_H

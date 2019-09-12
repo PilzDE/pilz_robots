@@ -41,7 +41,7 @@ add_service_files(
   IsBrakeTestRequired.srv
   SetSpeedLimit.srv
   WriteModbusRegister.srv
-  SetSpeedLimit.srv
+  SendBrakeTestResult.srv
 )
 
 generate_messages(
@@ -115,7 +115,6 @@ target_link_libraries(operation_mode_setup_executor_node ${catkin_LIBRARIES})
 add_executable(modbus_adapter_brake_test_node
   src/modbus_adapter_brake_test_node.cpp
   src/modbus_adapter_brake_test.cpp
-  src/adapter_brake_test.cpp
 )
 add_dependencies(modbus_adapter_brake_test_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
 target_link_libraries(modbus_adapter_brake_test_node ${catkin_LIBRARIES})
@@ -274,11 +273,9 @@ if(CATKIN_ENABLE_TESTING)
   add_dependencies(unittest_pilz_modbus_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
   # --- ModbusAdapterBrakeTest unit test ---
-  add_rostest_gmock(unittest_modbus_adapter_brake_test
-    test/unittests/unittest_modbus_adapter_brake_test.test
+  catkin_add_gmock(unittest_modbus_adapter_brake_test
     test/unittests/unittest_modbus_adapter_brake_test.cpp
     src/modbus_adapter_brake_test.cpp
-    src/adapter_brake_test.cpp
     src/modbus_msg_in_builder.cpp
   )
   target_link_libraries(unittest_modbus_adapter_brake_test
@@ -497,9 +494,27 @@ if(CATKIN_ENABLE_TESTING)
   if(ENABLE_COVERAGE_TESTING)
     include(CodeCoverage)
     APPEND_COVERAGE_COMPILER_FLAGS()
-    set(COVERAGE_EXCLUDES
-        "*/${PROJECT_NAME}/test*"
-        "*/.private/${PROJECT_NAME}/include/${PROJECT_NAME}/*.h")
+    set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*"
+                          "*/BrakeTestErrorCodes.h"
+                          "*/ModbusMsgInStamped.h"
+                          "*/BrakeTest.h"
+                          "*/BrakeTestRequest.h"
+                          "*/BrakeTestResponse.h"
+                          "*/IsBrakeTestRequired.h"
+                          "*/IsBrakeTestRequiredRequest.h"
+                          "*/IsBrakeTestRequiredResponse.h"
+                          "*/ModbusRegisterBlock.h"
+                          "*/WriteModbusRegister.h"
+                          "*/WriteModbusRegisterRequest.h"
+                          "*/WriteModbusRegisterResponse.h"
+                          "*/GetOperationMode.h"
+                          "*/GetOperationModeRequest.h"
+                          "*/GetOperationModeResponse.h"
+                          "*/OperationModes.h"
+                          "*/SendBrakeTestResult.h"
+                          "*/SendBrakeTestResultRequest.h"
+                          "*/SendBrakeTestResultResponse.h"
+                          )
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
       DEPENDS tests
