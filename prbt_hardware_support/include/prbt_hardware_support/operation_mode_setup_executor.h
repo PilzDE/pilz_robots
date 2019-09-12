@@ -50,8 +50,7 @@ public:
    */
   OperationModeSetupExecutor(const double& speed_limit_t1,
                              const double& speed_limit_auto,
-                             const SetSpeedLimitFunc& set_speed_limit_func,
-                             const GetOpModeFunc& get_op_mode_func);
+                             const SetSpeedLimitFunc& set_speed_limit_func);
 
 public:
   /**

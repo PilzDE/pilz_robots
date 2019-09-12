@@ -23,20 +23,15 @@ namespace prbt_hardware_support
 
 OperationModeSetupExecutor::OperationModeSetupExecutor(const double& speed_limit_t1,
                                                        const double& speed_limit_auto,
-                                                       const SetSpeedLimitFunc& set_speed_limit_func,
-                                                       const GetOpModeFunc& get_op_mode_func)
+                                                       const SetSpeedLimitFunc& set_speed_limit_func)
   : speed_limit_t1_(speed_limit_t1)
   , speed_limit_auto_(speed_limit_auto)
   , set_speed_limit_func_(set_speed_limit_func)
 {
-  // Get initial operation mode because a call to the operation mode update
-  // function only reports changes to the operation mode
-  // (which might not happen for a long time).
-  if (get_op_mode_func)
+  while( time_stamp_last_op_mode_ == ros::Time(0) )
   {
-    OperationModes om = get_op_mode_func();
-    ROS_DEBUG("Operation Mode at init: %d", om.value);
-    updateOperationMode(om);
+    ROS_WARN("Waiting for first operation mode");
+    ros::Duration(1).sleep();
   }
 }
 

@@ -50,11 +50,6 @@ int main(int argc, char **argv)
   SetSpeedLimitFunc set_speed_limit_func = std::bind(setSpeedLimitSrv<ros::ServiceClient>,
                                                      speed_limit_srv, _1);
 
-  waitForService(OPERATION_MODE_SERVICE);
-  ros::ServiceClient op_mode_srv = nh.serviceClient<GetOperationMode>(OPERATION_MODE_SERVICE);
-  GetOpModeFunc get_op_mode_func = std::bind(getOperationMode<ros::ServiceClient>,
-                                             op_mode_srv);
-
   double speed_limit_t1 {0};
   double speed_limit_auto {0};
   ros::NodeHandle pnh{"~"};
@@ -70,8 +65,7 @@ int main(int argc, char **argv)
   }
 
   OperationModeSetupExecutor op_mode_executor(speed_limit_t1, speed_limit_auto,
-                                              set_speed_limit_func,
-                                              get_op_mode_func);
+                                              set_speed_limit_func);
 
   ros::Subscriber operation_mode_sub = nh.subscribe(OPERATION_MODE_TOPIC, DEFAULT_QUEUE_SIZE,
                                             &OperationModeSetupExecutor::updateOperationMode,

@@ -31,7 +31,7 @@ AdapterOperationMode::AdapterOperationMode(ros::NodeHandle& nh)
   op_mode_.value = OperationModes::UNKNOWN;
 
   operation_mode_pub = nh_.advertise<OperationModes>(TOPIC_OPERATION_MODE,
-                                                     DEFAULT_QUEUE_SIZE_MODBUS,
+                                                     DEFAULT_QUEUE_SIZE,
                                                      true);  // latched publisher
 }
 

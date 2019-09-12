@@ -50,7 +50,7 @@ protected:
  * @brief Can be used to check that a expected operation mode is eventually return by the service call
  *
  */
-::testing::AssertionResult expectOperationModeServiceCallResult(ros::ServiceClient& service_client,
+::testing::AssertionResult expectOperationModeMessage(ros::ServiceClient& service_client,
                                                                 OperationModes::_value_type expectation,
                                                                 uint16_t retries)
 {
@@ -133,13 +133,6 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
   unsigned int version_register = api_spec.getRegisterDefinition(modbus_api_spec::VERSION);
 
   modbus_server.setHoldingRegister({{version_register, MODBUS_API_VERSION_VALUE}});
-
-
-  ros::ServiceClient operation_mode_client =
-      nh_.serviceClient<prbt_hardware_support::GetOperationMode>(SERVICE_OPERATION_MODE);
-  ros::service::waitForService(SERVICE_OPERATION_MODE, ros::Duration(10));
-  ASSERT_TRUE(operation_mode_client.exists());
-
   EXPECT_TRUE(expectOperationModeServiceCallResult(operation_mode_client, OperationModes::UNKNOWN, 10));
 
   /**********

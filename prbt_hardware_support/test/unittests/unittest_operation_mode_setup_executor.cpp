@@ -65,8 +65,7 @@ void OperationModeSetupExecutorTest::SetUp()
   executor_ = std::unique_ptr<OperationModeSetupExecutor>(new OperationModeSetupExecutor(
                                                             t1_limit_,
                                                             auto_limit_,
-                                                            std::bind(&OperationModeSetupExecutorTest::setSpeedLimit, this, std::placeholders::_1),
-                                                            std::bind(&OperationModeSetupExecutorTest::getOperationMode, this)));
+                                                            std::bind(&OperationModeSetupExecutorTest::setSpeedLimit, this, std::placeholders::_1)));
 }
 
 void OperationModeSetupExecutorTest::TearDown()
@@ -91,8 +90,7 @@ TEST_F(OperationModeSetupExecutorTest, testConstructor)
   OperationModeSetupExecutor executor(
         t1_limit_,
         auto_limit_,
-        std::bind(&OperationModeSetupExecutorTest::setSpeedLimit, this, std::placeholders::_1),
-        std::bind(&OperationModeSetupExecutorTest::getOperationMode, this));
+        std::bind(&OperationModeSetupExecutorTest::setSpeedLimit, this, std::placeholders::_1));
 }
 
 /**
