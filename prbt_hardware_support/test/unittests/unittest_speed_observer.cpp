@@ -135,7 +135,7 @@ using ::testing::PrintToString;
 MATCHER_P2(NameAtI, i, name,
            "Name at index " + PrintToString(i) + std::string(negation ? "is not" : "is") + ": " + name + ".")
 {
-  return arg->name[(unsigned) i].compare(name) == 0;
+  return arg->name[(unsigned)i].compare(name) == 0;
 }
 
 MATCHER_P2(SpeedAtIGe, i, x,
@@ -434,13 +434,11 @@ TEST_F(SpeedObserverUnitTest, testFastObservation)
   prbt_hardware_support::SpeedObserver observer(nh_, reference_frame, frames_to_observe);
 
   EXPECT_CALL(*this, stop_cb_mock(_, _)).Times(0);
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A),
-                                                SpeedAtILe((unsigned long)0, .25),
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), SpeedAtILe((unsigned long)0, .25),
                                                 SpeedAtIGe((unsigned long)0, 0))))
       .Times(AtLeast(2))
       .InSequence(s_speeds);
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A),
-                                                SpeedAtILe((unsigned long)0, .25),
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), SpeedAtILe((unsigned long)0, .25),
                                                 SpeedAtIGe((unsigned long)0, 0))))
       .Times(AtLeast(1))
       .InSequence(s_speeds)
