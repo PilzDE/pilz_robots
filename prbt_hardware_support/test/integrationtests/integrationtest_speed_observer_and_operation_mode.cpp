@@ -161,7 +161,7 @@ void SpeedObserverIntegrationTest::publishTfAtSpeed(double speed, const std::str
     tranform_stamped_b.header.stamp = current;
     tranform_stamped_b.header.frame_id = TEST_WORLD_FRAME;
     tranform_stamped_b.child_frame_id = frame;
-    // rotation in a tilted circle to cover all axis
+    // rotation in a tilted circle to cover all axes
     tranform_stamped_b.transform.translation.x = speed * cos(t);
     tranform_stamped_b.transform.translation.y = speed * SQRT_2_HALF * -sin(t);
     tranform_stamped_b.transform.translation.z = speed * SQRT_2_HALF * sin(t);

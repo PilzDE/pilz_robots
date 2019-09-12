@@ -100,26 +100,26 @@ void SpeedObserverUnitTest::publishTfAtSpeed(double speed)
     ros::Time current = ros::Time::now();
     t = (current - start).toSec();
     // a has no speed
-    geometry_msgs::TransformStamped tranformStampedA;
-    tranformStampedA.header.stamp = current;
-    tranformStampedA.header.frame_id = TEST_BASE_FRAME;
-    tranformStampedA.child_frame_id = TEST_FRAME_A;
-    tranformStampedA.transform.translation.x = 99.0;
-    tranformStampedA.transform.translation.y = 99.0;
-    tranformStampedA.transform.translation.z = 99.0;
-    tranformStampedA.transform.rotation.w = 1;
+    geometry_msgs::TransformStamped transform_stamped_a;
+    transform_stamped_a.header.stamp = current;
+    transform_stamped_a.header.frame_id = TEST_BASE_FRAME;
+    transform_stamped_a.child_frame_id = TEST_FRAME_A;
+    transform_stamped_a.transform.translation.x = 99.0;
+    transform_stamped_a.transform.translation.y = 99.0;
+    transform_stamped_a.transform.translation.z = 99.0;
+    transform_stamped_a.transform.rotation.w = 1;
     // b has speed v
-    geometry_msgs::TransformStamped tranformStampedB;
-    tranformStampedB.header.stamp = current;
-    tranformStampedB.header.frame_id = TEST_BASE_FRAME;
-    tranformStampedB.child_frame_id = TEST_FRAME_B;
+    geometry_msgs::TransformStamped transform_stamped_b;
+    transform_stamped_b.header.stamp = current;
+    transform_stamped_b.header.frame_id = TEST_BASE_FRAME;
+    transform_stamped_b.child_frame_id = TEST_FRAME_B;
     // rotation in a tilted circle to cover all axis
-    tranformStampedB.transform.translation.x = speed * cos(t);
-    tranformStampedB.transform.translation.y = speed * SQRT_2_HALF * -sin(t);
-    tranformStampedB.transform.translation.z = speed * SQRT_2_HALF * sin(t);
-    tranformStampedB.transform.rotation.w = 1;
-    br.sendTransform(tranformStampedA);
-    br.sendTransform(tranformStampedB);
+    transform_stamped_b.transform.translation.x = speed * cos(t);
+    transform_stamped_b.transform.translation.y = speed * SQRT_2_HALF * -sin(t);
+    transform_stamped_b.transform.translation.z = speed * SQRT_2_HALF * sin(t);
+    transform_stamped_b.transform.rotation.w = 1;
+    br.sendTransform(transform_stamped_a);
+    br.sendTransform(transform_stamped_b);
 
     if (tf_publisher_running_)  // ending faster
       r.sleep();
