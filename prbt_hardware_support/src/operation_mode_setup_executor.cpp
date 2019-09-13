@@ -28,11 +28,6 @@ OperationModeSetupExecutor::OperationModeSetupExecutor(const double& speed_limit
   , speed_limit_auto_(speed_limit_auto)
   , set_speed_limit_func_(set_speed_limit_func)
 {
-  while( time_stamp_last_op_mode_ == ros::Time(0) )
-  {
-    ROS_WARN("Waiting for first operation mode");
-    ros::Duration(1).sleep();
-  }
 }
 
 
