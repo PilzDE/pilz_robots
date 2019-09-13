@@ -43,7 +43,6 @@ public:
   void TearDown() override;
 
   MOCK_METHOD1(setSpeedLimit, bool(const double &));
-  MOCK_METHOD0(getOperationMode, OperationModes());
 
 public:
   double t1_limit_{ 0.1 };
@@ -59,7 +58,6 @@ void OperationModeSetupExecutorTest::SetUp()
   op_mode.time_stamp = ros::Time::now();
   op_mode.value = OperationModes::UNKNOWN;
 
-  ON_CALL(*this, getOperationMode()).WillByDefault(Return(op_mode));
   ON_CALL(*this, setSpeedLimit(_)).WillByDefault(Return(true));
 
   executor_ = std::unique_ptr<OperationModeSetupExecutor>(new OperationModeSetupExecutor(
@@ -71,26 +69,6 @@ void OperationModeSetupExecutorTest::SetUp()
 void OperationModeSetupExecutorTest::TearDown()
 {
   ros::Time::shutdown();
-}
-
-/**
- * @tests{Speed_limits_per_operation_mode,
- * Test constructor of OperationModeSetupExecutor with operation mode T1.
- * }
- */
-TEST_F(OperationModeSetupExecutorTest, testConstructor)
-{
-  OperationModes op_mode;
-  op_mode.time_stamp = ros::Time::now();
-  op_mode.value = OperationModes::T1;
-
-  EXPECT_CALL(*this, getOperationMode()).WillOnce(Return(op_mode));
-  EXPECT_CALL(*this, setSpeedLimit(_)).WillOnce(Return(true));
-
-  OperationModeSetupExecutor executor(
-        t1_limit_,
-        auto_limit_,
-        std::bind(&OperationModeSetupExecutorTest::setSpeedLimit, this, std::placeholders::_1));
 }
 
 /**
@@ -277,42 +255,6 @@ public:
   MOCK_METHOD1(call, bool(GetOperationMode& srv));
   MOCK_METHOD0(getService, std::string());
 };
-
-/**
- * @brief Tests the correct behavior in case the GetOperationMode service
- * succeeds.
- */
-TEST_F(OperationModeSetupExecutorTest, testGetOperationModeSuccess)
-{
-  GetOperationMode exp_srv;
-  exp_srv.response.mode.value = OperationModes::T1;
-  exp_srv.response.mode.time_stamp = ros::Time(7.7);
-
-  GetOperationModeServiceMock mock;
-  EXPECT_CALL(mock, getService()).WillRepeatedly(Return("TestServiceName"));
-  EXPECT_CALL(mock, call(_)).Times(1).WillOnce(DoAll(SetArgReferee<0>(exp_srv), Return(true)));
-
-  OperationModes mode {prbt_hardware_support::getOperationMode<GetOperationModeServiceMock>(mock)};
-  EXPECT_EQ(mode.value, exp_srv.response.mode.value);
-  EXPECT_EQ(mode.time_stamp, exp_srv.response.mode.time_stamp);
-}
-
-/**
- * @brief Tests the correct behavior in case the GetOperationMode service fails.
- */
-TEST_F(OperationModeSetupExecutorTest, testGetOperationModeFailure)
-{
-  GetOperationMode exp_srv;
-  exp_srv.response.mode.value = OperationModes::T2;
-  exp_srv.response.mode.time_stamp = ros::Time(7.7);
-
-  GetOperationModeServiceMock mock;
-  EXPECT_CALL(mock, getService()).WillRepeatedly(Return("TestServiceName"));
-  EXPECT_CALL(mock, call(_)).Times(1).WillOnce(Return(false));
-
-  OperationModes mode {prbt_hardware_support::getOperationMode<GetOperationModeServiceMock>(mock)};
-  EXPECT_EQ(OperationModes::UNKNOWN, mode.value);
-}
 
 }  // namespace operation_mode_setup_executor_tests
 
