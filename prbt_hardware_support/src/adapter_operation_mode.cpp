@@ -33,6 +33,8 @@ AdapterOperationMode::AdapterOperationMode(ros::NodeHandle& nh)
   operation_mode_pub = nh_.advertise<OperationModes>(TOPIC_OPERATION_MODE,
                                                      DEFAULT_QUEUE_SIZE,
                                                      true);  // latched publisher
+  // publish initial operation mode before first switch
+  operation_mode_pub.publish(op_mode_);
 }
 
 void AdapterOperationMode::updateOperationMode(const OperationModes& new_op_mode)
