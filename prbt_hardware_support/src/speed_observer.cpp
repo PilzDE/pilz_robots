@@ -35,7 +35,7 @@ SpeedObserver::SpeedObserver(ros::NodeHandle& nh, std::string& reference_frame,
 {
   frame_speeds_pub_ = nh.advertise<FrameSpeeds>(FRAME_SPEEDS_TOPIC_NAME, DEFAULT_QUEUE_SIZE);
   waitForService(STO_SERVICE);
-  sto_client_ = nh.serviceClient<std_srvs::SetBool>(STO_SERVICE, DEFAULT_QUEUE_SIZE);
+  sto_client_ = nh.serviceClient<std_srvs::SetBool>(STO_SERVICE);
 }
 
 void SpeedObserver::waitUntillCanTransform(const std::string& frame, const ros::Time& time,
