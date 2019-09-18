@@ -43,10 +43,15 @@ static constexpr int OPERATION_MODE_QUEUE_SIZE{1};
 
 static const std::string OPERATION_MODE_CALLBACK_EVENT{"operation_mode_callback_event"};
 
-
+/**
+ * @brief Redirects callbacks of a ros::Subscriber to a mock method.
+ */
 class OperationModeSubscriberMock
 {
 public:
+  /**
+   * @brief Actual subscription takes place here
+   */
   void initialize();
 
   MOCK_METHOD1(callback, void(const OperationModesConstPtr& msg));

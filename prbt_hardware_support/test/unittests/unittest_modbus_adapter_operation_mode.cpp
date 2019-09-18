@@ -20,6 +20,8 @@
 #include <algorithm>
 #include <memory>
 
+#include <pilz_testutils/async_test.h>
+
 #include <prbt_hardware_support/modbus_adapter_operation_mode.h>
 #include <prbt_hardware_support/modbus_topic_definitions.h>
 #include <prbt_hardware_support/OperationModes.h>
@@ -29,44 +31,64 @@
 namespace prbt_hardware_support
 {
 static constexpr int DEFAULT_QUEUE_SIZE_MODBUS{1};
-static const std::string SERVICE_NAME_OPERATION_MODE = "/prbt/get_operation_mode";
+static const std::string TOPIC_OPERATION_MODE{"/prbt/operation_mode"};
+static constexpr int OPERATION_MODE_QUEUE_SIZE{1};
+
+static const std::string OPERATION_MODE_CALLBACK_EVENT{"operation_mode_callback_event"};
 
 static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{2};
 
 static const ModbusApiSpec TEST_API_SPEC{ {modbus_api_spec::VERSION, 1},
                                           {modbus_api_spec::OPERATION_MODE, 11} };
 
-static constexpr double OPERATION_MODE_CHANGE_WAIT_TIME_S{2.0};
-static const std::vector<uint16_t> OPERATION_MODES{0, 1, 2, 3};
+static const std::vector<uint16_t> OPERATION_MODES{1, 2, 3};
+
+/**
+ * @brief Redirects callbacks of a ros::Subscriber to a mock method.
+ */
+class OperationModeSubscriberMock
+{
+public:
+  /**
+   * @brief Actual subscription takes place here
+   */
+  void initialize();
+
+  MOCK_METHOD1(callback, void(const OperationModesConstPtr& msg));
+
+protected:
+  ros::NodeHandle nh_;
+  ros::Subscriber subscriber_;
+};
+
+void OperationModeSubscriberMock::initialize()
+{
+  subscriber_ = nh_.subscribe(TOPIC_OPERATION_MODE,
+                              OPERATION_MODE_QUEUE_SIZE,
+                              &OperationModeSubscriberMock::callback,
+                              this);
+}
+
+using ::testing::StrictMock;
 
 /**
  * @brief Test fixture for unit-tests of the ModbusAdapterOperationMode.
  *
- * Publish messages on the modbus topic and call the operation_mode service
- * in order to check if the expectations are met.
+ * Publish messages on the modbus topic and check on the operation_mode topic
+ * if the expectations are met.
  */
-class ModbusAdapterOperationModeTest : public testing::Test
+class ModbusAdapterOperationModeTest : public testing::Test, public testing::AsyncTest
 {
 public:
   ModbusAdapterOperationModeTest();
   ~ModbusAdapterOperationModeTest() override;
-
-  /**
-   * @brief Wait for a specific change in operation mode to take effect.
-   */
-  ::testing::AssertionResult waitForOperationMode(unsigned int op_mode, double timeout = OPERATION_MODE_CHANGE_WAIT_TIME_S);
-
-  /**
-   * @brief Wait until operation mode service call return the expected value
-   */
-  ::testing::AssertionResult waitForServiceCallResult(bool expectation, double timeout = OPERATION_MODE_CHANGE_WAIT_TIME_S);
 
 protected:
   ros::AsyncSpinner spinner_{2};
   ros::NodeHandle nh_;
   std::shared_ptr<ModbusAdapterOperationMode> adapter_operation_mode_;
   ros::Publisher modbus_topic_pub_;
-  ros::ServiceClient operation_mode_client_;
+  StrictMock<OperationModeSubscriberMock> subscriber_;
 };
 
 ModbusAdapterOperationModeTest::ModbusAdapterOperationModeTest()
@@ -79,7 +101,6 @@ ModbusAdapterOperationModeTest::ModbusAdapterOperationModeTest()
 
   adapter_operation_mode_.reset(new ModbusAdapterOperationMode(nh_, TEST_API_SPEC));
   modbus_topic_pub_ = nh_.advertise<ModbusMsgInStamped>(TOPIC_MODBUS_READ, DEFAULT_QUEUE_SIZE_MODBUS);
-  operation_mode_client_ = nh_.serviceClient<prbt_hardware_support::GetOperationMode>(SERVICE_NAME_OPERATION_MODE);
 
   spinner_.start();
 }
@@ -92,45 +113,6 @@ ModbusAdapterOperationModeTest::~ModbusAdapterOperationModeTest()
   // exceptions like:
   // "boost::mutex::~mutex(): Assertion `!res' failed".
   spinner_.stop();
-}
-
-::testing::AssertionResult ModbusAdapterOperationModeTest::waitForOperationMode(unsigned int op_mode, double timeout)
-{
-  ros::Rate rate(10.0);
-  ros::Time start{ros::Time::now()};
-  while (ros::Time::now() - start < ros::Duration(timeout))
-  {
-    prbt_hardware_support::GetOperationMode srv;
-    if (!operation_mode_client_.call(srv))
-    {
-      return ::testing::AssertionFailure() << "Operation mode service call failed unexpectedly.";
-    }
-    else if (static_cast<int8_t>(op_mode) == srv.response.mode.value)
-    {
-      return ::testing::AssertionSuccess();
-    }
-    rate.sleep();
-  }
-
-  return ::testing::AssertionFailure() << "Reached timeout waiting for expected operation mode.";
-}
-
-::testing::AssertionResult ModbusAdapterOperationModeTest::waitForServiceCallResult(bool expectation, double timeout)
-{
-  ros::Rate rate(10.0);
-  ros::Time start{ros::Time::now()};
-  while (ros::Time::now() - start < ros::Duration(timeout))
-  {
-    prbt_hardware_support::GetOperationMode srv;
-    if (expectation == operation_mode_client_.call(srv))
-    {
-      return ::testing::AssertionSuccess();
-    }
-    rate.sleep();
-  }
-
-  return ::testing::AssertionFailure() << "Service " << operation_mode_client_.getService() << " did not return the "
-                                       << "exptected result";
 }
 
 /**
@@ -162,6 +144,21 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusMsgOperationModeWrapperDtor)
   std::shared_ptr<ModbusMsgOperationModeWrapper> wrapper (new ModbusMsgOperationModeWrapper(builder.build(ros::Time::now()), TEST_API_SPEC));
 }
 
+MATCHER_P(IsExpectedOperationMode, exp_mode, "unexpected operation mode"){ return arg->value == exp_mode; }
+
+/**
+ * @brief Tests that initial operation mode is UNKNOWN.
+ */
+TEST_F(ModbusAdapterOperationModeTest, testInitialOperationMode)
+{
+  EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
+    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+
+  subscriber_.initialize();
+
+  BARRIER(OPERATION_MODE_CALLBACK_EVENT);
+}
+
 /**
  * @tests{Get_OperationMode_mechanism,
  *  Tests that operation mode UNKNOWN is returned if the
@@ -169,23 +166,47 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusMsgOperationModeWrapperDtor)
  * }
  *
  * Test Sequence:
+ *    0. Subscribe to operation modes topic.
  *    1. Send modbus message containing operation mode T1.
  *    2. Send modbus message which does not contain an operation mode.
  *
  * Expected Results:
- *    1. The operation mode service returns T1 as operation mode.
- *    2. The operation mode service returns UNKNWON as operation mode.
+ *    0. Operation mode UNKNOWN is published.
+ *    1. Operation mode T1 is published.
+ *    2. Operation mode UNKNOWN is published.
  */
 TEST_F(ModbusAdapterOperationModeTest, testMissingOperationModeRegister)
 {
+  /**********
+   * Step 0 *
+   **********/
+  ROS_DEBUG("+++  Step 0 +++");
+  EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
+    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+
+  subscriber_.initialize();
+
+  BARRIER(OPERATION_MODE_CALLBACK_EVENT);
+
+  /**********
+   * Step 1 *
+   **********/
+  EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::T1)))
+    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+
   ModbusMsgInBuilder builder(TEST_API_SPEC);
   builder.setApiVersion(MODBUS_API_VERSION_REQUIRED);
 
   ROS_DEBUG("+++  Step 1 +++");
   modbus_topic_pub_.publish(builder.setOperationMode(OperationModes::T1).build(ros::Time::now()));
-  ASSERT_TRUE(ros::service::waitForService(SERVICE_NAME_OPERATION_MODE, ros::Duration(3)))
-      << "Operation mode service does not appear";
-  ASSERT_TRUE(waitForOperationMode(OperationModes::T1));
+
+  BARRIER(OPERATION_MODE_CALLBACK_EVENT);
+
+  /**********
+   * Step 2 *
+   **********/
+  EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
+    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
   ModbusMsgInStampedPtr msg {builder.setOperationMode(OperationModes::T1).build(ros::Time::now())};
 
@@ -199,7 +220,8 @@ TEST_F(ModbusAdapterOperationModeTest, testMissingOperationModeRegister)
   ModbusMsgInBuilder::setDefaultLayout(&(msg->holding_registers.layout), new_offset, static_cast<uint32_t>(msg->holding_registers.data.size()));
 
   modbus_topic_pub_.publish(msg);
-  ASSERT_TRUE(waitForOperationMode(OperationModes::UNKNOWN));
+
+  BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 }
 
 /**
@@ -209,20 +231,39 @@ TEST_F(ModbusAdapterOperationModeTest, testMissingOperationModeRegister)
  * }
  *
  * Test Sequence:
+ *  0. Subscribe to operation modes topic.
  *  1. Publish modbus message informing about changing operation mode. Repeat for all possible operation modes.
  *
  * Expected Results:
- *  1. The service call is successful and returns the operation modes published above.
+ *  0. Operation mode UNKNOWN is published.
+ *  1. All operation modes are published in the order from above.
  */
 TEST_F(ModbusAdapterOperationModeTest, testOperationModeChange)
 {
+  /**********
+   * Step 0 *
+   **********/
+  ROS_DEBUG("+++  Step 0 +++");
+  EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
+    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+
+  subscriber_.initialize();
+
+  BARRIER(OPERATION_MODE_CALLBACK_EVENT);
+
+  /**********
+   * Step 1 *
+   **********/
   ModbusMsgInBuilder builder(TEST_API_SPEC);
   builder.setApiVersion(MODBUS_API_VERSION_REQUIRED);
   for (const auto& mode : OPERATION_MODES)
   {
+    EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(mode)))
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+
     modbus_topic_pub_.publish(builder.setOperationMode(mode).build(ros::Time::now()));
-    ASSERT_TRUE(ros::service::waitForService(SERVICE_NAME_OPERATION_MODE, ros::Duration(3))) << "Service does not appear";
-    ASSERT_TRUE(waitForOperationMode(mode));
+
+    BARRIER(OPERATION_MODE_CALLBACK_EVENT);
   }
 }
 
@@ -233,21 +274,45 @@ TEST_F(ModbusAdapterOperationModeTest, testOperationModeChange)
  * }
  *
  * Test Sequence:
- *  1. Publish modbus message informing about a disconnect.
+ *  0. Subscribe to operation modes topic.
+ *  1. Publish modbus message informing about operation mode T1.
+ *  2. Publish modbus message informing about disconnect.
  *
  * Expected Results:
- *  1. The service call is not successful
+ *  0. Operation mode UNKNOWN is published.
+ *  1. Operation mode T1 is published.
+ *  2. Operation mode UNKNOWN is published.
  */
 TEST_F(ModbusAdapterOperationModeTest, testDisconnect)
 {
+  /**********
+   * Step 0 *
+   **********/
+  EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
+    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+
+  subscriber_.initialize();
+
+  BARRIER(OPERATION_MODE_CALLBACK_EVENT);
+
+  /**********
+   * Step 1 *
+   **********/
+  EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::T1)))
+    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+
   ModbusMsgInBuilder builder(TEST_API_SPEC);
   builder.setApiVersion(MODBUS_API_VERSION_REQUIRED).setOperationMode(OperationModes::T1);
 
   modbus_topic_pub_.publish(builder.build(ros::Time::now()));
 
-  ASSERT_TRUE(ros::service::waitForService(SERVICE_NAME_OPERATION_MODE, ros::Duration(3))) << "Service does not appear";
-  ASSERT_TRUE(waitForOperationMode(OperationModes::T1));
+  BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 
+  /**********
+   * Step 2 *
+   **********/
+  EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
+    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
   uint32_t offset{0};
   RegCont holding_register;
@@ -255,7 +320,7 @@ TEST_F(ModbusAdapterOperationModeTest, testDisconnect)
   msg->disconnect.data = true;
   modbus_topic_pub_.publish(msg);
 
-  ASSERT_TRUE(waitForOperationMode(OperationModes::UNKNOWN));
+  BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 }
 
 /**
@@ -265,20 +330,50 @@ TEST_F(ModbusAdapterOperationModeTest, testDisconnect)
  * }
  *
  * Test Sequence:
+ *  0. Subscribe to operation modes topic.
+ *  1. Publish modbus message with operation mode T1.
  *  1. Publish modbus message with an unexpected operation mode.
  *
  * Expected Results:
- *  1. The service call is not successful.
+ *  0. Operation mode UNKNOWN is published.
+ *  1. Operation mode T1 is published.
+ *  2. Operation mode UNKNOWN is published.
  */
 TEST_F(ModbusAdapterOperationModeTest, testModbusUnexpectedOperationMode)
 {
+  /**********
+   * Step 0 *
+   **********/
+  EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
+    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+
+  subscriber_.initialize();
+
+  BARRIER(OPERATION_MODE_CALLBACK_EVENT);
+
+  /**********
+   * Step 1 *
+   **********/
+  EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::T1)))
+    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+
   ModbusMsgInBuilder builder(TEST_API_SPEC);
+  builder.setApiVersion(MODBUS_API_VERSION_REQUIRED).setOperationMode(OperationModes::T1);
+
+  modbus_topic_pub_.publish(builder.build(ros::Time::now()));
+
+  BARRIER(OPERATION_MODE_CALLBACK_EVENT);
+
+  /**********
+   * Step 2 *
+   **********/
+  EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
+    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+
   builder.setApiVersion(MODBUS_API_VERSION_REQUIRED).setOperationMode(1234 /* stupid value */);
   modbus_topic_pub_.publish(builder.build(ros::Time::now()));
 
-  // Wait for init
-  ASSERT_TRUE(ros::service::waitForService(SERVICE_NAME_OPERATION_MODE, ros::Duration(3))) << "Service does not appear";
-  ASSERT_TRUE(waitForOperationMode(OperationModes::UNKNOWN));
+  BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 }
 
 /**
@@ -296,20 +391,39 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusUnexpectedOperationMode)
  */
 TEST_F(ModbusAdapterOperationModeTest, testModbusIncorrectApiVersion)
 {
-  ModbusMsgInBuilder builder(TEST_API_SPEC);
+  /**********
+   * Step 0 *
+   **********/
+  EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
+    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
-  // Step 1
+  subscriber_.initialize();
+
+  BARRIER(OPERATION_MODE_CALLBACK_EVENT);
+
+  /**********
+   * Step 1 *
+   **********/
+  EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::T1)))
+    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+
+  ModbusMsgInBuilder builder(TEST_API_SPEC);
   builder.setApiVersion(MODBUS_API_VERSION_REQUIRED).setOperationMode(OperationModes::T1);
+
   modbus_topic_pub_.publish(builder.build(ros::Time::now()));
 
-  ASSERT_TRUE(ros::service::waitForService(SERVICE_NAME_OPERATION_MODE, ros::Duration(3))) << "Service does not appear";
-  ASSERT_TRUE(waitForOperationMode(OperationModes::T1));
+  BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 
-  // Step 2
+  /**********
+   * Step 2 *
+   **********/
+  EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
+    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+
   builder.setApiVersion(0 /* wrong version */).setOperationMode(OperationModes::T2);
   modbus_topic_pub_.publish(builder.build(ros::Time::now()));
 
-  ASSERT_TRUE(waitForOperationMode(OperationModes::UNKNOWN));
+  BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 }
 
 } // namespace prbt_hardware_support
