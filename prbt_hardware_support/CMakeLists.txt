@@ -37,7 +37,6 @@ add_message_files(
 add_service_files(
   FILES
   BrakeTest.srv
-  GetOperationMode.srv
   IsBrakeTestRequired.srv
   SetSpeedLimit.srv
   WriteModbusRegister.srv

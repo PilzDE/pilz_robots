@@ -21,14 +21,13 @@
 #include <ros/ros.h>
 
 #include <prbt_hardware_support/IsBrakeTestRequired.h>
-#include <prbt_hardware_support/GetOperationMode.h>
 #include <prbt_hardware_support/OperationModes.h>
 
 namespace prbt_hardware_support
 {
 
 /**
- * @brief Offers a service with information on the active operation mode
+ * @brief Publishes information on the active operation mode
  */
 class AdapterOperationMode
 {
@@ -38,14 +37,9 @@ public:
 
 protected:
   /**
-   * @brief Stores the operation mode and initializes the operation mode
-   * service, the first time the function is called.
+   * @brief Stores the operation mode and publishes it, if it has changed.
    */
   void updateOperationMode(const OperationModes& mode);
-
-private:
-  bool getOperationMode(GetOperationMode::Request& req,
-                        GetOperationMode::Response& res);
 
 private:
   //! Store the current operation mode according to OperationModes.msg
@@ -55,7 +49,7 @@ private:
   ros::NodeHandle& nh_;
 
   //! Informs about operation mode changes via topic.
-  ros::Publisher operation_mode_pub;
+  ros::Publisher operation_mode_pub_;
 
 };
 

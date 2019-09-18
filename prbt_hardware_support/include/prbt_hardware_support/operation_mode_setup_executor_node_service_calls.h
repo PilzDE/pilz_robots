@@ -39,20 +39,6 @@ static bool setSpeedLimitSrv(T& srv_client, const double& speed_limit)
   return call_success;
 }
 
-template<class T>
-static OperationModes getOperationMode(T& srv_client)
-{
-  GetOperationMode srv_msg;
-  bool call_success = srv_client.call(srv_msg);
-  if (!call_success)
-  {
-    ROS_ERROR_STREAM("No success calling service: " << srv_client.getService());
-    srv_msg.response.mode.value = OperationModes::UNKNOWN;
-    srv_msg.response.mode.time_stamp = ros::Time::now();
-  }
-  return srv_msg.response.mode;
-}
-
 } // namespace prbt_hardware_support
 
 #endif // OPERATION_MODE_SETUP_EXECUTOR_NODE_SERVICE_CALLS_H

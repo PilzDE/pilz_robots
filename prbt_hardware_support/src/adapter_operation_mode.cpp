@@ -30,11 +30,11 @@ AdapterOperationMode::AdapterOperationMode(ros::NodeHandle& nh)
   op_mode_.time_stamp = ros::Time::now();
   op_mode_.value = OperationModes::UNKNOWN;
 
-  operation_mode_pub = nh_.advertise<OperationModes>(TOPIC_OPERATION_MODE,
+  operation_mode_pub_ = nh_.advertise<OperationModes>(TOPIC_OPERATION_MODE,
                                                      DEFAULT_QUEUE_SIZE,
                                                      true);  // latched publisher
   // publish initial operation mode before first switch
-  operation_mode_pub.publish(op_mode_);
+  operation_mode_pub_.publish(op_mode_);
 }
 
 void AdapterOperationMode::updateOperationMode(const OperationModes& new_op_mode)
@@ -47,7 +47,7 @@ void AdapterOperationMode::updateOperationMode(const OperationModes& new_op_mode
                      << static_cast<int>(last_op_mode_value)
                      << " -> "
                      << static_cast<int>(new_op_mode.value) );
-    operation_mode_pub.publish(new_op_mode);
+    operation_mode_pub_.publish(new_op_mode);
   }
 }
 
