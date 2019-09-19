@@ -269,7 +269,7 @@ TEST_F(SpeedObserverIntegrationTest, testOperationModeT1)
    **********/
   ROS_DEBUG("Step 2");
 
-  EXPECT_CALL(*this, sto_cb(StoState(true), _))
+  EXPECT_CALL(*this, sto_cb(StoState(false), _))
       .WillOnce(DoAll(SetArgReferee<1>(sto_res), ACTION_OPEN_BARRIER(BARRIER_STOP_HAPPENED)))
       .WillRepeatedly(DoAll(SetArgReferee<1>(sto_res), Return(true)));
 
@@ -354,7 +354,7 @@ TEST_F(SpeedObserverIntegrationTest, testOperationModeAuto)
    **********/
   ROS_DEBUG("Step 3");
 
-  EXPECT_CALL(*this, sto_cb(StoState(true), _))
+  EXPECT_CALL(*this, sto_cb(StoState(false), _))
       .WillOnce(DoAll(SetArgReferee<1>(sto_res), ACTION_OPEN_BARRIER(BARRIER_STOP_HAPPENED)))
       .WillRepeatedly(DoAll(SetArgReferee<1>(sto_res), Return(true)));
 
@@ -403,7 +403,7 @@ TEST_F(SpeedObserverIntegrationTest, testAdditionalTFTree)
   EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_)))
       .WillRepeatedly(Return());
 
-  EXPECT_CALL(*this, sto_cb(StoState(true), _))
+  EXPECT_CALL(*this, sto_cb(StoState(false), _))
       .WillOnce(DoAll(SetArgReferee<1>(sto_res), ACTION_OPEN_BARRIER(BARRIER_STOP_HAPPENED)))
       .WillRepeatedly(DoAll(SetArgReferee<1>(sto_res), Return(true)));
 
@@ -455,7 +455,7 @@ TEST_F(SpeedObserverIntegrationTest, testStoServiceNoSuccess)
   ROS_DEBUG("Step 1");
 
   sto_res.success = false;
-  EXPECT_CALL(*this, sto_cb(StoState(true), _))
+  EXPECT_CALL(*this, sto_cb(StoState(false), _))
       .WillOnce(DoAll(SetArgReferee<1>(sto_res), ACTION_OPEN_BARRIER(BARRIER_NO_SVC_SUCESS)))
       .WillRepeatedly(DoAll(SetArgReferee<1>(sto_res), Return(true)));
 
