@@ -15,92 +15,81 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string>
-
-#include <ros/ros.h>
-
-#include <std_srvs/Trigger.h>
-
-#include <prbt_hardware_support/BrakeTest.h>
-#include <prbt_hardware_support/SendBrakeTestResult.h>
-
 #include <prbt_hardware_support/brake_test_executor.h>
-#include <prbt_hardware_support/brake_test_utils.h>
-#include <prbt_hardware_support/modbus_api_spec.h>
-#include <prbt_hardware_support/wait_for_service.h>
 
 namespace prbt_hardware_support
 {
 
-static const std::string EXECUTE_BRAKETEST_SERVICE_NAME{"/prbt/execute_braketest"};
-static const std::string BRAKETEST_ADAPTER_SERVICE_NAME{"/prbt/braketest_adapter_node/trigger_braketest"};
-
-static const std::string CONTROLLER_HOLD_MODE_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/hold"};
-static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/unhold"};
-static const std::string BRAKE_TEST_RESULT_SERVICE_NAME{"/prbt/send_brake_test_result"};
-
-BrakeTestExecutor::BrakeTestExecutor(ros::NodeHandle& nh)
-  : nh_(nh)
+BrakeTestExecutor::BrakeTestExecutor(DetectRobotMotionFunc&& detect_robot_motion_func,
+                                     ControllerHoldFunc&& controller_hold_func,
+                                     TriggerBrakeTestFunc&& trigger_brake_test_func,
+                                     ControllerUnholdFunc&& unhold_func,
+                                     BrakeTestResultFunc&& brake_test_result_func)
+  : detect_robot_motion_func_(detect_robot_motion_func)
+  , hold_controller_func_(controller_hold_func)
+  , execute_brake_test_func_(trigger_brake_test_func)
+  , unhold_controller_func_(unhold_func)
+  , brake_test_result_func_(brake_test_result_func)
 {
-  brake_test_srv_ = nh_.advertiseService(EXECUTE_BRAKETEST_SERVICE_NAME,
-                                         &BrakeTestExecutor::executeBrakeTest,
-                                         this);
+  if (!detect_robot_motion_func_)
+  {
+    throw BrakeTestExecutorException("Function to detect robot motion missing");
+  }
 
-  waitForService(BRAKETEST_ADAPTER_SERVICE_NAME);
-  trigger_braketest_client_ = nh_.serviceClient<BrakeTest>(BRAKETEST_ADAPTER_SERVICE_NAME);
+  if (!hold_controller_func_)
+  {
+    throw BrakeTestExecutorException("Function to hold controller missing");
+  }
 
-  waitForService(CONTROLLER_HOLD_MODE_SERVICE_NAME);
-  controller_hold_client_ = nh_.serviceClient<std_srvs::Trigger>(CONTROLLER_HOLD_MODE_SERVICE_NAME);
+  if (!execute_brake_test_func_)
+  {
+    throw BrakeTestExecutorException("Function to trigger brake test on robot missing");
+  }
 
-  waitForService(CONTROLLER_UNHOLD_MODE_SERVICE_NAME);
-  controller_unhold_client_ = nh_.serviceClient<std_srvs::Trigger>(CONTROLLER_UNHOLD_MODE_SERVICE_NAME);
+  if (!unhold_controller_func_)
+  {
+    throw BrakeTestExecutorException("Function to unhold controller missing");
+  }
 
-  waitForService(BRAKE_TEST_RESULT_SERVICE_NAME);
-  brake_test_result_client_ = nh_.serviceClient<SendBrakeTestResult>(BRAKE_TEST_RESULT_SERVICE_NAME);
+  if (!brake_test_result_func_)
+  {
+    throw BrakeTestExecutorException("Function to send brake test result to FS controller missing");
+  }
 }
 
 bool BrakeTestExecutor::executeBrakeTest(BrakeTest::Request& /*req*/,
-                                         BrakeTest::Response& response)
+                                         BrakeTest::Response& res)
 {
-  if (BrakeTestUtils::detectRobotMotion())
+  if (detect_robot_motion_func_())
   {
-    response.success = false;
-    response.error_msg = "Robot is moving, cannot perform brake test";
-    response.error_code.value = BrakeTestErrorCodes::ROBOT_MOTION_DETECTED;
+    res.success = false;
+    res.error_msg = "Robot is moving, cannot perform brake test";
+    res.error_code.value = BrakeTestErrorCodes::ROBOT_MOTION_DETECTED;
     return true;
   }
 
   ROS_INFO_STREAM("Enter hold for braketest. Do not unhold the controller!");
 
-  std_srvs::Trigger trigger_srv;
-  if (!controller_hold_client_.call(trigger_srv))
+  hold_controller_func_();
+
+  res = execute_brake_test_func_();
+  ROS_INFO("Brake test result: %i", res.success);
+  if (!res.success)
   {
-    ROS_WARN_STREAM("Failed to trigger hold via service " << controller_hold_client_.getService());
+    ROS_INFO("Brake test error code: %i", res.error_code.value);
+    if (!res.error_msg.empty())
+    {
+      ROS_INFO_STREAM("Brake test error msg: " << res.error_msg);
+    }
   }
 
-  BrakeTest braketest_srv;
-  if (!trigger_braketest_client_.call(braketest_srv))
-  {
-    response.success = false;
-    response.error_msg = "Failed to trigger brake test via service " + trigger_braketest_client_.getService();
-    response.error_code.value = BrakeTestErrorCodes::TRIGGER_BRAKETEST_SERVICE_FAILURE;
-  }
-  else
-  {
-    response = braketest_srv.response;
-  }
+  unhold_controller_func_();
 
-  if (!controller_unhold_client_.call(trigger_srv))
+  if(!brake_test_result_func_(res.success))
   {
-    ROS_WARN_STREAM("Failed to trigger unhold via service " << controller_unhold_client_.getService());
-  }
-
-  SendBrakeTestResult send_resul_srv;
-  send_resul_srv.request.result = braketest_srv.response.success;
-  brake_test_result_client_.call(send_resul_srv);
-  if(!send_resul_srv.response.success)
-  {
-    ROS_ERROR_STREAM("Failed to send brake test result");
+    res.success = false;
+    res.error_msg = "Failed to send brake test result";
+    res.error_code.value = BrakeTestErrorCodes::FAILURE;
   }
 
   return true;
