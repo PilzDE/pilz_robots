@@ -137,7 +137,7 @@ private:
   //! Default queue size for publisher
   static constexpr uint32_t DEFAULT_QUEUE_SIZE{ 10 };
   //! Waiting time for `waitUntillCanTransform()`
-  static constexpr uint32_t WAITING_TIME_FOR_TRANSFORM_S{ 1 };
+  static constexpr double WAITING_TIME_FOR_TRANSFORM_S{ 0.1 };
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
