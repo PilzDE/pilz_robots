@@ -147,7 +147,7 @@ void SpeedObserverIntegrationTest::TearDown()
 void SpeedObserverIntegrationTest::publishTfAtSpeed(double speed, const std::string& frame)
 {
   static tf2_ros::TransformBroadcaster br;
-  ros::Rate r = ros::Rate(TEST_FREQUENCY * 10); // publishing definitely faster then observing
+  ros::Rate r = ros::Rate(TEST_FREQUENCY * 3); // publishing definitely faster then observing
   ros::Time start = ros::Time::now();
   double t = 0;
   tf_publisher_running_ = true;
@@ -183,8 +183,8 @@ void SpeedObserverIntegrationTest::publishJointStatesAtSpeed(double speed)
 {
   sensor_msgs::JointState js;
   js.name = { "testing_world-a" };
-  ros::Rate r = ros::Rate(TEST_FREQUENCY * 10); // publishing definitely faster
-                                                // then observing
+  ros::Rate r = ros::Rate(TEST_FREQUENCY * 3); // publishing definitely faster
+                                               // then observing
   ros::Time start = ros::Time::now();
   double t = 0;
   double t_zero = 0;
