@@ -16,8 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <launch>
-  <!-- Devices under test -->
-  <node name="speed_observer_node" pkg="prbt_hardware_support"
+  <node required="true" ns="prbt" name="speed_observer_node" pkg="prbt_hardware_support"
         type="speed_observer_node" output="screen" >
   </node>
 </launch>
