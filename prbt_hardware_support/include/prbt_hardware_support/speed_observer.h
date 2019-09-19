@@ -33,7 +33,7 @@ class SpeedObserver
 {
 public:
   /**
-   * @brief Create an observer to observe the speed of a list of frames in refernce to a reference frame.
+   * @brief Create an observer to observe the speed of a list of frames in reference to a reference frame.
    * @param nh NodeHandle to handle node
    * @param reference_frame Reference frame for all transformations
    * @param frames_to_observe List of frames to observer
