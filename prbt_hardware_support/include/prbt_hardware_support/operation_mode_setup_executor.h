@@ -44,9 +44,6 @@ public:
    *
    * @param set_speed_limit_func Function allowing to report the speed limit
    * change to the system
-   *
-   * @param get_op_mode_func Function Function which allows to determine the
-   * current operation mode of the system.
    */
   OperationModeSetupExecutor(const double& speed_limit_t1,
                              const double& speed_limit_auto,
