@@ -36,9 +36,19 @@ BrakeTestExecutor::BrakeTestExecutor(DetectRobotMotionFunc&& detect_robot_motion
     throw BrakeTestExecutorException("Function to detect robot motion missing");
   }
 
+  if (!hold_controller_func_)
+  {
+    throw BrakeTestExecutorException("Function to hold controller missing");
+  }
+
   if (!execute_brake_test_func_)
   {
     throw BrakeTestExecutorException("Function to trigger brake test on robot missing");
+  }
+
+  if (!unhold_controller_func_)
+  {
+    throw BrakeTestExecutorException("Function to unhold controller missing");
   }
 
   if (!brake_test_result_func_)
@@ -60,14 +70,7 @@ bool BrakeTestExecutor::executeBrakeTest(BrakeTest::Request& /*req*/,
 
   ROS_INFO_STREAM("Enter hold for braketest. Do not unhold the controller!");
 
-  if (hold_controller_func_)
-  {
-    hold_controller_func_();
-  }
-  else
-  {
-    ROS_WARN_STREAM("Calling hold on controller skipped because no hold service given");
-  }
+  hold_controller_func_();
 
   res = execute_brake_test_func_();
   ROS_INFO("Brake test result: %i", res.success);
@@ -80,14 +83,7 @@ bool BrakeTestExecutor::executeBrakeTest(BrakeTest::Request& /*req*/,
     }
   }
 
-  if (unhold_controller_func_)
-  {
-    unhold_controller_func_();
-  }
-  else
-  {
-    ROS_WARN_STREAM("Calling unhold on controller skipped because no unhold service given");
-  }
+  unhold_controller_func_();
 
   if(!brake_test_result_func_(res.success))
   {
