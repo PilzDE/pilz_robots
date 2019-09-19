@@ -162,7 +162,7 @@ FrameSpeeds SpeedObserver::createFrameSpeedsMessage(const std::vector<double>& s
 void SpeedObserver::triggerStop1()
 {
   std_srvs::SetBool sto_srv;
-  sto_srv.request.data = true;
+  sto_srv.request.data = false;
   bool call_success = sto_client_.call(sto_srv);
   if (!call_success)
   {
