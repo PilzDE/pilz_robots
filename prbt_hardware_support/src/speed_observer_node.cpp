@@ -22,8 +22,6 @@
 
 using namespace prbt_hardware_support;
 
-static const std::string REFERENCE_FRAME_PARAM_NAME{ "reference_frame" };
-static const std::string REFERENCE_FRAME_PARAM_DEFAULT{ "prbt_base_link" };
 static const std::string ADDITIONAL_FRAMES_PARAM_NAME{ "additional_frames" };
 static const std::string ROBOT_DESCRIPTION_PARAM_NAME{ "robot_description" };
 static const std::string SET_SPEED_LIMIT_SERVICE{ "set_speed_limit" };
