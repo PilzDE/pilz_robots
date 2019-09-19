@@ -1,6 +1,6 @@
 ## Overall system architecture
 The following diagram shows all components of the system and the connections
-between them.  
+between them.
 
 ![Component diagram of overall architecture](diag_comp_overall_architecture.png)
 
