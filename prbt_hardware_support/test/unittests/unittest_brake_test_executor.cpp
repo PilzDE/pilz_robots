@@ -217,66 +217,34 @@ TEST(BrakeTestExecutorTest, testBrakeTestResultServiceFails)
   EXPECT_EQ(brake_test_srv.response.error_code.value, BrakeTestErrorCodes::FAILURE);
 }
 
+/**
+ * @brief Checks that exception is thrown if function to hold controller
+ * is missing.
+ */
 TEST(BrakeTestExecutorTest, testMissingHoldFunc)
 {
   SystemMock mock;
-  BrakeTestExecutor brake_test_executor(std::bind(&SystemMock::detectMotion, &mock),
-                                        nullptr,
-                                        std::bind(&SystemMock::executeBrakeTest, &mock),
-                                        std::bind(&SystemMock::unholdController, &mock),
-                                        std::bind(&SystemMock::sendBrakeTestResult, &mock, _1));
-
-  {
-    InSequence dummy;
-
-    EXPECT_CALL(mock, detectMotion()).Times(1).WillOnce(Return(false));
-
-    EXPECT_CALL(mock, executeBrakeTest())
-        .Times(1)
-        .WillOnce(testing::Invoke([]()
-    {
-      BrakeTest::Response res;
-      res.success = true;
-      return res;
-    }));
-    EXPECT_CALL(mock, unholdController()).Times(1);
-    EXPECT_CALL(mock, sendBrakeTestResult(_)).Times(1).WillOnce(Return(true));
-  }
-
-  BrakeTest brake_test_srv;
-  EXPECT_TRUE(brake_test_executor.executeBrakeTest(brake_test_srv.request, brake_test_srv.response));
-  EXPECT_TRUE(brake_test_srv.response.success);
+  EXPECT_THROW(BrakeTestExecutor(std::bind(&SystemMock::detectMotion, &mock),
+                                 nullptr,
+                                 std::bind(&SystemMock::executeBrakeTest, &mock),
+                                 std::bind(&SystemMock::unholdController, &mock),
+                                 std::bind(&SystemMock::sendBrakeTestResult, &mock, _1)),
+               BrakeTestExecutorException);
 }
 
+/**
+ * @brief Checks that exception is thrown if function to unhold controller
+ * is missing.
+ */
 TEST(BrakeTestExecutorTest, testMissingUnholdFunc)
 {
   SystemMock mock;
-  BrakeTestExecutor brake_test_executor(std::bind(&SystemMock::detectMotion, &mock),
-                                        std::bind(&SystemMock::holdController, &mock),
-                                        std::bind(&SystemMock::executeBrakeTest, &mock),
-                                        nullptr,
-                                        std::bind(&SystemMock::sendBrakeTestResult, &mock, _1));
-
-  {
-    InSequence dummy;
-
-    EXPECT_CALL(mock, detectMotion()).Times(1).WillOnce(Return(false));
-    EXPECT_CALL(mock, holdController()).Times(1);
-    EXPECT_CALL(mock, executeBrakeTest())
-        .Times(1)
-        .WillOnce(testing::Invoke([]()
-    {
-      BrakeTest::Response res;
-      res.success = true;
-      return res;
-    }));
-
-    EXPECT_CALL(mock, sendBrakeTestResult(_)).Times(1).WillOnce(Return(true));
-  }
-
-  BrakeTest brake_test_srv;
-  EXPECT_TRUE(brake_test_executor.executeBrakeTest(brake_test_srv.request, brake_test_srv.response));
-  EXPECT_TRUE(brake_test_srv.response.success);
+  EXPECT_THROW(BrakeTestExecutor(std::bind(&SystemMock::detectMotion, &mock),
+                                 std::bind(&SystemMock::holdController, &mock),
+                                 std::bind(&SystemMock::executeBrakeTest, &mock),
+                                 nullptr,
+                                 std::bind(&SystemMock::sendBrakeTestResult, &mock, _1)),
+               BrakeTestExecutorException);
 }
 
 /**
