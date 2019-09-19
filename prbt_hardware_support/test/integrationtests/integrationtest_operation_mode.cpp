@@ -95,8 +95,8 @@ MATCHER_P(IsExpectedOperationMode, exp_mode, "unexpected operation mode"){ retur
  *
  * Test Sequence:
  *    0. Start Modbus-server in separate thread. Make sure that the nodes are up and subscribe to operation mode topic.
- *    1. Send message with 0 (unknown) in operation mode register and with the correct API version.
- *    2. Send message with T1 in operation mode register and with the correct API version.
+ *    1. Send message with T1 in operation mode register and with the correct API version.
+ *    2. Send message with 0 (unknown) in operation mode register and with the correct API version.
  *    3. Send message with T2 in operation mode register and with the correct API version.
  *    4. Send message with AUTO in operation mode register and with the correct API version.
  *    5. Send message with 99 (unknown) in operation mode register and with the correct API version.
@@ -104,8 +104,8 @@ MATCHER_P(IsExpectedOperationMode, exp_mode, "unexpected operation mode"){ retur
  *
  * Expected Results:
  *    0. A message with unknown operation mode is obtained
- *    1. No message is obtained
- *    2. A message with T1 operation mode is obtained
+ *    1. A message with T1 operation mode is obtained
+ *    2. A message with unknown operation mode is obtained
  *    3. A message with T2 operation mode is obtained
  *    4. A message with AUTO operation mode is obtained
  *    5. A message with unknown operation mode is obtained
@@ -154,9 +154,6 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
 
   modbus_server.setHoldingRegister({{version_register, MODBUS_API_VERSION_VALUE}});
 
-  /**********
-   * Step 2 *
-   **********/
   EXPECT_CALL(subscriber, callback(IsExpectedOperationMode(OperationModes::T1)))
     .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
@@ -164,6 +161,16 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
   unsigned int op_mode_register = api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE);
 
   modbus_server.setHoldingRegister({{op_mode_register, 1}});
+
+  BARRIER(OPERATION_MODE_CALLBACK_EVENT);
+
+  /**********
+   * Step 2 *
+   **********/
+  EXPECT_CALL(subscriber, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
+    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+
+  modbus_server.setHoldingRegister({{op_mode_register, 0}});
 
   BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 
