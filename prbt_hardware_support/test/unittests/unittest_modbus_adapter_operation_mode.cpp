@@ -31,6 +31,7 @@
 namespace prbt_hardware_support
 {
 static constexpr int DEFAULT_QUEUE_SIZE_MODBUS{1};
+static const std::string SERVICE_NAME_OPERATION_MODE = "/prbt/get_operation_mode";
 static const std::string TOPIC_OPERATION_MODE{"/prbt/operation_mode"};
 static constexpr int OPERATION_MODE_QUEUE_SIZE{1};
 
@@ -88,6 +89,7 @@ protected:
   ros::NodeHandle nh_;
   std::shared_ptr<ModbusAdapterOperationMode> adapter_operation_mode_;
   ros::Publisher modbus_topic_pub_;
+  ros::ServiceClient operation_mode_client_;
   StrictMock<OperationModeSubscriberMock> subscriber_;
 };
 
@@ -101,6 +103,7 @@ ModbusAdapterOperationModeTest::ModbusAdapterOperationModeTest()
 
   adapter_operation_mode_.reset(new ModbusAdapterOperationMode(nh_, TEST_API_SPEC));
   modbus_topic_pub_ = nh_.advertise<ModbusMsgInStamped>(TOPIC_MODBUS_READ, DEFAULT_QUEUE_SIZE_MODBUS);
+  operation_mode_client_ = nh_.serviceClient<prbt_hardware_support::GetOperationMode>(SERVICE_NAME_OPERATION_MODE);
 
   spinner_.start();
 }
@@ -148,6 +151,8 @@ MATCHER_P(IsExpectedOperationMode, exp_mode, "unexpected operation mode"){ retur
 
 /**
  * @brief Tests that initial operation mode is UNKNOWN.
+ * 
+ * Waits for callback and calls service.
  */
 TEST_F(ModbusAdapterOperationModeTest, testInitialOperationMode)
 {
@@ -157,6 +162,10 @@ TEST_F(ModbusAdapterOperationModeTest, testInitialOperationMode)
   subscriber_.initialize();
 
   BARRIER(OPERATION_MODE_CALLBACK_EVENT);
+
+  GetOperationMode srv;
+  ASSERT_TRUE(operation_mode_client_.call(srv));
+  EXPECT_EQ(OperationModes::UNKNOWN, srv.response.mode.value);
 }
 
 /**
@@ -237,6 +246,7 @@ TEST_F(ModbusAdapterOperationModeTest, testMissingOperationModeRegister)
  * Expected Results:
  *  0. Operation mode UNKNOWN is published.
  *  1. All operation modes are published in the order from above.
+ *     GetOperationMode service returns expected operation mode.
  */
 TEST_F(ModbusAdapterOperationModeTest, testOperationModeChange)
 {
@@ -264,6 +274,10 @@ TEST_F(ModbusAdapterOperationModeTest, testOperationModeChange)
     modbus_topic_pub_.publish(builder.setOperationMode(mode).build(ros::Time::now()));
 
     BARRIER(OPERATION_MODE_CALLBACK_EVENT);
+
+    GetOperationMode srv;
+    ASSERT_TRUE(operation_mode_client_.call(srv));
+    EXPECT_EQ(mode, srv.response.mode.value);
   }
 }
 

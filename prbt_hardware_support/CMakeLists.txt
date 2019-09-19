@@ -37,10 +37,11 @@ add_message_files(
 add_service_files(
   FILES
   BrakeTest.srv
+  GetOperationMode.srv
   IsBrakeTestRequired.srv
+  SendBrakeTestResult.srv
   SetSpeedLimit.srv
   WriteModbusRegister.srv
-  SendBrakeTestResult.srv
 )
 
 generate_messages(

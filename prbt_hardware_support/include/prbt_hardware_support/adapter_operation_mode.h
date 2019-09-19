@@ -18,8 +18,11 @@
 #ifndef ADAPTER_OPERATION_MODE_H
 #define ADAPTER_OPERATION_MODE_H
 
+#include <mutex>
+
 #include <ros/ros.h>
 
+#include <prbt_hardware_support/GetOperationMode.h>
 #include <prbt_hardware_support/IsBrakeTestRequired.h>
 #include <prbt_hardware_support/OperationModes.h>
 
@@ -27,7 +30,7 @@ namespace prbt_hardware_support
 {
 
 /**
- * @brief Publishes information on the active operation mode
+ * @brief Publishes information on the active operation mode. Also offers a service for querying the operation mode.
  */
 class AdapterOperationMode
 {
@@ -42,8 +45,20 @@ protected:
   void updateOperationMode(const OperationModes& mode);
 
 private:
+  /**
+   * @brief Initializes the operation mode service.
+   */
+  void initOperationModeService();
+
+  bool getOperationMode(GetOperationMode::Request& req,
+                        GetOperationMode::Response& res);
+
+private:
   //! Store the current operation mode according to OperationModes.msg
   OperationModes op_mode_;
+
+  //! Protects read/write of the operation mode
+  std::mutex op_mode_mutex_;
 
   //! The node handle
   ros::NodeHandle& nh_;
@@ -51,6 +66,8 @@ private:
   //! Informs about operation mode changes via topic.
   ros::Publisher operation_mode_pub_;
 
+  //! Server serving a service to ask whether a brake test is currently required
+  ros::ServiceServer operation_mode_server_;
 };
 
 } // namespace prbt_hardware_support
