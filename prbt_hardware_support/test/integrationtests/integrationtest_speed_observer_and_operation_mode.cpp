@@ -45,6 +45,8 @@ static const std::string FAKE_CONTROLLER_JOINT_STATES_TOPIC_NAME{ "/fake_control
 static const std::string OPERATION_MODE_TOPIC{ "operation_mode" };
 static const std::string STO_SERVICE{ "safe_torque_off" };
 static const std::string ADDITIONAL_FRAMES_PARAM_NAME{ "additional_frames" };
+static const std::string SPEED_LIMIT_T1_PARAM_NAME{ "speed_limit_t1" };
+static const std::string SPEED_LIMIT_AUTOMATIC_PARAM_NAME{ "speed_limit_automatic" };
 
 static const std::string BARRIER_STOP_HAPPENED{ "BARRIER_STOP_HAPPENED" };
 static const std::string BARRIER_NO_STOP_HAPPENED{ "BARRIER_NO_STOP_HAPPENED" };
@@ -109,6 +111,8 @@ protected:
   bool joint_publisher_running_{ false };
   bool tf_publisher_running_{ false };
   std_srvs::SetBool::Response sto_res;
+  double speed_limit_t1_;
+  double speed_limit_automatic_;
 };
 
 void SpeedObserverIntegrationTest::SetUp()
@@ -121,7 +125,9 @@ void SpeedObserverIntegrationTest::SetUp()
       nh_.advertise<sensor_msgs::JointState>(FAKE_CONTROLLER_JOINT_STATES_TOPIC_NAME, 1);
   operation_mode_pub_ = nh_.advertise<OperationModes>(OPERATION_MODE_TOPIC, 10, true);
 
-  pnh_.getParam(ADDITIONAL_FRAMES_PARAM_NAME, additional_frames_);
+  ASSERT_TRUE(pnh_.getParam(SPEED_LIMIT_T1_PARAM_NAME, speed_limit_t1_));
+  ASSERT_TRUE(pnh_.getParam(SPEED_LIMIT_AUTOMATIC_PARAM_NAME, speed_limit_automatic_));
+  ASSERT_TRUE(pnh_.getParam(ADDITIONAL_FRAMES_PARAM_NAME, additional_frames_));
   ROS_DEBUG_STREAM("SetUp pnh:" << pnh_.getNamespace() << " nh:" << nh_.getNamespace());
   for (auto& frame : additional_frames_)
   {
@@ -273,7 +279,8 @@ TEST_F(SpeedObserverIntegrationTest, testOperationModeT1)
       .WillOnce(DoAll(SetArgReferee<1>(sto_res), ACTION_OPEN_BARRIER(BARRIER_STOP_HAPPENED)))
       .WillRepeatedly(DoAll(SetArgReferee<1>(sto_res), Return(true)));
 
-  std::thread pubisher_thread = std::thread(&SpeedObserverIntegrationTest::publishJointStatesAtSpeed, this, 1.0);
+  std::thread pubisher_thread = std::thread(&SpeedObserverIntegrationTest::publishJointStatesAtSpeed, this,
+                                            speed_limit_t1_ + 0.01);
   BARRIER({ BARRIER_STOP_HAPPENED });
   stopJointStatePublisher();
   pubisher_thread.join();
@@ -346,7 +353,8 @@ TEST_F(SpeedObserverIntegrationTest, testOperationModeAuto)
       .WillOnce(ACTION_OPEN_BARRIER_VOID(BARRIER_NO_STOP_HAPPENED))
       .WillRepeatedly(Return());
 
-  std::thread pubisher_thread = std::thread(&SpeedObserverIntegrationTest::publishJointStatesAtSpeed, this, 1.0);
+  std::thread pubisher_thread = std::thread(&SpeedObserverIntegrationTest::publishJointStatesAtSpeed, this,
+                                            speed_limit_automatic_ - 0.01);
   BARRIER({ BARRIER_NO_STOP_HAPPENED });
 
   /**********
@@ -409,7 +417,10 @@ TEST_F(SpeedObserverIntegrationTest, testAdditionalTFTree)
 
   publishOperationMode(OperationModes::T1);
 
-  std::thread pubisher_thread = std::thread(&SpeedObserverIntegrationTest::publishTfAtSpeed, this, 1.0, additional_frames_[0]);
+  std::thread pubisher_thread = std::thread(&SpeedObserverIntegrationTest::publishTfAtSpeed,
+                                            this,
+                                            speed_limit_t1_ + 0.01,
+                                            additional_frames_[0]);
   BARRIER({ BARRIER_STOP_HAPPENED });
   stopTfPublisher();
   pubisher_thread.join();
@@ -468,7 +479,8 @@ TEST_F(SpeedObserverIntegrationTest, testStoServiceNoSuccess)
   // Set OM to T1
   publishOperationMode(OperationModes::T1);
 
-  std::thread pubisher_thread = std::thread(&SpeedObserverIntegrationTest::publishJointStatesAtSpeed, this, 1.0);
+  std::thread pubisher_thread = std::thread(&SpeedObserverIntegrationTest::publishJointStatesAtSpeed, this,
+                                            speed_limit_t1_ + 0.01);
   BARRIER({ BARRIER_NO_SVC_SUCESS });
   stopJointStatePublisher();
   pubisher_thread.join();

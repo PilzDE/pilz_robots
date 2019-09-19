@@ -17,6 +17,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <launch>
     <arg name="timeout" default="60" />
+    <arg name="speed_limit_t1" default="0.5" />
+    <arg name="speed_limit_automatic" default="1.0" />
     <arg name="testing_frame" value="another_frame"
          doc="a user definded frame to test how it is handled" />
 
@@ -40,6 +42,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         pkg="prbt_hardware_support"
         type="integrationtest_speed_observer_and_operation_mode"
         time-limit="$(arg timeout)">
+        <param name="speed_limit_t1" value="$(arg speed_limit_t1)" />
+        <param name="speed_limit_automatic" value="$(arg speed_limit_automatic)" />
         <rosparam param="additional_frames"
         subst_value="True">["$(arg testing_frame)"]</rosparam>
     </test>
@@ -54,7 +58,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <node name="operation_mode_setup_executor_node" pkg="prbt_hardware_support"
         type="operation_mode_setup_executor_node" output="screen" >
         <!-- NOTE: These values are for testing only! -->
-        <param name="/speed_limit_t1" value="0.5"/>
-        <param name="/speed_limit_automatic" value="1.0"/>
+        <param name="/speed_limit_t1" value="$(arg speed_limit_t1)" />
+        <param name="/speed_limit_automatic" value="$(arg speed_limit_automatic)" />
     </node>
 </launch>
