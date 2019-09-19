@@ -187,12 +187,21 @@ void SpeedObserverIntegrationTest::publishJointStatesAtSpeed(double speed)
                                                 // then observing
   ros::Time start = ros::Time::now();
   double t = 0;
+  double t_zero = 0;
   joint_publisher_running_ = true;
+  bool first_round{true};
   while (joint_publisher_running_ & nh_.ok())
   {
     ros::Time current = ros::Time::now();
     t = (current - start).toSec();
-    js.position = { t * speed };
+    if (first_round)
+    {
+      t_zero = t;
+      first_round = false;
+    }
+    // Starting with max speed abruptly is not a relevant scenario and makes the test instable
+    // The following realizes half the speed in the first round and later constant full speed
+    js.position = { (t - 0.5*t_zero) * speed };
 
     fake_controller_joint_states_pub_.publish(js);
     if (joint_publisher_running_ & nh_.ok())  // ending faster
