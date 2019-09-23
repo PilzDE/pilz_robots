@@ -38,6 +38,10 @@ static constexpr uint32_t DEFAULT_QUEUE_SIZE {10} ;
 
 using namespace prbt_hardware_support;
 
+/**
+ * @brief Read necessary parameters, start and initialize the
+ * prbt_hardware_support::OperationModeSetupExecutor
+ */
 // LCOV_EXCL_START
 int main(int argc, char **argv)
 {
