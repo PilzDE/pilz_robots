@@ -36,6 +36,7 @@ add_service_files(
   IsBrakeTestRequired.srv
   GetOperationMode.srv
   WriteModbusRegister.srv
+  SendBrakeTestResult.srv
 )
 
 generate_messages(
@@ -54,17 +55,20 @@ catkin_package(
 ################
 ## Clang tidy ##
 ################
-find_program(
-  CLANG_TIDY_EXE
-  NAMES "clang-tidy"
-  DOC "Path to clang-tidy executable"
-  )
-if(NOT CLANG_TIDY_EXE)
-  message(FATAL_ERROR "clang-tidy not found.")
-else()
-  message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
-  set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
+if(CATKIN_ENABLE_CLANG_TIDY)
+  find_program(
+    CLANG_TIDY_EXE
+    NAMES "clang-tidy"
+    DOC "Path to clang-tidy executable"
+    )
+  if(NOT CLANG_TIDY_EXE)
+    message(FATAL_ERROR "clang-tidy not found.")
+  else()
+    message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
+    set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
+  endif()
 endif()
+
 
 ###########
 ## Build ##
@@ -98,7 +102,6 @@ target_link_libraries(stop1_executor_node ${catkin_LIBRARIES})
 add_executable(modbus_adapter_brake_test_node
   src/modbus_adapter_brake_test_node.cpp
   src/modbus_adapter_brake_test.cpp
-  src/adapter_brake_test.cpp
 )
 add_dependencies(modbus_adapter_brake_test_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
 target_link_libraries(modbus_adapter_brake_test_node ${catkin_LIBRARIES})
@@ -244,11 +247,9 @@ if(CATKIN_ENABLE_TESTING)
   add_dependencies(unittest_pilz_modbus_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
   # --- ModbusAdapterBrakeTest unit test ---
-  add_rostest_gmock(unittest_modbus_adapter_brake_test
-    test/unittests/unittest_modbus_adapter_brake_test.test
+  catkin_add_gmock(unittest_modbus_adapter_brake_test
     test/unittests/unittest_modbus_adapter_brake_test.cpp
     src/modbus_adapter_brake_test.cpp
-    src/adapter_brake_test.cpp
     src/modbus_msg_in_builder.cpp
   )
   target_link_libraries(unittest_modbus_adapter_brake_test
@@ -294,10 +295,8 @@ if(CATKIN_ENABLE_TESTING)
   #----------------------------------
 
   # --- BraketestExecutor unit test ---
-  add_rostest_gmock(unittest_brake_test_executor
-    test/unittests/unittest_brake_test_executor.test
+  catkin_add_gmock(unittest_brake_test_executor
     test/unittests/unittest_brake_test_executor.cpp
-    test/unittests/joint_states_publisher_mock.cpp
     src/brake_test_executor.cpp
   )
   target_link_libraries(unittest_brake_test_executor
@@ -444,7 +443,15 @@ if(CATKIN_ENABLE_TESTING)
                           "*/ModbusRegisterBlock.h"
                           "*/WriteModbusRegister.h"
                           "*/WriteModbusRegisterRequest.h"
-                          "*/WriteModbusRegisterResponse.h")
+                          "*/WriteModbusRegisterResponse.h"
+                          "*/GetOperationMode.h"
+                          "*/GetOperationModeRequest.h"
+                          "*/GetOperationModeResponse.h"
+                          "*/OperationModes.h"
+                          "*/SendBrakeTestResult.h"
+                          "*/SendBrakeTestResultRequest.h"
+                          "*/SendBrakeTestResultResponse.h"
+                          )
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
       DEPENDS tests

@@ -18,6 +18,10 @@
 #ifndef PRBT_HARDWARE_SUPPORT_BRAKE_TEST_EXECUTOR_H
 #define PRBT_HARDWARE_SUPPORT_BRAKE_TEST_EXECUTOR_H
 
+#include <functional>
+#include <stdexcept>
+#include <string>
+
 #include <ros/ros.h>
 
 #include <prbt_hardware_support/BrakeTest.h>
@@ -25,32 +29,43 @@
 namespace prbt_hardware_support
 {
 
+using DetectRobotMotionFunc = std::function<bool()>;
+using ControllerHoldFunc = std::function<void()>;
+using TriggerBrakeTestFunc = std::function<BrakeTest::Response()>;
+using ControllerUnholdFunc = std::function<void()>;
+using BrakeTestResultFunc = std::function<bool(const bool)>;
+
+class BrakeTestExecutorException : public std::runtime_error
+{
+public:
+  BrakeTestExecutorException(const std::string &what_arg) : std::runtime_error(what_arg)
+  {
+  }
+};
+
 /**
- * @brief Triggers execution of brake tests only if the controller is not executing a trajectory.
+ * @brief Triggers execution of brake tests only if the controller is not
+ * executing a trajectory.
  *
  */
 class BrakeTestExecutor
 {
 public:
-  BrakeTestExecutor(ros::NodeHandle& nh);
+  BrakeTestExecutor(DetectRobotMotionFunc&& detect_robot_motion_func,
+                    ControllerHoldFunc&& controller_hold_func,
+                    TriggerBrakeTestFunc&& trigger_brake_test_func,
+                    ControllerUnholdFunc&& unhold_func,
+                    BrakeTestResultFunc&& brake_test_result_fun);
 
-private:
+public:
   bool executeBrakeTest(BrakeTest::Request& req, BrakeTest::Response& response);
 
 private:
-  ros::NodeHandle nh_;
-
-  //! Service which can be called by the user to execute brake tests for all joints.
-  ros::ServiceServer brake_test_srv_;
-
-  //! Service clients required for operation.
-  ros::ServiceClient trigger_braketest_client_;
-  ros::ServiceClient controller_hold_client_;
-  ros::ServiceClient controller_unhold_client_;
-  ros::ServiceClient modbus_write_client_;
-
-  //! Register number for brake test
-  short unsigned int brake_test_modbus_register_low_;
+  DetectRobotMotionFunc detect_robot_motion_func_;
+  ControllerHoldFunc hold_controller_func_;
+  TriggerBrakeTestFunc execute_brake_test_func_;
+  ControllerUnholdFunc unhold_controller_func_;
+  BrakeTestResultFunc brake_test_result_func_;
 };
 
 } // namespace prbt_hardware_support

@@ -7,5 +7,5 @@ A controlled stop using a hold trajectory is performed thus stopping the manipul
 ## Advertised service
 - `hold` (std_srvs/Trigger)
   - Switch into holding mode
-- `unhold` (std_srvs/Trieer)
+- `unhold` (std_srvs/Trigger)
   - Leave holding mode
