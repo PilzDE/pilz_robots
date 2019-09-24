@@ -4,6 +4,7 @@ Changelog for package prbt_hardware_support
 
 Forthcoming
 -----------
+* Add service /prbt/get_speed_override
 * Add speed observing dependent on operation mode
 * Contributors: Pilz GmbH and Co. KG
 
