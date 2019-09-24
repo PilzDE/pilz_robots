@@ -360,7 +360,8 @@ lt=[Service]-(</panel_attributes>
     <panel_attributes>symbol=component
 bg=#1E90FF
 &lt;&lt;Node&gt;&gt;
-modbus_operation_mode</panel_attributes>
+modbus_adapter_
+operation_mode</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -619,7 +620,7 @@ operation_mode_setup_executor</panel_attributes>
   <element>
     <id>UMLGeneric</id>
     <coordinates>
-      <x>360</x>
+      <x>351</x>
       <y>225</y>
       <w>243</w>
       <h>81</h>
@@ -658,15 +659,15 @@ lt=-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>594</x>
+      <x>585</x>
       <y>252</y>
-      <w>189</w>
+      <w>198</w>
       <h>36</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=()-
 /safe_torque_off</panel_attributes>
-    <additional_attributes>190.0;20.0;10.0;20.0</additional_attributes>
+    <additional_attributes>200.0;20.0;10.0;20.0</additional_attributes>
   </element>
   <element>
     <id>UMLPackage</id>
