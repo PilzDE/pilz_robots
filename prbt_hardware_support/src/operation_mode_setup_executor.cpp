@@ -45,11 +45,14 @@ void OperationModeSetupExecutor::updateOperationMode(const OperationModes& opera
   {
   case OperationModes::T1:
     speed_limit = speed_limit_t1_;
+    speed_override_ = 0.1;
     break;
   case OperationModes::AUTO:
     speed_limit = speed_limit_auto_;
+    speed_override_ = 1.0;
     break;
   default:
+    speed_override_ = 0.0;
     break;
   }
 
@@ -57,6 +60,13 @@ void OperationModeSetupExecutor::updateOperationMode(const OperationModes& opera
   {
     set_speed_limit_func_(speed_limit);
   }
+}
+
+bool OperationModeSetupExecutor::getSpeedOverride(GetSpeedOverride::Request& /*req*/,
+                                                    GetSpeedOverride::Response& response)
+{
+  response.speed_override = speed_override_;
+  return true;
 }
 
 

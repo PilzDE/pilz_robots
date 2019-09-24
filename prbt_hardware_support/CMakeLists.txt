@@ -38,6 +38,7 @@ add_service_files(
   FILES
   BrakeTest.srv
   GetOperationMode.srv
+  GetSpeedOverride.srv
   IsBrakeTestRequired.srv
   SendBrakeTestResult.srv
   SetSpeedLimit.srv
@@ -508,6 +509,9 @@ if(CATKIN_ENABLE_TESTING)
                           "*/GetOperationMode.h"
                           "*/GetOperationModeRequest.h"
                           "*/GetOperationModeResponse.h"
+                          "*/GetSpeedOverride.h"
+                          "*/GetSpeedOverrideRequest.h"
+                          "*/GetSpeedOverrideResponse.h"
                           "*/OperationModes.h"
                           "*/SendBrakeTestResult.h"
                           "*/SendBrakeTestResultRequest.h"
