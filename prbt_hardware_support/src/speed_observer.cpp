@@ -132,6 +132,10 @@ void SpeedObserver::startObserving(double frequency, unsigned int allowed_missed
                                          curr_pose,
                                          (curr_time_stamp - previous_time_stamps.at(frame)).toSec());
         }
+        else
+        {
+          ROS_WARN("Time interval too small for speed computation.");
+        }
         if (!isWithinLimit(curr_speed))
         {
           ROS_ERROR("Speed %.2f m/s of frame >%s< exceeds limit of %.2f m/s", curr_speed, frame.c_str(),

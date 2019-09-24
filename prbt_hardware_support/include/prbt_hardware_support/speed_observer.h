@@ -145,7 +145,7 @@ private:
   //! Waiting time for `waitUntillCanTransform()`
   static constexpr double WAITING_TIME_FOR_TRANSFORM_S{ 0.1 };
   //! Epsilon prevents computation of speed for small time intervals
-  static constexpr double TIME_INTERVAL_EPSILON_S{ 1e-6 };
+  static constexpr double TIME_INTERVAL_EPSILON_S{ 1e-9 };
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

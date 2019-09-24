@@ -26,7 +26,7 @@ using namespace prbt_hardware_support;
 static const std::string ADDITIONAL_FRAMES_PARAM_NAME{ "additional_frames" };
 static const std::string ROBOT_DESCRIPTION_PARAM_NAME{ "robot_description" };
 static const std::string SET_SPEED_LIMIT_SERVICE{ "set_speed_limit" };
-static const double OBSERVATION_FREQUENCY{ 10 };
+static const double OBSERVATION_FREQUENCY{ 20 };
 
 bool hasOnlyFixedParentJoints(const urdf::LinkSharedPtr &link)
 {
@@ -58,6 +58,7 @@ int main(int argc, char** argv)
   ROS_DEBUG_STREAM("Received the following frames to observer from urdf:");
   for (const auto& link : links)
   {
+    // exclude frames which cannot move
     if (!hasOnlyFixedParentJoints(link))
     {
       ROS_DEBUG_STREAM(" - " << link->name);
