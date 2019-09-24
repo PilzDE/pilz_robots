@@ -79,19 +79,10 @@ void SpeedObserver::startObserving(double frequency, unsigned int allowed_missed
 
   ros::Time now = ros::Time(0);
   std::map<std::string, tf2::Vector3> previous_poses;
-  try
+  for (const auto& frame : frames_to_observe_)
   {
-    for (const auto& frame : frames_to_observe_)
-    {
-      waitUntillCanTransform(frame, now);
-      previous_poses[frame] = getPose(frame, now);
-      missed_calculations_[frame] = 0;
-    }
-  }
-  catch (std::runtime_error& re)
-  {
-    ROS_WARN_STREAM(re.what());
-    return;
+    previous_poses[frame] = getPose(frame, now);
+    missed_calculations_[frame] = 0;
   }
 
   ros::Rate r(frequency);
