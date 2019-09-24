@@ -72,8 +72,11 @@ tf2::Vector3 SpeedObserver::getPose(const std::string& frame, const ros::Time& t
   return tf2::Vector3(v);
 }
 
-void SpeedObserver::startObserving(double frequency)
+void SpeedObserver::startObserving(double frequency, unsigned int allowed_missed_calculations)
 {
+  // delta into past for looking up transforms
+  const ros::Duration delta{1.0/frequency};
+
   ros::Time now = ros::Time(0);
   std::map<std::string, tf2::Vector3> previous_poses;
   try
@@ -82,6 +85,7 @@ void SpeedObserver::startObserving(double frequency)
     {
       waitUntillCanTransform(frame, now);
       previous_poses[frame] = getPose(frame, now);
+      missed_calculations_[frame] = 0;
     }
   }
   catch (std::runtime_error& re)
@@ -94,42 +98,46 @@ void SpeedObserver::startObserving(double frequency)
   ROS_INFO("Observing at %.1fHz", frequency);
 
   tf2::Vector3 curr_pos;
-  std::vector<double> speeds;
-  speeds.reserve(frames_to_observe_.size());
+  std::map<std::string, double> speeds;
   ros::Time previous_t = now;
 
   // Starting the observer loop
   while (ros::ok() && !terminate_)
   {
     speeds.clear();
-    now = ros::Time::now();
+    now = ros::Time::now() - delta;
     for (const auto& frame : frames_to_observe_)
     {
       if (terminate_)
       {
         return;
       }
-      try
+      if (!tf_buffer_.canTransform(reference_frame_, frame, now))
       {
-        waitUntillCanTransform(frame, now);
+        ++missed_calculations_.at(frame);
+        ROS_WARN("Could not transform frame >%s< %d times", frame.c_str(), missed_calculations_.at(frame));
+        if (missed_calculations_.at(frame) > allowed_missed_calculations)
+        {
+          missed_calculations_.at(frame) = 0;
+          ROS_ERROR("Could not transform frame >%s< %d times", frame.c_str(), allowed_missed_calculations);
+          triggerStop1();
+        }
+      }
+      else
+      {
         curr_pos = getPose(frame, now);
-      }
-      catch (std::runtime_error& ex)
-      {
-        ROS_ERROR_STREAM(ex.what());
-        return;
-      }
 
-      double curr_speed{ speedFromTwoPoses(previous_poses.at(frame), curr_pos, (now - previous_t).toSec()) };
-      if (!isWithinLimit(curr_speed))
-      {
-        ROS_ERROR("Speed %.2f m/s of frame >%s< exceeds limit of %.2f m/s", curr_speed, frame.c_str(),
-                  current_speed_limit_);
-        triggerStop1();
-      }
+        double curr_speed{ speedFromTwoPoses(previous_poses.at(frame), curr_pos, (now - previous_t).toSec()) };
+        if (!isWithinLimit(curr_speed))
+        {
+          ROS_ERROR("Speed %.2f m/s of frame >%s< exceeds limit of %.2f m/s", curr_speed, frame.c_str(),
+                    current_speed_limit_);
+          triggerStop1();
+        }
 
-      speeds.emplace_back(curr_speed);
-      previous_poses[frame] = tf2::Vector3(curr_pos);
+        speeds[frame] = curr_speed;
+        previous_poses[frame] = tf2::Vector3(curr_pos);
+      }
     }
     previous_t = now;
     frame_speeds_pub_.publish(createFrameSpeedsMessage(speeds));
@@ -141,20 +149,17 @@ void SpeedObserver::startObserving(double frequency)
   }
 }
 
-FrameSpeeds SpeedObserver::createFrameSpeedsMessage(const std::vector<double>& speeds) const
+FrameSpeeds SpeedObserver::createFrameSpeedsMessage(const std::map<std::string, double>& speeds) const
 {
   static uint32_t seq{ 0 };
   FrameSpeeds msg;
   msg.header.frame_id = reference_frame_;
   msg.header.seq = seq++;
   msg.header.stamp = ros::Time::now();
-  for (const auto& n : frames_to_observe_)
-  {
-    msg.name.push_back(n);
-  }
   for (const auto& s : speeds)
   {
-    msg.speed.push_back(s);
+    msg.name.push_back(s.first);
+    msg.speed.push_back(s.second);
   }
   return msg;
 }

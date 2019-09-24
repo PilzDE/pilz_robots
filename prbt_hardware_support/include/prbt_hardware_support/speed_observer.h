@@ -19,6 +19,8 @@
 #define SPEED_OBSERVER_H
 
 #include <atomic>
+#include <map>
+#include <vector>
 
 #include <ros/node_handle.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -29,6 +31,9 @@
 
 namespace prbt_hardware_support
 {
+//! Allowed number of missed calculations. If it is exceeded a Stop1 is triggered.
+static constexpr unsigned int DEFAULT_ALLOWED_MISSED_CALCULATIONS{3};
+
 class SpeedObserver
 {
 public:
@@ -45,7 +50,7 @@ public:
    * @brief Starts the observation cycle. The function blocks until ros shutsdown.
    * @param frequency [Hz] Will check all frame once per cycle
    */
-  void startObserving(double frequency);
+  void startObserving(double frequency, unsigned int allowed_missed_calculations=DEFAULT_ALLOWED_MISSED_CALCULATIONS);
 
   /**
    * @brief Callback for service to set the currently active speed limit.
@@ -71,7 +76,7 @@ private:
    * @param speeds Vector containing one speed per observed frame
    * @return The message
    */
-  FrameSpeeds createFrameSpeedsMessage(const std::vector<double>& speeds) const;
+  FrameSpeeds createFrameSpeedsMessage(const std::map<std::string, double>& speeds) const;
 
   /**
    * @brief Helper method waiting until TF transformation is available.
@@ -130,6 +135,8 @@ private:
   std::atomic_bool terminate_{ false };
   //! Currently active speed limit
   double current_speed_limit_{ DEFAULT_SPEED_LIMIT };
+  //! Map to store the number of successive missed frame transform calculations
+  std::map<std::string, unsigned int> missed_calculations_;
 
 private:
   //! Speed limit to be set at launch

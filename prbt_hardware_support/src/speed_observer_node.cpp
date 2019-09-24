@@ -18,6 +18,9 @@
 #include <ros/ros.h>
 #include <urdf/model.h>
 
+#include <tf2_msgs/TFMessage.h>
+
+#include <prbt_hardware_support/wait_for_topic.h>
 #include <prbt_hardware_support/speed_observer.h>
 
 using namespace prbt_hardware_support;
@@ -25,6 +28,7 @@ using namespace prbt_hardware_support;
 static const std::string ADDITIONAL_FRAMES_PARAM_NAME{ "additional_frames" };
 static const std::string ROBOT_DESCRIPTION_PARAM_NAME{ "robot_description" };
 static const std::string SET_SPEED_LIMIT_SERVICE{ "set_speed_limit" };
+static const std::string TF_TOPIC{"tf"};
 static const double OBSERVATION_FREQUENCY{ 10 };
 
 /**
@@ -65,6 +69,7 @@ int main(int argc, char** argv)
   SpeedObserver observer(nh, reference_frame, frames_to_observe);
   ros::ServiceServer set_speed_limit_server =
       nh.advertiseService(SET_SPEED_LIMIT_SERVICE, &SpeedObserver::setSpeedLimitCb, &observer);
+  waitForTopic<tf2_msgs::TFMessage>(TF_TOPIC);
   observer.startObserving(OBSERVATION_FREQUENCY);
 
   return EXIT_SUCCESS;
