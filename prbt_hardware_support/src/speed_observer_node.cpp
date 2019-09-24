@@ -28,7 +28,7 @@ using namespace prbt_hardware_support;
 static const std::string ADDITIONAL_FRAMES_PARAM_NAME{ "additional_frames" };
 static const std::string ROBOT_DESCRIPTION_PARAM_NAME{ "robot_description" };
 static const std::string SET_SPEED_LIMIT_SERVICE{ "set_speed_limit" };
-static const std::string TF_TOPIC{"tf"};
+static const std::string TF_TOPIC{"/tf"};
 static const double OBSERVATION_FREQUENCY{ 10 };
 
 /**
