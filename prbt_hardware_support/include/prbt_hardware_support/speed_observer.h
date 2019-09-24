@@ -89,13 +89,12 @@ private:
                               const unsigned short int max_num_retries = 10) const;
 
   /**
-   * @brief Using tf to get the Pose of a frame at a specific time as `tf::Vector3`.
-   * @note Refernce frame is always `reference_frame_`
-   * @param frame Which fram should be transformed
-   * @param time At what time is the transfomration needed
-   * @return The pose as Vector
+   * @brief Using tf to get the latest Pose of a frame as `tf::Vector3`.
+   * @note Reference frame is always `reference_frame_`
+   * @param frame Which frame should be transformed
+   * @return The pose as Vector and the time stamp
    */
-  tf2::Vector3 getPose(const std::string& frame, const ros::Time& time) const;
+  std::pair<tf2::Vector3, ros::Time> getLatestPose(const std::string& frame) const;
 
   /**
    * @brief Check if a speed value is within the currently set limit.
@@ -145,6 +144,8 @@ private:
   static constexpr uint32_t DEFAULT_QUEUE_SIZE{ 10 };
   //! Waiting time for `waitUntillCanTransform()`
   static constexpr double WAITING_TIME_FOR_TRANSFORM_S{ 0.1 };
+  //! Epsilon prevents computation of speed for small time intervals
+  static constexpr double TIME_INTERVAL_EPSILON_S{ 1e-6 };
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -64,24 +64,27 @@ void SpeedObserver::waitUntillCanTransform(const std::string& frame, const ros::
   }
 }
 
-tf2::Vector3 SpeedObserver::getPose(const std::string& frame, const ros::Time& time) const
+std::pair<tf2::Vector3, ros::Time> SpeedObserver::getLatestPose(const std::string& frame) const
 {
   tf2::Vector3 v;
-  geometry_msgs::TransformStamped transform{ tf_buffer_.lookupTransform(reference_frame_, frame, time) };
+  ros::Time t;
+  geometry_msgs::TransformStamped transform{ tf_buffer_.lookupTransform(reference_frame_, frame, ros::Time(0)) };
   tf2::fromMsg(transform.transform.translation, v);
-  return tf2::Vector3(v);
+  t = transform.header.stamp;
+  return std::pair<tf2::Vector3, ros::Time>(v, t);
 }
 
 void SpeedObserver::startObserving(double frequency, unsigned int allowed_missed_calculations)
 {
-  // delta into past for looking up transforms
-  const ros::Duration delta{1.0/frequency};
-
-  ros::Time now = ros::Time(0);
   std::map<std::string, tf2::Vector3> previous_poses;
+  std::map<std::string, ros::Time> previous_time_stamps;
   for (const auto& frame : frames_to_observe_)
   {
-    previous_poses[frame] = getPose(frame, now);
+    waitUntillCanTransform(frame, ros::Time(0));
+
+    auto pose_data = getLatestPose(frame);
+    previous_poses[frame] = pose_data.first;
+    previous_time_stamps[frame] = pose_data.second;
     missed_calculations_[frame] = 0;
   }
 
@@ -90,35 +93,45 @@ void SpeedObserver::startObserving(double frequency, unsigned int allowed_missed
 
   tf2::Vector3 curr_pos;
   std::map<std::string, double> speeds;
-  ros::Time previous_t = now;
 
   // Starting the observer loop
   while (ros::ok() && !terminate_)
   {
     speeds.clear();
-    now = ros::Time::now() - delta;
     for (const auto& frame : frames_to_observe_)
     {
       if (terminate_)
       {
         return;
       }
-      if (!tf_buffer_.canTransform(reference_frame_, frame, now))
+        
+      const auto curr_pose_data = getLatestPose(frame);
+      const auto &curr_pose = curr_pose_data.first;
+      const auto &curr_time_stamp = curr_pose_data.second;
+
+      if (std::abs((ros::Time::now() - curr_time_stamp).toSec()) > 2.0/frequency)
       {
-        ++missed_calculations_.at(frame);
-        ROS_WARN("Could not transform frame >%s< %d times", frame.c_str(), missed_calculations_.at(frame));
-        if (missed_calculations_.at(frame) > allowed_missed_calculations)
+        ROS_WARN_STREAM("Latest transform of frame " << frame << " is too old.");
+        ++missed_calculations_[frame];
+        if (missed_calculations_[frame] > DEFAULT_ALLOWED_MISSED_CALCULATIONS)
         {
-          missed_calculations_.at(frame) = 0;
-          ROS_ERROR("Could not transform frame >%s< %d times", frame.c_str(), allowed_missed_calculations);
+          ROS_ERROR_STREAM("Could not compute frame speed for "
+                           << DEFAULT_ALLOWED_MISSED_CALCULATIONS
+                           << " times. Triggering Stop1.");
           triggerStop1();
+          missed_calculations_[frame] = 0;
         }
       }
       else
       {
-        curr_pos = getPose(frame, now);
-
-        double curr_speed{ speedFromTwoPoses(previous_poses.at(frame), curr_pos, (now - previous_t).toSec()) };
+        missed_calculations_[frame] = 0;
+        double curr_speed{0.0};
+        if ((curr_time_stamp - previous_time_stamps.at(frame)).toSec() > TIME_INTERVAL_EPSILON_S)
+        {
+          curr_speed = speedFromTwoPoses(previous_poses.at(frame),
+                                         curr_pose,
+                                         (curr_time_stamp - previous_time_stamps.at(frame)).toSec());
+        }
         if (!isWithinLimit(curr_speed))
         {
           ROS_ERROR("Speed %.2f m/s of frame >%s< exceeds limit of %.2f m/s", curr_speed, frame.c_str(),
@@ -127,10 +140,10 @@ void SpeedObserver::startObserving(double frequency, unsigned int allowed_missed
         }
 
         speeds[frame] = curr_speed;
-        previous_poses[frame] = tf2::Vector3(curr_pos);
+        previous_poses[frame] = tf2::Vector3(curr_pose);
+        previous_time_stamps[frame] = curr_time_stamp;
       }
     }
-    previous_t = now;
     frame_speeds_pub_.publish(createFrameSpeedsMessage(speeds));
     ros::spinOnce();
     if (!terminate_)
