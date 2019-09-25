@@ -127,24 +127,29 @@ void SpeedObserverUnitTest::stopTfPublisher()
 }
 
 using ::testing::PrintToString;
+MATCHER_P(StoState, x, "Sto state " + std::string(negation ? "is not" : "is") + ": " + PrintToString(x) + ".")
+{
+  return arg.data == x;
+}
+
 MATCHER_P2(NameAtI, i, name,
            "Name at index " + PrintToString(i) + std::string(negation ? "is not" : "is") + ": " + name + ".")
 {
-  return arg->name.at((unsigned)i).compare(name) == 0;
+  return static_cast<unsigned long>(i) < arg->name.size() && arg->name.at((unsigned)i).compare(name) == 0;
 }
 
 MATCHER_P2(SpeedAtIGe, i, x,
            "Speed at index " + PrintToString(i) + std::string(negation ? "is not" : "is") + " greater or equal to" +
            PrintToString(x) + ".")
 {
-  return arg->speed.at(i) >= x;
+  return static_cast<unsigned long>(i) < arg->name.size() && arg->speed.at(i) >= x;
 }
 
 MATCHER_P2(SpeedAtILe, i, x,
            "Speed at index " + PrintToString(i) + std::string(negation ? "is not" : "is") + " less or equal to" +
            PrintToString(x) + ".")
 {
-  return arg->speed.at(i) <= x;
+  return static_cast<unsigned long>(i) < arg->name.size() && arg->speed.at(i) <= x;
 }
 
 /**
@@ -153,8 +158,8 @@ MATCHER_P2(SpeedAtILe, i, x,
  * }
  *
  * Test Sequence:
- *    0. Starting up
- *    1. Publishing tf movements that are withing the speed limit
+ *    0. Publish tf movements that are within the speed limit
+ *    1. Start speed observing
  *
  * Expected Results:
  *    0. -
@@ -167,6 +172,22 @@ TEST_F(SpeedObserverUnitTest, testStartupAndTopic)
    * Step 0 *
    **********/
   ROS_DEBUG_STREAM("Step 0");
+  std::thread pubisher_thread_slow = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.24);
+
+  /**********
+   * Step 1 *
+   **********/
+  ROS_DEBUG_STREAM("Step 1");
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
+                                                SpeedAtILe(0, .1), SpeedAtILe(1, .26),
+                                                SpeedAtIGe(0, 0), SpeedAtIGe(1, 0))))
+      .WillOnce(Return())
+      .WillOnce(Return())
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(BARRIER_SLOW))
+      .WillRepeatedly(Return());
+
+  EXPECT_CALL(*this, stop_cb_mock(_, _)).Times(0);
+
   std::string reference_frame{ TEST_BASE_FRAME };
   std::vector<std::string> frames_to_observe{ TEST_FRAME_A, TEST_FRAME_B };
   prbt_hardware_support::SpeedObserver observer(nh_, reference_frame, frames_to_observe);
@@ -176,26 +197,6 @@ TEST_F(SpeedObserverUnitTest, testStartupAndTopic)
                                             DEFAULT_ALLOWED_MISSED_CALCULATIONS);
   ROS_DEBUG_STREAM("thread started");
 
-  /**********
-   * Step 1 *
-   **********/
-  ROS_DEBUG_STREAM("Step 1");
-  ::testing::Sequence s_speeds;
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
-                                                SpeedAtILe((unsigned long)0, .1), SpeedAtILe((unsigned long)1, .26),
-                                                SpeedAtIGe((unsigned long)0, 0), SpeedAtIGe((unsigned long)1, 0))))
-      .Times(AtLeast(2))
-      .InSequence(s_speeds);
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
-                                                SpeedAtILe((unsigned long)0, .1), SpeedAtILe((unsigned long)1, .26),
-                                                SpeedAtIGe((unsigned long)0, 0), SpeedAtIGe((unsigned long)1, 0))))
-      .Times(AtLeast(1))
-      .InSequence(s_speeds)
-      .WillRepeatedly(ACTION_OPEN_BARRIER_VOID(BARRIER_SLOW));
-
-  EXPECT_CALL(*this, stop_cb_mock(_, _)).Times(0);
-
-  std::thread pubisher_thread_slow = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.24);
   BARRIER({ BARRIER_SLOW });
   stopTfPublisher();
   pubisher_thread_slow.join();
@@ -217,8 +218,8 @@ TEST_F(SpeedObserverUnitTest, testStartupAndTopic)
  * }
  *
  * Test Sequence:
- *    0. Starting up
- *    1. Publishing tf movements that have a too high speed
+ *    0. Publish tf movements that have a too high speed
+ *    1. Start speed observing
  *
  * Expected Results:
  *    0. -
@@ -235,6 +236,27 @@ TEST_F(SpeedObserverUnitTest, testTooHighSpeed)
    * Step 0 *
    **********/
   ROS_DEBUG_STREAM("Step 0");
+  std::thread pubisher_thread_fast = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.3);
+
+  /**********
+   * Step 1 *
+   **********/
+  ROS_DEBUG_STREAM("Step 1");
+  // we can once have a slow speed, when the observer starts:
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
+                                                SpeedAtILe(0, .1), SpeedAtILe(1, .32),
+                                                SpeedAtIGe(0, 0), SpeedAtIGe(1, 0))))
+      .Times(AtMost(1));
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
+                                                SpeedAtILe(0, .1), SpeedAtILe(1, .32),
+                                                SpeedAtIGe(0, 0), SpeedAtIGe(1, .28))));
+
+  std_srvs::SetBool::Response sto_srv_resp;
+  sto_srv_resp.success = true;
+
+  EXPECT_CALL(*this, stop_cb_mock(StoState(false), _))
+      .WillRepeatedly(DoAll(SetArgReferee<1>(sto_srv_resp), ACTION_OPEN_BARRIER(BARRIER_FAST)));
+
   std::string reference_frame{ TEST_BASE_FRAME };
   std::vector<std::string> frames_to_observe{ TEST_FRAME_A, TEST_FRAME_B };
   prbt_hardware_support::SpeedObserver observer(nh_, reference_frame, frames_to_observe);
@@ -244,37 +266,6 @@ TEST_F(SpeedObserverUnitTest, testTooHighSpeed)
                                             DEFAULT_ALLOWED_MISSED_CALCULATIONS);
   ROS_DEBUG_STREAM("thread started");
 
-  /**********
-   * Step 1 *
-   **********/
-  ROS_DEBUG_STREAM("Step 1");
-  ::testing::Sequence s_speeds;
-  // we can once have a slow speed, when the publisher starts:
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
-                                                SpeedAtILe((unsigned long)0, .1), SpeedAtILe((unsigned long)1, .32),
-                                                SpeedAtIGe((unsigned long)0, 0), SpeedAtIGe((unsigned long)1, 0))))
-      .Times(AtMost(1))
-      .InSequence(s_speeds);
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
-                                                SpeedAtILe((unsigned long)0, .1), SpeedAtILe((unsigned long)1, .32),
-                                                SpeedAtIGe((unsigned long)0, 0), SpeedAtIGe((unsigned long)1, .28))))
-      .Times(AtLeast(2))
-      .InSequence(s_speeds);
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
-                                                SpeedAtILe((unsigned long)0, .1), SpeedAtILe((unsigned long)1, .32),
-                                                SpeedAtIGe((unsigned long)0, 0), SpeedAtIGe((unsigned long)1, .28))))
-      .Times(AtLeast(1))
-      .InSequence(s_speeds)
-      .WillRepeatedly(ACTION_OPEN_BARRIER_VOID(BARRIER_FAST));
-
-  std_srvs::SetBool::Response sto_srv_resp;
-  sto_srv_resp.success = true;
-
-  EXPECT_CALL(*this, stop_cb_mock(_, _))
-      .Times(AtLeast(1))
-      .WillOnce(DoAll(SetArgReferee<1>(sto_srv_resp), Return(true)));
-
-  std::thread pubisher_thread_fast = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.3);
   BARRIER({ BARRIER_FAST });
   stopTfPublisher();
   pubisher_thread_fast.join();
@@ -299,9 +290,9 @@ TEST_F(SpeedObserverUnitTest, testTooHighSpeed)
  * }
  *
  * Test Sequence:
- *    0. Starting up
- *    1. Set speed limit to .4 (i.e. above currently published speed of .3)
- *    2. Reduce speed limit to .2 (i.e. below currently published speed of .3)
+ *    0. Publish tf movements with speed of 0.3,
+ *    1. Start observer, set speed limit to 0.4
+ *    2. Reduce speed limit to 0.2
  *
  * Expected Results:
  *    0. -
@@ -315,6 +306,27 @@ TEST_F(SpeedObserverUnitTest, testSetSpeedLimit)
    * Step 0 *
    **********/
   ROS_DEBUG_STREAM("Step 0");
+  std::thread pubisher_thread_fast = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.3);
+
+  /**********
+   * Step 1 *
+   **********/
+  ROS_DEBUG_STREAM("Step 1");
+
+  // we can once have a slow speed, when the observer starts:
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
+                                                SpeedAtILe(0, .1), SpeedAtILe(1, .32),
+                                                SpeedAtIGe(0, 0), SpeedAtIGe(1, 0))))
+      .Times(AtMost(1));
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
+                                                SpeedAtILe(0, .1), SpeedAtILe(1, .32),
+                                                SpeedAtIGe(0, 0), SpeedAtIGe(1, .28))))
+      .WillOnce(Return())
+      .WillOnce(Return())
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(BARRIER_LIMIT))
+      .WillRepeatedly(Return());
+  EXPECT_CALL(*this, stop_cb_mock(_, _)).Times(0);
+
   std::string reference_frame{ TEST_BASE_FRAME };
   std::vector<std::string> frames_to_observe{ TEST_FRAME_A, TEST_FRAME_B };
   prbt_hardware_support::SpeedObserver observer(nh_, reference_frame, frames_to_observe);
@@ -328,30 +340,6 @@ TEST_F(SpeedObserverUnitTest, testSetSpeedLimit)
                                             DEFAULT_ALLOWED_MISSED_CALCULATIONS);
   ROS_DEBUG_STREAM("thread started");
 
-  /**********
-   * Step 1 *
-   **********/
-  ROS_DEBUG_STREAM("Step 1");
-  ::testing::Sequence s_speeds, s_stop;
-  // we can once have a slow speed, when the publisher starts:
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
-                                                SpeedAtILe((unsigned long)0, .1), SpeedAtILe((unsigned long)1, .32),
-                                                SpeedAtIGe((unsigned long)0, 0), SpeedAtIGe((unsigned long)1, 0))))
-      .Times(AtMost(1))
-      .InSequence(s_speeds);
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
-                                                SpeedAtILe((unsigned long)0, .1), SpeedAtILe((unsigned long)1, .32),
-                                                SpeedAtIGe((unsigned long)0, 0), SpeedAtIGe((unsigned long)1, .28))))
-      .Times(AtLeast(2))
-      .InSequence(s_speeds);
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
-                                                SpeedAtILe((unsigned long)0, .1), SpeedAtILe((unsigned long)1, .32),
-                                                SpeedAtIGe((unsigned long)0, 0), SpeedAtIGe((unsigned long)1, .28))))
-      .Times(AtLeast(1))
-      .InSequence(s_speeds)
-      .WillRepeatedly(ACTION_OPEN_BARRIER_VOID(BARRIER_LIMIT));
-  EXPECT_CALL(*this, stop_cb_mock(_, _)).Times(0);
-  std::thread pubisher_thread_fast = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.3);
   BARRIER({ BARRIER_LIMIT });
 
   /**********
@@ -360,12 +348,12 @@ TEST_F(SpeedObserverUnitTest, testSetSpeedLimit)
   ROS_DEBUG_STREAM("Step 2");
   std_srvs::SetBool::Response sto_srv_resp;
   sto_srv_resp.success = true;
-  EXPECT_CALL(*this, stop_cb_mock(_, _))
-      .Times(AtLeast(1))
-      .InSequence(s_stop)
-      .WillOnce(DoAll(SetArgReferee<1>(sto_srv_resp), ACTION_OPEN_BARRIER(BARRIER_LIMIT_LOW)));
+  EXPECT_CALL(*this, stop_cb_mock(StoState(false), _))
+      .WillRepeatedly(DoAll(SetArgReferee<1>(sto_srv_resp), ACTION_OPEN_BARRIER(BARRIER_LIMIT_LOW)));
+
   req.speed_limit = .2;
   observer.setSpeedLimitCb(req, res);
+
   BARRIER({ BARRIER_LIMIT_LOW });
 
   /*************
@@ -387,12 +375,10 @@ TEST_F(SpeedObserverUnitTest, testSetSpeedLimit)
  * }
  *
  * Test Sequence:
- *    0. Starting up
- *    1. Publishing tf movements only for a short while
+ *    0. Start observer
  *
  * Expected Results:
- *    0. -
- *    1. observe method throws exception
+ *    0. observe method throws exception
  */
 TEST_F(SpeedObserverUnitTest, testTimeout)
 {
@@ -404,60 +390,7 @@ TEST_F(SpeedObserverUnitTest, testTimeout)
   std::vector<std::string> frames_to_observe{ TEST_FRAME_A };
   prbt_hardware_support::SpeedObserver observer(nh_, reference_frame, frames_to_observe);
 
-  /**********
-   * Step 1 *
-   **********/
-  ROS_DEBUG_STREAM("Step 1");
   EXPECT_THROW(observer.startObserving(TEST_FREQUENCY), std::runtime_error);
-}
-
-/**
- * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
- * Tests the correct handling of too fast observation.
- * }
- * @tests{Monitor_Speed_of_user_defined_tf_frames,
- * Tests the correct handling of too fast observation.
- * }
- *
- * Test Sequence:
- *    0. Observing at a rate >> the publisher rate
- *
- * Expected Results:
- *    0. No too fast speeds ocurr
- */
-TEST_F(SpeedObserverUnitTest, testFastObservation)
-{
-  ::testing::Sequence s_speeds;
-
-  /**********
-   * Step 0 *
-   **********/
-  ROS_DEBUG_STREAM("Step 0");
-  std::string reference_frame{ TEST_BASE_FRAME };
-  std::vector<std::string> frames_to_observe{ TEST_FRAME_A };
-  prbt_hardware_support::SpeedObserver observer(nh_, reference_frame, frames_to_observe);
-
-  EXPECT_CALL(*this, stop_cb_mock(_, _)).Times(0);
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), SpeedAtILe((unsigned long)0, .25),
-                                                SpeedAtIGe((unsigned long)0, 0))))
-      .Times(AtLeast(2))
-      .InSequence(s_speeds);
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), SpeedAtILe((unsigned long)0, .25),
-                                                SpeedAtIGe((unsigned long)0, 0))))
-      .Times(AtLeast(1))
-      .InSequence(s_speeds)
-      .WillRepeatedly(ACTION_OPEN_BARRIER_VOID(BARRIER_LIMIT));
-
-  std::thread pubisher_thread = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.2);
-  std::thread observer_thread = std::thread(&SpeedObserver::startObserving,
-                                            &observer,
-                                            100 * TEST_FREQUENCY,
-                                            DEFAULT_ALLOWED_MISSED_CALCULATIONS);
-  BARRIER({ BARRIER_LIMIT });
-  stopTfPublisher();
-  pubisher_thread.join();
-  observer.terminateNow();
-  observer_thread.join();
 }
 
 }  // namespace speed_observer_test
