@@ -98,11 +98,12 @@ Use `rosmsg show prbt_hardware_support/OperationModes` to see the definition of 
 The ``OperationModeSetupExecutorNode`` sets the speed limit for each frame based on the active operation mode.
 
 ### Parameters
-- speed_limit_t1 (default: 0.25)
-- speed_limit_automatic (default: 5.0)
+- speed_limit_t1 [m/s] (default: 0.25)
+- speed_limit_automatic [m/s] (default: 5.0)
 
 ## SpeedObserverNode
 The ``SpeedObserverNode`` observes the speed of the robot frames and triggers a controlled stop, if the current speed limit is exceeded.
 
 ### Parameters
+- frequency [Hz] (default: 20.0)
 - additional_frames (optional): lets the user specify frames to observe in addition to the robot frames of the prevailing robot model
