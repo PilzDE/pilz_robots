@@ -159,7 +159,7 @@ void PilzModbusServerMock::run()
   uint8_t query[MODBUS_TCP_MAX_ADU_LENGTH];
 
   // Connect to client loop
-  while (!terminate_)
+  //while (!terminate_)
   {
     ROS_DEBUG_NAMED("ServerMock", "About to start to listen for a modbus connection");
     socket_ = modbus_tcp_listen(modbus_connection_, 1);
