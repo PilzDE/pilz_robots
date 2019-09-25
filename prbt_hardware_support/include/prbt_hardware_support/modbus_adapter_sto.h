@@ -19,28 +19,28 @@
 #define MODBUS_ADAPTER_STO_H
 
 #include <memory>
+#include <functional>
 
 #include <ros/ros.h>
 
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
-#include <prbt_hardware_support/filter_pipeline.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
-#include <prbt_hardware_support/adapter_sto.h>
 
 namespace prbt_hardware_support
 {
 
+using UpdateStoFunc = std::function<void(const bool)>;
+
 /**
- * @brief Listens to the modbus_read topic and reacts to changes to the STO
- * state.
+ * @brief Listens to the modbus_read topic and reacts to updated STO states.
  */
-class ModbusAdapterSto : public AdapterSto
+class ModbusAdapterSto
 {
 public:
-  ModbusAdapterSto(ros::NodeHandle& nh, const ModbusApiSpec& api_spec);
-  virtual ~ModbusAdapterSto() = default;
+  ModbusAdapterSto(UpdateStoFunc&& update_sto_func,
+                   const ModbusApiSpec& api_spec);
 
-private:
+public:
   /**
    * @brief Called whenever a new modbus messages arrives.
    *
@@ -57,7 +57,7 @@ private:
 
 private:
   const ModbusApiSpec api_spec_;
-  std::unique_ptr<FilterPipeline> filter_pipeline_;
+  UpdateStoFunc update_sto_;
 
 private:
   static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {2};

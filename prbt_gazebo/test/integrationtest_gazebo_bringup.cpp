@@ -26,7 +26,7 @@ namespace prbt_gazebo
 class GazeboTest : public testing::Test
 {
 protected:
-  void SetUp();
+  void SetUp() override;
   ros::AsyncSpinner spinner_ {1};
   const ros::Duration WAIT_FOR_ACTION_SERVER_TIME {5};
 };
@@ -47,10 +47,10 @@ TEST_F(GazeboTest, basicMove)
   // Construct the goal
   control_msgs::FollowJointTrajectoryGoal goal;
   trajectory_msgs::JointTrajectory traj;
-  trajectory_msgs::JointTrajectoryPoint trajPoint;
-  trajPoint.positions = {0.0, 1.0, 0.0, 0.0, 0.0, 0.0};
-  trajPoint.time_from_start = ros::Duration(1);
-  traj.points.push_back(trajPoint);
+  trajectory_msgs::JointTrajectoryPoint traj_point;
+  traj_point.positions = {0.0, 1.0, 0.0, 0.0, 0.0, 0.0};
+  traj_point.time_from_start = ros::Duration(1);
+  traj.points.push_back(traj_point);
   traj.joint_names = {"prbt_joint_1", "prbt_joint_2", "prbt_joint_3", "prbt_joint_4", "prbt_joint_5", "prbt_joint_6"};
   goal.trajectory = traj;
 

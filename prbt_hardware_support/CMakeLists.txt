@@ -36,6 +36,7 @@ add_service_files(
   IsBrakeTestRequired.srv
   GetOperationMode.srv
   WriteModbusRegister.srv
+  SendBrakeTestResult.srv
 )
 
 generate_messages(
@@ -54,17 +55,20 @@ catkin_package(
 ################
 ## Clang tidy ##
 ################
-find_program(
-  CLANG_TIDY_EXE
-  NAMES "clang-tidy-6.0"
-  DOC "Path to clang-tidy executable"
-  )
-if(NOT CLANG_TIDY_EXE)
-  message(FATAL_ERROR "clang-tidy-6.0 not found.")
-else()
-  message(STATUS "clang-tidy-6.0 found: ${CLANG_TIDY_EXE}")
-  set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
+if(CATKIN_ENABLE_CLANG_TIDY)
+  find_program(
+    CLANG_TIDY_EXE
+    NAMES "clang-tidy"
+    DOC "Path to clang-tidy executable"
+    )
+  if(NOT CLANG_TIDY_EXE)
+    message(FATAL_ERROR "clang-tidy not found.")
+  else()
+    message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
+    set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
+  endif()
 endif()
+
 
 ###########
 ## Build ##
@@ -80,18 +84,24 @@ include_directories(SYSTEM ${catkin_INCLUDE_DIRS}) #Must be declared SYSTEM to a
 # MODBUS_ADAPTER_STO_NODE
 add_executable(modbus_adapter_sto_node
   src/modbus_adapter_sto_node.cpp
-  src/adapter_sto.cpp
   src/modbus_adapter_sto.cpp
   src/modbus_msg_sto_wrapper.cpp
 )
 add_dependencies(modbus_adapter_sto_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
 target_link_libraries(modbus_adapter_sto_node ${catkin_LIBRARIES})
 
+# STOP1_EXECUTOR_NODE
+add_executable(stop1_executor_node
+  src/stop1_executor.cpp
+  src/stop1_executor_node.cpp
+)
+add_dependencies(stop1_executor_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(stop1_executor_node ${catkin_LIBRARIES})
+
 # BRAKE_TEST_NODE
 add_executable(modbus_adapter_brake_test_node
   src/modbus_adapter_brake_test_node.cpp
   src/modbus_adapter_brake_test.cpp
-  src/adapter_brake_test.cpp
 )
 add_dependencies(modbus_adapter_brake_test_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
 target_link_libraries(modbus_adapter_brake_test_node ${catkin_LIBRARIES})
@@ -156,6 +166,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
 install(TARGETS
   modbus_adapter_sto_node
   pilz_modbus_client_node
+  stop1_executor_node
   canopen_braketest_adapter_node
   modbus_adapter_brake_test_node
   brake_test_executor_node
@@ -235,26 +246,10 @@ if(CATKIN_ENABLE_TESTING)
   )
   add_dependencies(unittest_pilz_modbus_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-  #--- StoModbusAdapter unit test ---
-  add_rostest_gmock(unittest_modbus_adapter_sto
-   test/unittests/unittest_modbus_adapter_sto.test
-   test/unittests/unittest_modbus_adapter_sto.cpp
-   src/adapter_sto.cpp
-   src/modbus_adapter_sto.cpp
-   src/modbus_msg_sto_wrapper.cpp
-   src/modbus_msg_in_builder.cpp
-  )
-  target_link_libraries(unittest_modbus_adapter_sto
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
-  )
-  #----------------------------------
-
   # --- ModbusAdapterBrakeTest unit test ---
-  add_rostest_gmock(unittest_modbus_adapter_brake_test
-    test/unittests/unittest_modbus_adapter_brake_test.test
+  catkin_add_gmock(unittest_modbus_adapter_brake_test
     test/unittests/unittest_modbus_adapter_brake_test.cpp
     src/modbus_adapter_brake_test.cpp
-    src/adapter_brake_test.cpp
     src/modbus_msg_in_builder.cpp
   )
   target_link_libraries(unittest_modbus_adapter_brake_test
@@ -300,10 +295,8 @@ if(CATKIN_ENABLE_TESTING)
   #----------------------------------
 
   # --- BraketestExecutor unit test ---
-  add_rostest_gmock(unittest_brake_test_executor
-    test/unittests/unittest_brake_test_executor.test
+  catkin_add_gmock(unittest_brake_test_executor
     test/unittests/unittest_brake_test_executor.cpp
-    test/unittests/joint_states_publisher_mock.cpp
     src/brake_test_executor.cpp
   )
   target_link_libraries(unittest_brake_test_executor
@@ -319,7 +312,29 @@ if(CATKIN_ENABLE_TESTING)
   target_link_libraries(unittest_get_param
     ${catkin_LIBRARIES}
   )
-#----------------------------------
+  #----------------------------------
+
+  # --- Stop1Executor unit test ---
+  catkin_add_gmock(unittest_stop1_executor
+    src/stop1_executor.cpp
+    test/unittests/unittest_stop1_executor.cpp
+  )
+  target_link_libraries(unittest_stop1_executor
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  #----------------------------------
+
+  #--- StoModbusAdapter intrgration test ---
+  catkin_add_gmock(unittest_modbus_adapter_sto
+    test/unittests/unittest_modbus_adapter_sto.cpp
+    src/modbus_adapter_sto.cpp
+    src/modbus_msg_sto_wrapper.cpp
+    src/modbus_msg_in_builder.cpp
+  )
+  target_link_libraries(unittest_modbus_adapter_sto
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  #----------------------------------
 
   # --- Stop integration test ---
   add_rostest_gmock(integrationtest_stop1
@@ -337,10 +352,10 @@ if(CATKIN_ENABLE_TESTING)
 
   # --- Brake test required integration test ---
   add_rostest_gmock(integrationtest_brake_test_required
-     test/integrationtests/integrationtest_brake_test_required.test
-     test/integrationtests/integrationtest_brake_test_required.cpp
-     test/unittests/pilz_modbus_server_mock.cpp
-     src/libmodbus_client.cpp
+    test/integrationtests/integrationtest_brake_test_required.test
+    test/integrationtests/integrationtest_brake_test_required.cpp
+    test/unittests/pilz_modbus_server_mock.cpp
+    src/libmodbus_client.cpp
   )
   target_link_libraries(integrationtest_brake_test_required
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
@@ -349,31 +364,34 @@ if(CATKIN_ENABLE_TESTING)
   add_dependencies(integrationtest_brake_test_required ${catkin_EXPORTED_TARGETS})
   #----------------------------------
 
-  # --- Brake test required integration test ---
+  # --- Operation mode integration test ---
   add_rostest_gmock(integrationtest_operation_mode
     test/integrationtests/integrationtest_operation_mode.test
     test/integrationtests/integrationtest_operation_mode.cpp
     test/unittests/pilz_modbus_server_mock.cpp
     src/libmodbus_client.cpp
- )
- target_link_libraries(integrationtest_operation_mode
-   ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
-   modbus
- )
- add_dependencies(integrationtest_operation_mode ${catkin_EXPORTED_TARGETS})
- #----------------------------------
-
-  # --- Trigger brake test integration test ---
-  add_rostest_gmock(integrationtest_trigger_brake_test
-    test/integrationtests/integrationtest_trigger_brake_test.test
-    test/integrationtests/integrationtest_trigger_brake_test.cpp
-    test/unittests/joint_states_publisher_mock.cpp
-    test/unittests/canopen_chain_node_mock.cpp
   )
-  target_link_libraries(integrationtest_trigger_brake_test
+  target_link_libraries(integrationtest_operation_mode
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+    modbus
   )
-  add_dependencies(integrationtest_trigger_brake_test ${catkin_EXPORTED_TARGETS})
+  add_dependencies(integrationtest_operation_mode ${catkin_EXPORTED_TARGETS})
+  #----------------------------------
+
+  # --- Execute brake test integration test ---
+  add_rostest_gmock(integrationtest_execute_brake_test
+    test/integrationtests/integrationtest_execute_brake_test.test
+    test/integrationtests/integrationtest_execute_brake_test.cpp
+    test/unittests/joint_states_publisher_mock.cpp
+    test/unittests/pilz_modbus_server_mock.cpp
+    test/unittests/canopen_chain_node_mock.cpp
+    src/libmodbus_client.cpp
+  )
+  target_link_libraries(integrationtest_execute_brake_test
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+    modbus
+  )
+  add_dependencies(integrationtest_execute_brake_test ${catkin_EXPORTED_TARGETS})
 
   #--- SystemInfo unit test ---
   add_rostest_gmock(unittest_system_info
@@ -425,7 +443,15 @@ if(CATKIN_ENABLE_TESTING)
                           "*/ModbusRegisterBlock.h"
                           "*/WriteModbusRegister.h"
                           "*/WriteModbusRegisterRequest.h"
-                          "*/WriteModbusRegisterResponse.h")
+                          "*/WriteModbusRegisterResponse.h"
+                          "*/GetOperationMode.h"
+                          "*/GetOperationModeRequest.h"
+                          "*/GetOperationModeResponse.h"
+                          "*/OperationModes.h"
+                          "*/SendBrakeTestResult.h"
+                          "*/SendBrakeTestResultRequest.h"
+                          "*/SendBrakeTestResultResponse.h"
+                          )
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
       DEPENDS tests

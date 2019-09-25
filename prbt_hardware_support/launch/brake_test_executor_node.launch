@@ -16,8 +16,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <launch>
-
   <node required="true" ns="prbt" pkg="prbt_hardware_support" type="brake_test_executor_node" name="brake_test_executor_node" output="screen">
   </node>
-
 </launch>

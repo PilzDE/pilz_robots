@@ -49,11 +49,19 @@ namespace prbt_hardware_support
 {
 
 using ::testing::_;
+using ::testing::AtLeast;
 using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
+using ::testing::Return;
+using ::testing::DoAll;
+using ::testing::SetArgReferee;
 
 static constexpr uint16_t MODBUS_API_VERSION_VALUE {2};
+static const std::string RECOVER_SERVICE_NAME {"recover"};
+static const std::string HALT_SERVICE_NAME {"halt"};
+static const std::string HOLD_SERVICE_NAME {"hold"};
+static const std::string UNHOLD_SERVICE_NAME {"unhold"};
 
 /**
  * @brief Stop1IntegrationTest checks if the chain
@@ -66,9 +74,21 @@ class Stop1IntegrationTest : public testing::Test, public testing::AsyncTest
 {
 
 public:
-  void SetUp();
-  void TearDown();
+  void SetUp() override;
+  void TearDown() override;
 
+public:
+  bool serviceCallStub (const std::string& barrier_name,
+                        const std_srvs::Trigger::Response& res_exp,
+                        std_srvs::Trigger::Request& /*req*/,
+                        std_srvs::Trigger::Response& res)
+  {
+    this->triggerClearEvent(barrier_name);
+    res = res_exp;
+    return true;
+  }
+
+protected:
   // Serves both the controller (/hold + /unhold) and the driver (/halt + /recover) services
   ManipulatorMock manipulator;
 
@@ -78,23 +98,11 @@ public:
 
 void Stop1IntegrationTest::SetUp()
 {
-  std::string hold_service_name;
-  ASSERT_TRUE(nh_priv_.getParam("hold_service_name", hold_service_name));
-
-  std::string unhold_service_name;
-  ASSERT_TRUE(nh_priv_.getParam("unhold_service_name", unhold_service_name));
-
-  std::string halt_service_name;
-  ASSERT_TRUE(nh_priv_.getParam("halt_service_name", halt_service_name));
-
-  std::string recover_service_name;
-  ASSERT_TRUE(nh_priv_.getParam("recover_service_name", recover_service_name));
-
   manipulator.advertiseServices(nh_,
-                                hold_service_name,
-                                unhold_service_name,
-                                halt_service_name,
-                                recover_service_name);
+                                HOLD_SERVICE_NAME,
+                                UNHOLD_SERVICE_NAME,
+                                HALT_SERVICE_NAME,
+                                RECOVER_SERVICE_NAME);
 }
 
 void Stop1IntegrationTest::TearDown()
@@ -104,20 +112,13 @@ void Stop1IntegrationTest::TearDown()
 /**
  * @brief Test that correct service calls occurs based on STO state.
  *
- * @tests{No_new_commands_during_STO_false,
- *  Test that controller is set to hold in case of STO==false.
- * }
- *
- * @tests{Recover_driver_after_STO_false,
- *  Test that drives are recovered after STO switch: false->true.
+ * @tests{execution_of_stop1,
+ *  Test that drives are recovered and controller is unhold
+ *  after STO switch: false->true.
  * }
  *
  * @tests{Stop1_Trigger,
  *  Test that Stop 1 is triggered if STO value changes to false.
- * }
- *
- * @tests{Hold_driver_if_STO_false,
- *  Test that driver is halt in case of STO switch: true->false.
  * }
  *
  *
@@ -136,11 +137,11 @@ void Stop1IntegrationTest::TearDown()
  *    3. Terminate Modbus-server to cause a disconnect.
  *
  * Expected Results:
- *    0. The manipulator mock should receive a call to /unhold after that a call to /recover.
+ *    0. The manipulator mock should receive a call to /recover after that a call to /unhold.
  *       No other calls should happen.
  *    1. The manipulator mock should receive a call to /hold after that a call to /halt.
  *       No other calls should happen.
- *    2. The manipulator mock should receive a call to /unhold after that a call to /recover.
+ *    2. The manipulator mock should receive a call to /recover after that a call to /unhold.
  *       No other calls should happen.
  *    3. The manipulator mock should receive a call to /hold after that a call to /halt.
  *       No other calls should happen.
@@ -170,17 +171,24 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
 
   waitForNode("/pilz_modbus_client_node");
   waitForNode("/modbus_adapter_sto_node");
+  waitForNode("/stop1_executor_node");
+
+  using std::placeholders::_1;
+  using std::placeholders::_2;
+
+  std_srvs::Trigger::Response res_exp;
+  res_exp.success = true;
 
   // We expect:
   {
     InSequence dummy;
 
     // Call from STO clear
-    EXPECT_CALL(manipulator, unholdCb(_,_)).Times(1);
     EXPECT_CALL(manipulator, holdCb(_,_)).Times(0);
     EXPECT_CALL(manipulator, haltCb(_,_)).Times(0);
-    EXPECT_CALL(manipulator, recoverCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("recover_callback"));
-      // Expected came true -> go on
+    EXPECT_CALL(manipulator, recoverCb(_,_)).Times(1).WillOnce(DoAll(SetArgReferee<1>(res_exp), Return(true)));
+    EXPECT_CALL(manipulator, unholdCb(_,_)).Times(1).WillOnce(Invoke(std::bind(&Stop1IntegrationTest::serviceCallStub, this, "unhold_callback", res_exp, _1, _2)));
+    // Expected came true -> go on
   }
 
   // This should trigger the expected reaction
@@ -196,51 +204,51 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
   /**********
    * Step 1 *
    **********/
-  BARRIER("recover_callback");
+  BARRIER("unhold_callback");
 
-  {
-    InSequence dummy;
+    {
+      InSequence dummy;
 
-    // Call from STO active
-    EXPECT_CALL(manipulator, unholdCb(_,_)).Times(0);
-    EXPECT_CALL(manipulator, recoverCb(_,_)).Times(0);
-    EXPECT_CALL(manipulator, holdCb(_,_)).Times(1);
-    EXPECT_CALL(manipulator, haltCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("halt_callback"));
-  }
+      // Call from STO active
+      EXPECT_CALL(manipulator, unholdCb(_,_)).Times(0);
+      EXPECT_CALL(manipulator, recoverCb(_,_)).Times(0);
+      EXPECT_CALL(manipulator, holdCb(_,_)).Times(1).WillOnce(DoAll(SetArgReferee<1>(res_exp), Return(true)));
+      EXPECT_CALL(manipulator, haltCb(_,_)).Times(1).WillOnce(Invoke(std::bind(&Stop1IntegrationTest::serviceCallStub, this, "halt_callback", res_exp, _1, _2)));
+    }
 
-  modbus_server.setHoldingRegister({{sto_register, modbus_api::v2::MODBUS_STO_ACTIVE_VALUE}});
+    modbus_server.setHoldingRegister({{sto_register, modbus_api::v2::MODBUS_STO_ACTIVE_VALUE}});
 
-  /**********
-   * Step 2 *
-   **********/
-  BARRIER("halt_callback");
+    /**********
+     * Step 2 *
+     **********/
+    BARRIER("halt_callback");
 
-  {
-    InSequence dummy;
+    {
+      InSequence dummy;
 
-    // Call from STO clear
-    EXPECT_CALL(manipulator, holdCb(_,_)).Times(0);
-    EXPECT_CALL(manipulator, haltCb(_,_)).Times(0);
-    EXPECT_CALL(manipulator, unholdCb(_,_)).Times(1);
-    EXPECT_CALL(manipulator, recoverCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("recover_callback"));
+      // Call from STO clear
+      EXPECT_CALL(manipulator, holdCb(_,_)).Times(0);
+      EXPECT_CALL(manipulator, haltCb(_,_)).Times(0);
+      EXPECT_CALL(manipulator, recoverCb(_,_)).Times(1).WillOnce(DoAll(SetArgReferee<1>(res_exp), Return(true)));
+      EXPECT_CALL(manipulator, unholdCb(_,_)).Times(1).WillOnce(Invoke(std::bind(&Stop1IntegrationTest::serviceCallStub, this, "unhold_callback", res_exp, _1, _2)));
+    }
 
-  }
+    modbus_server.setHoldingRegister({{sto_register, modbus_api::v2::MODBUS_STO_CLEAR_VALUE}});
 
-  modbus_server.setHoldingRegister({{sto_register, modbus_api::v2::MODBUS_STO_CLEAR_VALUE}});
+    /**********
+     * Step 3 *
+     **********/
+    BARRIER("unhold_callback");
+    {
+      InSequence dummy;
 
-  /**********
-   * Step 3 *
-   **********/
-  BARRIER("recover_callback");
-  {
-    InSequence dummy;
+      // Call from Disconnect
+      EXPECT_CALL(manipulator, holdCb(_,_)).Times(1).WillOnce(DoAll(SetArgReferee<1>(res_exp), Return(true)));
+      EXPECT_CALL(manipulator, unholdCb(_,_)).Times(0);
+      EXPECT_CALL(manipulator, recoverCb(_,_)).Times(0);
+      EXPECT_CALL(manipulator, haltCb(_,_)).Times(1).WillOnce(Invoke(std::bind(&Stop1IntegrationTest::serviceCallStub, this, "halt_callback", res_exp, _1, _2)));
 
-    // Call from Disconnect
-    EXPECT_CALL(manipulator, holdCb(_,_)).Times(1);
-    EXPECT_CALL(manipulator, unholdCb(_,_)).Times(0);
-    EXPECT_CALL(manipulator, recoverCb(_,_)).Times(0);
-    EXPECT_CALL(manipulator, haltCb(_,_)).Times(1).WillOnce(ACTION_OPEN_BARRIER("halt_callback"));
-  }
+    }
 
   modbus_server.terminate();
   modbus_server_thread.join();
@@ -259,8 +267,8 @@ int main(int argc, char *argv[])
   ros::init(argc, argv, "integrationtest_stop1");
   ros::NodeHandle nh;
 
-  ros::AsyncSpinner spinner_{1};
-  spinner_.start();
+  ros::AsyncSpinner spinner{1};
+  spinner.start();
 
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
