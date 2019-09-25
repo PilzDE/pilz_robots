@@ -38,8 +38,8 @@ using namespace prbt_hardware_support;
 // Each testcase should have its own port in order to avoid conflicts between them
 constexpr unsigned int START_PORT {20500};
 constexpr unsigned int END_PORT {20600};
-static unsigned int active_port_idx {0};
-static std::vector<unsigned int> ports_for_test(END_PORT - START_PORT);
+static unsigned int ACTIVE_PORT_IDX {0};
+static std::vector<unsigned int> PORTS_FOR_TEST(END_PORT - START_PORT);
 
 
 constexpr unsigned int DEFAULT_REGISTER_SIZE {514};
@@ -49,7 +49,7 @@ constexpr unsigned int DEFAULT_READ_IDX {77};
 class LibModbusClientTest : public testing::Test
 {
 public:
-  static void SetUpTestCase();
+  static void SetUpTestSuite(); // NOLINT
   void TearDown() override;
   unsigned int testPort();
 };
@@ -57,17 +57,17 @@ public:
 void LibModbusClientTest::TearDown()
 {
   // Use next port on next test
-  active_port_idx++;
+  ACTIVE_PORT_IDX++;
 }
 
 unsigned int LibModbusClientTest::testPort()
 {
-  return ports_for_test.at(active_port_idx % ports_for_test.size());
+  return PORTS_FOR_TEST.at(ACTIVE_PORT_IDX % PORTS_FOR_TEST.size());
 }
 
-void LibModbusClientTest::SetUpTestCase()
+void LibModbusClientTest::SetUpTestSuite() // NOLINT
 {
-  std::iota(ports_for_test.begin(), ports_for_test.end(), START_PORT);
+  std::iota(PORTS_FOR_TEST.begin(), PORTS_FOR_TEST.end(), START_PORT);
 }
 
 /**
