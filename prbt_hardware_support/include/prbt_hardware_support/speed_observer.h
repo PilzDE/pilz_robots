@@ -50,7 +50,7 @@ public:
    * @brief Starts the observation cycle. The function blocks until ros shutsdown.
    * @param frequency [Hz] Will check all frame once per cycle
    */
-  void startObserving(double frequency, unsigned int allowed_missed_calculations=DEFAULT_ALLOWED_MISSED_CALCULATIONS);
+  void startObserving(const double frequency, const unsigned int allowed_missed_calculations = DEFAULT_ALLOWED_MISSED_CALCULATIONS);
 
   /**
    * @brief Callback for service to set the currently active speed limit.

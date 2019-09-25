@@ -54,7 +54,7 @@ void SpeedObserver::waitUntillCanTransform(const std::string& frame, const ros::
 
   if (retries >= max_num_retries)
   {
-    ROS_ERROR("Waited for transform %s -> %s for too long.", reference_frame_.c_str(), frame.c_str());
+    ROS_ERROR("Waited for transform %s -> %s too long.", reference_frame_.c_str(), frame.c_str());
     throw std::runtime_error("Exceeded maximum number of retries.");
   }
 
@@ -68,13 +68,14 @@ std::pair<tf2::Vector3, ros::Time> SpeedObserver::getLatestPose(const std::strin
 {
   tf2::Vector3 v;
   ros::Time t;
+
   geometry_msgs::TransformStamped transform{ tf_buffer_.lookupTransform(reference_frame_, frame, ros::Time(0)) };
   tf2::fromMsg(transform.transform.translation, v);
   t = transform.header.stamp;
   return std::pair<tf2::Vector3, ros::Time>(v, t);
 }
 
-void SpeedObserver::startObserving(double frequency, unsigned int allowed_missed_calculations)
+void SpeedObserver::startObserving(const double frequency, const unsigned int allowed_missed_calculations)
 {
   std::map<std::string, tf2::Vector3> previous_poses;
   std::map<std::string, ros::Time> previous_time_stamps;
@@ -113,10 +114,10 @@ void SpeedObserver::startObserving(double frequency, unsigned int allowed_missed
       {
         ROS_WARN_STREAM("Latest transform of frame " << frame << " is too old.");
         ++missed_calculations_[frame];
-        if (missed_calculations_[frame] > DEFAULT_ALLOWED_MISSED_CALCULATIONS)
+        if (missed_calculations_[frame] > allowed_missed_calculations)
         {
           ROS_ERROR_STREAM("Could not compute frame speed for "
-                           << DEFAULT_ALLOWED_MISSED_CALCULATIONS
+                           << allowed_missed_calculations
                            << " times. Triggering Stop1.");
           triggerStop1();
           missed_calculations_[frame] = 0;
