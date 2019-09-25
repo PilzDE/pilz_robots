@@ -162,7 +162,7 @@ void SpeedObserverIntegrationTest::publishTfAtSpeed(double speed, const std::str
     ros::Time current = ros::Time::now();
     t = (current - start).toSec();
     geometry_msgs::TransformStamped tranform_stamped_b;
-    tranform_stamped_b.header.stamp = current;
+    tranform_stamped_b.header.stamp = current + ros::Duration(0.1); // avoid override by static_transform_publisher
     tranform_stamped_b.header.frame_id = TEST_WORLD_FRAME;
     tranform_stamped_b.child_frame_id = frame;
     // rotation in a tilted circle to cover all axes

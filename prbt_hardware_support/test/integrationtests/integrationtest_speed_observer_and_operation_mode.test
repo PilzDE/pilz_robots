@@ -16,6 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <launch>
+    <arg name="observation_frequency" default="10" />
     <arg name="timeout" default="60" />
     <arg name="speed_limit_t1" default="0.5" />
     <arg name="speed_limit_automatic" default="1.0" />
@@ -53,6 +54,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         type="speed_observer_node" output="screen" >
         <rosparam param="additional_frames"
             subst_value="True">["$(arg testing_frame)"]</rosparam>
+        <param name="observation_frequency" value="$(arg observation_frequency)" />
     </node>
 
     <node name="operation_mode_setup_executor_node" pkg="prbt_hardware_support"
