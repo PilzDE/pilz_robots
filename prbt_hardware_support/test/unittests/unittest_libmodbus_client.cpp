@@ -49,7 +49,7 @@ constexpr unsigned int DEFAULT_READ_IDX {77};
 class LibModbusClientTest : public testing::Test
 {
 public:
-  static void SetUpTestSuite(); // NOLINT
+  static void SetUpTestCase(); // NOLINT
   void TearDown() override;
   unsigned int testPort();
 };
@@ -65,7 +65,7 @@ unsigned int LibModbusClientTest::testPort()
   return PORTS_FOR_TEST.at(ACTIVE_PORT_IDX % PORTS_FOR_TEST.size());
 }
 
-void LibModbusClientTest::SetUpTestSuite() // NOLINT
+void LibModbusClientTest::SetUpTestCase() // NOLINT
 {
   std::iota(PORTS_FOR_TEST.begin(), PORTS_FOR_TEST.end(), START_PORT);
 }
