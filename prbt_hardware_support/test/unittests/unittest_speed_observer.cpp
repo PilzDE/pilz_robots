@@ -59,7 +59,6 @@ class SpeedObserverUnitTest : public testing::Test, public testing::AsyncTest
 {
 public:
   void SetUp() override;
-  void TearDown() override;
 
   MOCK_METHOD1(frame_speeds_cb_mock, void(const FrameSpeeds::ConstPtr& msg));
   MOCK_METHOD2(stop_cb_mock, bool(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res));
@@ -82,10 +81,6 @@ void SpeedObserverUnitTest::SetUp()
   stop_subscriber_ = nh_.advertiseService(STOP_TOPIC_NAME, &SpeedObserverUnitTest::stop_cb_mock, this);
 
   waitForService(STOP_TOPIC_NAME);
-}
-
-void SpeedObserverUnitTest::TearDown()
-{
 }
 
 void SpeedObserverUnitTest::publishTfAtSpeed(double speed)
@@ -135,21 +130,21 @@ using ::testing::PrintToString;
 MATCHER_P2(NameAtI, i, name,
            "Name at index " + PrintToString(i) + std::string(negation ? "is not" : "is") + ": " + name + ".")
 {
-  return arg->name[(unsigned)i].compare(name) == 0;
+  return arg->name.at((unsigned)i).compare(name) == 0;
 }
 
 MATCHER_P2(SpeedAtIGe, i, x,
            "Speed at index " + PrintToString(i) + std::string(negation ? "is not" : "is") + " greater or equal to" +
-               PrintToString(x) + ".")
+           PrintToString(x) + ".")
 {
-  return arg->speed[i] >= x;
+  return arg->speed.at(i) >= x;
 }
 
 MATCHER_P2(SpeedAtILe, i, x,
            "Speed at index " + PrintToString(i) + std::string(negation ? "is not" : "is") + " less or equal to" +
-               PrintToString(x) + ".")
+           PrintToString(x) + ".")
 {
-  return arg->speed[i] <= x;
+  return arg->speed.at(i) <= x;
 }
 
 /**
@@ -175,7 +170,7 @@ TEST_F(SpeedObserverUnitTest, testStartupAndTopic)
   std::string reference_frame{ TEST_BASE_FRAME };
   std::vector<std::string> frames_to_observe{ TEST_FRAME_A, TEST_FRAME_B };
   prbt_hardware_support::SpeedObserver observer(nh_, reference_frame, frames_to_observe);
-  std::thread observer_thread = std::thread(&SpeedObserver::startObserving, &observer, TEST_FREQUENCY);
+  std::thread observer_thread = std::thread(&SpeedObserver::startObserving, &observer, TEST_FREQUENCY, DEFAULT_ALLOWED_MISSED_CALCULATIONS);
   ROS_DEBUG_STREAM("thread started");
 
   /**********
@@ -240,7 +235,7 @@ TEST_F(SpeedObserverUnitTest, testTooHighSpeed)
   std::string reference_frame{ TEST_BASE_FRAME };
   std::vector<std::string> frames_to_observe{ TEST_FRAME_A, TEST_FRAME_B };
   prbt_hardware_support::SpeedObserver observer(nh_, reference_frame, frames_to_observe);
-  std::thread observer_thread = std::thread(&SpeedObserver::startObserving, &observer, TEST_FREQUENCY);
+  std::thread observer_thread = std::thread(&SpeedObserver::startObserving, &observer, TEST_FREQUENCY, DEFAULT_ALLOWED_MISSED_CALCULATIONS);
   ROS_DEBUG_STREAM("thread started");
 
   /**********
@@ -321,7 +316,7 @@ TEST_F(SpeedObserverUnitTest, testSetSpeedLimit)
   SetSpeedLimitResponse res = SetSpeedLimitResponse();
   req.speed_limit = .4;
   observer.setSpeedLimitCb(req, res);
-  std::thread observer_thread = std::thread(&SpeedObserver::startObserving, &observer, TEST_FREQUENCY);
+  std::thread observer_thread = std::thread(&SpeedObserver::startObserving, &observer, TEST_FREQUENCY, DEFAULT_ALLOWED_MISSED_CALCULATIONS);
   ROS_DEBUG_STREAM("thread started");
 
   /**********
@@ -388,7 +383,7 @@ TEST_F(SpeedObserverUnitTest, testSetSpeedLimit)
  *
  * Expected Results:
  *    0. -
- *    1. observe method just finishes (without throw)
+ *    1. observe method throws exception
  */
 TEST_F(SpeedObserverUnitTest, testTimeout)
 {
@@ -404,7 +399,7 @@ TEST_F(SpeedObserverUnitTest, testTimeout)
    * Step 1 *
    **********/
   ROS_DEBUG_STREAM("Step 1");
-  EXPECT_NO_THROW(observer.startObserving(TEST_FREQUENCY));
+  EXPECT_THROW(observer.startObserving(TEST_FREQUENCY), std::runtime_error);
 }
 
 /**
@@ -445,7 +440,7 @@ TEST_F(SpeedObserverUnitTest, testFastObservation)
       .WillRepeatedly(ACTION_OPEN_BARRIER_VOID(BARRIER_LIMIT));
 
   std::thread pubisher_thread = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.2);
-  std::thread observer_thread = std::thread(&SpeedObserver::startObserving, &observer, 100 * TEST_FREQUENCY);
+  std::thread observer_thread = std::thread(&SpeedObserver::startObserving, &observer, 100 * TEST_FREQUENCY, DEFAULT_ALLOWED_MISSED_CALCULATIONS);
   BARRIER({ BARRIER_LIMIT });
   stopTfPublisher();
   pubisher_thread.join();
