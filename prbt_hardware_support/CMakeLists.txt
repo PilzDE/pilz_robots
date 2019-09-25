@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2
   tf2_ros
   urdf
+  dynamic_reconfigure
 )
 
 add_definitions(-Wall)
@@ -48,6 +49,10 @@ add_service_files(
 generate_messages(
   DEPENDENCIES
   std_msgs
+)
+
+generate_dynamic_reconfigure_options(
+  cfg/FakeSpeedOverride.cfg
 )
 
 ###################################
@@ -153,6 +158,16 @@ add_executable(system_info_node
 add_dependencies(system_info_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
 target_link_libraries(system_info_node ${catkin_LIBRARIES})
 
+add_executable(fake_speed_override_node
+  src/fake_speed_override_node.cpp
+)
+add_dependencies(fake_speed_override_node
+  ${catkin_EXPORTED_TARGETS}
+  ${PROJECT_NAME}_gencfg
+  ${PROJECT_NAME}_generate_messages_cpp
+)
+target_link_libraries(fake_speed_override_node ${catkin_LIBRARIES})
+
 # +++++++++++++++++++++++++++++++++
 # + Build modbus client node +
 # +++++++++++++++++++++++++++++++++
@@ -199,6 +214,7 @@ install(TARGETS
   modbus_adapter_operation_mode_node
   system_info_node
   speed_observer_node
+  fake_speed_override_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -489,6 +505,17 @@ if(CATKIN_ENABLE_TESTING)
   add_dependencies(unittest_operation_mode_setup_executor ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------------
 
+    #--- OperationModeSetupExecutor unit test ---
+    add_rostest_gtest(unittest_fake_speed_override
+        test/unittests/unittest_fake_speed_override.test
+        test/unittests/unittest_fake_speed_override.cpp
+    )
+    target_link_libraries(unittest_fake_speed_override
+      ${catkin_LIBRARIES}
+    )
+    add_dependencies(unittest_fake_speed_override ${${PROJECT_NAME}_EXPORTED_TARGETS})
+    #----------------------------------------
+
   # to run: catkin_make -DENABLE_COVERAGE_TESTING=ON package_name_coverage (adding -j1 recommended)
   if(ENABLE_COVERAGE_TESTING)
     include(CodeCoverage)
@@ -520,6 +547,7 @@ if(CATKIN_ENABLE_TESTING)
                           "*/SetSpeedLimit.h"
                           "*/SetSpeedLimitRequest.h"
                           "*/SetSpeedLimitResponse.h"
+                          "*/FakeSpeedOverrideConfig.h"
                           )
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage

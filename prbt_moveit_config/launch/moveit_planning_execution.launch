@@ -72,11 +72,17 @@ limitations under the License.
       <param name="/use_gui" value="false"/>
       <rosparam param="/source_list">[/move_group/fake_controller_joint_states]</rosparam>
     </node>
+
   </group>
 
   <!-- run the "real robot" interface nodes -->
   <!--   - this includes: robot_state, canopen, and sto nodes -->
   <group unless="$(arg sim)">
+    <group unless="$(arg has_operation_mode_support)">
+      <node name="fake_speed_override_node" pkg="prbt_hardware_support" type="fake_speed_override_node"/>
+    </group>
+
+
     <include file="$(find prbt_support)/launch/robot.launch" >
       <arg name="gripper" value="$(arg gripper)" />
       <arg name="load_robot_description" value="false" />
