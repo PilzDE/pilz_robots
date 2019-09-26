@@ -76,7 +76,7 @@
       <arg name="write_api_spec_file" value="$(arg write_api_spec_file)" />
     </include>
 
-    <include if="$(arg has_operation_mode_support)" file="$(find prbt_hardware_support)/launch/operation_mode_adapter.launch" />
+    <include if="$(arg has_operation_mode_support)" file="$(find prbt_hardware_support)/launch/operation_mode.launch" />
   </group>
 
   <group if="$(eval sto.lower() == 'none')" >

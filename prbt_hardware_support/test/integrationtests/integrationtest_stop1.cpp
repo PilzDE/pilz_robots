@@ -130,20 +130,20 @@ void Stop1IntegrationTest::TearDown()
  * ModbusServerMock -> ModbusReadClient -> StoModbusAdapter -> ManipulatorMock connection
  *
  * Test Sequence:
- *    0. Start Modbus-server in seperate thread. Make sure that the nodes are up.
+ *    1. Start Modbus-server in seperate thread. Make sure that the nodes are up.
  *       Send a STO clear message with the correct API version.
- *    1. Send a STO active message with the correct API version.
- *    2. Send a STO clear message with the correct API version.
- *    3. Terminate Modbus-server to cause a disconnect.
+ *    2. Send a STO active message with the correct API version.
+ *    3. Send a STO clear message with the correct API version.
+ *    4. Terminate Modbus-server to cause a disconnect.
  *
  * Expected Results:
- *    0. The manipulator mock should receive a call to /recover after that a call to /unhold.
+ *    1. The manipulator mock should receive a call to /recover after that a call to /unhold.
  *       No other calls should happen.
- *    1. The manipulator mock should receive a call to /hold after that a call to /halt.
+ *    2. The manipulator mock should receive a call to /hold after that a call to /halt.
  *       No other calls should happen.
- *    2. The manipulator mock should receive a call to /recover after that a call to /unhold.
+ *    3. The manipulator mock should receive a call to /recover after that a call to /unhold.
  *       No other calls should happen.
- *    3. The manipulator mock should receive a call to /hold after that a call to /halt.
+ *    4. The manipulator mock should receive a call to /hold after that a call to /halt.
  *       No other calls should happen.
  */
 TEST_F(Stop1IntegrationTest, testServiceCallbacks)
@@ -162,7 +162,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
   unsigned int modbus_register_size {api_spec.getMaxRegisterDefinition() + 1U};
 
   /**********
-   * Step 0 *
+   * Step 1 *
    **********/
   prbt_hardware_support::PilzModbusServerMock modbus_server(static_cast<unsigned int>(modbus_register_size));
 
@@ -202,7 +202,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
                                     {sto_register, modbus_api::v2::MODBUS_STO_CLEAR_VALUE}});
 
   /**********
-   * Step 1 *
+   * Step 2 *
    **********/
   BARRIER("unhold_callback");
 
@@ -219,7 +219,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
     modbus_server.setHoldingRegister({{sto_register, modbus_api::v2::MODBUS_STO_ACTIVE_VALUE}});
 
     /**********
-     * Step 2 *
+     * Step 3 *
      **********/
     BARRIER("halt_callback");
 
@@ -236,7 +236,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
     modbus_server.setHoldingRegister({{sto_register, modbus_api::v2::MODBUS_STO_CLEAR_VALUE}});
 
     /**********
-     * Step 3 *
+     * Step 4 *
      **********/
     BARRIER("unhold_callback");
     {
@@ -254,7 +254,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
   modbus_server_thread.join();
 
   /**********
-   * Step 4 *
+   * Step 5 *
    **********/
   BARRIER("halt_callback"); // Needed for proper async finish
 }

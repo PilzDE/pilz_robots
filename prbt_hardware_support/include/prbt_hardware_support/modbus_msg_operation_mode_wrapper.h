@@ -52,6 +52,11 @@ public:
    */
   int8_t getOperationMode() const;
 
+  /**
+   * @returns the operation mode and the corresponding time stamp.
+   */
+  OperationModes getTimeStampedOperationMode() const;
+
 private:
 
   /**
@@ -88,6 +93,14 @@ inline int8_t ModbusMsgOperationModeWrapper::getOperationMode() const
     default:
             return OperationModes::UNKNOWN;
   }
+}
+
+inline OperationModes ModbusMsgOperationModeWrapper::getTimeStampedOperationMode() const
+{
+  OperationModes op_mode;
+  op_mode.time_stamp = getTimeStamp();
+  op_mode.value = getOperationMode();
+  return op_mode;
 }
 
 inline void ModbusMsgOperationModeWrapper::checkStructuralIntegrity() const

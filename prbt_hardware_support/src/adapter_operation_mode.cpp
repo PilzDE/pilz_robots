@@ -20,12 +20,24 @@
 namespace prbt_hardware_support
 {
 
+static const std::string TOPIC_OPERATION_MODE = "/prbt/operation_mode";
 static const std::string SERVICE_NAME_GET_OPERATION_MODE = "/prbt/get_operation_mode";
 
+static constexpr int DEFAULT_QUEUE_SIZE{10};
+
 AdapterOperationMode::AdapterOperationMode(ros::NodeHandle& nh)
-  : service_initialized_(false)
-  , nh_(nh)
+  : nh_(nh)
 {
+  op_mode_.time_stamp = ros::Time::now();
+  op_mode_.value = OperationModes::UNKNOWN;
+
+  operation_mode_pub_ = nh_.advertise<OperationModes>(TOPIC_OPERATION_MODE,
+                                                     DEFAULT_QUEUE_SIZE,
+                                                     true);  // latched publisher
+  // publish initial operation mode before first switch
+  operation_mode_pub_.publish(op_mode_);
+
+  initOperationModeService();
 }
 
 void AdapterOperationMode::initOperationModeService()
@@ -35,31 +47,28 @@ void AdapterOperationMode::initOperationModeService()
                                                 this);
 }
 
-void AdapterOperationMode::updateOperationMode(const int8_t new_op_mode)
+void AdapterOperationMode::updateOperationMode(const OperationModes& new_op_mode)
 {
-  const int8_t last_op_mode {op_mode_};
+  std::unique_lock<std::mutex> lock(op_mode_mutex_);
+  const int8_t last_op_mode_value {op_mode_.value};
   op_mode_ = new_op_mode;
-  if (op_mode_ != last_op_mode)
+  lock.unlock();
+
+  if (new_op_mode.value != last_op_mode_value)
   {
     ROS_INFO_STREAM( "Operation Mode switch: "
-                     << static_cast<int>(last_op_mode)
+                     << static_cast<int>(last_op_mode_value)
                      << " -> "
-                     << static_cast<int>(new_op_mode) );
-  }
-
-  // when the first data is received, the node is initialized
-  // (i.e. the service advertised) <-> "lazy initialization"
-  if(!service_initialized_)
-  {
-    initOperationModeService();
-    service_initialized_ = true;
+                     << static_cast<int>(new_op_mode.value) );
+    operation_mode_pub_.publish(new_op_mode);
   }
 }
 
 bool AdapterOperationMode::getOperationMode(GetOperationMode::Request& /*req*/,
                                             GetOperationMode::Response& res)
 {
-  res.mode.value = op_mode_;
+  std::lock_guard<std::mutex> lock(op_mode_mutex_);
+  res.mode = op_mode_;
   return true;
 }
 

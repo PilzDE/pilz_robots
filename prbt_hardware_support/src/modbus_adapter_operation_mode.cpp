@@ -17,6 +17,8 @@
 
 #include <prbt_hardware_support/modbus_adapter_operation_mode.h>
 
+#include <ros/time.h>
+
 #include <sstream>
 #include <functional>
 
@@ -33,13 +35,21 @@ ModbusAdapterOperationMode::ModbusAdapterOperationMode(ros::NodeHandle& nh, cons
 
 }
 
+OperationModes ModbusAdapterOperationMode::createUnknownOperationMode()
+{
+  OperationModes op_mode;
+  op_mode.time_stamp = ros::Time::now();
+  op_mode.value = OperationModes::UNKNOWN;
+  return op_mode;
+}
+
 void ModbusAdapterOperationMode::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw)
 {
   ModbusMsgOperationModeWrapper msg {msg_raw, api_spec_};
 
   if (msg.isDisconnect())
   {
-    updateOperationMode(OperationModes::UNKNOWN);
+    updateOperationMode(createUnknownOperationMode());
     return;
   }
 
@@ -50,7 +60,7 @@ void ModbusAdapterOperationMode::modbusMsgCallback(const ModbusMsgInStampedConst
   catch (const prbt_hardware_support::ModbusMsgWrapperException &ex)
   {
     ROS_ERROR_STREAM(ex.what());
-    updateOperationMode(OperationModes::UNKNOWN);
+    updateOperationMode(createUnknownOperationMode());
     return;
   }
 
@@ -63,11 +73,11 @@ void ModbusAdapterOperationMode::modbusMsgCallback(const ModbusMsgInStampedConst
     os <<"\n";
     os << "Can not determine OperationMode from Modbus message.";
     ROS_ERROR_STREAM(os.str());
-    updateOperationMode(OperationModes::UNKNOWN);
+    updateOperationMode(createUnknownOperationMode());
     return;
   }
 
-  updateOperationMode(msg.getOperationMode());
+  updateOperationMode(msg.getTimeStampedOperationMode());
 }
 
 } // namespace prbt_hardware_support
