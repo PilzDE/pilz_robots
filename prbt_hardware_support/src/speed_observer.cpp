@@ -40,6 +40,8 @@ SpeedObserver::SpeedObserver(ros::NodeHandle& nh, std::string& reference_frame,
     waitForService(STO_SERVICE);
     sto_client_ = nh.serviceClient<std_srvs::SetBool>(STO_SERVICE);
   }
+
+  tf_sub_ = nh_.subscribe("/tf", 10, &SpeedObserver::tfCallback, this);
 }
 
 void SpeedObserver::waitUntillCanTransform(const std::string& frame, const ros::Time& time,
@@ -201,6 +203,23 @@ bool SpeedObserver::setSpeedLimitCb(SetSpeedLimit::Request& req, SetSpeedLimit::
   ROS_DEBUG_STREAM("setSpeedLimitCb " << req.speed_limit);
   current_speed_limit_ = req.speed_limit;
   return true;
+}
+
+void SpeedObserver::tfCallback(const tf2_msgs::TFMessageConstPtr &msg)
+{
+  for (const auto& transform : msg->transforms)
+  {
+    tf_buffer_.setTransform(transform, "speed_observer");
+  }
+
+  // just checking some expectation ...
+  for (const auto& frame : frames_to_observe_)
+  {
+    if (!tf_buffer_.canTransform(reference_frame_, frame, ros::Time(0)))
+    {
+      ROS_ERROR("Something wrong");
+    }
+  }
 }
 
 }  // namespace prbt_hardware_support

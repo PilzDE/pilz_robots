@@ -118,6 +118,8 @@ private:
    */
   static double speedFromTwoPoses(const tf2::Vector3& a, const tf2::Vector3& b, const double& t);
 
+  void tfCallback(const tf2_msgs::TFMessageConstPtr &msg);
+
 private:
   ros::NodeHandle nh_;
   //! Publisher for frame speed message
@@ -128,6 +130,8 @@ private:
   tf2_ros::Buffer tf_buffer_;
   //! Listing to TF Transforms
   tf2_ros::TransformListener tf_listener{ tf_buffer_ };
+
+  ros::Subscriber tf_sub_;
 
   //! Reference frame for all speeds
   const std::string reference_frame_;
