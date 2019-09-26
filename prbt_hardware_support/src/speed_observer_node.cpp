@@ -76,6 +76,7 @@ int main(int argc, char** argv)
   frames_to_observe.insert(frames_to_observe.end(), additional_frames.begin(), additional_frames.end());
 
   double frequency;
+  // LCOV_EXCL_START Simple parameter reading not analyzed
   try
   {
     frequency = getParam<double>(pnh, OBSERVATION_FREQUENCY_PARAM_NAME);
@@ -85,6 +86,7 @@ int main(int argc, char** argv)
     ROS_ERROR_STREAM(ex.what());
     return EXIT_FAILURE;
   }
+  // LCOV_EXCL_STOP
 
   SpeedObserver observer(nh, reference_frame, frames_to_observe);
   ros::ServiceServer set_speed_limit_server =
