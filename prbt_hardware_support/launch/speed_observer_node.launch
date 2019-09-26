@@ -17,9 +17,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <launch>
   <arg name="frequency" default="20" />
+  <arg name="sim" default="false" />
 
   <node required="true" ns="prbt" name="speed_observer_node" pkg="prbt_hardware_support"
         type="speed_observer_node" output="screen" >
     <param name="observation_frequency" value="$(arg frequency)" />
+    <param name="simulation" value="$(arg sim)" />"
   </node>
 </launch>

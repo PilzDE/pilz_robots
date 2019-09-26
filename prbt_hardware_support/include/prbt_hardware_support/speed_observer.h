@@ -42,8 +42,10 @@ public:
    * @param nh NodeHandle to handle node
    * @param reference_frame Reference frame for all transformations
    * @param frames_to_observe List of frames to observer
+   * @param simulation In simulation mode no STO service is available
    */
-  SpeedObserver(ros::NodeHandle& nh, std::string& reference_frame, std::vector<std::string>& frames_to_observe);
+  SpeedObserver(ros::NodeHandle& nh, std::string& reference_frame, std::vector<std::string>& frames_to_observe,
+                bool simulation=false);
 
 public:
   /**
@@ -137,6 +139,8 @@ private:
   double current_speed_limit_{ DEFAULT_SPEED_LIMIT };
   //! Map to store the number of successive missed frame transform calculations
   std::map<std::string, unsigned int> missed_calculations_;
+  //! Flag indicating if there is only a simulated robot without STO
+  bool simulation_;
 
 private:
   //! Speed limit to be set at launch

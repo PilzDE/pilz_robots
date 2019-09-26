@@ -30,12 +30,16 @@ static const std::string FRAME_SPEEDS_TOPIC_NAME{ "frame_speeds" };
 static const std::string STO_SERVICE{ "safe_torque_off" };
 
 SpeedObserver::SpeedObserver(ros::NodeHandle& nh, std::string& reference_frame,
-                             std::vector<std::string>& frames_to_observe)
+                             std::vector<std::string>& frames_to_observe, bool simulation)
   : nh_(nh), reference_frame_(reference_frame), frames_to_observe_(frames_to_observe)
+  , simulation_(simulation)
 {
   frame_speeds_pub_ = nh.advertise<FrameSpeeds>(FRAME_SPEEDS_TOPIC_NAME, DEFAULT_QUEUE_SIZE);
-  waitForService(STO_SERVICE);
-  sto_client_ = nh.serviceClient<std_srvs::SetBool>(STO_SERVICE);
+  if (!simulation)
+  {
+    waitForService(STO_SERVICE);
+    sto_client_ = nh.serviceClient<std_srvs::SetBool>(STO_SERVICE);
+  }
 }
 
 void SpeedObserver::waitUntillCanTransform(const std::string& frame, const ros::Time& time,
@@ -175,17 +179,20 @@ FrameSpeeds SpeedObserver::createFrameSpeedsMessage(const std::map<std::string, 
 
 void SpeedObserver::triggerStop1()
 {
-  std_srvs::SetBool sto_srv;
-  sto_srv.request.data = false;
-  bool call_success = sto_client_.call(sto_srv);
-  if (!call_success)
+  if (!simulation_)
   {
-    ROS_ERROR_STREAM("No success calling service: " << sto_client_.getService());
-  }
-  else if (!sto_srv.response.success)
-  {
-    ROS_ERROR_STREAM("Service: " << sto_client_.getService() << " failed with error message:\n"
-                                 << sto_srv.response.message);
+    std_srvs::SetBool sto_srv;
+    sto_srv.request.data = false;
+    bool call_success = sto_client_.call(sto_srv);
+    if (!call_success)
+    {
+      ROS_ERROR_STREAM("No success calling service: " << sto_client_.getService());
+    }
+    else if (!sto_srv.response.success)
+    {
+      ROS_ERROR_STREAM("Service: " << sto_client_.getService() << " failed with error message:\n"
+                                   << sto_srv.response.message);
+    }
   }
 }
 
