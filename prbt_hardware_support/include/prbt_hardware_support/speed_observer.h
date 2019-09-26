@@ -47,8 +47,9 @@ public:
 
 public:
   /**
-   * @brief Starts the observation cycle. The function blocks until ros shutsdown.
+   * @brief Starts the observation cycle. The function blocks until ros shuts down.
    * @param frequency [Hz] Will check all frame once per cycle
+   * @param allowed_missed_calculations Number of iterations that can have outdated tf data before a Stop1 is triggered.
    */
   void startObserving(const double frequency, const unsigned int allowed_missed_calculations = DEFAULT_ALLOWED_MISSED_CALCULATIONS);
 
