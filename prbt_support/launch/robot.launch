@@ -37,7 +37,9 @@
     command="$(find xacro)/xacro --inorder '$(find prbt_support)/urdf/prbt.xacro' gripper:=$(arg gripper)" />
 
   <!-- robot state publisher -->
-  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" />
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+    <param name="ignore_timestamp" value="true" />
+  </node>
 
   <!-- relay to /joint_states -->
   <node ns="prbt" name="joint_state_relay" pkg="topic_tools" type="relay" args="/prbt/joint_states /joint_states"/>

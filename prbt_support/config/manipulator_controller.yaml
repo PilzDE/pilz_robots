@@ -31,7 +31,7 @@ max_command_silence: 0.5
 ## joint_state_controller (needed to obtain /joint_states)
 manipulator_joint_state_controller:
     type: joint_state_controller/JointStateController
-    publish_rate: 50
+    publish_rate: 100
 
 ## joint trajectory controller
 manipulator_joint_trajectory_controller:
