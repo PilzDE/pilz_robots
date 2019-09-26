@@ -442,7 +442,7 @@ TEST_F(SpeedObserverUnitTest, testFailingStoServiceCase)
 
 /**
  * Tests that Stop1 is triggered in case the frame speed calculation fails
- * to often.
+ * too often.
  *
  * Test Sequence:
  *    0. Publish tf movements
