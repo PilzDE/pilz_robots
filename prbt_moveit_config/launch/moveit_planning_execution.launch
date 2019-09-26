@@ -65,11 +65,14 @@ limitations under the License.
   <!-- run the robot simulator and action interface nodes -->
   <group if="$(arg sim)">
     <!-- publish the robot state (tf transforms) -->
-    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+      <param name="ignore_timestamp" value="true" />
+    </node>
 
     <!-- We do not have a robot connected, so publish fake joint states -->
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
       <param name="/use_gui" value="false"/>
+      <param name="rate" value="100"/>
       <rosparam param="/source_list">[/move_group/fake_controller_joint_states]</rosparam>
     </node>
   </group>
