@@ -94,22 +94,22 @@ MATCHER_P(IsExpectedOperationMode, exp_mode, "unexpected operation mode"){ retur
  *  ModbusServerMock -> ModbusReadClient -> ModbusAdapterOperationMode
  *
  * Test Sequence:
- *    0. Start Modbus-server in separate thread. Make sure that the nodes are up and subscribe to operation mode topic.
- *    1. Send message with T1 in operation mode register and with the correct API version.
- *    2. Send message with 0 (unknown) in operation mode register and with the correct API version.
- *    3. Send message with T2 in operation mode register and with the correct API version.
- *    4. Send message with AUTO in operation mode register and with the correct API version.
- *    5. Send message with 99 (unknown) in operation mode register and with the correct API version.
- *    6. Terminate ModbusServerMock.
+ *    1. Start Modbus-server in separate thread. Make sure that the nodes are up and subscribe to operation mode topic.
+ *    2. Send message with T1 in operation mode register and with the correct API version.
+ *    3. Send message with 0 (unknown) in operation mode register and with the correct API version.
+ *    4. Send message with T2 in operation mode register and with the correct API version.
+ *    5. Send message with AUTO in operation mode register and with the correct API version.
+ *    6. Send message with 99 (unknown) in operation mode register and with the correct API version.
+ *    7. Terminate ModbusServerMock.
  *
  * Expected Results:
- *    0. A message with unknown operation mode is obtained
- *    1. A message with T1 operation mode is obtained
- *    2. A message with unknown operation mode is obtained
- *    3. A message with T2 operation mode is obtained
- *    4. A message with AUTO operation mode is obtained
- *    5. A message with unknown operation mode is obtained
- *    6. -
+ *    1. A message with unknown operation mode is obtained
+ *    2. A message with T1 operation mode is obtained
+ *    3. A message with unknown operation mode is obtained
+ *    4. A message with T2 operation mode is obtained
+ *    5. A message with AUTO operation mode is obtained
+ *    6. A message with unknown operation mode is obtained
+ *    7. -
  */
 TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
 {
@@ -126,7 +126,7 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
   unsigned int modbus_register_size {api_spec.getMaxRegisterDefinition() + 1U};
 
   /**********
-   * Step 0 *
+   * Step 1 *
    **********/
   prbt_hardware_support::PilzModbusServerMock modbus_server(modbus_register_size);
 
@@ -147,7 +147,7 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
   BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 
   /**********
-   * Step 1 *
+   * Step 2 *
    **********/
   ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::VERSION));
   unsigned int version_register = api_spec.getRegisterDefinition(modbus_api_spec::VERSION);
@@ -165,7 +165,7 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
   BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 
   /**********
-   * Step 2 *
+   * Step 3 *
    **********/
   EXPECT_CALL(subscriber, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
     .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
@@ -175,7 +175,7 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
   BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 
   /**********
-   * Step 3 *
+   * Step 4 *
    **********/
   EXPECT_CALL(subscriber, callback(IsExpectedOperationMode(OperationModes::T2)))
     .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
@@ -185,7 +185,7 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
   BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 
   /**********
-   * Step 4 *
+   * Step 5 *
    **********/
   EXPECT_CALL(subscriber, callback(IsExpectedOperationMode(OperationModes::AUTO)))
     .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
@@ -195,7 +195,7 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
   BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 
   /**********
-   * Step 5 *
+   * Step 6 *
    **********/
   EXPECT_CALL(subscriber, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
     .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
@@ -205,7 +205,7 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
   BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 
   /**********
-   * Step 6 *
+   * Step 7 *
    **********/
   modbus_server.terminate();
   modbus_server_thread.join();

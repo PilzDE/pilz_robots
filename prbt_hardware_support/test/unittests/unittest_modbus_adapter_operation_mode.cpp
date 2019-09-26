@@ -175,21 +175,21 @@ TEST_F(ModbusAdapterOperationModeTest, testInitialOperationMode)
  * }
  *
  * Test Sequence:
- *    0. Subscribe to operation modes topic.
- *    1. Send modbus message containing operation mode T1.
- *    2. Send modbus message which does not contain an operation mode.
+ *    1. Subscribe to operation modes topic.
+ *    2. Send modbus message containing operation mode T1.
+ *    3. Send modbus message which does not contain an operation mode.
  *
  * Expected Results:
- *    0. Operation mode UNKNOWN is published.
- *    1. Operation mode T1 is published.
- *    2. Operation mode UNKNOWN is published.
+ *    1. Operation mode UNKNOWN is published.
+ *    2. Operation mode T1 is published.
+ *    3. Operation mode UNKNOWN is published.
  */
 TEST_F(ModbusAdapterOperationModeTest, testMissingOperationModeRegister)
 {
   /**********
-   * Step 0 *
+   * Step 1 *
    **********/
-  ROS_DEBUG("+++  Step 0 +++");
+  ROS_DEBUG("+++  Step 1 +++");
   EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
     .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
@@ -198,7 +198,7 @@ TEST_F(ModbusAdapterOperationModeTest, testMissingOperationModeRegister)
   BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 
   /**********
-   * Step 1 *
+   * Step 2 *
    **********/
   EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::T1)))
     .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
@@ -206,20 +206,20 @@ TEST_F(ModbusAdapterOperationModeTest, testMissingOperationModeRegister)
   ModbusMsgInBuilder builder(TEST_API_SPEC);
   builder.setApiVersion(MODBUS_API_VERSION_REQUIRED);
 
-  ROS_DEBUG("+++  Step 1 +++");
+  ROS_DEBUG("+++  Step 2 +++");
   modbus_topic_pub_.publish(builder.setOperationMode(OperationModes::T1).build(ros::Time::now()));
 
   BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 
   /**********
-   * Step 2 *
+   * Step 3 *
    **********/
   EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
     .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
   ModbusMsgInStampedPtr msg {builder.setOperationMode(OperationModes::T1).build(ros::Time::now())};
 
-  ROS_DEBUG("+++  Step 2 +++");
+  ROS_DEBUG("+++  Step 3 +++");
   // Remove operation mode from modbus message
   ASSERT_GT(TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::OPERATION_MODE), TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION))
       << "For the test to work correctly, the operation mode register has to be stored in the last register.";
@@ -240,20 +240,20 @@ TEST_F(ModbusAdapterOperationModeTest, testMissingOperationModeRegister)
  * }
  *
  * Test Sequence:
- *  0. Subscribe to operation modes topic.
- *  1. Publish modbus message informing about changing operation mode. Repeat for all possible operation modes.
+ *  1. Subscribe to operation modes topic.
+ *  2. Publish modbus message informing about changing operation mode. Repeat for all possible operation modes.
  *
  * Expected Results:
- *  0. Operation mode UNKNOWN is published.
- *  1. All operation modes are published in the order from above.
+ *  1. Operation mode UNKNOWN is published.
+ *  2. All operation modes are published in the order from above.
  *     GetOperationMode service returns expected operation mode.
  */
 TEST_F(ModbusAdapterOperationModeTest, testOperationModeChange)
 {
   /**********
-   * Step 0 *
+   * Step 1 *
    **********/
-  ROS_DEBUG("+++  Step 0 +++");
+  ROS_DEBUG("+++  Step 1 +++");
   EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
     .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
@@ -262,7 +262,7 @@ TEST_F(ModbusAdapterOperationModeTest, testOperationModeChange)
   BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 
   /**********
-   * Step 1 *
+   * Step 2 *
    **********/
   ModbusMsgInBuilder builder(TEST_API_SPEC);
   builder.setApiVersion(MODBUS_API_VERSION_REQUIRED);
@@ -288,19 +288,19 @@ TEST_F(ModbusAdapterOperationModeTest, testOperationModeChange)
  * }
  *
  * Test Sequence:
- *  0. Subscribe to operation modes topic.
- *  1. Publish modbus message informing about operation mode T1.
- *  2. Publish modbus message informing about disconnect.
+ *  1. Subscribe to operation modes topic.
+ *  2. Publish modbus message informing about operation mode T1.
+ *  3. Publish modbus message informing about disconnect.
  *
  * Expected Results:
- *  0. Operation mode UNKNOWN is published.
- *  1. Operation mode T1 is published.
- *  2. Operation mode UNKNOWN is published.
+ *  1. Operation mode UNKNOWN is published.
+ *  2. Operation mode T1 is published.
+ *  3. Operation mode UNKNOWN is published.
  */
 TEST_F(ModbusAdapterOperationModeTest, testDisconnect)
 {
   /**********
-   * Step 0 *
+   * Step 1 *
    **********/
   EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
     .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
@@ -310,7 +310,7 @@ TEST_F(ModbusAdapterOperationModeTest, testDisconnect)
   BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 
   /**********
-   * Step 1 *
+   * Step 2 *
    **********/
   EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::T1)))
     .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
@@ -323,7 +323,7 @@ TEST_F(ModbusAdapterOperationModeTest, testDisconnect)
   BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 
   /**********
-   * Step 2 *
+   * Step 3 *
    **********/
   EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
     .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
@@ -344,19 +344,19 @@ TEST_F(ModbusAdapterOperationModeTest, testDisconnect)
  * }
  *
  * Test Sequence:
- *  0. Subscribe to operation modes topic.
- *  1. Publish modbus message with operation mode T1.
- *  1. Publish modbus message with an unexpected operation mode.
+ *  1. Subscribe to operation modes topic.
+ *  2. Publish modbus message with operation mode T1.
+ *  3. Publish modbus message with an unexpected operation mode.
  *
  * Expected Results:
- *  0. Operation mode UNKNOWN is published.
- *  1. Operation mode T1 is published.
- *  2. Operation mode UNKNOWN is published.
+ *  1. Operation mode UNKNOWN is published.
+ *  2. Operation mode T1 is published.
+ *  3. Operation mode UNKNOWN is published.
  */
 TEST_F(ModbusAdapterOperationModeTest, testModbusUnexpectedOperationMode)
 {
   /**********
-   * Step 0 *
+   * Step 1 *
    **********/
   EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
     .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
@@ -366,7 +366,7 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusUnexpectedOperationMode)
   BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 
   /**********
-   * Step 1 *
+   * Step 2 *
    **********/
   EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::T1)))
     .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
@@ -379,7 +379,7 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusUnexpectedOperationMode)
   BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 
   /**********
-   * Step 2 *
+   * Step 3 *
    **********/
   EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
     .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));

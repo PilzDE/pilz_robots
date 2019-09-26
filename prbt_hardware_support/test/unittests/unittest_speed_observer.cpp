@@ -164,26 +164,26 @@ MATCHER_P2(SpeedAtILe, i, x,
  * }
  *
  * Test Sequence:
- *    0. Publish tf movements that are within the speed limit
- *    1. Start speed observing
+ *    1. Publish tf movements that are within the speed limit
+ *    2. Start speed observing
  *
  * Expected Results:
- *    0. -
- *    1. Correct values are published on the speed topic.
+ *    1. -
+ *    2. Correct values are published on the speed topic.
  *       *No* stop is published
  */
 TEST_F(SpeedObserverUnitTest, testStartupAndTopic)
 {
   /**********
-   * Step 0 *
-   **********/
-  ROS_DEBUG_STREAM("Step 0");
-  std::thread pubisher_thread_slow = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.24, OBSERVER_FREQUENCY);
-
-  /**********
    * Step 1 *
    **********/
   ROS_DEBUG_STREAM("Step 1");
+  std::thread pubisher_thread_slow = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.24, OBSERVER_FREQUENCY);
+
+  /**********
+   * Step 2 *
+   **********/
+  ROS_DEBUG_STREAM("Step 2");
   EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
                                                 SpeedAtILe(0, .1), SpeedAtILe(1, .26),
                                                 SpeedAtIGe(0, 0), SpeedAtIGe(1, 0))))
@@ -224,26 +224,26 @@ TEST_F(SpeedObserverUnitTest, testStartupAndTopic)
  * }
  *
  * Test Sequence:
- *    0. Publish tf movements that have a too high speed
- *    1. Start speed observing
+ *    1. Publish tf movements that have a too high speed
+ *    2. Start speed observing
  *
  * Expected Results:
- *    0. -
- *    1. Correct values are publshed on the speed topic.
+ *    1. -
+ *    2. Correct values are publshed on the speed topic.
  *       A stop is published
  */
 TEST_F(SpeedObserverUnitTest, testTooHighSpeed)
 {
   /**********
-   * Step 0 *
-   **********/
-  ROS_DEBUG_STREAM("Step 0");
-  std::thread pubisher_thread_fast = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.3, OBSERVER_FREQUENCY);
-
-  /**********
    * Step 1 *
    **********/
   ROS_DEBUG_STREAM("Step 1");
+  std::thread pubisher_thread_fast = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.3, OBSERVER_FREQUENCY);
+
+  /**********
+   * Step 2 *
+   **********/
+  ROS_DEBUG_STREAM("Step 2");
   // we can once have a slow speed, when the observer starts:
   EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
                                                 SpeedAtILe(0, .1), SpeedAtILe(1, .32),
@@ -285,35 +285,35 @@ TEST_F(SpeedObserverUnitTest, testTooHighSpeed)
  * Tests the correct handling of changed speed limits.
  * }
  * @tests{Speed_limits_per_operation_mode,
- * Test that speed limits can be changes.
+ * Test that speed limits can be changed.
  * }
  * @tests{Stop1_on_violation_of_speed_limit,
  * Tests that Stop 1 is triggered if after changing the speed limit.
  * }
  *
  * Test Sequence:
- *    0. Publish tf movements with speed of 0.3,
+ *    1. Publish tf movements with speed of 0.3,
  *    1. Start observer, set speed limit to 0.4
  *    2. Reduce speed limit to 0.2
  *
  * Expected Results:
- *    0. -
- *    1. Correct values are published on the speed topic.
+ *    1. -
+ *    2. Correct values are published on the speed topic.
  *       *No* stop is called
- *    2  A stop is called
+ *    3. A stop is called
  */
 TEST_F(SpeedObserverUnitTest, testSetSpeedLimit)
 {
   /**********
-   * Step 0 *
-   **********/
-  ROS_DEBUG_STREAM("Step 0");
-  std::thread pubisher_thread_fast = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.3, OBSERVER_FREQUENCY);
-
-  /**********
    * Step 1 *
    **********/
   ROS_DEBUG_STREAM("Step 1");
+  std::thread pubisher_thread_fast = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.3, OBSERVER_FREQUENCY);
+
+  /**********
+   * Step 2 *
+   **********/
+  ROS_DEBUG_STREAM("Step 2");
 
   // we can once have a slow speed, when the observer starts:
   EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
@@ -345,9 +345,9 @@ TEST_F(SpeedObserverUnitTest, testSetSpeedLimit)
   BARRIER({ BARRIER_LIMIT });
 
   /**********
-   * Step 2 *
+   * Step 3 *
    **********/
-  ROS_DEBUG_STREAM("Step 2");
+  ROS_DEBUG_STREAM("Step 3");
   std_srvs::SetBool::Response sto_srv_resp;
   sto_srv_resp.success = true;
   EXPECT_CALL(*this, stop_cb_mock(StoState(false), _))
@@ -377,17 +377,17 @@ TEST_F(SpeedObserverUnitTest, testSetSpeedLimit)
  * }
  *
  * Test Sequence:
- *    0. Start observer
+ *    1. Start observer
  *
  * Expected Results:
- *    0. observe method throws exception
+ *    1. observe method throws exception
  */
 TEST_F(SpeedObserverUnitTest, testTimeout)
 {
   /**********
-   * Step 0 *
+   * Step 1 *
    **********/
-  ROS_DEBUG_STREAM("Step 0");
+  ROS_DEBUG_STREAM("Step 1");
   std::string reference_frame{ TEST_BASE_FRAME };
   std::vector<std::string> frames_to_observe{ TEST_FRAME_A };
   prbt_hardware_support::SpeedObserver observer(nh_, reference_frame, frames_to_observe);
@@ -399,22 +399,22 @@ TEST_F(SpeedObserverUnitTest, testTimeout)
  * Test case in which STO service call fails (needed for line coverage).
  *
  * Test Sequence:
- *    0. Publish tf movements that have a too high speed
- *    1. Start speed observing
+ *    1. Publish tf movements that have a too high speed
+ *    2. Start speed observing
  *
  * Expected Results:
- *    0. -
- *    1. Sto service is called
+ *    1. -
+ *    2. Sto service is called
  */
 TEST_F(SpeedObserverUnitTest, testFailingStoServiceCase)
 {
   // ++++++++++++++++++++++++
-  ROS_DEBUG_STREAM("Step 0");
+  ROS_DEBUG_STREAM("Step 1");
   // ++++++++++++++++++++++++
   std::thread pubisher_thread_fast = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.3, OBSERVER_FREQUENCY);
 
   // ++++++++++++++++++++++++
-  ROS_DEBUG_STREAM("Step 1");
+  ROS_DEBUG_STREAM("Step 2");
   // ++++++++++++++++++++++++
   EXPECT_CALL(*this, stop_cb_mock(StoState(false), _))
       .Times(1)
@@ -445,22 +445,22 @@ TEST_F(SpeedObserverUnitTest, testFailingStoServiceCase)
  * too often.
  *
  * Test Sequence:
- *    0. Publish tf movements
- *    1. Start speed observing
+ *    1. Publish tf movements
+ *    2. Start speed observing
  *
  * Expected Results:
- *    0. -
- *    1. Stop is triggered
+ *    1. -
+ *    2. Stop is triggered
  */
 TEST_F(SpeedObserverUnitTest, testSlowTfPublishing)
 {
   // ++++++++++++++++++++++++
-  ROS_DEBUG_STREAM("Step 0");
+  ROS_DEBUG_STREAM("Step 1");
   // ++++++++++++++++++++++++
   std::thread pubisher_thread_fast = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.24, 0.1*TEST_FREQUENCY);
 
   // ++++++++++++++++++++++++
-  ROS_DEBUG_STREAM("Step 1");
+  ROS_DEBUG_STREAM("Step 2");
   // ++++++++++++++++++++++++
   EXPECT_CALL(*this, stop_cb_mock(StoState(false), _))
       .Times(AtLeast(1))
