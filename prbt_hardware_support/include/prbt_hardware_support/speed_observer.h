@@ -42,8 +42,10 @@ public:
    * @param nh NodeHandle to handle node
    * @param reference_frame Reference frame for all transformations
    * @param frames_to_observe List of frames to observer
+   * @param simulation In simulation mode the observer is passive. No Stop1 is available.
    */
-  SpeedObserver(ros::NodeHandle& nh, std::string& reference_frame, std::vector<std::string>& frames_to_observe);
+  SpeedObserver(ros::NodeHandle& nh, std::string& reference_frame, std::vector<std::string>& frames_to_observe,
+                bool simulation=false);
 
 public:
   /**
@@ -116,16 +118,22 @@ private:
    */
   static double speedFromTwoPoses(const tf2::Vector3& a, const tf2::Vector3& b, const double& t);
 
+  void tfCallback(const tf2_msgs::TFMessageConstPtr &msg);
+
+  void publishFrameSpeedsMessage();
+
 private:
   ros::NodeHandle nh_;
   //! Publisher for frame speed message
   ros::Publisher frame_speeds_pub_;
-  //! Client for sto service
-  ros::ServiceClient sto_client_;
+  //! Client for hold service
+  ros::ServiceClient hold_client_;
   //! Needed to receive tf2 transformations over the wire, see https://wiki.ros.org/tf2/Tutorials/
   tf2_ros::Buffer tf_buffer_;
   //! Listing to TF Transforms
   tf2_ros::TransformListener tf_listener{ tf_buffer_ };
+
+  ros::Subscriber tf_sub_;
 
   //! Reference frame for all speeds
   const std::string reference_frame_;
@@ -137,6 +145,13 @@ private:
   double current_speed_limit_{ DEFAULT_SPEED_LIMIT };
   //! Map to store the number of successive missed frame transform calculations
   std::map<std::string, unsigned int> missed_calculations_;
+  //! Flag indicating if there is only a simulated robot without STO
+  bool simulation_;
+
+  std::map<std::string, tf2::Vector3> previous_poses_;
+  std::map<std::string, ros::Time> previous_time_stamps_;
+  std::map<std::string, double> previous_speeds_;
+  bool initial_callback_{true};
 
 private:
   //! Speed limit to be set at launch
@@ -146,7 +161,7 @@ private:
   //! Waiting time for `waitUntillCanTransform()`
   static constexpr double WAITING_TIME_FOR_TRANSFORM_S{ 0.1 };
   //! Epsilon prevents computation of speed for small time intervals
-  static constexpr double TIME_INTERVAL_EPSILON_S{ 1e-9 };
+  static constexpr double TIME_INTERVAL_EPSILON_S{ 1e-14 };
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
