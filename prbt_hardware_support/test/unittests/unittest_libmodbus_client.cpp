@@ -280,6 +280,7 @@ TEST_F(LibModbusClientTest, testReadRegistersTerminatedServer)
   server->setHoldingRegister(RegCont{1,2}, DEFAULT_WRITE_IDX);
 
   EXPECT_TRUE(client.init(LOCALHOST,testPort()));
+  sleep(3.0);
   server->terminate();
 
   EXPECT_THROW(client.readHoldingRegister(DEFAULT_WRITE_IDX, 2), ModbusExceptionDisconnect);
