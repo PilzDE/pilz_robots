@@ -2,6 +2,11 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add speed observing dependent on operation mode
+* Contributors: Pilz GmbH and Co. KG
+
 0.4.11 (2019-09-11)
 -------------------
 * add missing transition to STO state machine

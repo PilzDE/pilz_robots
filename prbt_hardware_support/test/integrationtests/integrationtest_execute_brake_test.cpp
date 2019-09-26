@@ -67,20 +67,20 @@ bool brakeTestRegisterSetOnServer(
  * }
  *
  * Test Sequence:
- *  0. Preparing modbus mock
- *  1. Initialize CANOpen mock, JointStatesPublisher mock and manipulator mock
- *  2. Wait for BrakeTest service
- *  3. Make the service call
- *  4. Check contents of relevant modbus registers
- *  5. Shutdown of modbus mock
+ *  1. Preparing modbus mock
+ *  2. Initialize CANOpen mock, JointStatesPublisher mock and manipulator mock
+ *  3. Wait for BrakeTest service
+ *  4. Make the service call
+ *  5. Check contents of relevant modbus registers
+ *  6. Shutdown of modbus mock
  *
  * Expected Results:
- *  0. -
  *  1. -
- *  2. Service is available
- *  3. Service call is successful
- *  4. Brake test success was set in modbus
- *  5. -
+ *  2. -
+ *  3. Service is available
+ *  4. Service call is successful
+ *  5. Brake test success was set in modbus
+ *  6. -
  */
 TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
 {
@@ -88,7 +88,7 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
   ros::NodeHandle nh_private("~");
 
   /**********
-   * Step 0 *
+   * Step 1 *
    **********/
   std::string ip;
   int port;
@@ -109,7 +109,7 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
   modbus_server.setHoldingRegister({{register_res, MODBUS_BRAKE_TEST_PREPARE_VALUE}});
 
   /**********
-   * Step 1 *
+   * Step 2 *
    **********/
   CANOpenChainNodeMock canopen_mock;
 
@@ -121,19 +121,19 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
   manipulator.advertiseUnholdService(nh, CONTROLLER_UNHOLD_MODE_SERVICE_NAME);
 
   /**********
-   * Step 2 *
+   * Step 3 *
    **********/
   ros::ServiceClient brake_test_srv_client_ = nh.serviceClient<BrakeTest>(EXECUTE_BRAKE_TEST_SERVICE_NAME);
   EXPECT_TRUE(brake_test_srv_client_.waitForExistence(ros::Duration(WAIT_FOR_BRAKE_TEST_SERVICE_TIMEOUT_S)));
 
   /**********
-   * Step 3 *
+   * Step 4 *
    **********/
   BrakeTest srv;
   EXPECT_TRUE(brake_test_srv_client_.call(srv));
 
   /**********
-   * Step 4 *
+   * Step 5 *
    **********/
   EXPECT_TRUE(brakeTestRegisterSetOnServer(
     modbus_server,
@@ -145,7 +145,7 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
   ));
 
   /**********
-   * Step 5 *
+   * Step 6 *
    **********/
   modbus_server.terminate();
   modbus_server_thread.join();

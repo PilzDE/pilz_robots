@@ -116,18 +116,18 @@ protected:
  *    ModbusServerMock -> ModbusReadClient -> ModbusAdapterBrakeTest connection
  *
  * Test Sequence:
- *    0. Start Modbus-server in separate thread. Make sure that the nodes are up.
- *    1. Send a brake test required message with the correct API version.
- *    2. Send a brake test required message with the correct API version (change another but irrelevant register entry).
- *    3. Send a brake test not-required message with the correct API version.
- *    4. Terminate ModbusServerMock.
+ *    1. Start Modbus-server in separate thread. Make sure that the nodes are up.
+ *    2. Send a brake test required message with the correct API version.
+ *    3. Send a brake test required message with the correct API version (change another but irrelevant register entry).
+ *    4. Send a brake test not-required message with the correct API version.
+ *    5. Terminate ModbusServerMock.
  *
  * Expected Results:
- *    0. -
- *    1. A service call is successfull and returns a positive result.
+ *    1. -
  *    2. A service call is successfull and returns a positive result.
- *    3. A service call is successfull and returns a negative result.
- *    4. -
+ *    3. A service call is successfull and returns a positive result.
+ *    4. A service call is successfull and returns a negative result.
+ *    5. -
  */
 TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
 {
@@ -144,7 +144,7 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
   unsigned int modbus_register_size {api_spec.getMaxRegisterDefinition() + 1U};
 
   /**********
-   * Step 0 *
+   * Step 1 *
    **********/
   prbt_hardware_support::PilzModbusServerMock modbus_server(modbus_register_size);
 
@@ -156,7 +156,7 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
   waitForNode("/modbus_adapter_brake_test_node");
 
   /**********
-   * Step 1 *
+   * Step 2 *
    **********/
   ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::VERSION));
   unsigned int version_register = api_spec.getRegisterDefinition(modbus_api_spec::VERSION);
@@ -174,7 +174,7 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
                 is_brake_test_required_client, IsBrakeTestRequiredResponse::REQUIRED));
 
   /**********
-   * Step 2 *
+   * Step 3 *
    **********/
   ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::STO));
   unsigned int sto_register = api_spec.getRegisterDefinition(modbus_api_spec::STO);
@@ -185,7 +185,7 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
                 is_brake_test_required_client, IsBrakeTestRequiredResponse::REQUIRED));
 
   /**********
-   * Step 3 *
+   * Step 4 *
    **********/
   modbus_server.setHoldingRegister({{braketest_register, 0}});
 
@@ -193,7 +193,7 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
                 is_brake_test_required_client, IsBrakeTestRequiredResponse::NOT_REQUIRED));
 
   /**********
-   * Step 4 *
+   * Step 5 *
    **********/
   modbus_server.terminate();
   modbus_server_thread.join();
