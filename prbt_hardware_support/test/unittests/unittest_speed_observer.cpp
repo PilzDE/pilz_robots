@@ -52,8 +52,14 @@ static const std::string STOP_TOPIC_NAME{ "/safe_torque_off" };
 static const std::string TEST_BASE_FRAME{ "test_base" };
 static const std::string TEST_FRAME_A{ "a" };
 static const std::string TEST_FRAME_B{ "b" };
-static const double TEST_FREQUENCY{ 20 };
+static constexpr double TEST_FREQUENCY{ 20 };
+// Publishing definitely faster then observing
+static constexpr double OBSERVER_FREQUENCY {3.0 * TEST_FREQUENCY};
 static const double SQRT_2_HALF{ 1 / sqrt(2) };
+
+using ::testing::AllOf;
+using ::testing::AtLeast;
+using ::testing::AtMost;
 
 class SpeedObserverUnitTest : public testing::Test, public testing::AsyncTest
 {
@@ -62,7 +68,7 @@ public:
 
   MOCK_METHOD1(frame_speeds_cb_mock, void(const FrameSpeeds::ConstPtr& msg));
   MOCK_METHOD2(stop_cb_mock, bool(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res));
-  void publishTfAtSpeed(double v);
+  void publishTfAtSpeed(const double v, const double observer_frequency = OBSERVER_FREQUENCY);
   void stopTfPublisher();
 
 protected:
@@ -83,10 +89,10 @@ void SpeedObserverUnitTest::SetUp()
   waitForService(STOP_TOPIC_NAME);
 }
 
-void SpeedObserverUnitTest::publishTfAtSpeed(double speed)
+void SpeedObserverUnitTest::publishTfAtSpeed(const double speed, const double publish_frequency)
 {
   static tf2_ros::TransformBroadcaster br;
-  ros::Rate r = ros::Rate(TEST_FREQUENCY * 3);  // publishing definitely faster then observing
+  ros::Rate r = ros::Rate(publish_frequency);
   ros::Time start = ros::Time::now();
   double t = 0;
   tf_publisher_running_ = true;
@@ -172,7 +178,7 @@ TEST_F(SpeedObserverUnitTest, testStartupAndTopic)
    * Step 0 *
    **********/
   ROS_DEBUG_STREAM("Step 0");
-  std::thread pubisher_thread_slow = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.24);
+  std::thread pubisher_thread_slow = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.24, OBSERVER_FREQUENCY);
 
   /**********
    * Step 1 *
@@ -228,15 +234,11 @@ TEST_F(SpeedObserverUnitTest, testStartupAndTopic)
  */
 TEST_F(SpeedObserverUnitTest, testTooHighSpeed)
 {
-  using ::testing::AllOf;
-  using ::testing::AtLeast;
-  using ::testing::AtMost;
-
   /**********
    * Step 0 *
    **********/
   ROS_DEBUG_STREAM("Step 0");
-  std::thread pubisher_thread_fast = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.3);
+  std::thread pubisher_thread_fast = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.3, OBSERVER_FREQUENCY);
 
   /**********
    * Step 1 *
@@ -306,7 +308,7 @@ TEST_F(SpeedObserverUnitTest, testSetSpeedLimit)
    * Step 0 *
    **********/
   ROS_DEBUG_STREAM("Step 0");
-  std::thread pubisher_thread_fast = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.3);
+  std::thread pubisher_thread_fast = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.3, OBSERVER_FREQUENCY);
 
   /**********
    * Step 1 *
@@ -391,6 +393,97 @@ TEST_F(SpeedObserverUnitTest, testTimeout)
   prbt_hardware_support::SpeedObserver observer(nh_, reference_frame, frames_to_observe);
 
   EXPECT_THROW(observer.startObserving(TEST_FREQUENCY), std::runtime_error);
+}
+
+/**
+ * Test case in which STO service call fails (needed for line coverage).
+ *
+ * Test Sequence:
+ *    0. Publish tf movements that have a too high speed
+ *    1. Start speed observing
+ *
+ * Expected Results:
+ *    0. -
+ *    1. Sto service is called
+ */
+TEST_F(SpeedObserverUnitTest, testFailingStoServiceCase)
+{
+  // ++++++++++++++++++++++++
+  ROS_DEBUG_STREAM("Step 0");
+  // ++++++++++++++++++++++++
+  std::thread pubisher_thread_fast = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.3, OBSERVER_FREQUENCY);
+
+  // ++++++++++++++++++++++++
+  ROS_DEBUG_STREAM("Step 1");
+  // ++++++++++++++++++++++++
+  EXPECT_CALL(*this, stop_cb_mock(StoState(false), _))
+      .Times(1)
+      .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(BARRIER_FAST), Return(false)));
+
+  std::string reference_frame{ TEST_BASE_FRAME };
+  std::vector<std::string> frames_to_observe{ TEST_FRAME_A, TEST_FRAME_B };
+  prbt_hardware_support::SpeedObserver observer(nh_, reference_frame, frames_to_observe);
+  std::thread observer_thread = std::thread(&SpeedObserver::startObserving,
+                                            &observer,
+                                            TEST_FREQUENCY,
+                                            DEFAULT_ALLOWED_MISSED_CALCULATIONS);
+  ROS_DEBUG_STREAM("thread started");
+
+  BARRIER({ BARRIER_FAST });
+
+  // ++++++++++++++++++++++++
+  ROS_DEBUG_STREAM("Tear Down");
+  // ++++++++++++++++++++++++
+  stopTfPublisher();
+  pubisher_thread_fast.join();
+  observer.terminateNow();
+  observer_thread.join();
+}
+
+/**
+ * Tests that Stop1 is triggered in case the frame speed calculation fails
+ * to often.
+ *
+ * Test Sequence:
+ *    0. Publish tf movements
+ *    1. Start speed observing
+ *
+ * Expected Results:
+ *    0. -
+ *    1. Stop is triggered
+ */
+TEST_F(SpeedObserverUnitTest, testSlowTfPublishing)
+{
+  // ++++++++++++++++++++++++
+  ROS_DEBUG_STREAM("Step 0");
+  // ++++++++++++++++++++++++
+  std::thread pubisher_thread_fast = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.24, 0.1*TEST_FREQUENCY);
+
+  // ++++++++++++++++++++++++
+  ROS_DEBUG_STREAM("Step 1");
+  // ++++++++++++++++++++++++
+  EXPECT_CALL(*this, stop_cb_mock(StoState(false), _))
+      .Times(AtLeast(1))
+      .WillRepeatedly(DoAll(ACTION_OPEN_BARRIER_VOID(BARRIER_FAST), Return(true)));
+
+  std::string reference_frame{ TEST_BASE_FRAME };
+  std::vector<std::string> frames_to_observe{ TEST_FRAME_A, TEST_FRAME_B };
+  prbt_hardware_support::SpeedObserver observer(nh_, reference_frame, frames_to_observe);
+  std::thread observer_thread = std::thread(&SpeedObserver::startObserving,
+                                            &observer,
+                                            TEST_FREQUENCY,
+                                            DEFAULT_ALLOWED_MISSED_CALCULATIONS);
+  ROS_DEBUG_STREAM("thread started");
+
+  BARRIER({ BARRIER_FAST });
+
+  // ++++++++++++++++++++++++
+  ROS_DEBUG_STREAM("Tear Down");
+  // ++++++++++++++++++++++++
+  stopTfPublisher();
+  pubisher_thread_fast.join();
+  observer.terminateNow();
+  observer_thread.join();
 }
 
 }  // namespace speed_observer_test
