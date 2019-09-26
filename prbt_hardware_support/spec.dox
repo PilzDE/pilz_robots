@@ -142,7 +142,7 @@
  * @definereq{Speed_limits_per_operation_mode}
  *  - (New) The currently allowed speed limit depends on the operation mode.
  *  - In T1 the speed limit is 250mm/s.
- *  - In T2 and AUTOMATIC the robot is allowed to move with maximum speed.
+ *  - In AUTOMATIC the robot is allowed to move with maximum speed.
  *  - If the operation mode is unknown, the speed limit is set to zero.
  *
  */

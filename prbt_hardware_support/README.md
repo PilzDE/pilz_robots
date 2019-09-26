@@ -34,7 +34,7 @@ The robot system can be controlled in various modes.
 
 These modes are:
   - T1: Speed reduced to 250 mm/s (each robot-frame), enabling switch must be pressed
-  - T2: The robot moves at full speed but still the enabling switch must be pressed
+  - T2<sup>*</sup>: The robot moves at full speed but still the enabling switch must be pressed
   - AUTOMATIC: The robot moves at full speed and follows a predefined program/process. No enabling switch is needed but safety has to be ensured by safety peripherie (fences, light curtains, ...).
 
 See DIN EN ISO 10218-1 for more details or contact us: ros@pilz.de
@@ -107,3 +107,5 @@ The ``SpeedObserverNode`` observes the speed of the robot frames and triggers a 
 ### Parameters
 - frequency [Hz] (default: 20.0)
 - additional_frames (optional): lets the user specify frames to observe in addition to the robot frames of the prevailing robot model
+
+<sup>*</sup>Not supported yet
