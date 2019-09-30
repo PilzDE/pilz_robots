@@ -212,14 +212,77 @@ void SpeedObserver::tfCallback(const tf2_msgs::TFMessageConstPtr &msg)
     tf_buffer_.setTransform(transform, "speed_observer");
   }
 
-  // just checking some expectation ...
+  bool computed_new_frame_speeds{false};
+
   for (const auto& frame : frames_to_observe_)
   {
-    if (!tf_buffer_.canTransform(reference_frame_, frame, ros::Time(0)))
+    const auto curr_pose_data = getLatestPose(frame);
+    const auto &curr_pose = curr_pose_data.first;
+    const auto &curr_time_stamp = curr_pose_data.second;
+
+    if (initial_callback_)
     {
-      ROS_ERROR("Something wrong");
+      previous_poses_[frame] = tf2::Vector3(curr_pose);
+      previous_time_stamps_[frame] = curr_time_stamp;
+      continue;
     }
+
+    double curr_speed{0.0};
+    if ((curr_time_stamp - previous_time_stamps_.at(frame)).toSec() > TIME_INTERVAL_EPSILON_S)
+    {
+      curr_speed = speedFromTwoPoses(previous_poses_.at(frame),
+                                     curr_pose,
+                                     (curr_time_stamp - previous_time_stamps_.at(frame)).toSec());
+      computed_new_frame_speeds = true;
+    }
+    else
+    {
+      curr_speed = previous_speeds_.at(frame);
+      ROS_DEBUG("Skip speed computation for frame >%s<.", frame.c_str());
+    }
+    if (!isWithinLimit(curr_speed))
+    {
+      ROS_ERROR("Speed %.2f m/s of frame >%s< exceeds limit of %.2f m/s", curr_speed, frame.c_str(),
+                current_speed_limit_);
+      triggerStop1();
+    }
+
+    previous_speeds_[frame] = curr_speed;
+    previous_poses_[frame] = tf2::Vector3(curr_pose);
+    previous_time_stamps_[frame] = curr_time_stamp;
   }
+
+  if (initial_callback_)
+  {
+    initial_callback_ = false;
+  }
+  else if (computed_new_frame_speeds)
+  {
+    publishFrameSpeedsMessage();
+  }  
+}
+
+void SpeedObserver::publishFrameSpeedsMessage()
+{
+  static uint32_t seq{ 0 };
+  FrameSpeeds msg;
+  msg.header.frame_id = reference_frame_;
+  msg.header.seq = seq++;
+
+  typedef std::pair<std::string, ros::Time> TimeStampsElem;
+  const auto min_el_it = std::min_element(previous_time_stamps_.begin(),
+                                          previous_time_stamps_.end(),
+                                          [](const TimeStampsElem &el1, const TimeStampsElem &el2)
+                                          { return el1.second < el2.second; });
+  msg.header.stamp = min_el_it->second;
+
+  for (const auto& s : previous_speeds_)
+  {
+    msg.name.push_back(s.first);
+    msg.speed.push_back(s.second);
+  }
+
+  frame_speeds_pub_.publish(msg);
 }
 
 }  // namespace prbt_hardware_support

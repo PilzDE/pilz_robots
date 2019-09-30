@@ -79,23 +79,25 @@ int main(int argc, char** argv)
   bool simulation{false};
   pnh.getParam(SIMULATION_MODE_PARAM_NAME, simulation);
 
-  double frequency;
-  // LCOV_EXCL_START Simple parameter reading not analyzed
-  try
-  {
-    frequency = getParam<double>(pnh, OBSERVATION_FREQUENCY_PARAM_NAME);
-  }
-  catch(const std::runtime_error& ex)
-  {
-    ROS_ERROR_STREAM(ex.what());
-    return EXIT_FAILURE;
-  }
+  // double frequency;
+  // // LCOV_EXCL_START Simple parameter reading not analyzed
+  // try
+  // {
+  //   frequency = getParam<double>(pnh, OBSERVATION_FREQUENCY_PARAM_NAME);
+  // }
+  // catch(const std::runtime_error& ex)
+  // {
+  //   ROS_ERROR_STREAM(ex.what());
+  //   return EXIT_FAILURE;
+  // }
   // LCOV_EXCL_STOP
 
   SpeedObserver observer(nh, reference_frame, frames_to_observe, simulation);
   ros::ServiceServer set_speed_limit_server =
       nh.advertiseService(SET_SPEED_LIMIT_SERVICE, &SpeedObserver::setSpeedLimitCb, &observer);
-  observer.startObserving(frequency);
+  //observer.startObserving(frequency);
+
+  ros::spin();
 
   return EXIT_SUCCESS;
 }

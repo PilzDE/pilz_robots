@@ -120,6 +120,8 @@ private:
 
   void tfCallback(const tf2_msgs::TFMessageConstPtr &msg);
 
+  void publishFrameSpeedsMessage();
+
 private:
   ros::NodeHandle nh_;
   //! Publisher for frame speed message
@@ -146,6 +148,11 @@ private:
   //! Flag indicating if there is only a simulated robot without STO
   bool simulation_;
 
+  std::map<std::string, tf2::Vector3> previous_poses_;
+  std::map<std::string, ros::Time> previous_time_stamps_;
+  std::map<std::string, double> previous_speeds_;
+  bool initial_callback_{true};
+
 private:
   //! Speed limit to be set at launch
   static constexpr double DEFAULT_SPEED_LIMIT{ .25 };
@@ -154,7 +161,7 @@ private:
   //! Waiting time for `waitUntillCanTransform()`
   static constexpr double WAITING_TIME_FOR_TRANSFORM_S{ 0.1 };
   //! Epsilon prevents computation of speed for small time intervals
-  static constexpr double TIME_INTERVAL_EPSILON_S{ 1e-9 };
+  static constexpr double TIME_INTERVAL_EPSILON_S{ 1e-14 };
 };
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
