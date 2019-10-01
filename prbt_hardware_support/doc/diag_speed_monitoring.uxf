@@ -42,7 +42,8 @@ hardware_interface</panel_attributes>
       <w>240</w>
       <h>30</h>
     </coordinates>
-    <panel_attributes>speed_observer</panel_attributes>
+    <panel_attributes>speed_observer
+bg=#FFFF00</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -53,7 +54,8 @@ hardware_interface</panel_attributes>
       <w>240</w>
       <h>30</h>
     </coordinates>
-    <panel_attributes>stop1_executor</panel_attributes>
+    <panel_attributes>stop1_executor
+bg=#FFFF00</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -64,7 +66,8 @@ hardware_interface</panel_attributes>
       <w>240</w>
       <h>30</h>
     </coordinates>
-    <panel_attributes>joint_trajectory_controller</panel_attributes>
+    <panel_attributes>joint_trajectory_controller
+bg=#FFFF00</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -146,7 +149,8 @@ hardware_interface</panel_attributes>
       <w>240</w>
       <h>30</h>
     </coordinates>
-    <panel_attributes>desired_joint_states_adapter</panel_attributes>
+    <panel_attributes>desired_joint_states_adapter
+bg=#FFFF00</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -208,8 +212,8 @@ _trajectory_controller
       <w>360</w>
       <h>340</h>
     </coordinates>
-    <panel_attributes>bg=#BFEFFF
-experimental</panel_attributes>
+    <panel_attributes>experimental
+bg=#BFEFFF</panel_attributes>
     <additional_attributes/>
   </element>
 </diagram>
