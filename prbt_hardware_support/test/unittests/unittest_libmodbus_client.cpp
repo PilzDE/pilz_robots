@@ -52,6 +52,9 @@ public:
   static void SetUpTestCase(); // NOLINT
   void TearDown() override;
   unsigned int testPort();
+
+protected:
+  void shutdownModbusServer(PilzModbusServerMock *server, LibModbusClient& client);
 };
 
 void LibModbusClientTest::TearDown()
@@ -68,6 +71,14 @@ unsigned int LibModbusClientTest::testPort()
 void LibModbusClientTest::SetUpTestCase() // NOLINT
 {
   std::iota(PORTS_FOR_TEST.begin(), PORTS_FOR_TEST.end(), START_PORT);
+}
+
+void LibModbusClientTest::shutdownModbusServer(PilzModbusServerMock* server, LibModbusClient& client)
+{
+  RegCont reg_to_write_by_client {1};
+  client.writeReadHoldingRegister(DEFAULT_REGISTER_SIZE, reg_to_write_by_client,
+                                  DEFAULT_WRITE_IDX, DEFAULT_REGISTER_SIZE-DEFAULT_WRITE_IDX);
+  server->terminate();
 }
 
 /**
@@ -102,9 +113,8 @@ TEST_F(LibModbusClientTest, testInitialization)
 
   EXPECT_TRUE(client.init(LOCALHOST, testPort()));
 
+  shutdownModbusServer(server.get(), client);
   client.close();
-
-  server->terminate();
 }
 
 /**
@@ -133,9 +143,8 @@ TEST_F(LibModbusClientTest, testReadRegisters)
   RegCont res_expected{1,2};
   EXPECT_EQ(res_expected, res);
 
+  shutdownModbusServer(server.get(), client);
   client.close();
-
-  server->terminate();
 }
 
 /**
@@ -166,8 +175,9 @@ TEST_F(LibModbusClientTest, testWritingRegisters)
   {
     EXPECT_EQ(reg_to_write_by_client.at(i), actual_hold_reg.at(i));
   }
+
+  shutdownModbusServer(server.get(), client);
   client.close();
-  server->terminate();
 }
 
 /**
@@ -191,8 +201,8 @@ TEST_F(LibModbusClientTest, testNegativeNumberOfRegistersToRead)
                                                DEFAULT_WRITE_IDX, negative_read_nb),
                std::invalid_argument);
 
+  shutdownModbusServer(server.get(), client);
   client.close();
-  server->terminate();
 }
 
 /**
@@ -215,8 +225,8 @@ TEST_F(LibModbusClientTest, testOutOfRangeRegisterSize)
                                                DEFAULT_WRITE_IDX, static_cast<int>(write_reg.size())),
                std::invalid_argument);
 
+  shutdownModbusServer(server.get(), client);
   client.close();
-  server->terminate();
 }
 
 /**
@@ -248,7 +258,7 @@ TEST_F(LibModbusClientTest, testDisconnectDuringReadWriteOp)
   server->setHoldingRegister(write_reg, DEFAULT_WRITE_IDX);
 
   EXPECT_TRUE(client.init(LOCALHOST, testPort()));
-  server->terminate();
+  shutdownModbusServer(server.get(), client);
 
   RegCont reg_to_write_by_client {8, 3, 7};
   EXPECT_THROW(client.writeReadHoldingRegister(DEFAULT_READ_IDX, reg_to_write_by_client,
@@ -280,7 +290,7 @@ TEST_F(LibModbusClientTest, testReadRegistersTerminatedServer)
   server->setHoldingRegister(RegCont{1,2}, DEFAULT_WRITE_IDX);
 
   EXPECT_TRUE(client.init(LOCALHOST,testPort()));
-  server->terminate();
+  shutdownModbusServer(server.get(), client);
 
   EXPECT_THROW(client.readHoldingRegister(DEFAULT_WRITE_IDX, 2), ModbusExceptionDisconnect);
   client.close();
@@ -303,9 +313,8 @@ TEST_F(LibModbusClientTest, setResponseTimeout)
   client.setResponseTimeoutInMs(timeout_ms);
   EXPECT_EQ(timeout_ms, client.getResponseTimeoutInMs());
 
+  shutdownModbusServer(server.get(), client);
   client.close();
-
-  server->terminate();
 }
 
 }  // namespace pilz_modbus_client_test

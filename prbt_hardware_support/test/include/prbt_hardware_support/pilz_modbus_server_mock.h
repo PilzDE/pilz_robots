@@ -112,7 +112,16 @@ public:
   void run();
 
 private:
+  /**
+   * @returns True if the server is told to shutdown via Modbus msg,
+   * false otherwise.
+   */
+  bool shutdownSignalReceived();
+
+private:
   const unsigned int holding_register_size_;
+  //! Index of register for server shutdown signal
+  const unsigned int terminate_register_idx_;
 
 private:
 
@@ -137,6 +146,9 @@ private:
   static constexpr uint32_t RESPONSE_TIMEOUT_IN_SEC       {0};
   static constexpr uint32_t RESPONSE_TIMEOUT_IN_USEC      {10000};
 
+  //! Register value which indicates that server has to shutdown.
+  static constexpr uint16_t TERMINATE_SIGNAL {1};
+
 };
 
 inline void PilzModbusServerMock::terminate()
@@ -150,6 +162,11 @@ inline void PilzModbusServerMock::terminate()
     thread_.join();
     ROS_DEBUG_NAMED("ServerMock", "Waiting for worker Thread of ServerMock joined.");
   }
+}
+
+inline bool PilzModbusServerMock::shutdownSignalReceived()
+{
+  return readHoldingRegister(terminate_register_idx_, 1).back() == TERMINATE_SIGNAL;
 }
 
 }
