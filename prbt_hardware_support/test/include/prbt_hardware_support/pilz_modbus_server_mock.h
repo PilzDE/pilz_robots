@@ -90,6 +90,8 @@ public:
    */
   void terminate();
 
+  void setTerminateFlag();
+
   /**
    * @brief Allocates needed resources for running the server.
    *
@@ -151,10 +153,16 @@ private:
 
 };
 
+inline void PilzModbusServerMock::setTerminateFlag()
+{
+  ROS_INFO_NAMED("ServerMock", "Set terminate to true.");
+  terminate_ = true;
+}
+
 inline void PilzModbusServerMock::terminate()
 {
   ROS_INFO_NAMED("ServerMock", "Terminate called on ServerMock.");
-  terminate_ = true;
+  setTerminateFlag();
 
   if(thread_.joinable())
   {

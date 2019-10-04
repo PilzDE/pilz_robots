@@ -75,9 +75,17 @@ void LibModbusClientTest::SetUpTestCase() // NOLINT
 
 void LibModbusClientTest::shutdownModbusServer(PilzModbusServerMock* server, LibModbusClient& client)
 {
+  server->setTerminateFlag();
   RegCont reg_to_write_by_client {1};
-  client.writeReadHoldingRegister(DEFAULT_REGISTER_SIZE, reg_to_write_by_client,
-                                  DEFAULT_WRITE_IDX, DEFAULT_REGISTER_SIZE-DEFAULT_WRITE_IDX);
+  try
+  {
+    client.writeReadHoldingRegister(DEFAULT_REGISTER_SIZE, reg_to_write_by_client,
+                                    DEFAULT_WRITE_IDX, DEFAULT_REGISTER_SIZE-DEFAULT_WRITE_IDX);
+  } catch (const ModbusExceptionDisconnect& /* ex */)
+  {
+    // Tolerated exception
+  }
+
   server->terminate();
 }
 
