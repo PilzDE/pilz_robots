@@ -145,4 +145,13 @@
  *  - In AUTOMATIC the robot is allowed to move with maximum speed.
  *  - If the operation mode is unknown, the speed limit is set to zero.
  *
+ * @subsubsection speed_override Speed Override
+ * - The speed override is a global factor in the range [0, 1] which is applied
+ *   to the velocity scale of all motion commands (expect gripper).
+ *
+ * @definereq{speed_override_per_operation_mode}
+ *  - The currently active speed_override depends on the operation mode:
+ *    - In T1 the speed override is 0.1.
+ *    - In AUTOMATIC the speed override is 1.0.
+ *    - If the operation mode is unknown, the speed override is set to zero.
  */

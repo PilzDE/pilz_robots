@@ -18,9 +18,12 @@
 #ifndef OPERATION_MODE_SETUP_EXECUTOR_H
 #define OPERATION_MODE_SETUP_EXECUTOR_H
 
+#include <atomic>
+
 #include <ros/ros.h>
 
 #include <prbt_hardware_support/OperationModes.h>
+#include <prbt_hardware_support/GetSpeedOverride.h>
 #include <prbt_hardware_support/set_speed_limit_func_decl.h>
 #include <prbt_hardware_support/get_operation_mode_func_decl.h>
 
@@ -55,11 +58,16 @@ public:
    */
   void updateOperationMode(const OperationModes& operation_mode);
 
+  bool getSpeedOverride(GetSpeedOverride::Request& /*req*/, GetSpeedOverride::Response& response);
+
 private:
   //! The allowed speed limit in operation mode T1.
   const double speed_limit_t1_;
   //! The allowed speed limit in operation mode AUTOMATIC.
   const double speed_limit_auto_;
+
+  //! The active speed override
+  std::atomic<double> speed_override_{0.0};
 
   //! Function used to propagate speed limit changes into the system.
   SetSpeedLimitFunc set_speed_limit_func_;
