@@ -30,6 +30,7 @@
 
 static const std::string SET_SPEED_LIMIT_SERVICE{"set_speed_limit"};
 static const std::string OPERATION_MODE_TOPIC{"operation_mode"};
+static const std::string GET_SPEED_OVERRIDE_SERVICE{"get_speed_override"};
 
 static const std::string PARAM_SPEED_LIMIT_T1_STR {"speed_limit_t1"};
 static const std::string PARAM_SPEED_LIMIT_AUTO_STR {"speed_limit_automatic"};
@@ -74,6 +75,10 @@ int main(int argc, char **argv)
   ros::Subscriber operation_mode_sub = nh.subscribe(OPERATION_MODE_TOPIC, DEFAULT_QUEUE_SIZE,
                                             &OperationModeSetupExecutor::updateOperationMode,
                                             &op_mode_executor);
+
+  ros::ServiceServer speed_override_srv = nh.advertiseService(GET_SPEED_OVERRIDE_SERVICE,
+                                                              &OperationModeSetupExecutor::getSpeedOverride,
+                                                              &op_mode_executor);
   ros::spin();
 
   return EXIT_FAILURE;
