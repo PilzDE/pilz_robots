@@ -2,6 +2,9 @@
 Changelog for package prbt_gazebo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.5.8 (2019-09-10)
 ------------------
 * integrate clang-tidy via CMake flag

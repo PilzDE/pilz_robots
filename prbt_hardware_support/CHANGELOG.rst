@@ -4,7 +4,12 @@ Changelog for package prbt_hardware_support
 
 Forthcoming
 -----------
-* Add service /prbt/get_speed_override
+* Add service for getting the global speed override
+* Add modbus register for enabling temporary movement
+* Add Frame speed monitoring
+* Test fixes and improvements
+* Contributors: Pilz GmbH and Co. KG
+
 * Add speed observing dependent on operation mode
 * Contributors: Pilz GmbH and Co. KG
 
