@@ -249,13 +249,6 @@ TEST_F(OperationModeSetupExecutorTest, testSetSpeedLimitSrvFailure)
   EXPECT_FALSE(setSpeedLimitSrv<SetSpeedLimitServiceMock>(mock, exp_limit));
 }
 
-class GetOperationModeServiceMock
-{
-public:
-  MOCK_METHOD1(call, bool(GetOperationMode& srv));
-  MOCK_METHOD0(getService, std::string());
-};
-
 }  // namespace operation_mode_setup_executor_tests
 
 int main(int argc, char *argv[])
