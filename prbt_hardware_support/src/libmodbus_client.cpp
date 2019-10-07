@@ -117,7 +117,7 @@ RegCont LibModbusClient::writeReadHoldingRegister(const int write_addr,
                                       write_addr, static_cast<int>(write_reg.size()), read_addr, read_nb);
   if (rc == -1)
   {
-    std::string err = "Failed to write and read modbus registers";
+    std::string err = "Failed to write and read modbus registers: ";
     err.append(modbus_strerror(errno));
     ROS_ERROR_STREAM_NAMED("LibModbusClient", err);
     throw ModbusExceptionDisconnect(err);
