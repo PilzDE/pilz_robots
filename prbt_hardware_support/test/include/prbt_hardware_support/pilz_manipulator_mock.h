@@ -40,9 +40,6 @@ class ManipulatorMock
     void advertiseHaltService(ros::NodeHandle nh, std::string halt_service_name);
     void advertiseRecoverService(ros::NodeHandle nh, std::string recover_service_name);
 
-    void shutdownHoldService();
-    void shutdownUnholdService();
-
     void advertiseServices(ros::NodeHandle nh,
                            std::string hold_service_name,
                            std::string unhold_service_name,
@@ -114,18 +111,6 @@ bool ManipulatorMock::recoverCb_internal(std_srvs::Trigger::Request& req, std_sr
 {
   ROS_DEBUG_NAMED("ManipulatorMock", "Call to %s", recover_srv_.getService().c_str());
   return recoverCb(req, resp);
-}
-
-void ManipulatorMock::shutdownHoldService()
-{
-  hold_srv_.shutdown();
-  ROS_DEBUG_NAMED("ManipulatorMock", "Shut down service %s", hold_srv_.getService().c_str());
-}
-
-void ManipulatorMock::shutdownUnholdService()
-{
-  unhold_srv_.shutdown();
-  ROS_DEBUG_NAMED("ManipulatorMock", "Shut down service %s", unhold_srv_.getService().c_str());
 }
 
 void ManipulatorMock::advertiseServices(ros::NodeHandle nh,

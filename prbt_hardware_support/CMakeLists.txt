@@ -376,6 +376,17 @@ if(CATKIN_ENABLE_TESTING)
   add_dependencies(integrationtest_stop1 ${catkin_EXPORTED_TARGETS})
   #----------------------------------
 
+  # --- Stop1 startup integration test ---
+  add_rostest_gmock(integrationtest_stop1_startup
+     test/integrationtests/integrationtest_stop1_startup.test
+     test/integrationtests/integrationtest_stop1_startup.cpp
+  )
+  target_link_libraries(integrationtest_stop1_startup
+    ${catkin_LIBRARIES}
+  )
+  add_dependencies(integrationtest_stop1_startup ${catkin_EXPORTED_TARGETS})
+  #----------------------------------
+
   # --- Brake test required integration test ---
   add_rostest_gmock(integrationtest_brake_test_required
     test/integrationtests/integrationtest_brake_test_required.test
