@@ -26,7 +26,8 @@ namespace prbt_hardware_support
 {
 
 PilzModbusServerMock::PilzModbusServerMock(const unsigned int& holding_register_size)
-  : holding_register_size_(holding_register_size)
+  : holding_register_size_(holding_register_size + 1) // add one register for server shutdown signal
+  , terminate_register_idx_(holding_register_size)
 {
   // Create the needed mapping
   // Please note: Only the holding register is used.
@@ -159,7 +160,7 @@ void PilzModbusServerMock::run()
   uint8_t query[MODBUS_TCP_MAX_ADU_LENGTH];
 
   // Connect to client loop
-  while (!terminate_)
+  while (!terminate_ && !shutdownSignalReceived())
   {
     ROS_DEBUG_NAMED("ServerMock", "About to start to listen for a modbus connection");
     socket_ = modbus_tcp_listen(modbus_connection_, 1);
@@ -184,7 +185,7 @@ void PilzModbusServerMock::run()
 
     // Loop for reading
     int rc {-1};
-    while (!terminate_)
+    while (!terminate_ && !shutdownSignalReceived())
     {
       rc = modbus_receive(modbus_connection_, query);
       if(rc > 0)
