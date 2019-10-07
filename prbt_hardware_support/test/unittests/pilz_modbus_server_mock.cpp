@@ -187,9 +187,7 @@ void PilzModbusServerMock::run()
     int rc {-1};
     while (!terminate_ && !shutdownSignalReceived())
     {
-      ROS_INFO_NAMED("ServerMock", "Receive...");
       rc = modbus_receive(modbus_connection_, query);
-      ROS_INFO_NAMED("ServerMock", "Receive done.");
       if(rc > 0)
       {
         modbus_register_access_mutex.lock();
