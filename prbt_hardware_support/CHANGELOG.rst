@@ -2,8 +2,8 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.9 (2019-10-07)
+------------------
 * Add service for getting the global speed override
 * Add modbus register for enabling temporary movement
 * Add Frame speed monitoring
