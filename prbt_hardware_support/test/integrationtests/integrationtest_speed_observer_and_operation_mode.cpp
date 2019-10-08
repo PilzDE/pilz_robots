@@ -227,7 +227,7 @@ void SpeedObserverIntegrationTest::stopTfPublisher()
 
 /**
  * @brief Tests speed observer with operation mode T1.
- * 
+ *
  * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
  * Tests that robot model is read correctly by providing a custom xacro.
  * }
@@ -238,7 +238,7 @@ void SpeedObserverIntegrationTest::stopTfPublisher()
  * Tests that Stop 1 is triggered if speed limit is violated.
  * }
  * @tests{Speed_limits_per_operation_mode,
- * Tests the existence of the right limits, by setting the mode and
+ * Tests the existence of the right limits by setting the mode and
  * moving in speeds belowe and above the expected limit.
  * }
  *
@@ -296,7 +296,7 @@ TEST_F(SpeedObserverIntegrationTest, testOperationModeT1)
 
 /**
  * @brief Tests speed observer with operation mode AUTO.
- * 
+ *
  * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
  * Tests that robot model is read correctly by providing a custom xacro.
  * }
@@ -307,7 +307,7 @@ TEST_F(SpeedObserverIntegrationTest, testOperationModeT1)
  * Tests that Stop 1 is triggered if speed limit is violated.
  * }
  * @tests{Speed_limits_per_operation_mode,
- * Tests the existence of the right limits, by setting the mode and
+ * Tests the existence of the right limits by setting the mode and
  * moving in speeds belowe and above the expected limit.
  * }
  *
@@ -382,7 +382,7 @@ TEST_F(SpeedObserverIntegrationTest, testOperationModeAuto)
 
 /**
  * @brief Tests speed observer with additional tf tree.
- * 
+ *
  * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
  * Tests that robot model is read correctly by providing a custom xacro.
  * }
@@ -393,7 +393,7 @@ TEST_F(SpeedObserverIntegrationTest, testOperationModeAuto)
  * Tests that Stop 1 is triggered if speed limit is violated.
  * }
  * @tests{Speed_limits_per_operation_mode,
- * Tests the existence of the right limits, by setting the mode and
+ * Tests the existence of the right limits by setting the mode and
  * moving in speeds belowe and above the expected limit.
  * }
  *
@@ -436,7 +436,7 @@ TEST_F(SpeedObserverIntegrationTest, testAdditionalTFTree)
 
 /**
  * @brief Tests speed observer with STO service returning no success.
- * 
+ *
  * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
  * Tests that robot model is read correctly by providing a custom xacro.
  * }
@@ -447,7 +447,7 @@ TEST_F(SpeedObserverIntegrationTest, testAdditionalTFTree)
  * Tests that Stop 1 is triggered if speed limit is violated.
  * }
  * @tests{Speed_limits_per_operation_mode,
- * Tests the existence of the right limits, by setting the mode and
+ * Tests the existence of the right limits by setting the mode and
  * moving in speeds belowe and above the expected limit.
  * }
  *
