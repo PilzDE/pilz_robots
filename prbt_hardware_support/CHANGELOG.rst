@@ -2,6 +2,12 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.10 (2019-10-08)
+-------------------
+* Add missing dependency on tf2_geometry_msgs (`#264 <https://github.com/PilzDE/pilz_robots/issues/264>`_)
+* Minor fixes
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.9 (2019-10-07)
 ------------------
 * Add service for getting the global speed override
