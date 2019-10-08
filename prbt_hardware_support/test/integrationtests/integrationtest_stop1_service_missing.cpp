@@ -137,7 +137,7 @@ TEST_F(Stop1ServiceMissingIntegrationTest, testMissingService)
 int main(int argc, char *argv[])
 {
   ros::init(argc, argv, "integrationtest_stop1_service_missing");
-  ros::NodeHandle nh_;
+  ros::NodeHandle nh;
 
   ros::AsyncSpinner spinner{1};
   spinner.start();
