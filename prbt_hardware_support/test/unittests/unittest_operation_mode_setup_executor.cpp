@@ -294,7 +294,7 @@ TEST_P(OperationModeSetupExecutorTestSpeedOverrideNice, testSpeedOverride)
 
 INSTANTIATE_TEST_CASE_P(
   SpeedOverrideModeTests,
-  OperationModeSetupExecutorTestSpeedOverride,
+  OperationModeSetupExecutorTestSpeedOverrideNice,
   ::testing::Values(
     std::pair<OperationModes::_value_type, double>(OperationModes::UNKNOWN, 0.0),
     std::pair<OperationModes::_value_type, double>(OperationModes::T1,      0.1),

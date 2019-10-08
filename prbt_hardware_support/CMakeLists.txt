@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   tf2
   tf2_ros
+  tf2_geometry_msgs
   urdf
   dynamic_reconfigure
 )
@@ -505,16 +506,25 @@ if(CATKIN_ENABLE_TESTING)
   add_dependencies(unittest_operation_mode_setup_executor ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------------
 
-    #--- OperationModeSetupExecutor unit test ---
-    add_rostest_gtest(unittest_fake_speed_override
-        test/unittests/unittest_fake_speed_override.test
-        test/unittests/unittest_fake_speed_override.cpp
-    )
-    target_link_libraries(unittest_fake_speed_override
-      ${catkin_LIBRARIES}
-    )
-    add_dependencies(unittest_fake_speed_override ${${PROJECT_NAME}_EXPORTED_TARGETS})
-    #----------------------------------------
+  #--- OperationModeSetupExecutor unit test ---
+  add_rostest_gtest(unittest_fake_speed_override
+      test/unittests/unittest_fake_speed_override.test
+      test/unittests/unittest_fake_speed_override.cpp
+  )
+  target_link_libraries(unittest_fake_speed_override
+    ${catkin_LIBRARIES}
+  )
+  add_dependencies(unittest_fake_speed_override ${${PROJECT_NAME}_EXPORTED_TARGETS})
+  #----------------------------------------
+
+  #--- utils unittest ---
+  catkin_add_gtest(unittest_utils
+    test/unittests/unittest_utils.cpp
+  )
+  target_link_libraries(unittest_utils
+    ${catkin_LIBRARIES}
+  )
+  #----------------------------------------
 
   # to run: catkin_make -DENABLE_COVERAGE_TESTING=ON package_name_coverage (adding -j1 recommended)
   if(ENABLE_COVERAGE_TESTING)
