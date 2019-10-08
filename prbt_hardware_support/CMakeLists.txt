@@ -393,7 +393,7 @@ if(CATKIN_ENABLE_TESTING)
   add_dependencies(integrationtest_stop1 ${catkin_EXPORTED_TARGETS})
   #----------------------------------
 
-  # --- Stop1 recover missing integration test ---
+  # --- Stop1 missing service integration tests ---
   add_rostest_gtest(integrationtest_stop1_service_missing
      test/integrationtests/integrationtest_stop1_service_missing.test
      test/integrationtests/integrationtest_stop1_service_missing.cpp
@@ -402,22 +402,12 @@ if(CATKIN_ENABLE_TESTING)
     ${catkin_LIBRARIES}
   )
   add_dependencies(integrationtest_stop1_service_missing ${catkin_EXPORTED_TARGETS})
-  #----------------------------------
 
-  # --- Stop1 halt missing integration test ---
-  add_rostest(test/integrationtests/integrationtest_stop1_service_missing.test
-    ARGS omit_service:=halt
-    DEPENDENCIES integrationtest_stop1_service_missing)
-
-  # --- Stop1 hold missing integration test ---
-  add_rostest(test/integrationtests/integrationtest_stop1_service_missing.test
-    ARGS omit_service:=hold
-    DEPENDENCIES integrationtest_stop1_service_missing)
-
-  # --- Stop1 unhold missing integration test ---
-  add_rostest(test/integrationtests/integrationtest_stop1_service_missing.test
-    ARGS omit_service:=unhold
-    DEPENDENCIES integrationtest_stop1_service_missing)
+  foreach(service_name halt hold unhold)
+    add_rostest(test/integrationtests/integrationtest_stop1_service_missing.test
+      ARGS omit_service:=${service_name}
+      DEPENDENCIES integrationtest_stop1_service_missing)
+  endforeach(service_name)
   #----------------------------------
 
   # --- Brake test required integration test ---
