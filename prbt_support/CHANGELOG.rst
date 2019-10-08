@@ -2,6 +2,11 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.9 (2019-10-07)
+------------------
+* Add frame speed monitoring
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.8 (2019-09-10)
 ------------------
 * integrate clang-tidy via CMake flag

@@ -36,6 +36,8 @@ using ::testing::Return;
 using ::testing::SetArgReferee;
 using ::testing::DoAll;
 
+
+
 class OperationModeSetupExecutorTest : public ::testing::Test
 {
 public:
@@ -248,6 +250,57 @@ TEST_F(OperationModeSetupExecutorTest, testSetSpeedLimitSrvFailure)
   const double exp_limit {7.7};
   EXPECT_FALSE(setSpeedLimitSrv<SetSpeedLimitServiceMock>(mock, exp_limit));
 }
+
+class OperationModeSetupExecutorTestSpeedOverride : public OperationModeSetupExecutorTest,
+                                  public ::testing::WithParamInterface<std::pair<OperationModes::_value_type, double>>
+{
+  OperationModes::_value_type getMode()
+  {
+    return GetParam().first;
+  }
+
+  double getSpeedOverride()
+  {
+    return GetParam().second;
+  }
+};
+
+// Usage: If you don't care about uninteresting calls the the MOCK_METHOD but want to suppress the warning
+typedef ::testing::NiceMock<OperationModeSetupExecutorTestSpeedOverride>
+  OperationModeSetupExecutorTestSpeedOverrideNice;
+
+/**
+ * @tests{speed_override_per_operation_mode,
+ * Tests that speed override is set according to current operation mode.
+ * }
+ *
+ */
+TEST_P(OperationModeSetupExecutorTestSpeedOverrideNice, testSpeedOverride)
+{
+  /**********
+   * Step 1 *
+   **********/
+  OperationModes op_mode;
+  op_mode.time_stamp = ros::Time::now();
+  op_mode.value = GetParam().first;
+
+  executor_->updateOperationMode(op_mode);
+
+  auto req = GetSpeedOverrideRequest();
+  auto res = GetSpeedOverrideResponse();
+  executor_->getSpeedOverride(req, res);
+  EXPECT_EQ(res.speed_override, GetParam().second);
+}
+
+INSTANTIATE_TEST_CASE_P(
+  SpeedOverrideModeTests,
+  OperationModeSetupExecutorTestSpeedOverrideNice,
+  ::testing::Values(
+    std::pair<OperationModes::_value_type, double>(OperationModes::UNKNOWN, 0.0),
+    std::pair<OperationModes::_value_type, double>(OperationModes::T1,      0.1),
+    std::pair<OperationModes::_value_type, double>(OperationModes::AUTO,    1.0)
+  )
+);
 
 class GetOperationModeServiceMock
 {
