@@ -30,14 +30,10 @@
 #include <ros/console.h>
 
 #include <prbt_hardware_support/service_function_decl.h>
+#include <prbt_hardware_support/utils.h>
 
 namespace prbt_hardware_support
 {
-
-inline std::string className(std::string fullName)
-{
-  return fullName.substr(fullName.rfind("::") + 2);
-}
 
 #define COLOR_GREEN "\033[32m"
 #define COLOR_GREEN_BOLD "\033[1;32m"
