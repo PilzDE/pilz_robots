@@ -22,10 +22,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <!-- Services -->
 <arg name="omit_service" default="recover"/>
 
-<arg name="recover_service_name" default="driver/recover"/>
-<arg name="halt_service_name" default="driver/halt"/>
-<arg name="hold_service_name" default="manipulator_joint_trajectory_controller/hold"/>
-<arg name="unhold_service_name" default="manipulator_joint_trajectory_controller/unhold"/>
+<arg name="recover_service_name" value="driver/recover"/>
+<arg name="halt_service_name" value="driver/halt"/>
+<arg name="hold_service_name" value="manipulator_joint_trajectory_controller/hold"/>
+<arg name="unhold_service_name" value="manipulator_joint_trajectory_controller/unhold"/>
 
 <node name="stop1_executor_node" pkg="prbt_hardware_support" type="stop1_executor_node">
 </node>
