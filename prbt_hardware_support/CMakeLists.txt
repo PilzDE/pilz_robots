@@ -394,6 +394,23 @@ if(CATKIN_ENABLE_TESTING)
   add_dependencies(integrationtest_stop1 ${catkin_EXPORTED_TARGETS})
   #----------------------------------
 
+  # --- Stop1 missing service integration tests ---
+  add_rostest_gtest(integrationtest_stop1_service_missing
+     test/integrationtests/integrationtest_stop1_service_missing.test
+     test/integrationtests/integrationtest_stop1_service_missing.cpp
+  )
+  target_link_libraries(integrationtest_stop1_service_missing
+    ${catkin_LIBRARIES}
+  )
+  add_dependencies(integrationtest_stop1_service_missing ${catkin_EXPORTED_TARGETS})
+
+  foreach(service_name halt hold unhold)
+    add_rostest(test/integrationtests/integrationtest_stop1_service_missing.test
+      ARGS omit_service:=${service_name}
+      DEPENDENCIES integrationtest_stop1_service_missing)
+  endforeach(service_name)
+  #----------------------------------
+
   # --- Brake test required integration test ---
   add_rostest_gmock(integrationtest_brake_test_required
     test/integrationtests/integrationtest_brake_test_required.test
