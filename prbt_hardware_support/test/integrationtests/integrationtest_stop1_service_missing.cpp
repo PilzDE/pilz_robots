@@ -45,9 +45,15 @@ bool triggerCallbackDummy(std_srvs::TriggerRequest &req, std_srvs::TriggerRespon
   return true;
 }
 
+/**
+ * @brief Test the stop1 startup with a missing service.
+ */
 class Stop1ServiceMissingIntegrationTest : public ::testing::Test
 {
 public:
+  /**
+   * @brief Gather service-advertising functions for all manipulator services and determine service to omit.
+   */
   void SetUp() override;
 
 protected:
@@ -60,6 +66,7 @@ protected:
   ros::ServiceServer recover_server_;
 
   std::function<void()> omit_advertise_func_;
+  //! Map holding all but one service-advertising functions
   std::map<std::string, std::function<void()>> advertise_funcs_;
 };
 
