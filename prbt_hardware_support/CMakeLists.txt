@@ -376,15 +376,31 @@ if(CATKIN_ENABLE_TESTING)
   add_dependencies(integrationtest_stop1 ${catkin_EXPORTED_TARGETS})
   #----------------------------------
 
-  # --- Stop1 startup integration test ---
-  add_rostest_gmock(integrationtest_stop1_startup
-     test/integrationtests/integrationtest_stop1_startup.test
-     test/integrationtests/integrationtest_stop1_startup.cpp
+  # --- Stop1 recover missing integration test ---
+  add_rostest_gtest(integrationtest_stop1_service_missing
+     test/integrationtests/integrationtest_stop1_service_missing.test
+     test/integrationtests/integrationtest_stop1_service_missing.cpp
   )
-  target_link_libraries(integrationtest_stop1_startup
+  target_link_libraries(integrationtest_stop1_service_missing
     ${catkin_LIBRARIES}
   )
-  add_dependencies(integrationtest_stop1_startup ${catkin_EXPORTED_TARGETS})
+  add_dependencies(integrationtest_stop1_service_missing ${catkin_EXPORTED_TARGETS})
+  #----------------------------------
+
+  # --- Stop1 halt missing integration test ---
+  add_rostest(test/integrationtests/integrationtest_stop1_service_missing.test
+    ARGS omit_service:=halt
+    DEPENDENCIES integrationtest_stop1_service_missing)
+
+  # --- Stop1 hold missing integration test ---
+  add_rostest(test/integrationtests/integrationtest_stop1_service_missing.test
+    ARGS omit_service:=hold
+    DEPENDENCIES integrationtest_stop1_service_missing)
+
+  # --- Stop1 unhold missing integration test ---
+  add_rostest(test/integrationtests/integrationtest_stop1_service_missing.test
+    ARGS omit_service:=unhold
+    DEPENDENCIES integrationtest_stop1_service_missing)
   #----------------------------------
 
   # --- Brake test required integration test ---

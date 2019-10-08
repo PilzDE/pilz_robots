@@ -30,8 +30,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <node name="stop1_executor_node" pkg="prbt_hardware_support" type="stop1_executor_node">
 </node>
 
-<test unless="$(arg debug)" test-name="integrationtest_stop1_startup" pkg="prbt_hardware_support"
-      type="integrationtest_stop1_startup">
+<test unless="$(arg debug)" test-name="integrationtest_stop1_service_missing" pkg="prbt_hardware_support"
+      type="integrationtest_stop1_service_missing">
   <param name="omit_service" value="$(arg omit_service)"/>
   <remap from="recover" to="$(arg recover_service_name)"/>
   <remap from="halt" to="$(arg halt_service_name)"/>
@@ -39,8 +39,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   <remap from="unhold" to="$(arg unhold_service_name)"/>
 </test>
 
-<test if="$(arg debug)" test-name="integrationtest_stop1_startup" pkg="prbt_hardware_support"
-      type="integrationtest_stop1_startup" launch-prefix="xterm -e gdb -args">
+<test if="$(arg debug)" test-name="integrationtest_stop1_service_missing" pkg="prbt_hardware_support"
+      type="integrationtest_stop1_service_missing" launch-prefix="xterm -e gdb -args">
   <param name="omit_service" value="$(arg omit_service)"/>
   <remap from="recover" to="$(arg recover_service_name)"/>
   <remap from="halt" to="$(arg halt_service_name)"/>
