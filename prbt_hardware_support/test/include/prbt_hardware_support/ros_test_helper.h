@@ -28,6 +28,18 @@ namespace prbt_hardware_support
 {
 
 /**
+ * @brief Checks if a node is up and running.
+ * @param node_name
+ * @return True if the node was found, false otherwise.
+ */
+inline bool checkForNode(std::string node_name)
+{
+  std::vector<std::string> node_names;
+  return (ros::master::getNodes(node_names) &&
+          std::find(node_names.begin(), node_names.end(), node_name) == node_names.end());
+}
+
+/**
  * @brief Blocks until a node defined by node_name comes up.
  * @param node_name
  * @param loop_frequency Frequency at which the system is checked for the node.
