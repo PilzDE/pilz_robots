@@ -5,7 +5,6 @@ Changelog for package pilz_control
 Forthcoming
 -----------
 * Minor fixes
-* Contributors: Pilz GmbH and Co. KG
 * integrate clang-tidy via CMake flag
 * Contributors: Pilz GmbH and Co. KG
 

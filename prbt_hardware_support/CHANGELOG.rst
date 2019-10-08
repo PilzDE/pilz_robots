@@ -8,8 +8,6 @@ Forthcoming
 * Add modbus register for enabling temporary movement
 * Add Frame speed monitoring
 * Test fixes and improvements
-* Contributors: Pilz GmbH and Co. KG
-
 * Add speed observing dependent on operation mode
 * Contributors: Pilz GmbH and Co. KG
 
