@@ -302,13 +302,6 @@ INSTANTIATE_TEST_CASE_P(
   )
 );
 
-class GetOperationModeServiceMock
-{
-public:
-  MOCK_METHOD1(call, bool(GetOperationMode& srv));
-  MOCK_METHOD0(getService, std::string());
-};
-
 }  // namespace operation_mode_setup_executor_tests
 
 int main(int argc, char *argv[])
