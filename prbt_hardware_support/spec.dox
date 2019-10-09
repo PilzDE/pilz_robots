@@ -128,19 +128,19 @@
  * @subsubsection speed_monitoring Speed Monitoring
  *
  * @definereq{Monitor_Speed_of_all_tf_frames_until_TCP}
- *  - (New) The system monitors all tf frames associated
+ *  - The system monitors all tf frames associated
  *    with moving parts of the robot (including the TCP) in order to determine their
  *    translational speed.
  *
  * @definereq{Monitor_Speed_of_user_defined_tf_frames}
- *  - (New) The user can define additional tf frames to be monitored.
+ *  - The user can define additional tf frames to be monitored.
  *
  * @definereq{Stop1_on_violation_of_speed_limit}
- *  - (New) If the speed limit for the current operation mode is violated,
+ *  - If the speed limit for the current operation mode is violated,
  *    the robot performs a Stop 1 (\ref sto_stop1).
  *
  * @definereq{Speed_limits_per_operation_mode}
- *  - (New) The currently allowed speed limit depends on the operation mode.
+ *  - The currently allowed speed limit depends on the operation mode.
  *  - In T1 the speed limit is 250mm/s.
  *  - In AUTOMATIC the robot is allowed to move with maximum speed.
  *  - If the operation mode is unknown, the speed limit is set to zero.
