@@ -137,9 +137,9 @@ A controlled stop using a hold trajectory is performed thus stopping the manipul
 ## Package: prbt_hardware_support
 This package provides support for the Pilz hardware PNOZmulti and PSS4000. A configurable modbus connection is set up via
 `roslaunch prbt_hardware_support modbus_client.launch`. Particular features (detailed description [here](prbt_hardware_support/README.md)):
-- Realization of the Stop1 functionality
-- Inform about the Safe Brake Control status
-- Trigger execution of brake test
+- Stop1 functionality
+- Safe Brake Control functionality
+- Operation modes T1 (reduced speed) and AUTOMATIC
 
 ## Package: prbt_gazebo
 Provides a launch file to run the prbt manipulator inside gazebo.

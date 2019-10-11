@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>prbt_hardware_support</name>
-  <version>0.5.8</version>
+  <version>0.5.10</version>
   <description>Control hardware functions of the PRBT manipulator like STO for Stop1 functionality.</description>
 
   <maintainer email="a.gutenkunst@pilz.de">Alexander Gutenkunst</maintainer>
@@ -25,6 +25,11 @@
   <build_depend>std_srvs</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>message_filters</build_depend>
+  <build_depend>tf2</build_depend>
+  <build_depend>tf2_geometry_msgs</build_depend>
+  <build_depend>tf2_ros</build_depend>
+  <build_depend>urdf</build_depend>
+  <build_depend>dynamic_reconfigure</build_depend>
 
   <run_depend>roscpp</run_depend>
   <run_depend>message_runtime</run_depend>

@@ -9,6 +9,11 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   std_srvs
   sensor_msgs
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
+  urdf
+  dynamic_reconfigure
 )
 
 add_definitions(-Wall)
@@ -24,24 +29,31 @@ add_definitions(-Wpedantic)
 add_message_files(
   FILES
   BrakeTestErrorCodes.msg
+  FrameSpeeds.msg
   ModbusMsgInStamped.msg
-  OperationModes.msg
   ModbusRegisterBlock.msg
+  OperationModes.msg
 )
 
 # action generation
 add_service_files(
   FILES
   BrakeTest.srv
-  IsBrakeTestRequired.srv
   GetOperationMode.srv
-  WriteModbusRegister.srv
+  GetSpeedOverride.srv
+  IsBrakeTestRequired.srv
   SendBrakeTestResult.srv
+  SetSpeedLimit.srv
+  WriteModbusRegister.srv
 )
 
 generate_messages(
   DEPENDENCIES
   std_msgs
+)
+
+generate_dynamic_reconfigure_options(
+  cfg/FakeSpeedOverride.cfg
 )
 
 ###################################
@@ -98,6 +110,14 @@ add_executable(stop1_executor_node
 add_dependencies(stop1_executor_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
 target_link_libraries(stop1_executor_node ${catkin_LIBRARIES})
 
+# OPERATION_MODE_SETUP_EXECUTOR_NODE
+add_executable(operation_mode_setup_executor_node
+  src/operation_mode_setup_executor.cpp
+  src/operation_mode_setup_executor_node.cpp
+)
+add_dependencies(operation_mode_setup_executor_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(operation_mode_setup_executor_node ${catkin_LIBRARIES})
+
 # BRAKE_TEST_NODE
 add_executable(modbus_adapter_brake_test_node
   src/modbus_adapter_brake_test_node.cpp
@@ -139,6 +159,16 @@ add_executable(system_info_node
 add_dependencies(system_info_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
 target_link_libraries(system_info_node ${catkin_LIBRARIES})
 
+add_executable(fake_speed_override_node
+  src/fake_speed_override_node.cpp
+)
+add_dependencies(fake_speed_override_node
+  ${catkin_EXPORTED_TARGETS}
+  ${PROJECT_NAME}_gencfg
+  ${PROJECT_NAME}_generate_messages_cpp
+)
+target_link_libraries(fake_speed_override_node ${catkin_LIBRARIES})
+
 # +++++++++++++++++++++++++++++++++
 # + Build modbus client node +
 # +++++++++++++++++++++++++++++++++
@@ -151,6 +181,18 @@ add_executable(
 )
 add_dependencies(pilz_modbus_client_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
 target_link_libraries(pilz_modbus_client_node ${catkin_LIBRARIES} modbus)
+
+
+# +++++++++++++++++++++++++++++
+# + Build speed observer node +
+# +++++++++++++++++++++++++++++
+add_executable(
+  speed_observer_node
+  src/speed_observer_node.cpp
+  src/speed_observer.cpp
+)
+add_dependencies(speed_observer_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
+target_link_libraries(speed_observer_node ${catkin_LIBRARIES})
 
 #############
 ## Install ##
@@ -172,6 +214,8 @@ install(TARGETS
   brake_test_executor_node
   modbus_adapter_operation_mode_node
   system_info_node
+  speed_observer_node
+  fake_speed_override_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -199,16 +243,16 @@ if(CATKIN_ENABLE_TESTING)
   )
   add_dependencies(unittest_update_filter ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-#  catkin_add_gtest(unittest_libmodbus_client
-#      test/unittests/unittest_libmodbus_client.cpp
-#      test/unittests/pilz_modbus_server_mock.cpp
-#      src/libmodbus_client.cpp
-#  )
-#  target_link_libraries(unittest_libmodbus_client
-#    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
-#    modbus
-#  )
-#  add_dependencies(unittest_libmodbus_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
+  catkin_add_gtest(unittest_libmodbus_client
+      test/unittests/unittest_libmodbus_client.cpp
+      test/unittests/pilz_modbus_server_mock.cpp
+      src/libmodbus_client.cpp
+  )
+  target_link_libraries(unittest_libmodbus_client
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+    modbus
+  )
+  add_dependencies(unittest_libmodbus_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
   catkin_add_gmock(unittest_modbus_api_spec
   test/unittests/unittest_modbus_api_spec.cpp
@@ -350,6 +394,23 @@ if(CATKIN_ENABLE_TESTING)
   add_dependencies(integrationtest_stop1 ${catkin_EXPORTED_TARGETS})
   #----------------------------------
 
+  # --- Stop1 missing service integration tests ---
+  add_rostest_gtest(integrationtest_stop1_service_missing
+     test/integrationtests/integrationtest_stop1_service_missing.test
+     test/integrationtests/integrationtest_stop1_service_missing.cpp
+  )
+  target_link_libraries(integrationtest_stop1_service_missing
+    ${catkin_LIBRARIES}
+  )
+  add_dependencies(integrationtest_stop1_service_missing ${catkin_EXPORTED_TARGETS})
+
+  foreach(service_name halt hold unhold)
+    add_rostest(test/integrationtests/integrationtest_stop1_service_missing.test
+      ARGS omit_service:=${service_name}
+      DEPENDENCIES integrationtest_stop1_service_missing)
+  endforeach(service_name)
+  #----------------------------------
+
   # --- Brake test required integration test ---
   add_rostest_gmock(integrationtest_brake_test_required
     test/integrationtests/integrationtest_brake_test_required.test
@@ -392,6 +453,30 @@ if(CATKIN_ENABLE_TESTING)
     modbus
   )
   add_dependencies(integrationtest_execute_brake_test ${catkin_EXPORTED_TARGETS})
+  #----------------------------------------
+
+  # --- Speed Observer unit test ---
+  add_rostest_gmock(unittest_speed_observer
+      test/unittests/unittest_speed_observer.test
+      test/unittests/unittest_speed_observer.cpp
+      src/speed_observer.cpp
+  )
+  target_link_libraries(unittest_speed_observer
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  add_dependencies(unittest_speed_observer ${${PROJECT_NAME}_EXPORTED_TARGETS})
+  #----------------------------------------
+
+  # --- Speed Observer and Operation Mode integration test ---
+  add_rostest_gmock(integrationtest_speed_observer_and_operation_mode
+      test/integrationtests/integrationtest_speed_observer_and_operation_mode.test
+      test/integrationtests/integrationtest_speed_observer_and_operation_mode.cpp
+  )
+  target_link_libraries(integrationtest_speed_observer_and_operation_mode
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  add_dependencies(integrationtest_speed_observer_and_operation_mode ${${PROJECT_NAME}_EXPORTED_TARGETS})
+  #----------------------------------------
 
   #--- SystemInfo unit test ---
   add_rostest_gmock(unittest_system_info
@@ -427,6 +512,37 @@ if(CATKIN_ENABLE_TESTING)
   add_dependencies(unittest_modbus_msg_in_builder ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------------
 
+  #--- OperationModeSetupExecutor unit test ---
+  catkin_add_gmock(unittest_operation_mode_setup_executor
+      test/unittests/unittest_operation_mode_setup_executor.cpp
+      src/operation_mode_setup_executor.cpp
+  )
+  target_link_libraries(unittest_operation_mode_setup_executor
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  add_dependencies(unittest_operation_mode_setup_executor ${${PROJECT_NAME}_EXPORTED_TARGETS})
+  #----------------------------------------
+
+  #--- OperationModeSetupExecutor unit test ---
+  add_rostest_gtest(unittest_fake_speed_override
+      test/unittests/unittest_fake_speed_override.test
+      test/unittests/unittest_fake_speed_override.cpp
+  )
+  target_link_libraries(unittest_fake_speed_override
+    ${catkin_LIBRARIES}
+  )
+  add_dependencies(unittest_fake_speed_override ${${PROJECT_NAME}_EXPORTED_TARGETS})
+  #----------------------------------------
+
+  #--- utils unittest ---
+  catkin_add_gtest(unittest_utils
+    test/unittests/unittest_utils.cpp
+  )
+  target_link_libraries(unittest_utils
+    ${catkin_LIBRARIES}
+  )
+  #----------------------------------------
+
   # to run: catkin_make -DENABLE_COVERAGE_TESTING=ON package_name_coverage (adding -j1 recommended)
   if(ENABLE_COVERAGE_TESTING)
     include(CodeCoverage)
@@ -447,10 +563,18 @@ if(CATKIN_ENABLE_TESTING)
                           "*/GetOperationMode.h"
                           "*/GetOperationModeRequest.h"
                           "*/GetOperationModeResponse.h"
+                          "*/GetSpeedOverride.h"
+                          "*/GetSpeedOverrideRequest.h"
+                          "*/GetSpeedOverrideResponse.h"
                           "*/OperationModes.h"
                           "*/SendBrakeTestResult.h"
                           "*/SendBrakeTestResultRequest.h"
                           "*/SendBrakeTestResultResponse.h"
+                          "*/FrameSpeeds.h"
+                          "*/SetSpeedLimit.h"
+                          "*/SetSpeedLimitRequest.h"
+                          "*/SetSpeedLimitResponse.h"
+                          "*/FakeSpeedOverrideConfig.h"
                           )
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
