@@ -9,7 +9,7 @@ add_compile_options(-Wno-unused-variable)
 add_compile_options(-Werror)
 
 # enable aligned new in gcc7+
-if(CMAKE_COMPILER_IS_GNUCXX)
+if(CMAKE_COMPILER_IS_GNUCXX) 
   if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.0)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -faligned-new")
   endif()
@@ -23,7 +23,6 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_eigen
   eigen_conversions
 )
-find_package(LAPACK REQUIRED)
 
 include_directories(${catkin_INCLUDE_DIRS} include)
 
@@ -31,7 +30,7 @@ catkin_package()
 
 set(IKFAST_LIBRARY_NAME prbt_manipulator_moveit_ikfast_plugin)
 add_library(${IKFAST_LIBRARY_NAME} src/prbt_manipulator_ikfast_moveit_plugin.cpp)
-target_link_libraries(${IKFAST_LIBRARY_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(${IKFAST_LIBRARY_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 # suppress warnings about unused variables in OpenRave's solver code
 target_compile_options(${IKFAST_LIBRARY_NAME} PRIVATE -Wno-unused-variable)
 
