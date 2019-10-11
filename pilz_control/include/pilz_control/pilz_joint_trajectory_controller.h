@@ -22,6 +22,9 @@
 #include <std_srvs/Trigger.h>
 
 #include <joint_trajectory_controller/joint_trajectory_controller.h>
+#include <moveit/robot_state/robot_state.h>
+#include <moveit/robot_model/joint_model.h>
+#include <moveit/robot_model_loader/robot_model_loader.h>
 
 namespace pilz_joint_trajectory_controller
 {
@@ -121,6 +124,12 @@ class PilzJointTrajectoryController
     std_srvs::TriggerRequest last_request_;
 
     Mode active_mode_ {Mode::HOLD};
+
+    robot_model_loader::RobotModelLoaderPtr robot_model_loader_;
+    robot_model::RobotModelPtr kinematic_model_;
+    robot_state::RobotStatePtr kinematic_state_; // Needed for foward calculations
+
+
 
     /**
      * @brief Synchronizes hold/unhold and update trajectory function to avoid

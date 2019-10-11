@@ -10,6 +10,8 @@ find_package(catkin
     roslint
     controller_manager
     controller_interface
+    #moveit_core
+    moveit_ros_planning
 )
 
 # Declare catkin package
@@ -23,8 +25,8 @@ catkin_package(
 )
 
 add_definitions(-std=c++11)
-
-include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
+find_package(Eigen3 REQUIRED)
+include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
 
 ################
 ## Clang tidy ##

@@ -36,6 +36,17 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
 {
   bool res = JointTrajectoryController::init(hw, root_nh, controller_nh);
 
+  ROS_ERROR("Loading model");
+  bool load_kinematics_solvers = true; // OTHERWISE warning TODO investigate what is best todo here. Check if loaded?
+  robot_model_loader_.reset(new robot_model_loader::RobotModelLoader("robot_description", load_kinematics_solvers));
+  kinematic_model_ = robot_model_loader_->getModel();
+  ROS_ERROR("Model frame: %s", kinematic_model_->getModelFrame().c_str());
+
+  kinematic_state_.reset(new robot_state::RobotState(kinematic_model_));
+  kinematic_state_->setToDefaultValues();
+  const robot_state::JointModelGroup* joint_model_group = kinematic_model_->getJointModelGroup("manipulator");
+  ROS_ERROR("Done loading model");
+
   hold_position_service = controller_nh.advertiseService("hold",
                                                          &PilzJointTrajectoryController::handleHoldRequest,
                                                          this);
@@ -159,6 +170,75 @@ template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 updateStrategyDefault(const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePtr gh, std::string* error_string)
 {
+  // TODO Check that first point matches current position and that time_from start equals zero for the first point
+
+  std::vector<std::string> frames_to_observe;
+  auto links = kinematic_model_->getLinkModels();
+  ROS_DEBUG_STREAM("Received the following frames to observer from urdf:");
+  for (const auto& link : links)
+  {
+    if(!link->parentJointIsFixed()) // Not sure about this...
+    {
+      ROS_ERROR_STREAM(" - " << link->getName());
+      frames_to_observe.push_back(link->getName());
+    }
+  }
+
+  size_t counter{0};
+  ROS_ERROR_STREAM("Checking trajectory with " << msg->points.size() << " points");
+  auto start_t = ros::Time::now();
+
+  // Check trajectory
+  auto first_violation_point = std::adjacent_find(msg->points.begin(), 
+                                                  msg->points.end(), 
+                                                  [this, frames_to_observe, &counter](const trajectory_msgs::JointTrajectoryPoint& p1, const trajectory_msgs::JointTrajectoryPoint& p2) -> bool
+                                                  {
+
+                                                    for(const auto &frame : frames_to_observe)
+                                                    {                                                                                                          // Calculate the distance
+                                                      kinematic_state_->setVariablePositions(p1.positions);  // TODO check that correct order
+                                                      auto p1_cart = kinematic_state_->getGlobalLinkTransform(frame); // TODO needs to be done for all frames
+
+                                                      // Calculate the distance
+                                                      kinematic_state_->setVariablePositions(p2.positions);
+                                                      auto p2_cart = kinematic_state_->getGlobalLinkTransform(frame); // TODO needs to be done for all frames
+
+                                                      auto distance_cartesian = (p2_cart.translation() - p1_cart.translation()).squaredNorm();
+                                                      auto time_distance = p2.time_from_start - p1.time_from_start;
+
+                                                      auto velocity = distance_cartesian / time_distance.toSec();
+
+                                                      counter++;
+
+                                                      constexpr double max_vel = 0.025;
+                                                      if(velocity > max_vel)
+                                                      {
+                                                        ROS_ERROR_STREAM("Velocity between " << p1.time_from_start << "s and " << p2.time_from_start << "s is " << velocity << " (max. allowed " << max_vel << "m/s)");
+                                                        return true;
+                                                      }
+                                                    }
+
+                                                    return false;
+                  });
+
+  auto duration_ms = (ros::Time::now() - start_t).toSec() * 1000;
+
+  ROS_ERROR_STREAM("Total checks: " << counter << " took " << duration_ms << "ms");
+
+  typedef joint_trajectory_controller::InitJointTrajectoryOptions<Trajectory> Options;
+  Options options;
+  options.error_string = error_string;
+  std::string error_string_tmp;
+
+  if (first_violation_point != msg->points.end())
+  {
+    error_string_tmp = "Velocity violated";
+    ROS_ERROR_STREAM_NAMED(JointTrajectoryController::name_, error_string_tmp);
+    options.setErrorString(error_string_tmp);
+    return false;
+  }
+
+
   return JointTrajectoryController::updateTrajectoryCommand(msg, gh, error_string);
 }
 
