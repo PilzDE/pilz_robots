@@ -103,8 +103,9 @@ class MovementObserver:
                 actual_velocity = self._actual_velocity
 
             # Timeout check
-            if(timeout < (rospy.Time.now() - start_stop).to_sec()):
-                raise ObservationException('Stop lasted too long: ' + str(stop_duration.to_sec()) + ' seconds.')
+            stop_duration = (rospy.Time.now() - start_stop).to_sec()
+            if(timeout < stop_duration):
+                raise ObservationException('Stop lasted too long: ' + str(stop_duration) + ' seconds.')
 
             # Noting to be done if no actual_velocity was observed
             if actual_velocity is None:

@@ -2,8 +2,19 @@
 Changelog for package prbt_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix warning by change parent and child of fixed frame
+* Contributors: Pilz GmbH and Co. KG
+
 0.4.11 (2019-09-11)
 -------------------
+
+0.5.7 (2019-08-29)
+------------------
+
+0.5.6 (2019-06-12)
+------------------
 
 0.4.10 (2019-09-03)
 -------------------

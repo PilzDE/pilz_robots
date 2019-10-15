@@ -21,14 +21,12 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include <ros/ros.h>
+#include <std_srvs/Trigger.h>
 
 #include <prbt_hardware_support/brake_test_executor.h>
-#include <prbt_hardware_support/brake_test_executor_exception.h>
 #include <prbt_hardware_support/BrakeTestErrorCodes.h>
-#include <prbt_hardware_support/joint_states_publisher_mock.h>
-#include <prbt_hardware_support/pilz_manipulator_mock.h>
-#include <prbt_hardware_support/WriteModbusRegister.h>
+#include <prbt_hardware_support/brake_test_executor_node_service_calls.h>
+
 
 namespace brake_test_executor_test
 {
@@ -36,45 +34,18 @@ namespace brake_test_executor_test
 using namespace prbt_hardware_support;
 using namespace testing;
 
-static const std::string BRAKE_TEST_SERVICE_NAME{"/prbt/execute_braketest"};
+using std::placeholders::_1;
 
-static const std::string BRAKETEST_ADAPTER_SERVICE_NAME{"/prbt/braketest_adapter_node/trigger_braketest"};
-
-static const std::string CONTROLLER_HOLD_MODE_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/hold"};
-static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/unhold"};
-static const std::string MODBUS_SERVICE_NAME{"/pilz_modbus_client_node/modbus_write"};
-
-static const std::string API_SPEC_PARAM_NAME{"/write_api_spec"};
-static const std::string BRAKETEST_PERFORMED_PARAM_NAME{"/BRAKETEST_PERFORMED"};
-static const std::string BRAKETEST_RESULT_PARAM_NAME{"/BRAKETEST_RESULT"};
-
-class BrakeTestExecutorTest : public Test
+class SystemMock
 {
 public:
-  BrakeTestExecutorTest();
+  MOCK_METHOD0(detectMotion, bool());
+  MOCK_METHOD0(holdController, void());
+  MOCK_METHOD0(executeBrakeTest, BrakeTest::Response());
+  MOCK_METHOD0(unholdController, void());
+  MOCK_METHOD1(sendBrakeTestResult, bool(const bool brake_test_result));
 
-  MOCK_METHOD2(triggerBrakeTest, bool(BrakeTest::Request &, BrakeTest::Response &));
-  MOCK_METHOD2(modbusWrite, bool(WriteModbusRegister::Request &, WriteModbusRegister::Response &));
-
-protected:
-  ros::NodeHandle nh_;
-  ManipulatorMock manipulator_;
 };
-
-BrakeTestExecutorTest::BrakeTestExecutorTest()
-{
-  manipulator_.advertiseHoldService(nh_, CONTROLLER_HOLD_MODE_SERVICE_NAME);
-  manipulator_.advertiseUnholdService(nh_, CONTROLLER_UNHOLD_MODE_SERVICE_NAME);
-}
-
-/**
- * @brief Test increases function coverage by ensuring that all Dtor variants
- * are called.
- */
-TEST(ModbusApiSpecTest, testModbusApiSpecExceptionDtor)
-{
-  std::shared_ptr<BrakeTestExecutorException> ex {new BrakeTestExecutorException("Test msg")};
-}
 
 /**
  * @tests{Execute_BrakeTest_mechanism,
@@ -82,66 +53,43 @@ TEST(ModbusApiSpecTest, testModbusApiSpecExceptionDtor)
  * }
  *
  * Test Sequence:
- *  0. Setup Server for triggering the braketest
- *  1. Set expectations and action on service calls
- *  2. Publish fixed joint states.
- *  3. Call brake test service.
+ *  - Set expectations and action on service calls + Call brake test service
  *
  * Expected Results:
- *  0. Executor is created without problems, a client can attach to its service
- *  1. -
- *  2. -
- *  3. Brake tests are executed successfully. In strict order:
+ *  - Brake tests are executed successfully. In strict order:
  *     - Hold mode is triggered
  *     - Brake test execution is triggered
  *     - Unhold is triggered
  */
-TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
+TEST(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
 {
-  /**********
-   * Step 0 *
-   **********/
-  ros::ServiceServer brake_test_service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>
-          (BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
-  ros::ServiceServer modbus_service = nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>
-          (MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
+  SystemMock mock;
+  BrakeTestExecutor brake_test_executor(std::bind(&SystemMock::detectMotion, &mock),
+                                        std::bind(&SystemMock::holdController, &mock),
+                                        std::bind(&SystemMock::executeBrakeTest, &mock),
+                                        std::bind(&SystemMock::unholdController, &mock),
+                                        std::bind(&SystemMock::sendBrakeTestResult, &mock, _1));
 
-  BrakeTestExecutor brake_test_executor(this->nh_);
-
-  ros::ServiceClient brake_test_srv_client_ = nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);
-  ASSERT_TRUE(brake_test_srv_client_.exists()) << "Brake test service not available.";
-
-  /**********
-   * Step 1 *
-   **********/
   {
     InSequence dummy;
 
-    EXPECT_CALL(manipulator_, holdCb(_, _)).WillOnce(Return(true));
-
-    EXPECT_CALL(*this, triggerBrakeTest(_, _))
+    EXPECT_CALL(mock, detectMotion()).Times(1).WillOnce(Return(false));
+    EXPECT_CALL(mock, holdController()).Times(1);
+    EXPECT_CALL(mock, executeBrakeTest())
         .Times(1)
         .WillOnce(testing::Invoke(
-            [](BrakeTest::Request &, BrakeTest::Response &res) {
-              res.success = true;
-              return true;
-            }));
-
-    EXPECT_CALL(manipulator_, unholdCb(_, _)).WillOnce(Return(true));
+                    []() {
+      BrakeTest::Response res;
+      res.success = true;
+      return res;
+    }));
+    EXPECT_CALL(mock, unholdController()).Times(1);
+    EXPECT_CALL(mock, sendBrakeTestResult(_)).Times(1).WillOnce(Return(true));
   }
 
-  /**********
-   * Step 2 *
-   **********/
-  JointStatesPublisherMock joint_states_pub;
-  joint_states_pub.startAsync();
-
-  // /**********
-  //  * Step 3 *
-  //  **********/
-  BrakeTest srv;
-  EXPECT_TRUE(brake_test_srv_client_.call(srv)) << "Failed to call brake test service.";
-  EXPECT_TRUE(srv.response.success) << "Brake tests failed unexpectedly. Message: " << srv.response.error_msg;
+  BrakeTest brake_test_srv;
+  EXPECT_TRUE(brake_test_executor.executeBrakeTest(brake_test_srv.request, brake_test_srv.response)) << "Failed to call brake test service.";
+  EXPECT_TRUE(brake_test_srv.response.success) << "Brake tests failed unexpectedly. Message: " << brake_test_srv.response.error_msg;
 }
 
 /**
@@ -150,45 +98,32 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
  * }
  *
  * Test Sequence:
- *  0. Setup Server for triggering the braketest
- *  1. Set expectations and action on service calls
- *  2. Publish dynamic(moving) joint states.
- *  3. Call brake test service.
+ *  1.  Set expectations and action on service calls + Call brake test service.
  *
  * Expected Results:
- *  0. Executor is created without problems, a client can attach to its service
- *  1. -
- *  2. -
- *  3. Brake tests cannot be triggered. Respective error message is returned. The hold service is not called.
+ *  1.  Brake tests cannot be triggered.
+ *      Respective error message is returned. The hold service is not called.
  */
-TEST_F(BrakeTestExecutorTest, testBrakeTestServiceWithRobotMotion)
+TEST(BrakeTestExecutorTest, testBrakeTestServiceWithRobotMotion)
 {
-  ros::ServiceServer service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>
-          (BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
-  ros::ServiceServer modbus_service = nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>
-          (MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
+  SystemMock mock;
+  BrakeTestExecutor brake_test_executor(std::bind(&SystemMock::detectMotion, &mock),
+                                        std::bind(&SystemMock::holdController, &mock),
+                                        std::bind(&SystemMock::executeBrakeTest, &mock),
+                                        std::bind(&SystemMock::unholdController, &mock),
+                                        std::bind(&SystemMock::sendBrakeTestResult, &mock, _1));
 
-  BrakeTestExecutor brake_test_executor(this->nh_);
+  EXPECT_CALL(mock, detectMotion()).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(mock, holdController()).Times(0);
+  EXPECT_CALL(mock, executeBrakeTest()).Times(0);
+  EXPECT_CALL(mock, unholdController()).Times(0);
+  EXPECT_CALL(mock, sendBrakeTestResult(_)).Times(0);
 
-  ros::ServiceClient brake_test_srv_client_ = nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);
-  ASSERT_TRUE(brake_test_srv_client_.exists()) << "Brake test service not available.";
-  /**********
-   * Step 1 *
-   **********/
-  EXPECT_CALL(*this, triggerBrakeTest(_, _)).Times(0);
-  EXPECT_CALL(manipulator_, holdCb(_, _)).Times(0);
-  /**********
-   * Step 2 *
-   **********/
-  JointStatesPublisherMock joint_states_pub;
-  joint_states_pub.startAsync(true);
-  /**********
-   * Step 3 *
-   **********/
-  BrakeTest srv;
-  EXPECT_TRUE(brake_test_srv_client_.call(srv)) << "Failed to call brake test service.";
-  EXPECT_FALSE(srv.response.success);
-  EXPECT_EQ(BrakeTestErrorCodes::ROBOT_MOTION_DETECTED, srv.response.error_code.value);
+
+  BrakeTest brake_test_srv;
+  EXPECT_TRUE(brake_test_executor.executeBrakeTest(brake_test_srv.request, brake_test_srv.response));
+  EXPECT_FALSE(brake_test_srv.response.success) << "Brake tests was unexpectedly successful";
+  EXPECT_EQ(BrakeTestErrorCodes::ROBOT_MOTION_DETECTED, brake_test_srv.response.error_code.value);
 }
 
 /**
@@ -197,208 +132,269 @@ TEST_F(BrakeTestExecutorTest, testBrakeTestServiceWithRobotMotion)
  * }
  *
  * Test Sequence:
- *  0. Setup Server for triggering the braketest, Executor and Client
- *  1. Set expectations and action on the service call. Return false on call.
- *  2. Publish static joint states.
- *  3. Call brake test service.
+ *  1.  Set expectations and action on the service call
+ *      (Return false as response on call.) + Call brake test service.
  *
  * Expected Results:
- *  0. Executor is created without problems, a client can attach to its service
- *  1. -
- *  2. -
- *  3. Error is returned upon service call. In strict order:
+ *  1. Error is returned upon service call. In strict order:
  *     - Hold mode is triggered
  *     - Brake test execution is triggered
  *     - Unhold is triggered
  */
-TEST_F(BrakeTestExecutorTest, testBrakeTestServiceTriggerFails)
+TEST(BrakeTestExecutorTest, testBrakeTestServiceTriggerFails)
 {
-  /**********
-   * Step 0 *
-   **********/
-  ros::ServiceServer service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>
-          (BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
-  ros::ServiceServer modbus_service = nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>
-          (MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
+  SystemMock mock;
+  BrakeTestExecutor brake_test_executor(std::bind(&SystemMock::detectMotion, &mock),
+                                        std::bind(&SystemMock::holdController, &mock),
+                                        std::bind(&SystemMock::executeBrakeTest, &mock),
+                                        std::bind(&SystemMock::unholdController, &mock),
+                                        std::bind(&SystemMock::sendBrakeTestResult, &mock, _1));
 
-  BrakeTestExecutor brake_test_executor(this->nh_);
-
-  ros::ServiceClient brake_test_srv_client_ = nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);
-  ASSERT_TRUE(brake_test_srv_client_.exists()) << "Brake test service not available.";
-
-  /**********
-   * Step 1 *
-   **********/
   {
     InSequence dummy;
 
-    EXPECT_CALL(manipulator_, holdCb(_, _)).WillOnce(Return(true));
-
-    EXPECT_CALL(*this, triggerBrakeTest(_, _))
+    EXPECT_CALL(mock, detectMotion()).Times(1).WillOnce(Return(false));
+    EXPECT_CALL(mock, holdController()).Times(1);
+    EXPECT_CALL(mock, executeBrakeTest())
         .Times(1)
-        .WillOnce(Return(false));
-
-    EXPECT_CALL(manipulator_, unholdCb(_, _)).WillOnce(Return(true));
+        .WillOnce(testing::Invoke([]()
+    {
+      BrakeTest::Response res;
+      res.success = false;
+      res.error_msg = "Test error message";
+      res.error_code.value = BrakeTestErrorCodes::FAILURE;
+      return res;
+    }));
+    EXPECT_CALL(mock, unholdController()).Times(1);
+    EXPECT_CALL(mock, sendBrakeTestResult(_)).Times(1).WillOnce(Return(true));
   }
 
-  /**********
-   * Step 2 *
-   **********/
-  JointStatesPublisherMock joint_states_pub;
-  joint_states_pub.startAsync();
-
-  /**********
-   * Step 3 *
-   **********/
-  BrakeTest srv;
-  EXPECT_TRUE(brake_test_srv_client_.call(srv)) << "Failed to call brake test service.";
-  EXPECT_FALSE(srv.response.success) << "Brake tests succeded unexpectedly.";
-  EXPECT_EQ(BrakeTestErrorCodes::TRIGGER_BRAKETEST_SERVICE_FAILURE, srv.response.error_code.value);
+  BrakeTest brake_test_srv;
+  EXPECT_TRUE(brake_test_executor.executeBrakeTest(brake_test_srv.request, brake_test_srv.response));
+  EXPECT_FALSE(brake_test_srv.response.success);
 }
 
 /**
  * @tests{Execute_BrakeTest_mechanism,
- *  Test execution of brake tests when the hold/unhold service calls fail.
- *  This test is essentially for line coverage.
+ * Test behaviour if the sending of the brake test result fails.
  * }
  *
  * Test Sequence:
- *  0. Setup Server for triggering the braketest
- *  1. Set expectations and action on service calls
- *  2. Publish fixed joint states.
- *  3. Call brake test service.
+ *  1.  Set expectations + Call brake test service.
  *
  * Expected Results:
- *  0. Executor is created without problems, a client can attach to its service
- *  1. -
- *  2. -
- *  3. Brake tests are executed successfully. In strict order:
- *     - Hold mode is triggered
- *     - Brake test execution is triggered
- *     - Unhold is triggered
+ *  1.  Function returns false and error code matches expected error code.
  */
-TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringHoldFailing)
+TEST(BrakeTestExecutorTest, testBrakeTestResultServiceFails)
 {
-  /**********
-   * Step 0 *
-   **********/
-  ros::ServiceServer service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>
-          (BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
-  ros::ServiceServer modbus_service = nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>
-          (MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
+  SystemMock mock;
+  BrakeTestExecutor brake_test_executor(std::bind(&SystemMock::detectMotion, &mock),
+                                        std::bind(&SystemMock::holdController, &mock),
+                                        std::bind(&SystemMock::executeBrakeTest, &mock),
+                                        std::bind(&SystemMock::unholdController, &mock),
+                                        std::bind(&SystemMock::sendBrakeTestResult, &mock, _1));
 
-  BrakeTestExecutor brake_test_executor(this->nh_);
-
-  ros::ServiceClient brake_test_srv_client_ = nh_.serviceClient<BrakeTest>(BRAKE_TEST_SERVICE_NAME);
-  ASSERT_TRUE(brake_test_srv_client_.exists()) << "Brake test service not available.";
-
-  /**********
-   * Step 1 *
-   **********/
   {
     InSequence dummy;
 
-    EXPECT_CALL(manipulator_, holdCb(_, _)).WillOnce(Return(false));
-
-    EXPECT_CALL(*this, triggerBrakeTest(_, _))
+    EXPECT_CALL(mock, detectMotion()).Times(1).WillOnce(Return(false));
+    EXPECT_CALL(mock, holdController()).Times(1);
+    EXPECT_CALL(mock, executeBrakeTest())
         .Times(1)
-        .WillOnce(testing::Invoke(
-            [](BrakeTest::Request &, BrakeTest::Response &res) {
-              res.success = true;
-              return true;
-            }));
-
-    EXPECT_CALL(manipulator_, unholdCb(_, _)).WillOnce(Return(false));
+        .WillOnce(testing::Invoke([]()
+    {
+      BrakeTest::Response res;
+      res.success = true;
+      return res;
+    }));
+    EXPECT_CALL(mock, unholdController()).Times(1);
+    EXPECT_CALL(mock, sendBrakeTestResult(_)).Times(1).WillOnce(Return(false));
   }
 
-  /**********
-   * Step 2 *
-   **********/
-  JointStatesPublisherMock joint_states_pub;
-  joint_states_pub.startAsync();
-
-  /**********
-   * Step 3 *
-   **********/
-  BrakeTest srv;
-  EXPECT_TRUE(brake_test_srv_client_.call(srv)) << "Failed to call brake test service.";
-  EXPECT_TRUE(srv.response.success) << "Brake tests failed unexpectedly. Message: " << srv.response.error_msg;
+  BrakeTest brake_test_srv;
+  EXPECT_TRUE(brake_test_executor.executeBrakeTest(brake_test_srv.request, brake_test_srv.response));
+  EXPECT_FALSE(brake_test_srv.response.success);
+  EXPECT_EQ(brake_test_srv.response.error_code.value, BrakeTestErrorCodes::FAILURE);
 }
 
 /**
- * @brief Test execution of brake tests when there is a problem
- * in the api definition.
- *
- * Test Sequence:
- *  0. Prepare required service mocks and backup current api spec
- *  1. Execute a brake test with missing definition for BRAKETEST_PERFORMED
- *  2. Execute a brake test with missing definition for BRAKETEST_RESULT
- *  3. Execute a brake test with both values defined 1 apart
- *  4. Execute a brake test with both values defined 2 apart
- *  5. Set api spec back to backed up values
- *
- * Expected Results:
- *  0. -
- *  1. A BrakeTestExecutorException is thown
- *  2. A BrakeTestExecutorException is thown
- *  3. No Exception is thrown
- *  4. A BrakeTestExecutorException is thown
- *  5. -
+ * @brief Checks that exception is thrown if function to hold controller
+ * is missing.
  */
-TEST_F(BrakeTestExecutorTest, testBrakeTestTriggeringWrongApiDef){
-  /**********
-   * Step 0 *
-   **********/
-  ros::ServiceServer brake_test_service = nh_.advertiseService<BrakeTestExecutorTest, BrakeTest::Request, BrakeTest::Response>
-          (BRAKETEST_ADAPTER_SERVICE_NAME, &BrakeTestExecutorTest::triggerBrakeTest, this);
-  ros::ServiceServer modbus_service = nh_.advertiseService<BrakeTestExecutorTest, WriteModbusRegister::Request, WriteModbusRegister::Response>
-          (MODBUS_SERVICE_NAME, &BrakeTestExecutorTest::modbusWrite, this);
-  ASSERT_NO_THROW(BrakeTestExecutor bte_default_params(nh_));
-  XmlRpc::XmlRpcValue api_spec_backup;
-  nh_.getParam(API_SPEC_PARAM_NAME, api_spec_backup);
+TEST(BrakeTestExecutorTest, testMissingHoldFunc)
+{
+  SystemMock mock;
+  EXPECT_THROW(BrakeTestExecutor(std::bind(&SystemMock::detectMotion, &mock),
+                                 nullptr,
+                                 std::bind(&SystemMock::executeBrakeTest, &mock),
+                                 std::bind(&SystemMock::unholdController, &mock),
+                                 std::bind(&SystemMock::sendBrakeTestResult, &mock, _1)),
+               BrakeTestExecutorException);
+}
 
-  /**********
-   * Step 1 *
-   **********/
-  nh_.deleteParam(API_SPEC_PARAM_NAME+BRAKETEST_PERFORMED_PARAM_NAME);
-  ASSERT_THROW(BrakeTestExecutor bte_no_perf(nh_), BrakeTestExecutorException);
+/**
+ * @brief Checks that exception is thrown if function to unhold controller
+ * is missing.
+ */
+TEST(BrakeTestExecutorTest, testMissingUnholdFunc)
+{
+  SystemMock mock;
+  EXPECT_THROW(BrakeTestExecutor(std::bind(&SystemMock::detectMotion, &mock),
+                                 std::bind(&SystemMock::holdController, &mock),
+                                 std::bind(&SystemMock::executeBrakeTest, &mock),
+                                 nullptr,
+                                 std::bind(&SystemMock::sendBrakeTestResult, &mock, _1)),
+               BrakeTestExecutorException);
+}
 
-  /**********
-   * Step 2 *
-   **********/
-  nh_.setParam(API_SPEC_PARAM_NAME+BRAKETEST_PERFORMED_PARAM_NAME, 100);
-  nh_.deleteParam(API_SPEC_PARAM_NAME+BRAKETEST_RESULT_PARAM_NAME);
-  ASSERT_THROW(BrakeTestExecutor bte_no_res(nh_), BrakeTestExecutorException);
+/**
+ * @brief Checks that exception is thrown if function to detect robot motion
+ * is missing.
+ */
+TEST(BrakeTestExecutorTest, testMissingDetectMotionFunc)
+{
+  SystemMock mock;
+  EXPECT_THROW(BrakeTestExecutor(nullptr,
+                                 std::bind(&SystemMock::holdController, &mock),
+                                 std::bind(&SystemMock::executeBrakeTest, &mock),
+                                 std::bind(&SystemMock::unholdController, &mock),
+                                 std::bind(&SystemMock::sendBrakeTestResult, &mock, _1)),
+               BrakeTestExecutorException);
+}
 
-  /**********
-   * Step 3 *
-   **********/
-  nh_.setParam(API_SPEC_PARAM_NAME+BRAKETEST_RESULT_PARAM_NAME, 99);
-  ASSERT_NO_THROW(BrakeTestExecutor bte_one_apart(nh_));
+/**
+ * @brief Checks that exception is thrown if function to execute brake test
+ * on robot is missing.
+ */
+TEST(BrakeTestExecutorTest, testMissingExecuteBrakeTestFunc)
+{
+  SystemMock mock;
+  EXPECT_THROW(BrakeTestExecutor(std::bind(&SystemMock::detectMotion, &mock),
+                                 std::bind(&SystemMock::holdController, &mock),
+                                 nullptr,
+                                 std::bind(&SystemMock::unholdController, &mock),
+                                 std::bind(&SystemMock::sendBrakeTestResult, &mock, _1)),
+               BrakeTestExecutorException);
+}
 
-  /**********
-   * Step 4 *
-   **********/
-  nh_.setParam(API_SPEC_PARAM_NAME+BRAKETEST_RESULT_PARAM_NAME, 98);
-  ASSERT_THROW(BrakeTestExecutor bte_two_apart(nh_), BrakeTestExecutorException);
+/**
+ * @brief Checks that exception is thrown if function to send brake test
+ * result is missing.
+ */
+TEST(BrakeTestExecutorTest, testMissingSendBrakeTestResultFunc)
+{
+  SystemMock mock;
+  EXPECT_THROW(BrakeTestExecutor(std::bind(&SystemMock::detectMotion, &mock),
+                                 std::bind(&SystemMock::holdController, &mock),
+                                 std::bind(&SystemMock::executeBrakeTest, &mock),
+                                 std::bind(&SystemMock::unholdController, &mock),
+                                 nullptr),
+               BrakeTestExecutorException);
+}
 
-  /**********
-   * Step 5 *
-   **********/
-  nh_.setParam(API_SPEC_PARAM_NAME, api_spec_backup);
+/**
+ * @brief Test increases function coverage by ensuring that all Dtor variants
+ * are called.
+ */
+TEST(BrakeTestExecutorTest, testDtorBrakeTestExecutorException)
+{
+  std::unique_ptr<BrakeTestExecutorException> ex {new BrakeTestExecutorException("TestException")};
+}
 
+class TriggerServiceMock
+{
+public:
+  MOCK_METHOD1(call, bool(std_srvs::Trigger& srv));
+  MOCK_METHOD0(getService, std::string());
+};
+
+/**
+ * @brief Tests case that trigger service fails.
+ */
+TEST(BrakeTestExecutorTest, testTriggerServiceCallFailure)
+{
+  TriggerServiceMock mock;
+  EXPECT_CALL(mock, getService()).WillRepeatedly(Return("TestServiceName"));
+  EXPECT_CALL(mock, call(_)).Times(1).WillOnce(Return(false));
+
+  triggerServiceCall<TriggerServiceMock>(mock);
+}
+
+/**
+ * @brief Tests what happens in case service is response is false (Tests
+ * mainly exists to complete code coverage).
+ */
+TEST(BrakeTestExecutorTest, testTriggerServiceCallResponseFalse)
+{
+  TriggerServiceMock mock;
+  EXPECT_CALL(mock, getService()).WillRepeatedly(Return("TestServiceName"));
+  std_srvs::Trigger exp_srv;
+  exp_srv.response.success = false;
+  EXPECT_CALL(mock, call(_)).Times(1).WillOnce(DoAll(SetArgReferee<0>(exp_srv), Return(true)));
+
+  triggerServiceCall<TriggerServiceMock>(mock);
+}
+
+class BrakeTestServiceMock
+{
+public:
+  MOCK_METHOD1(call, bool(BrakeTest& srv));
+  MOCK_METHOD0(getService, std::string());
+};
+
+/**
+ * @brief Tests that:
+ *    - false is returned if BrakeTest service fails,
+ *    - correct error code is returned if BrakeTest service fails.
+ */
+TEST(BrakeTestExecutorTest, testExecuteBrakeTestCallFailure)
+{
+  BrakeTestServiceMock mock;
+  EXPECT_CALL(mock, getService()).WillRepeatedly(Return("TestServiceName"));
+  EXPECT_CALL(mock, call(_)).Times(1).WillOnce(Return(false));
+
+  BrakeTest::Response res {executeBrakeTestCall<BrakeTestServiceMock>(mock)};
+  EXPECT_FALSE(res.success);
+  EXPECT_EQ(res.error_code.value, BrakeTestErrorCodes::TRIGGER_BRAKETEST_SERVICE_FAILURE);
+}
+
+class SendBrakeTestResltServiceMock
+{
+public:
+  MOCK_METHOD1(call, bool(SendBrakeTestResult& srv));
+  MOCK_METHOD0(getService, std::string());
+};
+
+/**
+ * @brief Tests that false is returned if SendBrakeTestResult service fails.
+ */
+TEST(BrakeTestExecutorTest, testSendBrakeTestResultCallFailure)
+{
+  SendBrakeTestResltServiceMock mock;
+  EXPECT_CALL(mock, getService()).WillRepeatedly(Return("TestServiceName"));
+  EXPECT_CALL(mock, call(_)).Times(1).WillOnce(Return(false));
+
+  EXPECT_FALSE(sendBrakeTestResultCall<SendBrakeTestResltServiceMock>(mock, true));
+}
+
+MATCHER(IsRequestResultFalse, "") { return !arg.request.result; }
+
+/**
+ * @brief Tests that SendBrakeTestResult service is called with correct value.
+ */
+TEST(BrakeTestExecutorTest, testSendBrakeTestResultCallSuccess)
+{
+  SendBrakeTestResltServiceMock mock;
+  EXPECT_CALL(mock, getService()).WillRepeatedly(Return("TestServiceName"));
+  EXPECT_CALL(mock, call(IsRequestResultFalse())).Times(1).WillOnce(Return(true));
+
+  EXPECT_TRUE(sendBrakeTestResultCall<SendBrakeTestResltServiceMock>(mock, false));
 }
 
 } // namespace brake_test_executor_test
 
 int main(int argc, char *argv[])
 {
-  ros::init(argc, argv, "unittest_brake_test_executor");
-  ros::NodeHandle nh;
-
-  ros::AsyncSpinner spinner{2};
-  spinner.start();
-
   testing::InitGoogleMock(&argc, argv);
   return RUN_ALL_TESTS();
 }

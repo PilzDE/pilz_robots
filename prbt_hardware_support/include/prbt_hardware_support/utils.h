@@ -15,23 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PRBT_HARDWARE_SUPPORT_BRAKE_TEST_EXECUTOR_EXCEPTION_H
-#define PRBT_HARDWARE_SUPPORT_BRAKE_TEST_EXECUTOR_EXCEPTION_H
+#ifndef UTILS_H
+#define UTILS_H
 
-#include <stdexcept>
 
 namespace prbt_hardware_support
 {
-/**
- * @brief Exception thrown by a BrakeTestExecutor function.
- */
-class BrakeTestExecutorException : public std::runtime_error
+
+// Extract pure class name from full class name (foo::Foo -> Foo)
+inline std::string className(std::string full_name)
 {
-public:
-  BrakeTestExecutorException(const std::string &what_arg) : std::runtime_error(what_arg)
-  {
-  }
-};
+  return full_name.substr(full_name.rfind("::") + 2);
+}
+
 } // namespace prbt_hardware_support
 
-#endif // PRBT_HARDWARE_SUPPORT_BRAKE_TEST_EXECUTOR_EXCEPTION_H
+
+#endif // UTILS_H

@@ -56,6 +56,9 @@ private:
   void modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw);
 
 private:
+  static OperationModes createUnknownOperationMode();
+
+private:
   const ModbusApiSpec api_spec_;
   std::unique_ptr<FilterPipeline> filter_pipeline_;
 

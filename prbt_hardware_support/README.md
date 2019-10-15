@@ -34,13 +34,19 @@ The robot system can be controlled in various modes.
 
 These modes are:
   - T1: Speed reduced to 250 mm/s (each robot-frame), enabling switch must be pressed
-  - T2: The robot moves at full speed but still the enabling switch must be pressed
+  - T2<sup>*</sup>: The robot moves at full speed but still the enabling switch must be pressed
   - AUTOMATIC: The robot moves at full speed and follows a predefined program/process. No enabling switch is needed but safety has to be ensured by safety peripherie (fences, light curtains, ...).
 
 See DIN EN ISO 10218-1 for more details or contact us: ros@pilz.de
 
+## Note
+In operation mode T1 the robot can be moved as usual. However, if an attempt to exceed the speed limit of 250 mm/s in T1 is detected, the prevailing motion is aborted and a controlled stop is performed.
+
 # Architecture
-![Component diagram](doc/architecture_overview.png)
+The following diagram shows all components of the system and the connections
+between them.  
+
+![Component diagram of overall architecture](doc/diag_comp_overall_architecture.png)
 
 # ROS API
 
@@ -84,6 +90,22 @@ The ``BraketestExecutorNode`` offers the `/execute_braketest` service which, in 
 executes a braketest on each drive of the manipulator. This can only be done, if the robot is stopped. So, if you want to execute a braketest, ensure that the robot stands still.
 
 ## ModbusAdapterOperationModeNode
-The ``ModbusAdapterOperationModeNode`` offers the `/get_operation_mode` service for accessing the active operation mode.
+The ``ModbusAdapterOperationModeNode`` publishes the active operation mode on the topic `/prbt/operation_mode` everytime it changes and offers the `/get_operation_mode` service for accessing the active operation mode.
 
 Use `rosmsg show prbt_hardware_support/OperationModes` to see the definition of each value.
+
+## OperationModeSetupExecutorNode
+The ``OperationModeSetupExecutorNode`` sets the speed limit for each frame based on the active operation mode and offers a service ``/prbt/get_speed_override``. The speed override is chosen such that a speed limit violation is unlikely if all robot motions are scaled with it.
+
+### Parameters
+- speed_limit_t1 [m/s] (default: 0.25)
+- speed_limit_automatic [m/s] (default: 5.0)
+
+## SpeedObserverNode
+The ``SpeedObserverNode`` observes the speed of the robot frames and triggers a controlled stop, if the current speed limit is exceeded.
+
+### Parameters
+- frequency [Hz] (default: 20.0)
+- additional_frames (optional): lets the user specify frames to observe in addition to the robot frames of the prevailing robot model
+
+<sup>*</sup>Not supported yet

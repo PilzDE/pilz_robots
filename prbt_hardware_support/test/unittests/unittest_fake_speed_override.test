@@ -16,7 +16,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <launch>
-  <test test-name="unittest_modbus_adapter_brake_test" pkg="prbt_hardware_support"
-        type="unittest_modbus_adapter_brake_test">
+  <node pkg="prbt_hardware_support" type="fake_speed_override_node" name="fake_speed_override_node" output="screen">
+  </node>
+  <test pkg="prbt_hardware_support" type="unittest_fake_speed_override"
+        test-name="unittest_fake_speed_override">
   </test>
 </launch>

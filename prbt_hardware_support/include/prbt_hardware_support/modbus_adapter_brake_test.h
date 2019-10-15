@@ -19,28 +19,35 @@
 #define MODBUS_ADAPTER_BRAKE_TEST_H
 
 #include <memory>
+#include <map>
+#include <string>
+#include <functional>
 
 #include <ros/ros.h>
 
-#include <prbt_hardware_support/adapter_brake_test.h>
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
-#include <prbt_hardware_support/filter_pipeline.h>
+#include <prbt_hardware_support/IsBrakeTestRequired.h>
+#include <prbt_hardware_support/SendBrakeTestResult.h>
+#include <prbt_hardware_support/register_container.h>
 
 namespace prbt_hardware_support
 {
+
+using TWriteModbusRegister = std::function<bool(const uint16_t&, const RegCont&)>;
 
 /**
  * @brief Listens to the modbus_read topic and publishes a message
  * informing about a required brake test.
  */
-class ModbusAdapterBrakeTest : public AdapterBrakeTest
+class ModbusAdapterBrakeTest
 {
 public:
-  ModbusAdapterBrakeTest(ros::NodeHandle& nh, const ModbusApiSpec& api_spec);
-  virtual ~ModbusAdapterBrakeTest() = default;
+  ModbusAdapterBrakeTest(TWriteModbusRegister&& write_modbus_register_func,
+                         const ModbusApiSpec& read_api_spec,
+                         const ModbusApiSpec& write_api_spec);
 
-private:
+public:
   /**
    * @brief Called whenever a new modbus message arrives.
    *
@@ -49,11 +56,91 @@ private:
    */
   void modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw);
 
+  /**
+   * @brief Stores the brake test required flag and
+   * initializes the brake test service,
+   * the first time the function is called.
+   */
+  bool isBrakeTestRequired(IsBrakeTestRequired::Request&,
+                           IsBrakeTestRequired::Response& res);
+
+  /**
+   * @brief Sends the brake test result data to the modbus client.
+   */
+  bool sendBrakeTestResult(SendBrakeTestResult::Request& req,
+                           SendBrakeTestResult::Response& res);
+
+private:
+  using TBrakeTestRequired = IsBrakeTestRequiredResponse::_result_type;
+  void updateBrakeTestRequiredState(TBrakeTestRequired brake_test_required);
+
+private:
+  using TRegIdx = uint16_t;
+  using TRegIdxCont = std::map<std::string, TRegIdx>;
+  /**
+   * @returns the indicies of the modbus registers, needed to write
+   * the brake test results back to the modbus.
+   */
+  static TRegIdxCont getRegisters(const ModbusApiSpec &write_api_spec);
+
+  //! @returns the lowest register index stored in the specified container.
+  static const TRegIdxCont::mapped_type& getMinRegisterIdx(const TRegIdxCont& reg_idx_cont);
+  //! @returns the highest register index stored in the specified container.
+  static const TRegIdxCont::mapped_type& getMaxRegisterIdx(const TRegIdxCont& reg_idx_cont);
+
+  //! @returns the number of registers specified by the given register index
+  //! container.
+  static unsigned long getRegisterBlockSize(const TRegIdxCont& reg_idx_cont);
+
 private:
   const ModbusApiSpec api_spec_;
-  std::unique_ptr<FilterPipeline> filter_pipeline_;
 
+  //! Store the current state of whether a brake test is required
+  TBrakeTestRequired brake_test_required_ {IsBrakeTestRequiredResponse::UNKNOWN};
+
+  //! Contains the indicies of the modbus registers, needed to write
+  //! the brake test results back to the modbus.
+  const TRegIdxCont reg_idx_cont_;
+
+  const TRegIdx reg_start_idx_ {getMinRegisterIdx(reg_idx_cont_)};
+  const RegCont::size_type reg_block_size_ {getRegisterBlockSize(reg_idx_cont_)};
+
+  TWriteModbusRegister write_modbus_register_func_;
 };
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+inline bool ModbusAdapterBrakeTest::isBrakeTestRequired(IsBrakeTestRequired::Request& /*req*/,
+                                                        IsBrakeTestRequired::Response& res)
+{
+  res.result = brake_test_required_;
+  return true;
+}
+
+// The following is excluded because lambda functions are not marked properly with gcc-7
+// see https://github.com/gcc-mirror/gcc/commit/7de708f
+// LCOV_EXCL_START
+inline const ModbusAdapterBrakeTest::TRegIdxCont::mapped_type& ModbusAdapterBrakeTest::getMinRegisterIdx(const TRegIdxCont& reg_idx_cont)
+{
+  return std::min_element(
+        reg_idx_cont.cbegin(), reg_idx_cont.cend(),
+        [](const TRegIdxCont::value_type& l, const TRegIdxCont::value_type& r) -> bool { return l.second < r.second; })
+      ->second;
+}
+
+inline const ModbusAdapterBrakeTest::TRegIdxCont::mapped_type& ModbusAdapterBrakeTest::getMaxRegisterIdx(const TRegIdxCont& reg_idx_cont)
+{
+  return std::max_element(
+        reg_idx_cont.cbegin(), reg_idx_cont.cend(),
+        [](const TRegIdxCont::value_type& l, const TRegIdxCont::value_type& r) -> bool { return l.second < r.second; })
+      ->second;
+}
+// LCVO EXCL_STOP
+
+inline unsigned long ModbusAdapterBrakeTest::getRegisterBlockSize(const ModbusAdapterBrakeTest::TRegIdxCont& reg_idx_cont)
+{
+  return static_cast<unsigned long>(std::abs(getMaxRegisterIdx(reg_idx_cont) - getMinRegisterIdx(reg_idx_cont)) + 1);
+}
 
 } // namespace prbt_hardware_support
 #endif // MODBUS_ADAPTER_BRAKE_TEST_H
