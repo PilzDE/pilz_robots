@@ -171,6 +171,36 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 updateStrategyDefault(const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePtr gh, std::string* error_string)
 {
   // TODO Check that first point matches current position and that time_from start equals zero for the first point
+  std::vector<trajectory_msgs::JointTrajectoryPoint> points = msg->points;
+
+  // Handle time_from_start greater than zero
+  const double epsilon{1e-12};
+  if (points.size() > 0 && points.at(0).time_from_start.toSec() > epsilon)
+  {
+    // prepare new trajectory point
+    trajectory_msgs::JointTrajectoryPoint point;
+    point.time_from_start = ros::Duration(0.0);
+    point.positions = std::vector<double>(points.at(0).positions.size(), 0.0);
+
+    // determine current state
+    typename JointTrajectoryController::TimeData* time_data = JointTrajectoryController::time_data_.readFromRT();
+    const ros::Time current_time = time_data->time;
+
+    TrajectoryPtr curr_traj_ptr;
+    JointTrajectoryController::curr_trajectory_box_.get(curr_traj_ptr);
+
+    for (unsigned int i = 0; i < msg->joint_names.size(); ++i)
+    {
+      const TrajectoryPerJoint& curr_joint_traj{curr_traj_ptr->at(i)};
+      typename Segment::State current_state;
+      sample(curr_joint_traj, current_time.toSec(), current_state);
+
+      point.positions.at(i) = current_state.position.at(0);
+    }
+
+    // insert trajectory point at beginning
+    points.insert(points.begin(), point);
+  }
 
   std::vector<std::string> frames_to_observe;
   auto links = kinematic_model_->getLinkModels();
@@ -185,12 +215,12 @@ updateStrategyDefault(const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePtr 
   }
 
   size_t counter{0};
-  ROS_ERROR_STREAM("Checking trajectory with " << msg->points.size() << " points");
+  ROS_ERROR_STREAM("Checking trajectory with " << points.size() << " points");
   auto start_t = ros::Time::now();
 
   // Check trajectory
-  auto first_violation_point = std::adjacent_find(msg->points.begin(), 
-                                                  msg->points.end(), 
+  auto first_violation_point = std::adjacent_find(points.begin(),
+                                                  points.end(),
                                                   [this, frames_to_observe, &counter](const trajectory_msgs::JointTrajectoryPoint& p1, const trajectory_msgs::JointTrajectoryPoint& p2) -> bool
                                                   {
 
