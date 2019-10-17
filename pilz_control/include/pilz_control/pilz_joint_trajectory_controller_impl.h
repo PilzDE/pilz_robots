@@ -177,6 +177,8 @@ updateStrategyDefault(const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePtr 
   const double epsilon{1e-12};
   if (points.size() > 0 && points.at(0).time_from_start.toSec() > epsilon)
   {
+    ROS_ERROR("Inserting start point");
+
     // prepare new trajectory point
     trajectory_msgs::JointTrajectoryPoint point;
     point.time_from_start = ros::Duration(0.0);
@@ -195,8 +197,15 @@ updateStrategyDefault(const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePtr 
   ROS_DEBUG_STREAM("Received the following frames to observer from urdf:");
   for (const auto& link : links)
   {
-    if(!link->parentJointIsFixed()) // Not sure about this...
+    // check if all parents of link are fixed
+    const moveit::core::LinkModel* parent_link {link};
+    while ( (parent_link != nullptr) && (parent_link->parentJointIsFixed()) )
     {
+      parent_link = parent_link->getParentLinkModel();
+    }
+    if(parent_link != nullptr)
+    {
+      // if there is at least one non-fixed parent, push back
       ROS_ERROR_STREAM(" - " << link->getName());
       frames_to_observe.push_back(link->getName());
     }
@@ -215,20 +224,20 @@ updateStrategyDefault(const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePtr 
                                                     for(const auto &frame : frames_to_observe)
                                                     {                                                                                                          // Calculate the distance
                                                       kinematic_state_->setVariablePositions(p1.positions);  // TODO check that correct order
-                                                      auto p1_cart = kinematic_state_->getGlobalLinkTransform(frame); // TODO needs to be done for all frames
+                                                      auto p1_cart = kinematic_state_->getGlobalLinkTransform(frame);
 
                                                       // Calculate the distance
                                                       kinematic_state_->setVariablePositions(p2.positions);
-                                                      auto p2_cart = kinematic_state_->getGlobalLinkTransform(frame); // TODO needs to be done for all frames
+                                                      auto p2_cart = kinematic_state_->getGlobalLinkTransform(frame);
 
-                                                      auto distance_cartesian = (p2_cart.translation() - p1_cart.translation()).squaredNorm();
+                                                      auto distance_cartesian = (p2_cart.translation() - p1_cart.translation()).norm();
                                                       auto time_distance = p2.time_from_start - p1.time_from_start;
 
                                                       auto velocity = distance_cartesian / time_distance.toSec();
 
                                                       counter++;
 
-                                                      constexpr double max_vel = 0.025;
+                                                      constexpr double max_vel = 0.25;
                                                       if(velocity > max_vel)
                                                       {
                                                         ROS_ERROR_STREAM("Velocity between " << p1.time_from_start << "s and " << p2.time_from_start << "s is " << velocity << " (max. allowed " << max_vel << "m/s)");
@@ -253,7 +262,7 @@ updateStrategyDefault(const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePtr 
     error_string_tmp = "Velocity violated";
     ROS_ERROR_STREAM_NAMED(JointTrajectoryController::name_, error_string_tmp);
     options.setErrorString(error_string_tmp);
-    return false;
+    //return false;
   }
 
 
