@@ -28,16 +28,17 @@
 #include <canopen_chain_node/GetObject.h>
 #include <sensor_msgs/JointState.h>
 
+#include <pilz_utils/wait_for_topic.h>
+#include <pilz_utils/wait_for_service.h>
 #include <pilz_testutils/async_test.h>
 #include <prbt_hardware_support/system_info.h>
 #include <prbt_hardware_support/system_info_exception.h>
-#include <prbt_hardware_support/wait_for_topic.h>
-#include <prbt_hardware_support/wait_for_service.h>
 
 namespace system_info_tests
 {
 
 using canopen_chain_node::GetObject;
+using namespace pilz_utils;
 using namespace prbt_hardware_support;
 using namespace testing;
 

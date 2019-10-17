@@ -23,12 +23,12 @@
 #include <std_srvs/SetBool.h>
 #include <tf2_ros/transform_broadcaster.h>
 
+#include <pilz_utils/wait_for_service.h>
 #include <pilz_testutils/async_test.h>
 #include <prbt_hardware_support/FrameSpeeds.h>
 #include <prbt_hardware_support/SetSpeedLimit.h>
 #include <prbt_hardware_support/ros_test_helper.h>
 #include <prbt_hardware_support/speed_observer.h>
-#include <prbt_hardware_support/wait_for_service.h>
 
 namespace speed_observer_test
 {
@@ -40,6 +40,7 @@ using ::testing::DoAll;
 using ::testing::Return;
 using ::testing::SetArgReferee;
 
+using namespace pilz_utils;
 using namespace prbt_hardware_support;
 
 static const std::string BARRIER_SLOW{ "BARRIER_SLOW" };

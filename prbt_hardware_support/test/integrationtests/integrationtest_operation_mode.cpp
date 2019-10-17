@@ -26,7 +26,7 @@
 
 #include <pilz_testutils/async_test.h>
 
-#include <prbt_hardware_support/wait_for_topic.h>
+#include <pilz_utils/wait_for_topic.h>
 
 #include <prbt_hardware_support/pilz_modbus_server_mock.h>
 #include <prbt_hardware_support/OperationModes.h>
@@ -35,6 +35,8 @@
 
 namespace prbt_hardware_support
 {
+
+using namespace pilz_utils;
 
 static constexpr uint16_t MODBUS_API_VERSION_VALUE {2};
 
