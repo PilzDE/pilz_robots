@@ -19,9 +19,12 @@
 #include <trajectory_msgs/JointTrajectory.h>
 #include <control_msgs/FollowJointTrajectoryAction.h>
 #include <actionlib/client/simple_action_client.h>
+#include <std_srvs/Trigger.h>
 
 namespace prbt_gazebo
 {
+
+static const std::string UNHOLD_SERVICE_NAME{ "/manipulator_joint_trajectory_controller/unhold" };
 
 class GazeboTest : public testing::Test
 {
@@ -29,11 +32,24 @@ protected:
   void SetUp() override;
   ros::AsyncSpinner spinner_ {1};
   const ros::Duration WAIT_FOR_ACTION_SERVER_TIME {5};
+  const ros::Duration WAIT_FOR_SERVICE_TIME {5};
 };
 
 void GazeboTest::SetUp()
 {
   spinner_.start();
+
+  // unhold controller
+  ros::NodeHandle nh;
+  const std::string unhold_srv_name_full = nh.getNamespace() + UNHOLD_SERVICE_NAME;
+
+  ASSERT_TRUE(ros::service::waitForService(unhold_srv_name_full, WAIT_FOR_SERVICE_TIME))
+    << "Timed out waiting for service " << unhold_srv_name_full << " in test setup.";
+
+  std_srvs::Trigger unhold_srv;
+  ASSERT_TRUE(ros::service::call(unhold_srv_name_full, unhold_srv))
+    << "Failed to call service " << unhold_srv_name_full << " in test setup.";
+  ASSERT_TRUE(unhold_srv.response.success) << unhold_srv.response.message;
 }
 
 TEST_F(GazeboTest, basicMove)
