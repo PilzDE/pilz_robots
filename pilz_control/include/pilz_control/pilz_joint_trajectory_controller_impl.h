@@ -117,6 +117,13 @@ template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 handleUnHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response)
 {
+  if (JointTrajectoryController::state_ != JointTrajectoryController::RUNNING)
+  {
+    response.message = "Can only unhold in state RUNNING";
+    response.success = false;
+    return true;
+  }
+
   std::lock_guard<std::mutex> lock(sync_mutex_);
 
   if(active_mode_ == Mode::UNHOLD)
