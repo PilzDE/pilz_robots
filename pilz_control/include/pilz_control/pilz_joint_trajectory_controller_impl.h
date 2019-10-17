@@ -182,23 +182,11 @@ updateStrategyDefault(const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePtr 
     point.time_from_start = ros::Duration(0.0);
     point.positions = std::vector<double>(points.at(0).positions.size(), 0.0);
 
-    // determine current state
-    typename JointTrajectoryController::TimeData* time_data = JointTrajectoryController::time_data_.readFromRT();
-    const ros::Time current_time = time_data->time;
-
-    TrajectoryPtr curr_traj_ptr;
-    JointTrajectoryController::curr_trajectory_box_.get(curr_traj_ptr);
-
-    for (unsigned int i = 0; i < msg->joint_names.size(); ++i)
+    // insert current position at beginning
+    for (const auto &jh : JointTrajectoryController::joints_)
     {
-      const TrajectoryPerJoint& curr_joint_traj{curr_traj_ptr->at(i)};
-      typename Segment::State current_state;
-      sample(curr_joint_traj, current_time.toSec(), current_state);
-
-      point.positions.at(i) = current_state.position.at(0);
+      point.positions.push_back(jh.getPosition()); // not sure about order
     }
-
-    // insert trajectory point at beginning
     points.insert(points.begin(), point);
   }
 
