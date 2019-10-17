@@ -27,7 +27,7 @@
 namespace prbt_hardware_support
 {
 static const std::string FRAME_SPEEDS_TOPIC_NAME{ "frame_speeds" };
-static const std::string HOLD_SERVICE{ "manipulator_joint_trajectory_conroller/hold" };
+static const std::string HOLD_SERVICE{ "manipulator_joint_trajectory_controller/hold" };
 
 SpeedObserver::SpeedObserver(ros::NodeHandle& nh, std::string& reference_frame,
                              std::vector<std::string>& frames_to_observe, bool simulation)
