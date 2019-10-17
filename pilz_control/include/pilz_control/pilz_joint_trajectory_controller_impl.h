@@ -248,7 +248,7 @@ updateStrategyDefault(const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePtr 
   options.error_string = error_string;
   std::string error_string_tmp;
 
-  if (first_violation_point != msg->points.end())
+  if (first_violation_point != points.end())
   {
     error_string_tmp = "Velocity violated";
     ROS_ERROR_STREAM_NAMED(JointTrajectoryController::name_, error_string_tmp);
