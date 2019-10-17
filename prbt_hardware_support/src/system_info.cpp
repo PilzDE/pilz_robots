@@ -20,13 +20,15 @@
 #include <XmlRpcException.h>
 #include <sensor_msgs/JointState.h>
 
-#include <prbt_hardware_support/wait_for_service.h>
-#include <prbt_hardware_support/wait_for_topic.h>
+#include <pilz_utils/wait_for_service.h>
+#include <pilz_utils/wait_for_topic.h>
 #include <canopen_chain_node/GetObject.h>
 #include <prbt_hardware_support/system_info_exception.h>
 
 namespace prbt_hardware_support
 {
+
+using namespace pilz_utils;
 
 static const std::string CANOPEN_GETOBJECT_SERVICE_NAME{"/prbt/driver/get_object"};
 static const std::string CANOPEN_NODES_PARAMETER_NAME{"/prbt/driver/nodes"};

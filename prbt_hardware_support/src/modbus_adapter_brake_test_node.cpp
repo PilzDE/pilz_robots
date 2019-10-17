@@ -19,9 +19,10 @@
 
 #include <ros/ros.h>
 
+#include <pilz_utils/wait_for_service.h>
+
 #include <prbt_hardware_support/modbus_adapter_brake_test.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
-#include <prbt_hardware_support/wait_for_service.h>
 #include <prbt_hardware_support/filter_pipeline.h>
 #include <prbt_hardware_support/WriteModbusRegister.h>
 #include <prbt_hardware_support/write_modbus_register_call.h>
@@ -31,6 +32,7 @@ static const std::string SERVICE_NAME_IS_BRAKE_TEST_REQUIRED = "/prbt/brake_test
 static const std::string SERVICE_SEND_BRAKE_TEST_RESULT = "/prbt/send_brake_test_result";
 static const std::string MODBUS_WRITE_SERVICE_NAME{"/pilz_modbus_client_node/modbus_write"};
 
+using namespace pilz_utils;
 using namespace prbt_hardware_support;
 
 /**

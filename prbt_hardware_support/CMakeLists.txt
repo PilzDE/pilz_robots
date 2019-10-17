@@ -5,6 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   canopen_chain_node
   message_filters
   message_generation
+  pilz_utils
   roscpp
   std_msgs
   std_srvs
@@ -91,6 +92,7 @@ include_directories(
   test/include
 )
 include_directories(SYSTEM ${catkin_INCLUDE_DIRS}) #Must be declared SYSTEM to avoid Warnings from ros system includes
+include_directories(${pilz_utils_INCLUDE_DIRS})
 
 
 # MODBUS_ADAPTER_STO_NODE
@@ -345,16 +347,6 @@ if(CATKIN_ENABLE_TESTING)
   )
   target_link_libraries(unittest_brake_test_executor
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
-  )
-  #----------------------------------
-
-  # --- getParam unit test ---
-  add_rostest_gtest(unittest_get_param
-    test/unittests/unittest_get_param.test
-    test/unittests/unittest_get_param.cpp
-  )
-  target_link_libraries(unittest_get_param
-    ${catkin_LIBRARIES}
   )
   #----------------------------------
 

@@ -21,7 +21,7 @@
 
 #include <ros/ros.h>
 
-#include <prbt_hardware_support/get_param.h>
+#include <pilz_utils/get_param.h>
 #include <prbt_hardware_support/libmodbus_client.h>
 #include <prbt_hardware_support/pilz_modbus_client.h>
 #include <prbt_hardware_support/param_names.h>
@@ -33,6 +33,7 @@ static constexpr int32_t MODBUS_CONNECTION_RETRIES_DEFAULT {10};
 static constexpr double MODBUS_CONNECTION_RETRY_TIMEOUT_S_DEFAULT {1.0};
 static constexpr int MODBUS_RESPONSE_TIMEOUT_MS {20};
 
+using namespace pilz_utils;
 using namespace prbt_hardware_support;
 
 /**

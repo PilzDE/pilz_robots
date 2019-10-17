@@ -18,10 +18,11 @@
 #include <ros/ros.h>
 #include <urdf/model.h>
 
-#include <prbt_hardware_support/get_param.h>
-#include <prbt_hardware_support/wait_for_topic.h>
+#include <pilz_utils/get_param.h>
+#include <pilz_utils/wait_for_topic.h>
 #include <prbt_hardware_support/speed_observer.h>
 
+using namespace pilz_utils;
 using namespace prbt_hardware_support;
 
 static const std::string ADDITIONAL_FRAMES_PARAM_NAME{ "additional_frames" };

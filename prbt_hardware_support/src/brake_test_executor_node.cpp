@@ -20,9 +20,10 @@
 #include <ros/ros.h>
 #include <std_srvs/Trigger.h>
 
+#include <pilz_utils/wait_for_service.h>
+
 #include <prbt_hardware_support/brake_test_executor.h>
 #include <prbt_hardware_support/SendBrakeTestResult.h>
-#include <prbt_hardware_support/wait_for_service.h>
 #include <prbt_hardware_support/BrakeTest.h>
 #include <prbt_hardware_support/brake_test_utils.h>
 #include <prbt_hardware_support/brake_test_executor_node_service_calls.h>
@@ -34,6 +35,7 @@ static const std::string CONTROLLER_HOLD_MODE_SERVICE_NAME{"/prbt/manipulator_jo
 static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/unhold"};
 static const std::string BRAKE_TEST_RESULT_SERVICE_NAME{"/prbt/send_brake_test_result"};
 
+using namespace pilz_utils;
 using namespace prbt_hardware_support;
 
 /**

@@ -17,9 +17,10 @@
 
 #include <ros/ros.h>
 
+#include <pilz_utils/wait_for_service.h>
+
 #include <prbt_hardware_support/stop1_executor.h>
 #include <prbt_hardware_support/service_function_decl.h>
-#include <prbt_hardware_support/wait_for_service.h>
 
 const std::string HOLD_SERVICE{"manipulator_joint_trajectory_controller/hold"};
 const std::string UNHOLD_SERVICE{"manipulator_joint_trajectory_controller/unhold"};
@@ -29,6 +30,8 @@ const std::string HALT_SERVICE{"driver/halt"};
 // LCOV_EXCL_START
 namespace prbt_hardware_support
 {
+
+using namespace pilz_utils;
 
 bool callService(ros::ServiceClient& srv_client)
 {

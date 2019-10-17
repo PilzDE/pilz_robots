@@ -22,10 +22,13 @@
 #include <tf2/convert.h>
 
 #include <prbt_hardware_support/speed_observer.h>
-#include <prbt_hardware_support/wait_for_service.h>
+#include <pilz_utils/wait_for_service.h>
 
 namespace prbt_hardware_support
 {
+
+using namespace pilz_utils;
+
 static const std::string FRAME_SPEEDS_TOPIC_NAME{ "frame_speeds" };
 static const std::string STO_SERVICE{ "safe_torque_off" };
 

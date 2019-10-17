@@ -19,13 +19,14 @@
 
 #include <ros/ros.h>
 
+#include <pilz_utils/get_param.h>
+#include <pilz_utils/wait_for_service.h>
+
 #include <prbt_hardware_support/operation_mode_setup_executor.h>
-#include <prbt_hardware_support/wait_for_service.h>
 #include <prbt_hardware_support/SetSpeedLimit.h>
 #include <prbt_hardware_support/set_speed_limit_func_decl.h>
 #include <prbt_hardware_support/GetOperationMode.h>
 #include <prbt_hardware_support/get_operation_mode_func_decl.h>
-#include <prbt_hardware_support/get_param.h>
 #include <prbt_hardware_support/operation_mode_setup_executor_node_service_calls.h>
 
 static const std::string SET_SPEED_LIMIT_SERVICE{"set_speed_limit"};
@@ -37,6 +38,7 @@ static const std::string PARAM_SPEED_LIMIT_AUTO_STR {"speed_limit_automatic"};
 
 static constexpr uint32_t DEFAULT_QUEUE_SIZE {10} ;
 
+using namespace pilz_utils;
 using namespace prbt_hardware_support;
 
 /**

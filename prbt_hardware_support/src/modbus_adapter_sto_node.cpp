@@ -19,13 +19,15 @@
 
 #include <ros/ros.h>
 
+#include <pilz_utils/wait_for_service.h>
+
 #include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/modbus_adapter_sto.h>
 #include <prbt_hardware_support/filter_pipeline.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
-#include <prbt_hardware_support/wait_for_service.h>
 #include <std_srvs/SetBool.h>
 
+using namespace pilz_utils;
 using namespace prbt_hardware_support;
 
 static const std::string STO_SERVICE_NAME{"safe_torque_off"};
