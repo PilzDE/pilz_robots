@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   urdf
   dynamic_reconfigure
   pilz_msgs
+  moveit_ros_planning
 )
 
 add_definitions(-Wall)
@@ -93,6 +94,12 @@ include_directories(
 include_directories(SYSTEM ${catkin_INCLUDE_DIRS}) #Must be declared SYSTEM to avoid Warnings from ros system includes
 include_directories(${pilz_utils_INCLUDE_DIRS})
 
+# JOINT_STATES_SPEED_OBSERVER
+add_executable(joint_states_speed_observer
+  src/joint_states_speed_observer.cpp
+)
+add_dependencies(joint_states_speed_observer ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(joint_states_speed_observer ${catkin_LIBRARIES})
 
 # MODBUS_ADAPTER_STO_NODE
 add_executable(modbus_adapter_sto_node
@@ -217,6 +224,7 @@ install(TARGETS
   system_info_node
   speed_observer_node
   fake_speed_override_node
+  joint_states_speed_observer
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
