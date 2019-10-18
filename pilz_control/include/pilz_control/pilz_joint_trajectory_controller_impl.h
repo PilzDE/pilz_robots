@@ -186,7 +186,6 @@ updateStrategyDefault(const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePtr 
     // prepare new trajectory point
     trajectory_msgs::JointTrajectoryPoint point;
     point.time_from_start = ros::Duration(0.0);
-    point.positions = std::vector<double>(points.at(0).positions.size(), 0.0);
 
     // insert current position at beginning
     for (const auto &jh : JointTrajectoryController::joints_)
