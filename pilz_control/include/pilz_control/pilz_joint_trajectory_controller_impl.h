@@ -17,6 +17,8 @@
 #ifndef PILZ_CONTROL_PILZ_JOINT_TRAJECTORY_CONTROLLER_IMPL_H
 #define PILZ_CONTROL_PILZ_JOINT_TRAJECTORY_CONTROLLER_IMPL_H
 
+#include <std_msgs/Float64MultiArray.h>
+
 namespace pilz_joint_trajectory_controller
 {
 
@@ -59,6 +61,8 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
   is_executing_service_ = controller_nh.advertiseService("is_executing",
                                                          &PilzJointTrajectoryController::handleIsExecutingRequest,
                                                          this);
+
+  frame_speed_pub_ = controller_nh.advertise<std_msgs::Float64MultiArray>("frame_speeds", 10);
 
   return res;
 }
@@ -220,6 +224,7 @@ updateStrategyDefault(const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePtr 
                                                   points.end(),
                                                   [this, frames_to_observe, &counter](const trajectory_msgs::JointTrajectoryPoint& p1, const trajectory_msgs::JointTrajectoryPoint& p2) -> bool
                                                   {
+                                                    std_msgs::Float64MultiArray msg;
 
                                                     for(const auto &frame : frames_to_observe)
                                                     {                                                                                                          // Calculate the distance
@@ -234,6 +239,10 @@ updateStrategyDefault(const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePtr 
                                                       auto time_distance = p2.time_from_start - p1.time_from_start;
 
                                                       auto velocity = distance_cartesian / time_distance.toSec();
+                                                      msg.data.push_back(velocity);
+                                                      std_msgs::MultiArrayDimension dim;
+                                                      dim.label = frame;
+                                                      msg.layout.dim.push_back(dim);
 
                                                       counter++;
 
@@ -241,9 +250,11 @@ updateStrategyDefault(const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePtr 
                                                       if(velocity > max_vel)
                                                       {
                                                         ROS_ERROR_STREAM("Velocity between " << p1.time_from_start << "s and " << p2.time_from_start << "s is " << velocity << " (max. allowed " << max_vel << "m/s)");
-                                                        return true;
+                                                        //return true;
                                                       }
                                                     }
+
+                                                    frame_speed_pub_.publish(msg);
 
                                                     return false;
                   });
