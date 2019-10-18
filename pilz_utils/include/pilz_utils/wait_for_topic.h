@@ -28,7 +28,7 @@ namespace pilz_utils
 {
 
 /**
- * @brief Waits until the specified topic is received.
+ * @brief Waits until someone publishes on the specified topic.
  */
 template<class T>
 static void waitForTopic(const std::string topic_name,
