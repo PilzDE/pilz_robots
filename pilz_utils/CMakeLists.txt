@@ -74,6 +74,14 @@ if(CATKIN_ENABLE_TESTING)
     ${catkin_LIBRARIES}
   )
 
+  # --- waitForService unit test ---
+  add_rostest_gtest(unittest_wait_for_service
+     test/unittest_wait_for_service.test
+     test/unittest_wait_for_service.cpp
+  )
+  target_link_libraries(unittest_wait_for_service ${catkin_LIBRARIES})
+  #----------------------------------
+
   # to run: catkin_make -DENABLE_COVERAGE_TESTIN=ON package_name_coverage (adding -j1 recommended)
   if(ENABLE_COVERAGE_TESTING)
     include(CodeCoverage)
