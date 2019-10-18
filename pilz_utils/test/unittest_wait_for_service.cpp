@@ -55,7 +55,7 @@ TEST(WaitForServiceTests, testAsyncCall)
 
 int main(int argc, char *argv[])
 {
-  ros::init(argc, argv, "unittest_wiat_for_service");
+  ros::init(argc, argv, "unittest_wait_for_service");
   ros::NodeHandle nh;
 
   testing::InitGoogleTest(&argc, argv);
