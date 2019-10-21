@@ -62,7 +62,7 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
                                                          &PilzJointTrajectoryController::handleIsExecutingRequest,
                                                          this);
 
-  frame_speed_pub_ = controller_nh.advertise<std_msgs::Float64MultiArray>("frame_speeds", 10);
+  frame_speed_pub_ = controller_nh.advertise<std_msgs::Float64MultiArray>("frame_speeds", 100);
 
   return res;
 }
