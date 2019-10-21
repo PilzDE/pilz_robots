@@ -374,6 +374,7 @@ limitations under the License.
         <robotNamespace>prbt</robotNamespace>
         <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
         <legacyModeNS>false</legacyModeNS> <!-- Only used from ros-kinetic-gazebo-ros-control 2.5.18 -->
+        <controlPeriod>0.008</controlPeriod>
       </plugin>
     </gazebo>
 
