@@ -22,6 +22,10 @@
 #include <std_srvs/Trigger.h>
 
 #include <joint_trajectory_controller/joint_trajectory_controller.h>
+#include <moveit/robot_state/robot_state.h>
+#include <moveit/robot_model/joint_model.h>
+#include <moveit/robot_model_loader/robot_model_loader.h>
+#include <pilz_control/cartesian_speed_monitor.h>
 
 namespace pilz_joint_trajectory_controller
 {
@@ -91,6 +95,9 @@ class PilzJointTrajectoryController
      */
     bool handleIsExecutingRequest(std_srvs::TriggerRequest& request, std_srvs::TriggerResponse& response);
 
+
+    void update(const ros::Time& time, const ros::Duration& period);
+
   protected:
     /**
      * @brief Called if new trajectory should be handled
@@ -113,6 +120,8 @@ class PilzJointTrajectoryController
 
     void triggerMovementToHoldPosition();
 
+    void switchToHoldMode();
+
   private:
     ros::ServiceServer hold_position_service;
     ros::ServiceServer unhold_position_service;
@@ -121,6 +130,8 @@ class PilzJointTrajectoryController
     std_srvs::TriggerRequest last_request_;
 
     Mode active_mode_ {Mode::HOLD};
+
+    std::shared_ptr < pilz_control::CartesianSpeedMonitor > cartesian_speed_monitor;
 
     /**
      * @brief Synchronizes hold/unhold and update trajectory function to avoid

@@ -17,6 +17,12 @@
 #ifndef PILZ_CONTROL_PILZ_JOINT_TRAJECTORY_CONTROLLER_IMPL_H
 #define PILZ_CONTROL_PILZ_JOINT_TRAJECTORY_CONTROLLER_IMPL_H
 
+#include <iostream>
+#include <ctime>
+#include <ratio>
+#include <chrono>
+
+
 namespace pilz_joint_trajectory_controller
 {
 
@@ -35,6 +41,9 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
 
 {
   bool res = JointTrajectoryController::init(hw, root_nh, controller_nh);
+
+  cartesian_speed_monitor.reset(new pilz_control::CartesianSpeedMonitor());
+  cartesian_speed_monitor->init();
 
   hold_position_service = controller_nh.advertiseService("hold",
                                                          &PilzJointTrajectoryController::handleHoldRequest,
@@ -101,10 +110,7 @@ handleHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response
     return true;
   }
 
-  active_mode_ = Mode::HOLD;
-
-  JointTrajectoryController::preemptActiveGoal();
-  triggerMovementToHoldPosition();
+  switchToHoldMode();
 
   ros::Duration(JointTrajectoryController::stop_trajectory_duration_).sleep();
 
@@ -127,6 +133,8 @@ handleUnHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& respon
   }
 
   active_mode_ = Mode::UNHOLD;
+
+  //JointTrajectoryController::starting();
 
   response.message = "Default mode enabled";
   response.success = true;
@@ -156,6 +164,37 @@ updateTrajectoryCommand(const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePt
 }
 
 template <class SegmentImpl, class HardwareInterface>
+void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
+update(const ros::Time& time, const ros::Duration& period)
+{
+  using namespace std::chrono;
+
+  high_resolution_clock::time_point t0 = high_resolution_clock::now();
+  JointTrajectoryController::update(time, period);
+
+  high_resolution_clock::time_point t1 = high_resolution_clock::now();
+
+
+  // TODO only now the current_state is meaningful since it gets updated in JointTrajectoryController::update
+  if(active_mode_ != Mode::HOLD && !cartesian_speed_monitor->cartesianSpeedIsBelowLimit(
+                                          JointTrajectoryController::current_state_.position, 
+                                          JointTrajectoryController::desired_state_.position, 
+                                          period.toSec(), 
+                                          0.8 /*limit */)){
+    switchToHoldMode();
+  }
+  
+  high_resolution_clock::time_point t2 = high_resolution_clock::now();
+  //std::cerr << "MaxSpeed " << speed << std::endl;
+
+  double time_span_speed_check_ms = duration_cast<duration<double>>(t2 - t1).count() * 1000.0;
+  double time_span_total_ms = duration_cast<duration<double>>(t2 - t0).count() * 1000.0;
+  // std::cout << "Check time: " << time_span_speed_check_ms << " ms (" << time_span_speed_check_ms/time_span_total_ms * 100 << " %) (total: " << time_span_total_ms << " ms) - duration " << (time);
+  // std::cout << std::endl;
+
+}
+
+template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 updateStrategyDefault(const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePtr gh, std::string* error_string)
 {
@@ -169,6 +208,22 @@ updateStrategyWhileHolding(const JointTrajectoryConstPtr&, RealtimeGoalHandlePtr
   ROS_WARN_THROTTLE_NAMED(10, this->name_,
                           "Controller received new commands but won't react because it is currently in holding mode.");
   return false;
+}
+
+template <class SegmentImpl, class HardwareInterface>
+void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
+switchToHoldMode()
+{
+  // Keep this function invariant
+  if(active_mode_ == Mode::HOLD)
+  {
+    return;
+  }
+
+  active_mode_ = Mode::HOLD;
+
+  JointTrajectoryController::preemptActiveGoal();
+  triggerMovementToHoldPosition();
 }
 
 template <class SegmentImpl, class HardwareInterface>
