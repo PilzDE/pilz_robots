@@ -16,6 +16,10 @@ sudo apt install ros-melodic-pilz-robots
 
 ### Build Status
 
+#### Branching model
+`melodic-devel` is considered to be the active development branch.
+Relevant changes are cherry-picked into `kinetic-devel` on a case-by-case basis.
+
 #### Travis
 
 |   | Kinetic | Melodic |
