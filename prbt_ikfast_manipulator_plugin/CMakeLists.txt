@@ -1,7 +1,9 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.1.3)
 project(prbt_ikfast_manipulator_plugin)
 
-add_compile_options(-std=c++14)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 add_compile_options(-Wall)
 add_compile_options(-Wextra)
 add_compile_options(-Wno-unused-parameter)
@@ -9,7 +11,7 @@ add_compile_options(-Wno-unused-variable)
 add_compile_options(-Werror)
 
 # enable aligned new in gcc7+
-if(CMAKE_COMPILER_IS_GNUCXX) 
+if(CMAKE_COMPILER_IS_GNUCXX)
   if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.0)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -faligned-new")
   endif()
@@ -53,7 +55,9 @@ endif()
 
 install(TARGETS
   ${IKFAST_LIBRARY_NAME}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
 
 install(
   FILES
