@@ -17,14 +17,13 @@
 #ifndef PILZ_CONTROL_PILZ_JOINT_TRAJECTORY_CONTROLLER_H
 #define PILZ_CONTROL_PILZ_JOINT_TRAJECTORY_CONTROLLER_H
 
+#include <atomic>
 #include <mutex>
+#include <thread>
 
 #include <std_srvs/Trigger.h>
 
 #include <joint_trajectory_controller/joint_trajectory_controller.h>
-#include <moveit/robot_state/robot_state.h>
-#include <moveit/robot_model/joint_model.h>
-#include <moveit/robot_model_loader/robot_model_loader.h>
 #include <pilz_control/cartesian_speed_monitor.h>
 
 namespace pilz_joint_trajectory_controller
@@ -95,9 +94,6 @@ class PilzJointTrajectoryController
      */
     bool handleIsExecutingRequest(std_srvs::TriggerRequest& request, std_srvs::TriggerResponse& response);
 
-
-    void update(const ros::Time& time, const ros::Duration& period);
-
   protected:
     /**
      * @brief Called if new trajectory should be handled
@@ -122,6 +118,8 @@ class PilzJointTrajectoryController
 
     void switchToHoldMode();
 
+    void checkCurrentTrajectory();
+
   private:
     ros::ServiceServer hold_position_service;
     ros::ServiceServer unhold_position_service;
@@ -138,6 +136,9 @@ class PilzJointTrajectoryController
      * threading problems.
      */
     std::mutex sync_mutex_;
+
+    std::atomic_bool new_trajectory_;
+    std::thread check_trajectory_thread_;
 };
 
 }  // namespace pilz_joint_trajectory_controller

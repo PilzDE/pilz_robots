@@ -21,6 +21,7 @@
 #include <ctime>
 #include <ratio>
 #include <chrono>
+#include <thread>
 
 
 namespace pilz_joint_trajectory_controller
@@ -164,41 +165,95 @@ updateTrajectoryCommand(const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePt
 }
 
 template <class SegmentImpl, class HardwareInterface>
+bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
+updateStrategyDefault(const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePtr gh, std::string* error_string)
+{
+  bool res = JointTrajectoryController::updateTrajectoryCommand(msg, gh, error_string);
+
+  // terminate running check of frame speeds
+  new_trajectory_ = true;
+  if (check_trajectory_thread_.joinable())
+  {
+    check_trajectory_thread_.join();
+  }
+
+  // trigger check of frame speeds
+  new_trajectory_ = false;
+  check_trajectory_thread_ = std::thread(&PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::checkCurrentTrajectory, this);
+
+  return res;
+}
+
+template <class SegmentImpl, class HardwareInterface>
 void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
-update(const ros::Time& time, const ros::Duration& period)
+checkCurrentTrajectory()
 {
   using namespace std::chrono;
 
   high_resolution_clock::time_point t0 = high_resolution_clock::now();
-  JointTrajectoryController::update(time, period);
+
+  // Get currently followed trajectory
+  TrajectoryPtr curr_traj_ptr;
+  JointTrajectoryController::curr_trajectory_box_.get(curr_traj_ptr);
+  if (!curr_traj_ptr)
+  {
+    ROS_ERROR("No trajectory present");
+    return;
+  }
+
+  typedef typename SegmentImpl::Scalar Scalar;
+  typedef typename SegmentImpl::Time Time;
+  typedef typename TrajectoryPerJoint::value_type::State State;
+  
+  size_t njoints{ JointTrajectoryController::joints_.size() };
+  State state;
+  std::vector<double> first_position;
+  std::vector<double> second_position(njoints);
+  Time check_time{ JointTrajectoryController::time_data_.readFromRT()->uptime.toSec() };
+  // assume that all trajectory per joints have identical end time
+  const Time end_time{ curr_traj_ptr->at(0).back().endTime() };
+
+  const Scalar time_delta{ 0.002 };
+
+  unsigned int count{ 0 };
+
+  while (check_time + time_delta < end_time)
+  {
+    count++;
+
+    // sample trajectory (two times in the first iteration)
+    if (first_position.empty())
+    {
+      for (unsigned int i = 0; i < njoints; ++i)
+      {
+        sample(curr_traj_ptr->at(i), check_time, state);
+        first_position.push_back(state.position.at(0));
+      }
+    }
+    for (unsigned int i = 0; i < njoints; ++i)
+    {
+      sample(curr_traj_ptr->at(i), check_time + time_delta, state);
+      second_position[i] = state.position.at(0);
+    }
+
+    // check speed
+    if (!cartesian_speed_monitor->cartesianSpeedIsBelowLimit(first_position, second_position, time_delta, 0.25))
+    {
+      high_resolution_clock::time_point t1 = high_resolution_clock::now();
+
+      ROS_INFO_STREAM("Checked " << count << " trajectory points in "
+                                 << std::chrono::duration_cast<std::chrono::milliseconds>(t1-t0).count() << "ms");
+      switchToHoldMode();
+      return;
+    }
+
+    check_time += time_delta;
+    first_position = second_position;
+  }
 
   high_resolution_clock::time_point t1 = high_resolution_clock::now();
-
-
-  // TODO only now the current_state is meaningful since it gets updated in JointTrajectoryController::update
-  if(active_mode_ != Mode::HOLD && !cartesian_speed_monitor->cartesianSpeedIsBelowLimit(
-                                          JointTrajectoryController::current_state_.position, 
-                                          JointTrajectoryController::desired_state_.position, 
-                                          period.toSec(), 
-                                          0.8 /*limit */)){
-    switchToHoldMode();
-  }
-  
-  high_resolution_clock::time_point t2 = high_resolution_clock::now();
-  //std::cerr << "MaxSpeed " << speed << std::endl;
-
-  double time_span_speed_check_ms = duration_cast<duration<double>>(t2 - t1).count() * 1000.0;
-  double time_span_total_ms = duration_cast<duration<double>>(t2 - t0).count() * 1000.0;
-  // std::cout << "Check time: " << time_span_speed_check_ms << " ms (" << time_span_speed_check_ms/time_span_total_ms * 100 << " %) (total: " << time_span_total_ms << " ms) - duration " << (time);
-  // std::cout << std::endl;
-
-}
-
-template <class SegmentImpl, class HardwareInterface>
-bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
-updateStrategyDefault(const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePtr gh, std::string* error_string)
-{
-  return JointTrajectoryController::updateTrajectoryCommand(msg, gh, error_string);
+  ROS_INFO_STREAM("Checked " << count << " trajectory points in "
+                             << std::chrono::duration_cast<std::chrono::milliseconds>(t1-t0).count() << "ms");
 }
 
 template <class SegmentImpl, class HardwareInterface>
