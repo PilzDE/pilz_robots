@@ -169,6 +169,8 @@ update(const ros::Time& time, const ros::Duration& period)
 {
   using namespace std::chrono;
 
+  std::vector<double> desired_before_update{ JointTrajectoryController::desired_state_.position };
+
   high_resolution_clock::time_point t0 = high_resolution_clock::now();
   JointTrajectoryController::update(time, period);
 
@@ -177,7 +179,7 @@ update(const ros::Time& time, const ros::Duration& period)
 
   // TODO only now the current_state is meaningful since it gets updated in JointTrajectoryController::update
   if(active_mode_ != Mode::HOLD && !cartesian_speed_monitor->cartesianSpeedIsBelowLimit(
-                                          JointTrajectoryController::current_state_.position, 
+                                          desired_before_update,
                                           JointTrajectoryController::desired_state_.position, 
                                           period.toSec(), 
                                           0.8 /*limit */)){
