@@ -182,7 +182,7 @@ update(const ros::Time& time, const ros::Duration& period)
                                           desired_before_update,
                                           JointTrajectoryController::desired_state_.position, 
                                           period.toSec(), 
-                                          0.8 /*limit */)){
+                                          0.25 /*limit */)){
     switchToHoldMode();
   }
   
