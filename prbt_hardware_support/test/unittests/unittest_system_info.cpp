@@ -163,7 +163,7 @@ TEST_F(SystemInfoTests, testCANUpAndRunning)
   });
 
   // Wait a while and then check if constructor is still waiting for the topic.
-  ros::Duration(5.0 * DEFAULT_RETRY_TIMEOUT).sleep();
+  ros::Duration(5.0 * pilz_utils::DEFAULT_RETRY_TIMEOUT).sleep();
   ASSERT_FALSE(ctor_called) << "Ctor already finished although \"/joint_states\" topic not published yet";
 
   // Activate publishing of "/joint_states"
@@ -199,7 +199,7 @@ TEST_F(SystemInfoTests, testCANServiceUpAndRunning)
   });
 
   // Wait a while and then check if constructor is still waiting for the topic.
-  ros::Duration(5.0 * DEFAULT_RETRY_TIMEOUT).sleep();
+  ros::Duration(5.0 * pilz_utils::DEFAULT_RETRY_TIMEOUT).sleep();
   ASSERT_FALSE(ctor_called) << "Ctor already finished although \"get_object\" service not advertised yet";
 
   advertiseGetObjectService();
