@@ -31,8 +31,6 @@ const std::string HALT_SERVICE{"driver/halt"};
 namespace prbt_hardware_support
 {
 
-using namespace pilz_utils;
-
 bool callService(ros::ServiceClient& srv_client)
 {
   std_srvs::Trigger trigger;
@@ -61,16 +59,16 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "stop1_executor");
   ros::NodeHandle nh;
 
-  waitForService(HOLD_SERVICE);
+  pilz_utils::waitForService(HOLD_SERVICE);
   ros::ServiceClient hold_srv = nh.serviceClient<std_srvs::Trigger>(HOLD_SERVICE);
 
-  waitForService(UNHOLD_SERVICE);
+  pilz_utils::waitForService(UNHOLD_SERVICE);
   ros::ServiceClient unhold_srv = nh.serviceClient<std_srvs::Trigger>(UNHOLD_SERVICE);
 
-  waitForService(RECOVER_SERVICE);
+  pilz_utils::waitForService(RECOVER_SERVICE);
   ros::ServiceClient recover_srv = nh.serviceClient<std_srvs::Trigger>(RECOVER_SERVICE);
 
-  waitForService(HALT_SERVICE);
+  pilz_utils::waitForService(HALT_SERVICE);
   ros::ServiceClient halt_srv = nh.serviceClient<std_srvs::Trigger>(HALT_SERVICE);
 
   TServiceCallFunc hold_func = std::bind(callService, hold_srv);

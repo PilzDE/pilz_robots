@@ -38,7 +38,6 @@ namespace system_info_tests
 {
 
 using canopen_chain_node::GetObject;
-using namespace pilz_utils;
 using namespace prbt_hardware_support;
 using namespace testing;
 
@@ -170,7 +169,7 @@ TEST_F(SystemInfoTests, testCANUpAndRunning)
   // Activate publishing of "/joint_states"
   terminate_ = false;
   publisher_thread_ = std::thread(&SystemInfoTests::publishJointState, this);
-  waitForTopic<sensor_msgs::JointState>("/joint_states");
+  pilz_utils::waitForTopic<sensor_msgs::JointState>("/joint_states");
   // Wait till constructor is finished
   BARRIER("ctor_called");
 
@@ -204,7 +203,7 @@ TEST_F(SystemInfoTests, testCANServiceUpAndRunning)
   ASSERT_FALSE(ctor_called) << "Ctor already finished although \"get_object\" service not advertised yet";
 
   advertiseGetObjectService();
-  waitForService("/prbt/driver/get_object");
+  pilz_utils::waitForService("/prbt/driver/get_object");
   // Wait till constructor is finished
   BARRIER("ctor_called");
 

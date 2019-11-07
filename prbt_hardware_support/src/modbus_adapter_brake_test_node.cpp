@@ -32,7 +32,6 @@ static const std::string SERVICE_NAME_IS_BRAKE_TEST_REQUIRED = "/prbt/brake_test
 static const std::string SERVICE_SEND_BRAKE_TEST_RESULT = "/prbt/send_brake_test_result";
 static const std::string MODBUS_WRITE_SERVICE_NAME{"/pilz_modbus_client_node/modbus_write"};
 
-using namespace pilz_utils;
 using namespace prbt_hardware_support;
 
 /**
@@ -47,7 +46,7 @@ int main(int argc, char **argv)
   ModbusApiSpec read_api_spec(nh);
   ModbusApiSpec write_api_spec(nh, API_SPEC_WRITE_PARAM_NAME);
 
-  waitForService(MODBUS_WRITE_SERVICE_NAME);
+  pilz_utils::waitForService(MODBUS_WRITE_SERVICE_NAME);
   ROS_DEBUG_STREAM("Done waiting for service: " << MODBUS_WRITE_SERVICE_NAME);
   ros::ServiceClient modbus_write_client = pnh.serviceClient<WriteModbusRegister>(MODBUS_WRITE_SERVICE_NAME);
 

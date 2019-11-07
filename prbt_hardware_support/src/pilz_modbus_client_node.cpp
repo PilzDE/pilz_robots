@@ -33,7 +33,6 @@ static constexpr int32_t MODBUS_CONNECTION_RETRIES_DEFAULT {10};
 static constexpr double MODBUS_CONNECTION_RETRY_TIMEOUT_S_DEFAULT {1.0};
 static constexpr int MODBUS_RESPONSE_TIMEOUT_MS {20};
 
-using namespace pilz_utils;
 using namespace prbt_hardware_support;
 
 /**
@@ -54,16 +53,16 @@ int main(int argc, char **argv)
 
   try
   {
-    ip = getParam<std::string>(pnh, PARAM_MODBUS_SERVER_IP_STR);
-    port = getParam<int>(pnh, PARAM_MODBUS_SERVER_PORT_STR);
+    ip = pilz_utils::getParam<std::string>(pnh, PARAM_MODBUS_SERVER_IP_STR);
+    port = pilz_utils::getParam<int>(pnh, PARAM_MODBUS_SERVER_PORT_STR);
 
     bool has_register_range_parameters =
         pnh.hasParam(PARAM_NUM_REGISTERS_TO_READ_STR) &&
         pnh.hasParam(PARAM_INDEX_OF_FIRST_REGISTER_TO_READ_STR);
     if (has_register_range_parameters)
     {
-      int num_registers_to_read = getParam<int>(pnh, PARAM_NUM_REGISTERS_TO_READ_STR);
-      int index_of_first_register = getParam<int>(pnh, PARAM_INDEX_OF_FIRST_REGISTER_TO_READ_STR);
+      int num_registers_to_read = pilz_utils::getParam<int>(pnh, PARAM_NUM_REGISTERS_TO_READ_STR);
+      int index_of_first_register = pilz_utils::getParam<int>(pnh, PARAM_INDEX_OF_FIRST_REGISTER_TO_READ_STR);
       registers_to_read = std::vector<unsigned short>(static_cast<unsigned long>(num_registers_to_read));
       std::iota(registers_to_read.begin(), registers_to_read.end(), index_of_first_register);
     }

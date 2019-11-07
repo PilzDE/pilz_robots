@@ -38,7 +38,6 @@ static const std::string PARAM_SPEED_LIMIT_AUTO_STR {"speed_limit_automatic"};
 
 static constexpr uint32_t DEFAULT_QUEUE_SIZE {10} ;
 
-using namespace pilz_utils;
 using namespace prbt_hardware_support;
 
 /**
@@ -52,7 +51,7 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
 
   using std::placeholders::_1;
-  waitForService(SET_SPEED_LIMIT_SERVICE);
+  pilz_utils::waitForService(SET_SPEED_LIMIT_SERVICE);
   ros::ServiceClient speed_limit_srv = nh.serviceClient<SetSpeedLimit>(SET_SPEED_LIMIT_SERVICE);
   SetSpeedLimitFunc set_speed_limit_func = std::bind(setSpeedLimitSrv<ros::ServiceClient>,
                                                      speed_limit_srv, _1);
@@ -62,8 +61,8 @@ int main(int argc, char **argv)
   ros::NodeHandle pnh{"~"};
   try
   {
-    speed_limit_t1 = getParam<double>(pnh, PARAM_SPEED_LIMIT_T1_STR);
-    speed_limit_auto = getParam<double>(pnh, PARAM_SPEED_LIMIT_AUTO_STR);
+    speed_limit_t1 = pilz_utils::getParam<double>(pnh, PARAM_SPEED_LIMIT_T1_STR);
+    speed_limit_auto = pilz_utils::getParam<double>(pnh, PARAM_SPEED_LIMIT_AUTO_STR);
   }
   catch (const std::runtime_error &ex)
   {

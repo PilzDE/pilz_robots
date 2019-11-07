@@ -28,8 +28,6 @@
 namespace prbt_hardware_support
 {
 
-using namespace pilz_utils;
-
 static const std::string CANOPEN_GETOBJECT_SERVICE_NAME{"/prbt/driver/get_object"};
 static const std::string CANOPEN_NODES_PARAMETER_NAME{"/prbt/driver/nodes"};
 static const std::string JOINT_STATE_TOPIC {"/joint_states"};
@@ -42,9 +40,9 @@ SystemInfo::SystemInfo(ros::NodeHandle &nh)
   // Wait till CAN is up and running.
   // Reason: If the first CAN service call happens before
   // the CAN is fully initialized, the CAN will not start properly.
-  waitForTopic<sensor_msgs::JointState>(JOINT_STATE_TOPIC);
+  pilz_utils::waitForTopic<sensor_msgs::JointState>(JOINT_STATE_TOPIC);
 
-  waitForService(CANOPEN_GETOBJECT_SERVICE_NAME);
+  pilz_utils::waitForService(CANOPEN_GETOBJECT_SERVICE_NAME);
   canopen_srv_get_client_ = nh.serviceClient<canopen_chain_node::GetObject>(CANOPEN_GETOBJECT_SERVICE_NAME);
 }
 

@@ -22,7 +22,6 @@
 #include <pilz_utils/wait_for_topic.h>
 #include <prbt_hardware_support/speed_observer.h>
 
-using namespace pilz_utils;
 using namespace prbt_hardware_support;
 
 static const std::string ADDITIONAL_FRAMES_PARAM_NAME{ "additional_frames" };
@@ -80,7 +79,7 @@ int main(int argc, char** argv)
   // LCOV_EXCL_START Simple parameter reading not analyzed
   try
   {
-    frequency = getParam<double>(pnh, OBSERVATION_FREQUENCY_PARAM_NAME);
+    frequency = pilz_utils::getParam<double>(pnh, OBSERVATION_FREQUENCY_PARAM_NAME);
   }
   catch(const std::runtime_error& ex)
   {

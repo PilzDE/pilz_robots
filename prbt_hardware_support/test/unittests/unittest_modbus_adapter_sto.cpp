@@ -37,8 +37,6 @@
 namespace prbt_hardware_support
 {
 
-using namespace pilz_utils;
-
 static constexpr bool STO_CLEAR {true};
 static constexpr bool STO_ACTIVE {false};
 

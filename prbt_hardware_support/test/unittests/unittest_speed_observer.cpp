@@ -40,7 +40,6 @@ using ::testing::DoAll;
 using ::testing::Return;
 using ::testing::SetArgReferee;
 
-using namespace pilz_utils;
 using namespace prbt_hardware_support;
 
 static const std::string BARRIER_SLOW{ "BARRIER_SLOW" };
@@ -87,7 +86,7 @@ void SpeedObserverUnitTest::SetUp()
       nh_.subscribe<FrameSpeeds>(FRAME_SPEEDS_TOPIC_NAME, 1, &SpeedObserverUnitTest::frame_speeds_cb_mock, this);
   stop_subscriber_ = nh_.advertiseService(STOP_TOPIC_NAME, &SpeedObserverUnitTest::stop_cb_mock, this);
 
-  waitForService(STOP_TOPIC_NAME);
+  pilz_utils::waitForService(STOP_TOPIC_NAME);
 }
 
 void SpeedObserverUnitTest::publishTfAtSpeed(const double speed, const double publish_frequency)
