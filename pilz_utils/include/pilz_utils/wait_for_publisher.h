@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef PILZ_UTILS_WAIT_FOR_TOPIC_H
-#define PILZ_UTILS_WAIT_FOR_TOPIC_H
+#ifndef PILZ_UTILS_WAIT_FOR_PUBLISHER_H
+#define PILZ_UTILS_WAIT_FOR_PUBLISHER_H
 
 #include <string>
 
@@ -31,7 +31,7 @@ namespace pilz_utils
  * @brief Waits until someone publishes on the specified topic.
  */
 template<class T>
-static void waitForTopic(const std::string topic_name,
+static void waitForPublisher(const std::string topic_name,
                   const double retry_timeout = DEFAULT_RETRY_TIMEOUT,
                   const double msg_output_period = DEFAULT_MSG_OUTPUT_PERIOD)
 {
@@ -45,4 +45,4 @@ static void waitForTopic(const std::string topic_name,
 
 }
 
-#endif // PILZ_UTILS_WAIT_FOR_TOPIC_H
+#endif // PILZ_UTILS_WAIT_FOR_PUBLISHER_H

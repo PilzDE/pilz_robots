@@ -19,7 +19,6 @@
 #include <urdf/model.h>
 
 #include <pilz_utils/get_param.h>
-#include <pilz_utils/wait_for_topic.h>
 #include <prbt_hardware_support/speed_observer.h>
 
 using namespace prbt_hardware_support;

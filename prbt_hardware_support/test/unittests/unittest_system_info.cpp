@@ -28,7 +28,7 @@
 #include <canopen_chain_node/GetObject.h>
 #include <sensor_msgs/JointState.h>
 
-#include <pilz_utils/wait_for_topic.h>
+#include <pilz_utils/wait_for_publisher.h>
 #include <pilz_utils/wait_for_service.h>
 #include <pilz_testutils/async_test.h>
 #include <prbt_hardware_support/system_info.h>
@@ -169,7 +169,7 @@ TEST_F(SystemInfoTests, testCANUpAndRunning)
   // Activate publishing of "/joint_states"
   terminate_ = false;
   publisher_thread_ = std::thread(&SystemInfoTests::publishJointState, this);
-  pilz_utils::waitForTopic<sensor_msgs::JointState>("/joint_states");
+  pilz_utils::waitForPublisher<sensor_msgs::JointState>("/joint_states");
   // Wait till constructor is finished
   BARRIER("ctor_called");
 

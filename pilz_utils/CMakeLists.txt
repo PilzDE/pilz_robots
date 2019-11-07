@@ -85,12 +85,12 @@ if(CATKIN_ENABLE_TESTING)
   )
   #----------------------------------
 
-  # --- waitForTopic unit test ---
-  add_rostest_gtest(unittest_wait_for_topic
-     test/unittest_wait_for_topic.test
-     test/unittest_wait_for_topic.cpp
+  # --- waitForPublisher unit test ---
+  add_rostest_gtest(unittest_wait_for_publisher
+     test/unittest_wait_for_publisher.test
+     test/unittest_wait_for_publisher.cpp
   )
-  target_link_libraries(unittest_wait_for_topic
+  target_link_libraries(unittest_wait_for_publisher
     ${catkin_LIBRARIES}
   )
   #----------------------------------
