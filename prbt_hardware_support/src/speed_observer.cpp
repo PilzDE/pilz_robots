@@ -22,10 +22,11 @@
 #include <tf2/convert.h>
 
 #include <prbt_hardware_support/speed_observer.h>
-#include <prbt_hardware_support/wait_for_service.h>
+#include <pilz_utils/wait_for_service.h>
 
 namespace prbt_hardware_support
 {
+
 static const std::string FRAME_SPEEDS_TOPIC_NAME{ "frame_speeds" };
 static const std::string STO_SERVICE{ "safe_torque_off" };
 
@@ -34,7 +35,7 @@ SpeedObserver::SpeedObserver(ros::NodeHandle& nh, std::string& reference_frame,
   : nh_(nh), reference_frame_(reference_frame), frames_to_observe_(frames_to_observe)
 {
   frame_speeds_pub_ = nh.advertise<FrameSpeeds>(FRAME_SPEEDS_TOPIC_NAME, DEFAULT_QUEUE_SIZE);
-  waitForService(STO_SERVICE);
+  pilz_utils::waitForService(STO_SERVICE);
   sto_client_ = nh.serviceClient<std_srvs::SetBool>(STO_SERVICE);
 }
 

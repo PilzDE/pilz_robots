@@ -20,9 +20,10 @@
 #include <ros/ros.h>
 #include <std_srvs/Trigger.h>
 
+#include <pilz_utils/wait_for_service.h>
+
 #include <prbt_hardware_support/brake_test_executor.h>
 #include <prbt_hardware_support/SendBrakeTestResult.h>
-#include <prbt_hardware_support/wait_for_service.h>
 #include <prbt_hardware_support/BrakeTest.h>
 #include <prbt_hardware_support/brake_test_utils.h>
 #include <prbt_hardware_support/brake_test_executor_node_service_calls.h>
@@ -44,16 +45,16 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "brake_test_executor");
   ros::NodeHandle nh{"~"};
 
-  waitForService(CONTROLLER_HOLD_MODE_SERVICE_NAME);
+  pilz_utils::waitForService(CONTROLLER_HOLD_MODE_SERVICE_NAME);
   ros::ServiceClient hold_client = nh.serviceClient<std_srvs::Trigger>(CONTROLLER_HOLD_MODE_SERVICE_NAME);
 
-  waitForService(BRAKETEST_ADAPTER_SERVICE_NAME);
+  pilz_utils::waitForService(BRAKETEST_ADAPTER_SERVICE_NAME);
   ros::ServiceClient brake_test_execute_client = nh.serviceClient<BrakeTest>(BRAKETEST_ADAPTER_SERVICE_NAME);
 
-  waitForService(CONTROLLER_UNHOLD_MODE_SERVICE_NAME);
+  pilz_utils::waitForService(CONTROLLER_UNHOLD_MODE_SERVICE_NAME);
   ros::ServiceClient unhold_client = nh.serviceClient<std_srvs::Trigger>(CONTROLLER_UNHOLD_MODE_SERVICE_NAME);
 
-  waitForService(BRAKE_TEST_RESULT_SERVICE_NAME);
+  pilz_utils::waitForService(BRAKE_TEST_RESULT_SERVICE_NAME);
   ros::ServiceClient brake_test_result_client = nh.serviceClient<SendBrakeTestResult>(BRAKE_TEST_RESULT_SERVICE_NAME);
 
   using std::placeholders::_1;

@@ -1,0 +1,6 @@
+- builder: doxygen
+  name: Documentation of pilz_utils package
+  output_dir: pilz_utils
+  file_patterns: '*.c *.cpp *.h *.cc *.hh *.dox *.md'
+  exclude_patterns: 'test'
+  use_mdfile_as_mainpage: 'README.md'

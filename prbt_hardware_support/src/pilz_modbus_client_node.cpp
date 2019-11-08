@@ -21,7 +21,7 @@
 
 #include <ros/ros.h>
 
-#include <prbt_hardware_support/get_param.h>
+#include <pilz_utils/get_param.h>
 #include <prbt_hardware_support/libmodbus_client.h>
 #include <prbt_hardware_support/pilz_modbus_client.h>
 #include <prbt_hardware_support/param_names.h>
@@ -75,17 +75,17 @@ int main(int argc, char **argv)
 
   try
   {
-    ip = getParam<std::string>(pnh, PARAM_MODBUS_SERVER_IP_STR);
-    port = getParam<int>(pnh, PARAM_MODBUS_SERVER_PORT_STR);
+    ip = pilz_utils::getParam<std::string>(pnh, PARAM_MODBUS_SERVER_IP_STR);
+    port = pilz_utils::getParam<int>(pnh, PARAM_MODBUS_SERVER_PORT_STR);
     if (has_register_range_parameters)
     {
-      int num_registers_to_read = getParam<int>(pnh, PARAM_NUM_REGISTERS_TO_READ_STR);
-      int index_of_first_register = getParam<int>(pnh, PARAM_INDEX_OF_FIRST_REGISTER_TO_READ_STR);
+      int num_registers_to_read = pilz_utils::getParam<int>(pnh, PARAM_NUM_REGISTERS_TO_READ_STR);
+      int index_of_first_register = pilz_utils::getParam<int>(pnh, PARAM_INDEX_OF_FIRST_REGISTER_TO_READ_STR);
       registers_to_read = std::vector<unsigned short>(num_registers_to_read);
       std::iota(registers_to_read.begin(), registers_to_read.end(), index_of_first_register);
     }
   }
-  catch (const GetParamException &ex)
+  catch (const std::runtime_error &ex)
   {
     ROS_ERROR_STREAM(ex.what());
     return EXIT_FAILURE;

@@ -18,8 +18,8 @@
 #include <ros/ros.h>
 #include <urdf/model.h>
 
-#include <prbt_hardware_support/get_param.h>
-#include <prbt_hardware_support/wait_for_topic.h>
+#include <pilz_utils/get_param.h>
+#include <pilz_utils/wait_for_topic.h>
 #include <prbt_hardware_support/speed_observer.h>
 
 using namespace prbt_hardware_support;
@@ -79,7 +79,7 @@ int main(int argc, char** argv)
   // LCOV_EXCL_START Simple parameter reading not analyzed
   try
   {
-    frequency = getParam<double>(pnh, OBSERVATION_FREQUENCY_PARAM_NAME);
+    frequency = pilz_utils::getParam<double>(pnh, OBSERVATION_FREQUENCY_PARAM_NAME);
   }
   catch(const std::runtime_error& ex)
   {
