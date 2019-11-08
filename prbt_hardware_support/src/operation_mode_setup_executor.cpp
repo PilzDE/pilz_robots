@@ -62,8 +62,8 @@ void OperationModeSetupExecutor::updateOperationMode(const OperationModes& opera
   }
 }
 
-bool OperationModeSetupExecutor::getSpeedOverride(GetSpeedOverride::Request& /*req*/,
-                                                    GetSpeedOverride::Response& response)
+bool OperationModeSetupExecutor::getSpeedOverride(pilz_msgs::GetSpeedOverride::Request& /*req*/,
+                                                  pilz_msgs::GetSpeedOverride::Response& response)
 {
   response.speed_override = speed_override_;
   return true;
