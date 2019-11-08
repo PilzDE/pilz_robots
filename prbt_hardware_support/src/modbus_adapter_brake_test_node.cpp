@@ -19,9 +19,10 @@
 
 #include <ros/ros.h>
 
+#include <pilz_utils/wait_for_service.h>
+
 #include <prbt_hardware_support/modbus_adapter_brake_test.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
-#include <prbt_hardware_support/wait_for_service.h>
 #include <prbt_hardware_support/filter_pipeline.h>
 #include <prbt_hardware_support/WriteModbusRegister.h>
 #include <prbt_hardware_support/write_modbus_register_call.h>
@@ -45,7 +46,7 @@ int main(int argc, char **argv)
   ModbusApiSpec read_api_spec(nh);
   ModbusApiSpec write_api_spec(nh, API_SPEC_WRITE_PARAM_NAME);
 
-  waitForService(MODBUS_WRITE_SERVICE_NAME);
+  pilz_utils::waitForService(MODBUS_WRITE_SERVICE_NAME);
   ROS_DEBUG_STREAM("Done waiting for service: " << MODBUS_WRITE_SERVICE_NAME);
   ros::ServiceClient modbus_write_client = pnh.serviceClient<WriteModbusRegister>(MODBUS_WRITE_SERVICE_NAME);
 

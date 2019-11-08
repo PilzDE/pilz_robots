@@ -17,9 +17,10 @@
 
 #include <ros/ros.h>
 
+#include <pilz_utils/wait_for_service.h>
+
 #include <prbt_hardware_support/stop1_executor.h>
 #include <prbt_hardware_support/service_function_decl.h>
-#include <prbt_hardware_support/wait_for_service.h>
 
 const std::string HOLD_SERVICE{"manipulator_joint_trajectory_controller/hold"};
 const std::string UNHOLD_SERVICE{"manipulator_joint_trajectory_controller/unhold"};
@@ -58,16 +59,16 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "stop1_executor");
   ros::NodeHandle nh;
 
-  waitForService(HOLD_SERVICE);
+  pilz_utils::waitForService(HOLD_SERVICE);
   ros::ServiceClient hold_srv = nh.serviceClient<std_srvs::Trigger>(HOLD_SERVICE);
 
-  waitForService(UNHOLD_SERVICE);
+  pilz_utils::waitForService(UNHOLD_SERVICE);
   ros::ServiceClient unhold_srv = nh.serviceClient<std_srvs::Trigger>(UNHOLD_SERVICE);
 
-  waitForService(RECOVER_SERVICE);
+  pilz_utils::waitForService(RECOVER_SERVICE);
   ros::ServiceClient recover_srv = nh.serviceClient<std_srvs::Trigger>(RECOVER_SERVICE);
 
-  waitForService(HALT_SERVICE);
+  pilz_utils::waitForService(HALT_SERVICE);
   ros::ServiceClient halt_srv = nh.serviceClient<std_srvs::Trigger>(HALT_SERVICE);
 
   TServiceCallFunc hold_func = std::bind(callService, hold_srv);

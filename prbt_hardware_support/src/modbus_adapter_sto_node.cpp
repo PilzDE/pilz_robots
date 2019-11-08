@@ -19,11 +19,12 @@
 
 #include <ros/ros.h>
 
+#include <pilz_utils/wait_for_service.h>
+
 #include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/modbus_adapter_sto.h>
 #include <prbt_hardware_support/filter_pipeline.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
-#include <prbt_hardware_support/wait_for_service.h>
 #include <std_srvs/SetBool.h>
 
 using namespace prbt_hardware_support;
@@ -55,7 +56,7 @@ int main(int argc, char **argv)
   using std::placeholders::_1;
 
   ModbusApiSpec api_spec{nh};
-  waitForService(STO_SERVICE_NAME);
+  pilz_utils::waitForService(STO_SERVICE_NAME);
   ros::ServiceClient sto_service = nh.serviceClient<std_srvs::SetBool>(STO_SERVICE_NAME);
   ModbusAdapterSto adapter_sto(std::bind(sendStoUpdate, sto_service, _1), api_spec);
   FilterPipeline filter_pipeline( nh, std::bind(&ModbusAdapterSto::modbusMsgCallback, &adapter_sto, _1) );

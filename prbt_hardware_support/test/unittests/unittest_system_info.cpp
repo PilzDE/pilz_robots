@@ -28,11 +28,11 @@
 #include <canopen_chain_node/GetObject.h>
 #include <sensor_msgs/JointState.h>
 
+#include <pilz_utils/wait_for_topic.h>
+#include <pilz_utils/wait_for_service.h>
 #include <pilz_testutils/async_test.h>
 #include <prbt_hardware_support/system_info.h>
 #include <prbt_hardware_support/system_info_exception.h>
-#include <prbt_hardware_support/wait_for_topic.h>
-#include <prbt_hardware_support/wait_for_service.h>
 
 namespace system_info_tests
 {
@@ -163,13 +163,13 @@ TEST_F(SystemInfoTests, testCANUpAndRunning)
   });
 
   // Wait a while and then check if constructor is still waiting for the topic.
-  ros::Duration(5.0 * DEFAULT_RETRY_TIMEOUT).sleep();
+  ros::Duration(5.0 * pilz_utils::DEFAULT_RETRY_TIMEOUT).sleep();
   ASSERT_FALSE(ctor_called) << "Ctor already finished although \"/joint_states\" topic not published yet";
 
   // Activate publishing of "/joint_states"
   terminate_ = false;
   publisher_thread_ = std::thread(&SystemInfoTests::publishJointState, this);
-  waitForTopic<sensor_msgs::JointState>("/joint_states");
+  pilz_utils::waitForTopic<sensor_msgs::JointState>("/joint_states");
   // Wait till constructor is finished
   BARRIER("ctor_called");
 
@@ -199,11 +199,11 @@ TEST_F(SystemInfoTests, testCANServiceUpAndRunning)
   });
 
   // Wait a while and then check if constructor is still waiting for the topic.
-  ros::Duration(5.0 * DEFAULT_RETRY_TIMEOUT).sleep();
+  ros::Duration(5.0 * pilz_utils::DEFAULT_RETRY_TIMEOUT).sleep();
   ASSERT_FALSE(ctor_called) << "Ctor already finished although \"get_object\" service not advertised yet";
 
   advertiseGetObjectService();
-  waitForService("/prbt/driver/get_object");
+  pilz_utils::waitForService("/prbt/driver/get_object");
   // Wait till constructor is finished
   BARRIER("ctor_called");
 
