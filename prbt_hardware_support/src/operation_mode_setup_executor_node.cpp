@@ -19,13 +19,14 @@
 
 #include <ros/ros.h>
 
+#include <pilz_utils/get_param.h>
+#include <pilz_utils/wait_for_service.h>
+
 #include <prbt_hardware_support/operation_mode_setup_executor.h>
-#include <prbt_hardware_support/wait_for_service.h>
 #include <prbt_hardware_support/SetSpeedLimit.h>
 #include <prbt_hardware_support/set_speed_limit_func_decl.h>
 #include <prbt_hardware_support/GetOperationMode.h>
 #include <prbt_hardware_support/get_operation_mode_func_decl.h>
-#include <prbt_hardware_support/get_param.h>
 #include <prbt_hardware_support/operation_mode_setup_executor_node_service_calls.h>
 
 static const std::string SET_SPEED_LIMIT_SERVICE{"set_speed_limit"};
@@ -50,7 +51,7 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
 
   using std::placeholders::_1;
-  waitForService(SET_SPEED_LIMIT_SERVICE);
+  pilz_utils::waitForService(SET_SPEED_LIMIT_SERVICE);
   ros::ServiceClient speed_limit_srv = nh.serviceClient<SetSpeedLimit>(SET_SPEED_LIMIT_SERVICE);
   SetSpeedLimitFunc set_speed_limit_func = std::bind(setSpeedLimitSrv<ros::ServiceClient>,
                                                      speed_limit_srv, _1);
@@ -60,8 +61,8 @@ int main(int argc, char **argv)
   ros::NodeHandle pnh{"~"};
   try
   {
-    speed_limit_t1 = getParam<double>(pnh, PARAM_SPEED_LIMIT_T1_STR);
-    speed_limit_auto = getParam<double>(pnh, PARAM_SPEED_LIMIT_AUTO_STR);
+    speed_limit_t1 = pilz_utils::getParam<double>(pnh, PARAM_SPEED_LIMIT_T1_STR);
+    speed_limit_auto = pilz_utils::getParam<double>(pnh, PARAM_SPEED_LIMIT_AUTO_STR);
   }
   catch (const std::runtime_error &ex)
   {

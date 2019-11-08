@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>pilz_utils</name>
+  <version>0.5.6</version>
+  <description>The pilz_utils package contains utilities used by Pilz packages</description>
+
+  <maintainer email="a.gutenkunst@pilz.de">Alexander Gutenkunst</maintainer>
+  <maintainer email="c.henkel@pilz.de">Christian Henkel</maintainer>
+  <maintainer email="h.slusarek@pilz.de">Hagen Slusarek</maintainer>
+  <maintainer email="i.martini@pilz.de">Immanuel Martini</maintainer>
+
+  <license>Apache 2.0</license>
+
+  <url type="website">https://wiki.ros.org/pilz_utils</url>
+  <url type="bugtracker">https://github.com/PilzDE/pilz_robots/issues</url>
+  <url type="repository">https://github.com/PilzDE/pilz_robots</url>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>clang-tidy</build_depend>
+  <build_depend>roscpp</build_depend>
+
+  <test_depend>rostest</test_depend>
+  <test_depend>rosunit</test_depend>
+  <test_depend>cmake_modules</test_depend>
+  <test_depend>code_coverage</test_depend>
+</package>
