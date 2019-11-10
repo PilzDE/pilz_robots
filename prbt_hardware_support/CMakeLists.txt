@@ -83,6 +83,18 @@ if(CATKIN_ENABLE_CLANG_TIDY)
 endif()
 
 
+################
+## Sanitizing ##
+################
+
+if(DEFINED ENV{ENABLE_ADDRESS_SANITIZING})
+  set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -fno-omit-frame-pointer -fsanitize=address")
+  set (CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_STATIC_LINKER_FLAGS_DEBUG} -g -fsanitize=address")
+elseif(DEFINED ENV{ENABLE_UNDEFINED_BEHAVIOR_SANITIZING})
+  set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=all")
+  set (CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_STATIC_LINKER_FLAGS_DEBUG} -g -fsanitize=undefined")
+endif()
+
 ###########
 ## Build ##
 ###########
