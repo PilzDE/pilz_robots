@@ -547,6 +547,15 @@ if(CATKIN_ENABLE_TESTING)
   )
   #----------------------------------------
 
+  # --- Sanitizing testing unit test ---
+  catkin_add_gmock(unittest_sanitizing_testing
+    test/unittests/unittest_sanitizing_testing.cpp
+  )
+  target_link_libraries(unittest_sanitizing_testing
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  #----------------------------------
+
   # to run: catkin_make -DENABLE_COVERAGE_TESTING=ON package_name_coverage (adding -j1 recommended)
   if(ENABLE_COVERAGE_TESTING)
     include(CodeCoverage)
