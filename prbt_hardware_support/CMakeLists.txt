@@ -15,6 +15,8 @@ find_package(catkin REQUIRED COMPONENTS
   urdf
   dynamic_reconfigure
   moveit_ros_planning
+  geometry_msgs
+  trajectory_msgs
 )
 
 add_definitions(-Wall)
