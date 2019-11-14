@@ -30,6 +30,8 @@ _FRAME_SPEEDS_TOPIC_NAME = '/prbt/joint_states_frame_speeds'
 _OUTMOST_LINK_NAME = 'prbt_flange'
 _JOINT_VELOCITY_LIMIT = 1.57
 _SPEED_LIMIT = 0.25
+_VEL_SCALE_DEFAULT = 0.15
+_SLEEP_DURING_STOP_DURATION_S = 0.4
 
 _UNHOLD_SERVICE_NAME = '/prbt/manipulator_joint_trajectory_controller/unhold'
 
@@ -73,13 +75,14 @@ class AcceptancetestSpeedObserver(unittest.TestCase):
         """
         req = TriggerRequest()
         self._unhold_service(req)
-        self.robot.move(Ptp(goal=[0, -0.5, 0, 0, 0, 0], vel_scale=0.1))
+        self.robot.move(Ptp(goal=[0, -0.5, 0, 0, 0, 0], vel_scale=_VEL_SCALE_DEFAULT))
 
         self._max_frame_speed = 0
 
-        self.robot.move(Ptp(goal=[0, 0.5, 0, 0, 0, 0], vel_scale=0.1))
+        vel_scale_for_compute = _VEL_SCALE_DEFAULT
+        self.robot.move(Ptp(goal=[0, 0.5, 0, 0, 0, 0], vel_scale=vel_scale_for_compute))
 
-        angular_vel = 0.1 * _JOINT_VELOCITY_LIMIT
+        angular_vel = vel_scale_for_compute * _JOINT_VELOCITY_LIMIT
         radius = self._max_frame_speed / angular_vel
 
         target_angular_vel = _SPEED_LIMIT / radius
@@ -89,17 +92,21 @@ class AcceptancetestSpeedObserver(unittest.TestCase):
 
         target_pos = -0.5
 
-        for scaling_factor in [0.9, 0.98, 0.99, 1.0, 1.01, 1.02, 1.1]:
+        for scaling_factor in [0.9, 0.99, 1.0, 1.01, 1.02, 1.1, 1.3, 1/target_vel_scale]:
 
             self._max_frame_speed = 0
             vel_scale = scaling_factor * target_vel_scale
             movement_failed = False
             try:
                 self.robot.move(Ptp(goal=[0, target_pos, 0, 0, 0, 0], vel_scale=vel_scale))
-                target_pos *= -1.0
             except RobotMoveFailed:
                 movement_failed = True
+                rospy.sleep(_SLEEP_DURING_STOP_DURATION_S)
                 self._unhold_service(req)
+
+                self.robot.move(Ptp(goal=[0, target_pos, 0, 0, 0, 0], vel_scale=_VEL_SCALE_DEFAULT))
+
+            target_pos *= -1.0
 
             print('Movement ' + ('failed' if movement_failed else 'succeeded') + ' with maximum frame speed: ' + str(self._max_frame_speed))
 
