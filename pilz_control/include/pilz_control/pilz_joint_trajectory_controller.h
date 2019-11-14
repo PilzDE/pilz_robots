@@ -129,7 +129,7 @@ class PilzJointTrajectoryController
     robot_model::RobotModelPtr kinematic_model_;
     robot_state::RobotStatePtr kinematic_state_; // Needed for foward calculations
 
-    ros::Publisher frame_speed_pub_;
+
 
     /**
      * @brief Synchronizes hold/unhold and update trajectory function to avoid

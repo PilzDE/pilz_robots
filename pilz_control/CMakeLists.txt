@@ -12,7 +12,6 @@ find_package(catkin
     controller_interface
     #moveit_core
     moveit_ros_planning
-    std_msgs
 )
 
 # Declare catkin package
@@ -20,7 +19,6 @@ catkin_package(
   CATKIN_DEPENDS
   roscpp
   std_srvs
-  std_msgs
   joint_trajectory_controller
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
