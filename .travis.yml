@@ -19,7 +19,7 @@ env:
     - CMAKE_ARGS="-DCATKIN_ENABLE_CLANG_TIDY=true"
     - ADDITIONAL_DEBS="clang-tidy libclang-dev"
   matrix:
-    - ROS_REPO=ros
+    - ROS_REPO=main
     - ROS_REPO=testing
     - ROS_REPO="testing"
       CATKIN_LINT=false NOT_TEST_BUILD=true
@@ -34,7 +34,7 @@ env:
       DOCKER_RUN_OPTS='-e ENABLE_UNDEFINED_BEHAVIOR_SANITIZING=1 -e UBSAN_OPTIONS=print_stacktrace=1'
 matrix:
   allow_failures:
-    - env: ROS_REPO=ros
+    - env: ROS_REPO=main
   fast_finish: true
 install:
   - git clone --depth=1 --branch master https://github.com/ros-industrial/industrial_ci.git .industrial_ci
