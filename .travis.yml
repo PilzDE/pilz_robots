@@ -27,11 +27,10 @@ env:
       CMAKE_ARGS="-DENABLE_COVERAGE_TESTING=ON -DCMAKE_BUILD_TYPE=Debug"
       DOCKER_RUN_OPTS='-e COVERAGE_PKGS="pilz_control pilz_utils prbt_hardware_support"'
     - ROS_REPO="testing"
-      CATKIN_LINT=false CMAKE_ARGS="-DCMAKE_BUILD_TYPE=Debug"
-      DOCKER_RUN_OPTS='-e ENABLE_ADDRESS_SANITIZING=1'
+      CATKIN_LINT=false CMAKE_ARGS='-DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -fno-omit-frame-pointer -fsanitize=address"'
     - ROS_REPO="testing"
-      CATKIN_LINT=false CMAKE_ARGS="-DCMAKE_BUILD_TYPE=Debug"
-      DOCKER_RUN_OPTS='-e ENABLE_UNDEFINED_BEHAVIOR_SANITIZING=1 -e UBSAN_OPTIONS=print_stacktrace=1'
+      CATKIN_LINT=false CMAKE_ARGS='-DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG="-g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=all"'
+      DOCKER_RUN_OPTS='-e UBSAN_OPTIONS=print_stacktrace=1'
 matrix:
   allow_failures:
     - env: ROS_REPO=main
