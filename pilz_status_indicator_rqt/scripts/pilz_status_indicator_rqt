@@ -7,4 +7,4 @@ from rqt_gui.main import Main
 
 plugin = 'pilz_status_indicator_rqt.status_indicator.PilzStatusIndicatorRqt'
 main = Main(filename=plugin)
-sys.exit(main.main(standalone=plugin))
+sys.exit(main.main(standalone=plugin, argv=sys.argv + ['-t']))
