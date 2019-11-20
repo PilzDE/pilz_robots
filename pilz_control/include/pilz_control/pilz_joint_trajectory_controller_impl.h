@@ -42,7 +42,7 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
 {
   bool res = JointTrajectoryController::init(hw, root_nh, controller_nh);
 
-  cartesian_speed_monitor.reset(new pilz_control::CartesianSpeedMonitor());
+  cartesian_speed_monitor.reset(new pilz_control::CartesianSpeedMonitor(JointTrajectoryController::joint_names_));
   cartesian_speed_monitor->init();
 
   hold_position_service = controller_nh.advertiseService("hold",

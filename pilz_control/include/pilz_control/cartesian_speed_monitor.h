@@ -27,7 +27,8 @@ namespace pilz_control
 class CartesianSpeedMonitor
 {
   public:
-    CartesianSpeedMonitor()
+    CartesianSpeedMonitor(const std::vector<std::string> &joint_names)
+      : joint_names_(joint_names)
     {
 
     }
@@ -57,8 +58,8 @@ class CartesianSpeedMonitor
 
     bool cartesianSpeedIsBelowLimit(std::vector< double > current_position, std::vector< double > desired_position, const double time_delta, const double speed_limit)
     {
-      state_current_->setVariablePositions(current_position);
-      state_desired_->setVariablePositions(desired_position);
+      state_current_->setVariablePositions(joint_names_, current_position);
+      state_desired_->setVariablePositions(joint_names_, desired_position);
 
       state_current_->updateLinkTransforms();
       state_desired_->updateLinkTransforms();
@@ -98,6 +99,8 @@ class CartesianSpeedMonitor
     robot_model::RobotModelPtr kinematic_model_;
     robot_state::RobotStatePtr state_current_;
     robot_state::RobotStatePtr state_desired_;
+
+    std::vector<std::string> joint_names_;
 
     std::vector< const robot_model::LinkModel * > observed_links_;
 };
