@@ -2,6 +2,11 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.11 (2019-11-22)
+-------------------
+* Fix clang compiler errors (#283)
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.10 (2019-10-08)
 -------------------
 
