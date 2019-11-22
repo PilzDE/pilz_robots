@@ -12,6 +12,11 @@ find_package(catkin
     controller_interface
 )
 
+if(CATKIN_ENABLE_TESTING AND ENABLE_COVERAGE_TESTING)
+  find_package(code_coverage REQUIRED)
+  APPEND_COVERAGE_COMPILER_FLAGS()
+endif()
+
 # Declare catkin package
 catkin_package(
   CATKIN_DEPENDS
@@ -69,7 +74,6 @@ install(FILES ${PROJECT_NAME}_plugins.xml
 if(CATKIN_ENABLE_TESTING)
 
   find_package(rostest REQUIRED)
-  find_package(code_coverage REQUIRED)
 
   add_rostest_gtest(unittest_pilz_joint_trajectory_controller
     test/unittest_pilz_joint_trajectory_controller.test
@@ -81,14 +85,12 @@ if(CATKIN_ENABLE_TESTING)
   add_executable(robot_mock test/robot_mock.cpp)
   target_link_libraries(robot_mock ${catkin_LIBRARIES})
 
-  # run: catkin_make -DENABLE_COVERAGE_TESTING=ON package_name_coverage
+  # run: catkin_make -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE_TESTING=ON package_name_coverage
   if(ENABLE_COVERAGE_TESTING)
-    include(CodeCoverage)
-    APPEND_COVERAGE_COMPILER_FLAGS()
     set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*")
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
-      DEPENDS tests
+      DEPENDENCIES tests
     )
   endif()
 
