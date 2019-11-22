@@ -26,6 +26,11 @@ add_definitions(-Wconversion) # At least this line needs to be below find_packag
                               #  the flag away from the gmock build
 add_definitions(-Wpedantic)
 
+if(CATKIN_ENABLE_TESTING AND ENABLE_COVERAGE_TESTING)
+  find_package(code_coverage REQUIRED)
+  APPEND_COVERAGE_COMPILER_FLAGS()
+endif()
+
 # message generation
 add_message_files(
   FILES
@@ -228,7 +233,6 @@ install(TARGETS
 #############
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
-  find_package(code_coverage REQUIRED)
   find_package(pilz_testutils REQUIRED)
 
   include_directories(${pilz_testutils_INCLUDE_DIRS})
@@ -240,9 +244,7 @@ if(CATKIN_ENABLE_TESTING)
                     test/unittests/unittest_update_filter.test
                     test/unittests/unittest_update_filter.cpp
   )
-  target_link_libraries(unittest_update_filter
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
-  )
+  target_link_libraries(unittest_update_filter ${catkin_LIBRARIES})
   add_dependencies(unittest_update_filter ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
   catkin_add_gtest(unittest_libmodbus_client
@@ -251,34 +253,29 @@ if(CATKIN_ENABLE_TESTING)
       src/libmodbus_client.cpp
   )
   target_link_libraries(unittest_libmodbus_client
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+    ${catkin_LIBRARIES}
     modbus
   )
-  add_dependencies(unittest_libmodbus_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
   catkin_add_gmock(unittest_modbus_api_spec
-  test/unittests/unittest_modbus_api_spec.cpp
+    test/unittests/unittest_modbus_api_spec.cpp
   )
-  target_link_libraries(unittest_modbus_api_spec
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
-  )
-  add_dependencies(unittest_modbus_api_spec ${${PROJECT_NAME}_EXPORTED_TARGETS})
+  target_link_libraries(unittest_modbus_api_spec ${catkin_LIBRARIES})
 
   catkin_add_gtest(unittest_pilz_modbus_exception
                    test/unittests/unittest_pilz_modbus_exception.cpp)
-  add_dependencies(unittest_pilz_modbus_exception ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
   #--- ModbusMsgWrapper unit test ---
   catkin_add_gtest(unittest_modbus_msg_wrapper
                    test/unittests/unittest_modbus_msg_wrapper.cpp
                    src/modbus_msg_in_builder.cpp
                    )
+  target_link_libraries(unittest_update_filter ${catkin_LIBRARIES})
   add_dependencies(unittest_modbus_msg_wrapper ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------
 
   catkin_add_gtest(unittest_pilz_modbus_client_exception
-  test/unittests/unittest_pilz_modbus_client_exception.cpp)
-  add_dependencies(unittest_pilz_modbus_client_exception ${${PROJECT_NAME}_EXPORTED_TARGETS})
+    test/unittests/unittest_pilz_modbus_client_exception.cpp)
 
   #--- PilzModbusClient unit test ---
   add_rostest_gmock(unittest_pilz_modbus_client
@@ -301,6 +298,7 @@ if(CATKIN_ENABLE_TESTING)
   target_link_libraries(unittest_modbus_adapter_brake_test
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
   )
+  add_dependencies(unittest_modbus_adapter_brake_test ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------
 
   # --- ModbusAdapterOperationMode unit test ---
@@ -314,6 +312,7 @@ if(CATKIN_ENABLE_TESTING)
   target_link_libraries(unittest_modbus_adapter_operation_mode
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
   )
+  add_dependencies(unittest_modbus_adapter_operation_mode ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------
 
   # --- BrakeTestUtils unit test ---
@@ -322,9 +321,7 @@ if(CATKIN_ENABLE_TESTING)
     test/unittests/unittest_brake_test_utils.cpp
     test/unittests/joint_states_publisher_mock.cpp
   )
-  target_link_libraries(unittest_brake_test_utils
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
-  )
+  target_link_libraries(unittest_brake_test_utils ${catkin_LIBRARIES})
   #----------------------------------
 
   # --- CanOpenBraketestAdapter unit test ---
@@ -335,9 +332,8 @@ if(CATKIN_ENABLE_TESTING)
     src/canopen_braketest_adapter.cpp
     src/canopen_braketest_adapter_exception.cpp
   )
-  target_link_libraries(unittest_canopen_braketest_adapter
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
-  )
+  target_link_libraries(unittest_canopen_braketest_adapter ${catkin_LIBRARIES})
+  add_dependencies(unittest_canopen_braketest_adapter ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------
 
   # --- BraketestExecutor unit test ---
@@ -345,9 +341,8 @@ if(CATKIN_ENABLE_TESTING)
     test/unittests/unittest_brake_test_executor.cpp
     src/brake_test_executor.cpp
   )
-  target_link_libraries(unittest_brake_test_executor
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
-  )
+  target_link_libraries(unittest_brake_test_executor ${catkin_LIBRARIES})
+  add_dependencies(unittest_brake_test_executor ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------
 
   # --- Stop1Executor unit test ---
@@ -367,9 +362,8 @@ if(CATKIN_ENABLE_TESTING)
     src/modbus_msg_sto_wrapper.cpp
     src/modbus_msg_in_builder.cpp
   )
-  target_link_libraries(unittest_modbus_adapter_sto
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
-  )
+  target_link_libraries(unittest_modbus_adapter_sto ${catkin_LIBRARIES})
+  add_dependencies(unittest_modbus_adapter_sto ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------
 
   # --- Stop integration test ---
@@ -380,10 +374,15 @@ if(CATKIN_ENABLE_TESTING)
      src/libmodbus_client.cpp
   )
   target_link_libraries(integrationtest_stop1
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+    ${catkin_LIBRARIES} ${${PROJECT_NAME}_LIBRARIES} ${pilz_testutils_LIBRARIES}
     modbus
   )
-  add_dependencies(integrationtest_stop1 ${catkin_EXPORTED_TARGETS})
+  add_dependencies(integrationtest_stop1
+    pilz_modbus_client_node
+    modbus_adapter_sto_node
+    stop1_executor_node
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  )
   #----------------------------------
 
   # --- Stop1 missing service integration tests ---
@@ -394,7 +393,10 @@ if(CATKIN_ENABLE_TESTING)
   target_link_libraries(integrationtest_stop1_service_missing
     ${catkin_LIBRARIES}
   )
-  add_dependencies(integrationtest_stop1_service_missing ${catkin_EXPORTED_TARGETS})
+  add_dependencies(integrationtest_stop1_service_missing
+    stop1_executor_node
+    ${catkin_EXPORTED_TARGETS}
+  )
 
   foreach(service_name halt hold unhold)
     add_rostest(test/integrationtests/integrationtest_stop1_service_missing.test
@@ -414,7 +416,11 @@ if(CATKIN_ENABLE_TESTING)
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
     modbus
   )
-  add_dependencies(integrationtest_brake_test_required ${catkin_EXPORTED_TARGETS})
+  add_dependencies(integrationtest_brake_test_required
+    pilz_modbus_client_node
+    modbus_adapter_brake_test_node
+    ${catkin_EXPORTED_TARGETS}
+  )
   #----------------------------------
 
   # --- Operation mode integration test ---
@@ -428,7 +434,11 @@ if(CATKIN_ENABLE_TESTING)
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
     modbus
   )
-  add_dependencies(integrationtest_operation_mode ${catkin_EXPORTED_TARGETS})
+  add_dependencies(integrationtest_operation_mode
+    pilz_modbus_client_node
+    modbus_adapter_operation_mode_node
+    ${catkin_EXPORTED_TARGETS}
+  )
   #----------------------------------
 
   # --- Execute brake test integration test ---
@@ -444,7 +454,13 @@ if(CATKIN_ENABLE_TESTING)
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
     modbus
   )
-  add_dependencies(integrationtest_execute_brake_test ${catkin_EXPORTED_TARGETS})
+  add_dependencies(integrationtest_execute_brake_test
+    modbus_adapter_brake_test_node
+    brake_test_executor_node
+    canopen_braketest_adapter_node
+    pilz_modbus_client_node
+    ${catkin_EXPORTED_TARGETS}
+  )
   #----------------------------------------
 
   # --- Speed Observer unit test ---
@@ -467,7 +483,11 @@ if(CATKIN_ENABLE_TESTING)
   target_link_libraries(integrationtest_speed_observer_and_operation_mode
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
   )
-  add_dependencies(integrationtest_speed_observer_and_operation_mode ${${PROJECT_NAME}_EXPORTED_TARGETS})
+  add_dependencies(integrationtest_speed_observer_and_operation_mode
+    speed_observer_node
+    operation_mode_setup_executor_node
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  )
   #----------------------------------------
 
   #--- SystemInfo unit test ---
@@ -480,7 +500,6 @@ if(CATKIN_ENABLE_TESTING)
   target_link_libraries(unittest_system_info
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
   )
-  add_dependencies(unittest_system_info ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------------
 
   # --- FilterPipeline unit test ---
@@ -488,9 +507,8 @@ if(CATKIN_ENABLE_TESTING)
     test/unittests/unittest_filter_pipeline.test
     test/unittests/unittest_filter_pipeline.cpp
   )
-  target_link_libraries(unittest_filter_pipeline
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
-  )
+  target_link_libraries(unittest_filter_pipeline ${catkin_LIBRARIES})
+  add_dependencies(unittest_filter_pipeline ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------
 
   #--- ModbusMsgInUtils unit test ---
@@ -498,9 +516,7 @@ if(CATKIN_ENABLE_TESTING)
       test/unittests/unittest_modbus_msg_in_builder.cpp
       src/modbus_msg_in_builder.cpp
   )
-  target_link_libraries(unittest_modbus_msg_in_builder
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
-  )
+  target_link_libraries(unittest_modbus_msg_in_builder ${catkin_LIBRARIES})
   add_dependencies(unittest_modbus_msg_in_builder ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------------
 
@@ -509,9 +525,7 @@ if(CATKIN_ENABLE_TESTING)
       test/unittests/unittest_operation_mode_setup_executor.cpp
       src/operation_mode_setup_executor.cpp
   )
-  target_link_libraries(unittest_operation_mode_setup_executor
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
-  )
+  target_link_libraries(unittest_operation_mode_setup_executor ${catkin_LIBRARIES})
   add_dependencies(unittest_operation_mode_setup_executor ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------------
 
@@ -523,22 +537,20 @@ if(CATKIN_ENABLE_TESTING)
   target_link_libraries(unittest_fake_speed_override
     ${catkin_LIBRARIES}
   )
-  add_dependencies(unittest_fake_speed_override ${${PROJECT_NAME}_EXPORTED_TARGETS})
+  add_dependencies(unittest_fake_speed_override
+    fake_speed_override_node
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  )
   #----------------------------------------
 
   #--- utils unittest ---
   catkin_add_gtest(unittest_utils
     test/unittests/unittest_utils.cpp
   )
-  target_link_libraries(unittest_utils
-    ${catkin_LIBRARIES}
-  )
   #----------------------------------------
 
-  # to run: catkin_make -DENABLE_COVERAGE_TESTING=ON package_name_coverage (adding -j1 recommended)
+  # to run: catkin_make -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE_TESTING=ON package_name_coverage (adding -j1 recommended)
   if(ENABLE_COVERAGE_TESTING)
-    include(CodeCoverage)
-    APPEND_COVERAGE_COMPILER_FLAGS()
     set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*"
                           "*/BrakeTestErrorCodes.h"
                           "*/ModbusMsgInStamped.h"
@@ -570,7 +582,7 @@ if(CATKIN_ENABLE_TESTING)
                           )
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
-      DEPENDS tests
+      DEPENDENCIES tests
     )
   endif()
 endif()
