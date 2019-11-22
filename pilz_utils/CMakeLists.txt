@@ -12,6 +12,11 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
 )
 
+if(CATKIN_ENABLE_TESTING AND ENABLE_COVERAGE_TESTING)
+  find_package(code_coverage REQUIRED)
+  APPEND_COVERAGE_COMPILER_FLAGS()
+endif()
+
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -62,7 +67,6 @@ install(DIRECTORY include/${PROJECT_NAME}/
 #############
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
-  find_package(code_coverage REQUIRED)
 
 
   # --- getParam unit test ---
@@ -95,10 +99,8 @@ if(CATKIN_ENABLE_TESTING)
   )
   #----------------------------------
 
-  # to run: catkin_make -DENABLE_COVERAGE_TESTIN=ON package_name_coverage (adding -j1 recommended)
+  # to run: catkin_make -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE_TESTIN=ON package_name_coverage (adding -j1 recommended)
   if(ENABLE_COVERAGE_TESTING)
-    include(CodeCoverage)
-    APPEND_COVERAGE_COMPILER_FLAGS()
     set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*")
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
