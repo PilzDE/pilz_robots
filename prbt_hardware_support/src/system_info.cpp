@@ -20,8 +20,8 @@
 #include <XmlRpcException.h>
 #include <sensor_msgs/JointState.h>
 
-#include <prbt_hardware_support/wait_for_service.h>
-#include <prbt_hardware_support/wait_for_topic.h>
+#include <pilz_utils/wait_for_service.h>
+#include <pilz_utils/wait_for_topic.h>
 #include <canopen_chain_node/GetObject.h>
 #include <prbt_hardware_support/system_info_exception.h>
 
@@ -40,9 +40,9 @@ SystemInfo::SystemInfo(ros::NodeHandle &nh)
   // Wait till CAN is up and running.
   // Reason: If the first CAN service call happens before
   // the CAN is fully initialized, the CAN will not start properly.
-  waitForTopic<sensor_msgs::JointState>(JOINT_STATE_TOPIC);
+  pilz_utils::waitForTopic<sensor_msgs::JointState>(JOINT_STATE_TOPIC);
 
-  waitForService(CANOPEN_GETOBJECT_SERVICE_NAME);
+  pilz_utils::waitForService(CANOPEN_GETOBJECT_SERVICE_NAME);
   canopen_srv_get_client_ = nh.serviceClient<canopen_chain_node::GetObject>(CANOPEN_GETOBJECT_SERVICE_NAME);
 }
 

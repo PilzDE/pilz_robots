@@ -23,12 +23,12 @@
 #include <std_srvs/SetBool.h>
 #include <tf2_ros/transform_broadcaster.h>
 
+#include <pilz_utils/wait_for_service.h>
 #include <pilz_testutils/async_test.h>
 #include <prbt_hardware_support/FrameSpeeds.h>
 #include <prbt_hardware_support/SetSpeedLimit.h>
 #include <prbt_hardware_support/ros_test_helper.h>
 #include <prbt_hardware_support/speed_observer.h>
-#include <prbt_hardware_support/wait_for_service.h>
 
 namespace speed_observer_test
 {
@@ -86,7 +86,7 @@ void SpeedObserverUnitTest::SetUp()
       nh_.subscribe<FrameSpeeds>(FRAME_SPEEDS_TOPIC_NAME, 1, &SpeedObserverUnitTest::frame_speeds_cb_mock, this);
   stop_subscriber_ = nh_.advertiseService(STOP_TOPIC_NAME, &SpeedObserverUnitTest::stop_cb_mock, this);
 
-  waitForService(STOP_TOPIC_NAME);
+  pilz_utils::waitForService(STOP_TOPIC_NAME);
 }
 
 void SpeedObserverUnitTest::publishTfAtSpeed(const double speed, const double publish_frequency)
@@ -141,21 +141,21 @@ MATCHER_P(StoState, x, "Sto state " + std::string(negation ? "is not" : "is") + 
 MATCHER_P2(NameAtI, i, name,
            "Name at index " + PrintToString(i) + std::string(negation ? "is not" : "is") + ": " + name + ".")
 {
-  return static_cast<unsigned long>(i) < arg->name.size() && arg->name.at((unsigned)i).compare(name) == 0;
+  return static_cast<size_t>(i) < arg->name.size() && arg->name.at(static_cast<size_t>(i)).compare(name) == 0;
 }
 
 MATCHER_P2(SpeedAtIGe, i, x,
            "Speed at index " + PrintToString(i) + std::string(negation ? "is not" : "is") + " greater or equal to" +
            PrintToString(x) + ".")
 {
-  return static_cast<unsigned long>(i) < arg->name.size() && arg->speed.at(i) >= x;
+  return static_cast<size_t>(i) < arg->name.size() && arg->speed.at(static_cast<size_t>(i)) >= x;
 }
 
 MATCHER_P2(SpeedAtILe, i, x,
            "Speed at index " + PrintToString(i) + std::string(negation ? "is not" : "is") + " less or equal to" +
            PrintToString(x) + ".")
 {
-  return static_cast<unsigned long>(i) < arg->name.size() && arg->speed.at(i) <= x;
+  return static_cast<size_t>(i) < arg->name.size() && arg->speed.at(static_cast<size_t>(i)) <= x;
 }
 
 /**

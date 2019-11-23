@@ -2,6 +2,12 @@
 Changelog for package prbt_ikfast_manipulator_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.11 (2019-11-22)
+-------------------
+* update ikfast plugin (#204)
+* drop unused lapack dependency (#186)
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.10 (2019-10-08)
 -------------------
 

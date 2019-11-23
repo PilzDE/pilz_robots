@@ -54,7 +54,7 @@ class PilzJointTrajectoryController
 
     PilzJointTrajectoryController();
 
-    bool init(HardwareInterface* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controller_nh);
+    bool init(HardwareInterface* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controller_nh) override;
 
     /**
      * @brief Returns true if the controller currently is executing a trajectory. False otherwise.
