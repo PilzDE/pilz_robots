@@ -288,8 +288,8 @@ TEST_P(OperationModeSetupExecutorTestSpeedOverrideNice, testSpeedOverride)
 
   executor_->updateOperationMode(op_mode);
 
-  auto req = GetSpeedOverrideRequest();
-  auto res = GetSpeedOverrideResponse();
+  auto req = pilz_msgs::GetSpeedOverrideRequest();
+  auto res = pilz_msgs::GetSpeedOverrideResponse();
   executor_->getSpeedOverride(req, res);
   EXPECT_EQ(res.speed_override, GetParam().second);
 }
