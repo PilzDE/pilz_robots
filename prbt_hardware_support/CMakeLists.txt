@@ -582,7 +582,7 @@ if(CATKIN_ENABLE_TESTING)
                           )
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
-      DEPENDENCIES tests
+      #DEPENDENCIES tests
     )
   endif()
 endif()
