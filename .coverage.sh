@@ -10,7 +10,8 @@ for pkg in $COVERAGE_PKGS; do
     echo "Creating coverage for [$pkg]"
     ws=~/target_ws
     extend="/opt/ros/$ROS_DISTRO"
-    ici_exec_in_workspace "$extend" "$ws" catkin build $pkg -v --no-deps --catkin-make-args ${pkg}_coverage
+    ici_exec_in_workspace "$extend" "$ws" catkin build $pkg -v --no-deps --catkin-make-args ${pkg}_coverage \
+        --cmake-args -DENABLE_COVERAGE_TESTING=ON -DCMAKE_BUILD_TYPE=Debug
     cd $TARGET_REPO_PATH
     echo "Coverage summary for $pkg ----------------------"
     lcov --summary $ws/build/$pkg/${pkg}_coverage.info.cleaned
