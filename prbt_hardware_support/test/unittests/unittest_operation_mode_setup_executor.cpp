@@ -22,6 +22,8 @@
 
 #include <ros/time.h>
 
+#include <pilz_msgs/GetSpeedOverride.h>
+
 #include <prbt_hardware_support/OperationModes.h>
 #include <prbt_hardware_support/operation_mode_setup_executor.h>
 #include <prbt_hardware_support/operation_mode_setup_executor_node_service_calls.h>
