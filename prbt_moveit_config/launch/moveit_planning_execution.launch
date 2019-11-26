@@ -73,6 +73,8 @@ limitations under the License.
       <rosparam param="/source_list">[/move_group/fake_controller_joint_states]</rosparam>
     </node>
 
+    <!-- Without real hardware and missing operation mode a speed override has to be faked -->
+    <node name="fake_speed_override_node" pkg="prbt_hardware_support" type="fake_speed_override_node" />
   </group>
 
   <!-- run the "real robot" interface nodes -->
@@ -87,11 +89,6 @@ limitations under the License.
       <arg name="has_braketest_support" value="$(arg has_braketest_support)" />
       <arg name="has_operation_mode_support" value="$(arg has_operation_mode_support)" />
     </include>
-  </group>
-
-  <!-- run "fake robot" nodes if needed-->
-  <group if="$(arg sim)">
-    <include file="$(find prbt_support)/launch/fake_robot.launch" />
   </group>
 
   <include file="$(find prbt_moveit_config)/launch/move_group.launch">
