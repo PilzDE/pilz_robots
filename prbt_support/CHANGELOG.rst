@@ -2,6 +2,11 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add fake_robot.launch for launch without robot hardware
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.11 (2019-11-22)
 -------------------
 * Fix clang compiler errors (#283)
