@@ -22,8 +22,9 @@
 
 #include <ros/ros.h>
 
+#include <pilz_msgs/GetSpeedOverride.h>
+
 #include <prbt_hardware_support/OperationModes.h>
-#include <prbt_hardware_support/GetSpeedOverride.h>
 #include <prbt_hardware_support/set_speed_limit_func_decl.h>
 #include <prbt_hardware_support/get_operation_mode_func_decl.h>
 
@@ -58,7 +59,8 @@ public:
    */
   void updateOperationMode(const OperationModes& operation_mode);
 
-  bool getSpeedOverride(GetSpeedOverride::Request& /*req*/, GetSpeedOverride::Response& response);
+  bool getSpeedOverride(pilz_msgs::GetSpeedOverride::Request& /*req*/,
+                        pilz_msgs::GetSpeedOverride::Response& response);
 
 private:
   //! The allowed speed limit in operation mode T1.

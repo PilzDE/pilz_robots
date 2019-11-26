@@ -19,7 +19,7 @@
 
 #include <gtest/gtest.h>
 
-#include <prbt_hardware_support/GetSpeedOverride.h>
+#include <pilz_msgs/GetSpeedOverride.h>
 #include <dynamic_reconfigure/Reconfigure.h>
 #include <prbt_hardware_support/FakeSpeedOverrideConfig.h>
 
@@ -35,7 +35,7 @@ class FakeSpeedOverrideTest : public testing::Test
 
     ros::ServiceClient client;
     ros::ServiceClient dynamic_parameter_client;
-    prbt_hardware_support::GetSpeedOverride srv;
+    pilz_msgs::GetSpeedOverride srv;
 
     FakeSpeedOverrideConfig conf;
 };
@@ -43,7 +43,7 @@ class FakeSpeedOverrideTest : public testing::Test
 void FakeSpeedOverrideTest::SetUp()
 {
   ros::NodeHandle n;
-  client = n.serviceClient<prbt_hardware_support::GetSpeedOverride>("/prbt/get_speed_override");
+  client = n.serviceClient<pilz_msgs::GetSpeedOverride>("/prbt/get_speed_override");
   dynamic_parameter_client = n.serviceClient<dynamic_reconfigure::Reconfigure>("/fake_speed_override_node/set_parameters");
 }
 
