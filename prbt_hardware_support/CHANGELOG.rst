@@ -2,6 +2,11 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remove srv definition for speed override (moved to the package pilz_msgs)
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.11 (2019-11-22)
 -------------------
 * Fix clang compiler errors (#283)

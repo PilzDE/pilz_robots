@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_geometry_msgs
   urdf
   dynamic_reconfigure
+  pilz_msgs
 )
 
 add_definitions(-Wall)
@@ -46,7 +47,6 @@ add_service_files(
   FILES
   BrakeTest.srv
   GetOperationMode.srv
-  GetSpeedOverride.srv
   IsBrakeTestRequired.srv
   SendBrakeTestResult.srv
   SetSpeedLimit.srv
@@ -567,9 +567,6 @@ if(CATKIN_ENABLE_TESTING)
                           "*/GetOperationMode.h"
                           "*/GetOperationModeRequest.h"
                           "*/GetOperationModeResponse.h"
-                          "*/GetSpeedOverride.h"
-                          "*/GetSpeedOverrideRequest.h"
-                          "*/GetSpeedOverrideResponse.h"
                           "*/OperationModes.h"
                           "*/SendBrakeTestResult.h"
                           "*/SendBrakeTestResultRequest.h"

@@ -20,8 +20,8 @@
 #include <ros/ros.h>
 
 #include <dynamic_reconfigure/server.h>
+#include <pilz_msgs/GetSpeedOverride.h>
 #include <prbt_hardware_support/FakeSpeedOverrideConfig.h>
-#include <prbt_hardware_support/GetSpeedOverride.h>
 
 std::atomic<double> SPEED_OVERRIDE{1.0};
 
@@ -31,8 +31,8 @@ void dynamic_set_speed_override(prbt_hardware_support::FakeSpeedOverrideConfig &
   SPEED_OVERRIDE = config.speed_override;
 }
 
-bool getSpeedOverride(prbt_hardware_support::GetSpeedOverride::Request  &/*req*/,
-               prbt_hardware_support::GetSpeedOverride::Response &res)
+bool getSpeedOverride(pilz_msgs::GetSpeedOverride::Request  &/*req*/,
+                      pilz_msgs::GetSpeedOverride::Response &res)
 {
   res.speed_override = SPEED_OVERRIDE;
   return true;
