@@ -73,8 +73,9 @@ limitations under the License.
       <rosparam param="/source_list">[/move_group/fake_controller_joint_states]</rosparam>
     </node>
 
-    <!-- Without real hardware and missing operation mode a speed override has to be faked -->
-    <node name="fake_speed_override_node" pkg="prbt_hardware_support" type="fake_speed_override_node" />
+    <!-- We assume that no safety controller is connected, so we need to fake the corresponding interface -->
+    <!--  - this includes: speed override -->
+    <include file="$(find prbt_hardware_support)/launch/fake_safety_interface.launch" />
   </group>
 
   <!-- run the "real robot" interface nodes -->
