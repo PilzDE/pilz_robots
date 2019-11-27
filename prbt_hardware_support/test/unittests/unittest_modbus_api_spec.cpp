@@ -111,5 +111,6 @@ TEST(ModbusApiSpecTest, NodeHandleConstructionMissingApiSpec)
 
 int main(int argc, char **argv){
   testing::InitGoogleTest(&argc, argv);
+  ros::init(argc, argv, "unittest_modbus_api_spec");
   return RUN_ALL_TESTS();
 }
