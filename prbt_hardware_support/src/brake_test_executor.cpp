@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <pilz_msgs/BrakeTest.h>
+
 #include <prbt_hardware_support/brake_test_executor.h>
 
 namespace prbt_hardware_support
@@ -57,14 +59,13 @@ BrakeTestExecutor::BrakeTestExecutor(DetectRobotMotionFunc&& detect_robot_motion
   }
 }
 
-bool BrakeTestExecutor::executeBrakeTest(BrakeTest::Request& /*req*/,
-                                         BrakeTest::Response& res)
+bool BrakeTestExecutor::executeBrakeTest(pilz_msgs::BrakeTest::Request& /*req*/,
+                                         pilz_msgs::BrakeTest::Response& res)
 {
   if (detect_robot_motion_func_())
   {
     res.success = false;
     res.error_msg = "Robot is moving, cannot perform brake test";
-    res.error_code.value = BrakeTestErrorCodes::ROBOT_MOTION_DETECTED;
     return true;
   }
 
@@ -72,25 +73,31 @@ bool BrakeTestExecutor::executeBrakeTest(BrakeTest::Request& /*req*/,
 
   hold_controller_func_();
 
-  res = execute_brake_test_func_();
-  ROS_INFO("Brake test result: %i", res.success);
-  if (!res.success)
+  BrakeTest::Response adapter_result = execute_brake_test_func_();
+  ROS_INFO("Brake test result: %i", adapter_result.success);
+  if (!adapter_result.success)
   {
-    ROS_INFO("Brake test error code: %i", res.error_code.value);
-    if (!res.error_msg.empty())
+    ROS_INFO("Brake test error code: %i", adapter_result.error_code.value);
+    if (!adapter_result.error_msg.empty())
     {
-      ROS_INFO_STREAM("Brake test error msg: " << res.error_msg);
+      ROS_INFO_STREAM("Brake test error msg: " << adapter_result.error_msg);
     }
   }
 
   unhold_controller_func_();
 
-  if(!brake_test_result_func_(res.success))
+
+  if(!brake_test_result_func_(adapter_result.success))
   {
     res.success = false;
     res.error_msg = "Failed to send brake test result";
-    res.error_code.value = BrakeTestErrorCodes::FAILURE;
   }
+  else
+  {
+    res.success = adapter_result.success;
+    res.error_msg = adapter_result.error_msg;
+  }
+  
 
   return true;
 }

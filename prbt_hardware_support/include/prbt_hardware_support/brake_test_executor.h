@@ -24,6 +24,8 @@
 
 #include <ros/ros.h>
 
+#include <pilz_msgs/BrakeTest.h>
+
 #include <prbt_hardware_support/BrakeTest.h>
 
 namespace prbt_hardware_support
@@ -58,7 +60,7 @@ public:
                     BrakeTestResultFunc&& brake_test_result_fun);
 
 public:
-  bool executeBrakeTest(BrakeTest::Request& req, BrakeTest::Response& response);
+  bool executeBrakeTest(pilz_msgs::BrakeTest::Request& req, pilz_msgs::BrakeTest::Response& response);
 
 private:
   DetectRobotMotionFunc detect_robot_motion_func_;

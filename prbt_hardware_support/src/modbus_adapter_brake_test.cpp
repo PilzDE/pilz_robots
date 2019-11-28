@@ -108,8 +108,8 @@ void ModbusAdapterBrakeTest::updateBrakeTestRequiredState(TBrakeTestRequired bra
 {
   TBrakeTestRequired last_brake_test_flag {brake_test_required_};
   brake_test_required_ = brake_test_required;
-  if(brake_test_required_ == IsBrakeTestRequiredResponse::REQUIRED
-     && last_brake_test_flag != IsBrakeTestRequiredResponse::REQUIRED)
+  if(brake_test_required_ == pilz_msgs::IsBrakeTestRequiredResult::REQUIRED
+     && last_brake_test_flag != pilz_msgs::IsBrakeTestRequiredResult::REQUIRED)
   {
     ROS_INFO("Brake Test required.");
   }
