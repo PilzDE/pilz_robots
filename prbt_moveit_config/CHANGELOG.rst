@@ -4,6 +4,7 @@ Changelog for package prbt_moveit_config
 
 Forthcoming
 -----------
+* Fake speed override in case of sim:=true
 * Fix warning by change parent and child of fixed frame
 * Contributors: Pilz GmbH and Co. KG
 
