@@ -99,12 +99,12 @@ if(CATKIN_ENABLE_TESTING)
   )
   #----------------------------------
 
-  # to run: catkin_make -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE_TESTIN=ON package_name_coverage (adding -j1 recommended)
+  # run: catkin_make -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE_TESTING=ON run_tests_pilz_utils
+  #   && catkin_make -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE_TESTING=ON package_name_coverage
   if(ENABLE_COVERAGE_TESTING)
     set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*")
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
-      DEPENDENCIES tests
     )
   endif()
 endif()

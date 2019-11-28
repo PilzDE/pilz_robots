@@ -85,12 +85,12 @@ if(CATKIN_ENABLE_TESTING)
   add_executable(robot_mock test/robot_mock.cpp)
   target_link_libraries(robot_mock ${catkin_LIBRARIES})
 
-  # run: catkin_make -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE_TESTING=ON package_name_coverage
+  # run: catkin_make -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE_TESTING=ON
+  #   && catkin_make -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE_TESTING=ON package_name_coverage
   if(ENABLE_COVERAGE_TESTING)
     set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*")
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
-      #DEPENDENCIES tests
     )
   endif()
 
