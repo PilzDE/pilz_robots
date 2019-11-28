@@ -26,8 +26,6 @@
 
 #include <pilz_testutils/async_test.h>
 
-#include <pilz_utils/wait_for_topic.h>
-
 #include <prbt_hardware_support/pilz_modbus_server_mock.h>
 #include <prbt_hardware_support/OperationModes.h>
 #include <prbt_hardware_support/ros_test_helper.h>
