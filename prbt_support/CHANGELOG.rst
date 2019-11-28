@@ -2,6 +2,9 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.5.11 (2019-11-22)
 -------------------
 * Fix clang compiler errors (#283)
