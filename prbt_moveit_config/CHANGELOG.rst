@@ -2,8 +2,8 @@
 Changelog for package prbt_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.12 (2019-11-28)
+-------------------
 * Fake speed override in case of sim:=true
 * Contributors: Pilz GmbH and Co. KG
 

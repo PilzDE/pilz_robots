@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>pilz_testutils</name>
-  <version>0.5.11</version>
+  <version>0.5.12</version>
   <description>This package contains testing utilities used by Pilz packages.</description>
 
   <maintainer email="a.gutenkunst@pilz.de">Alexander Gutenkunst</maintainer>
