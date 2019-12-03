@@ -25,9 +25,11 @@
 
 #include <ros/ros.h>
 
+#include <pilz_msgs/IsBrakeTestRequired.h>
+#include <pilz_msgs/IsBrakeTestRequiredResult.h>
+
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
-#include <prbt_hardware_support/IsBrakeTestRequired.h>
 #include <prbt_hardware_support/SendBrakeTestResult.h>
 #include <prbt_hardware_support/register_container.h>
 
@@ -61,8 +63,8 @@ public:
    * initializes the brake test service,
    * the first time the function is called.
    */
-  bool isBrakeTestRequired(IsBrakeTestRequired::Request&,
-                           IsBrakeTestRequired::Response& res);
+  bool isBrakeTestRequired(pilz_msgs::IsBrakeTestRequired::Request&,
+                           pilz_msgs::IsBrakeTestRequired::Response& res);
 
   /**
    * @brief Sends the brake test result data to the modbus client.
@@ -71,7 +73,7 @@ public:
                            SendBrakeTestResult::Response& res);
 
 private:
-  using TBrakeTestRequired = IsBrakeTestRequiredResponse::_result_type;
+  using TBrakeTestRequired = pilz_msgs::IsBrakeTestRequiredResult::_value_type;
   void updateBrakeTestRequiredState(TBrakeTestRequired brake_test_required);
 
 private:
@@ -96,7 +98,7 @@ private:
   const ModbusApiSpec api_spec_;
 
   //! Store the current state of whether a brake test is required
-  TBrakeTestRequired brake_test_required_ {IsBrakeTestRequiredResponse::UNKNOWN};
+  TBrakeTestRequired brake_test_required_ {pilz_msgs::IsBrakeTestRequiredResult::UNKNOWN};
 
   //! Contains the indicies of the modbus registers, needed to write
   //! the brake test results back to the modbus.
@@ -110,10 +112,10 @@ private:
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-inline bool ModbusAdapterBrakeTest::isBrakeTestRequired(IsBrakeTestRequired::Request& /*req*/,
-                                                        IsBrakeTestRequired::Response& res)
+inline bool ModbusAdapterBrakeTest::isBrakeTestRequired(pilz_msgs::IsBrakeTestRequired::Request& /*req*/,
+                                                        pilz_msgs::IsBrakeTestRequired::Response& res)
 {
-  res.result = brake_test_required_;
+  res.result.value = brake_test_required_;
   return true;
 }
 

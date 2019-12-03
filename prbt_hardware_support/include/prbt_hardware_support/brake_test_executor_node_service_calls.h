@@ -21,7 +21,6 @@
 #include <ros/ros.h>
 #include <std_srvs/Trigger.h>
 
-#include <prbt_hardware_support/BrakeTestErrorCodes.h>
 #include <prbt_hardware_support/BrakeTest.h>
 #include <prbt_hardware_support/SendBrakeTestResult.h>
 

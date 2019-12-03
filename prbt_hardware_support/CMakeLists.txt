@@ -42,7 +42,6 @@ add_service_files(
   FILES
   BrakeTest.srv
   GetOperationMode.srv
-  IsBrakeTestRequired.srv
   SendBrakeTestResult.srv
   SetSpeedLimit.srv
   WriteModbusRegister.srv
@@ -294,7 +293,7 @@ if(CATKIN_ENABLE_TESTING)
   target_link_libraries(unittest_modbus_adapter_brake_test
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
   )
-  add_dependencies(unittest_modbus_adapter_brake_test ${${PROJECT_NAME}_EXPORTED_TARGETS})
+  add_dependencies(unittest_modbus_adapter_brake_test ${catkin_EXPORTED_TARGETS})
   #----------------------------------
 
   # --- ModbusAdapterOperationMode unit test ---
@@ -339,6 +338,7 @@ if(CATKIN_ENABLE_TESTING)
   )
   target_link_libraries(unittest_brake_test_executor ${catkin_LIBRARIES})
   add_dependencies(unittest_brake_test_executor ${${PROJECT_NAME}_EXPORTED_TARGETS})
+  add_dependencies(unittest_brake_test_executor ${catkin_EXPORTED_TARGETS})
   #----------------------------------
 
   # --- Stop1Executor unit test ---
@@ -555,9 +555,6 @@ if(CATKIN_ENABLE_TESTING)
                           "*/BrakeTest.h"
                           "*/BrakeTestRequest.h"
                           "*/BrakeTestResponse.h"
-                          "*/IsBrakeTestRequired.h"
-                          "*/IsBrakeTestRequiredRequest.h"
-                          "*/IsBrakeTestRequiredResponse.h"
                           "*/ModbusRegisterBlock.h"
                           "*/WriteModbusRegister.h"
                           "*/WriteModbusRegisterRequest.h"
