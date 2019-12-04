@@ -2,8 +2,8 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.13 (2019-12-04)
+-------------------
 * Use brake-test definitions from pilz_msgs
 * Contributors: Pilz GmbH and Co. KG
 
