@@ -25,4 +25,12 @@ limitations under the License.
     </description>
   </class>
 
+    <class name="pilz_cartesian_speed_observing_controller/PilzCartesianSpeedObservingController"
+         type="pilz_cartesian_speed_observing_controller::PilzCartesianSpeedObservingController"
+         base_class_type="controller_interface::ControllerBase">
+    <description>
+      <!-- TODO -->
+    </description>
+  </class>
+
 </library>

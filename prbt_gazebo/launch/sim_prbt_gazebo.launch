@@ -56,10 +56,10 @@ limitations under the License.
   <rosparam ns="prbt" command="load" file="$(find prbt_support)/config/manipulator_controller.yaml" />
   <!-- set the standart controller -->
   <param name="prbt/manipulator_joint_trajectory_controller/type"
-         value="position_controllers/JointTrajectoryController" />
+         value="position_controllers/PilzJointTrajectoryController" />
 
   <node ns="prbt" name="controller_spawner" pkg="controller_manager" type="spawner"
-        args="manipulator_joint_state_controller manipulator_joint_trajectory_controller --timeout 100" />
+        args="manipulator_joint_state_controller manipulator_speed_observing_controller manipulator_joint_trajectory_controller --timeout 100" />
 
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">

@@ -33,6 +33,10 @@ manipulator_joint_state_controller:
     type: joint_state_controller/JointStateController
     publish_rate: 50
 
+manipulator_speed_observing_controller:
+    type: pilz_cartesian_speed_observing_controller/PilzCartesianSpeedObservingController
+    publish_rate: 100
+
 ## joint trajectory controller
 manipulator_joint_trajectory_controller:
   type: position_controllers/PilzJointTrajectoryController

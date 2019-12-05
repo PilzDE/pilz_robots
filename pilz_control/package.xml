@@ -25,6 +25,7 @@
 
   <depend>roscpp</depend>
   <depend>joint_trajectory_controller</depend>
+  <depend>joint_state_controller</depend>
   <depend>std_srvs</depend>
   <depend>controller_manager</depend>
   <depend>controller_interface</depend> <!-- Needed for the plugin export -->

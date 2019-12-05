@@ -7,6 +7,7 @@ find_package(catkin
     roscpp
     std_srvs
     joint_trajectory_controller
+    joint_state_controller
     roslint
     controller_manager
     controller_interface
@@ -18,6 +19,7 @@ catkin_package(
   roscpp
   std_srvs
   joint_trajectory_controller
+  joint_state_controller
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
 )
@@ -45,7 +47,9 @@ endif()
 
 add_library(${PROJECT_NAME}
             include/${PROJECT_NAME}/pilz_joint_trajectory_controller.h
-            src/pilz_joint_trajectory_controller.cpp)
+            src/pilz_joint_trajectory_controller.cpp
+            include/${PROJECT_NAME}/pilz_cartesian_speed_observing_controller.h
+            src/pilz_cartesian_speed_observing_controller.cpp)
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
