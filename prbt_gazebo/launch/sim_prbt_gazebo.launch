@@ -59,11 +59,13 @@ limitations under the License.
          value="position_controllers/PilzJointTrajectoryController" />
 
   <node ns="prbt" name="controller_spawner" pkg="controller_manager" type="spawner"
-        args="manipulator_joint_state_controller manipulator_speed_observing_controller manipulator_joint_trajectory_controller --timeout 100" />
+        args="manipulator_joint_state_controller manipulator_joint_trajectory_controller manipulator_speed_observing_controller --timeout 100" />
 
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
   <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
     <rosparam param="source_list">['/prbt/joint_states']</rosparam>
   </node>
+
+  <include file="$(find prbt_hardware_support)/launch/fake_safety_interface.launch" />
 
 </launch>

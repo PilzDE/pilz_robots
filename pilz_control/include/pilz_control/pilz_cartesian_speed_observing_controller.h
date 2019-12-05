@@ -19,6 +19,8 @@
 
 #include <vector>
 
+#include <ros/ros.h>
+
 #include <joint_state_controller/joint_state_controller.h>
 #include <pilz_control/cartesian_speed_monitor.h>
 
@@ -48,6 +50,7 @@ private:
   std::shared_ptr < pilz_control::CartesianSpeedMonitor > cartesian_speed_monitor;
   JointPositions last_positions;
   bool first_run {true};
+  ros::ServiceClient hold_client_;
 };
 
 }  // namespace pilz_cartesian_speed_observing_controller

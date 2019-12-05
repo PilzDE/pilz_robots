@@ -13,6 +13,7 @@ find_package(catkin
     controller_interface
     #moveit_core
     moveit_ros_planning
+    pilz_utils
 )
 
 # Declare catkin package

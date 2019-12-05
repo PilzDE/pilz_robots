@@ -14,11 +14,19 @@
  * limitations under the License.
  */
 
+#include <string>
+
+#include <std_srvs/Trigger.h>
+
 // Pluginlib
 #include <pluginlib/class_list_macros.h>
 
 // Project
 #include <pilz_control/pilz_cartesian_speed_observing_controller.h>
+
+#include <pilz_utils/wait_for_service.h>
+
+static const std::string HOLD_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/hold"};
 
 namespace pilz_cartesian_speed_observing_controller
 {
@@ -36,6 +44,9 @@ namespace pilz_cartesian_speed_observing_controller
     for (size_t i=0; i<num_hw_joints_; i++){
       joint_state_.push_back(hw->getHandle(joint_names[i]));
     }
+
+    pilz_utils::waitForService(HOLD_SERVICE_NAME);
+    hold_client_ = root_nh.serviceClient<std_srvs::Trigger>(HOLD_SERVICE_NAME);
 
     ROS_ERROR("Successfully initialized PilzCartesianSpeedObservingController!");
 
@@ -70,7 +81,17 @@ namespace pilz_cartesian_speed_observing_controller
                                           period.toSec(), 
                                           0.25 /*limit */))
     {
-      ROS_ERROR("Above limit");
+      ROS_ERROR("Above limit, calling hold...");
+      std_srvs::Trigger srv;
+      if (!hold_client_.call(srv))
+      {
+        ROS_ERROR("Failed to call service %s.", hold_client_.getService().c_str());
+      }
+      if (!srv.response.success)
+      {
+        ROS_ERROR("Service response: %s", srv.response.message.c_str());
+      }
+
     }
     
     }
