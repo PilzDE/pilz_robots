@@ -22,6 +22,10 @@
 #include <moveit/robot_state/robot_state.h>
 #include <moveit/robot_model/joint_model.h>
 
+#include <moveit/robot_model/robot_model.h>
+#include <moveit/robot_state/robot_state.h>
+#include <moveit/robot_model_loader/robot_model_loader.h>
+
 namespace pilz_control
 {
 class CartesianSpeedMonitor
@@ -55,6 +59,7 @@ class CartesianSpeedMonitor
 
     }
 
+    // Note that this is optimized to hit on the first limit in order to be fast, do not "refactor/clean" this away
     bool cartesianSpeedIsBelowLimit(std::vector< double > current_position, std::vector< double > desired_position, const double time_delta, const double speed_limit)
     {
       state_current_->setVariablePositions(current_position);

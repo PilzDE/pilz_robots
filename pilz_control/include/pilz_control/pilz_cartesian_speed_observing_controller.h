@@ -17,10 +17,15 @@
 #ifndef PILZ_CARTESIAN_SPEED_CONTROLLER_H
 #define PILZ_CARTESIAN_SPEED_CONTROLLER_H
 
+#include <vector>
+
 #include <joint_state_controller/joint_state_controller.h>
+#include <pilz_control/cartesian_speed_monitor.h>
 
 namespace pilz_cartesian_speed_observing_controller
 {
+
+typedef std::vector<double> JointPositions;
 
 class PilzCartesianSpeedObservingController: public controller_interface::Controller<hardware_interface::JointStateInterface>
 {
@@ -40,6 +45,9 @@ public:
 private:
   std::vector<hardware_interface::JointStateHandle> joint_state_;
   unsigned int num_hw_joints_;
+  std::shared_ptr < pilz_control::CartesianSpeedMonitor > cartesian_speed_monitor;
+  JointPositions last_positions;
+  bool first_run {true};
 };
 
 }  // namespace pilz_cartesian_speed_observing_controller
