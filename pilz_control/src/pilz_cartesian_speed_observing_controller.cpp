@@ -47,8 +47,8 @@ namespace pilz_cartesian_speed_observing_controller
       joint_state_.push_back(hw->getHandle(joint_names[i]));
     }
 
-    pilz_utils::waitForService(HOLD_SERVICE_NAME);
-    hold_client_ = root_nh.serviceClient<std_srvs::Trigger>(HOLD_SERVICE_NAME);
+    // pilz_utils::waitForService(HOLD_SERVICE_NAME);
+    // hold_client_ = root_nh.serviceClient<std_srvs::Trigger>(HOLD_SERVICE_NAME);
 
     ROS_ERROR("Successfully initialized PilzCartesianSpeedObservingController!");
 
@@ -78,21 +78,21 @@ namespace pilz_cartesian_speed_observing_controller
     if(!first_run)
     {
 
-    if (is_hold_running_)
-    {
-      if (hold_success_.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-      {
-        is_hold_running_ = false;
-        if (hold_success_.get())
-        {
-          ROS_INFO("Hold call was successful.");
-        }
-        else
-        {
-          ROS_ERROR("Hold call was not successful.");
-        }
-      }
-    }
+    // if (is_hold_running_)
+    // {
+    //   if (hold_success_.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+    //   {
+    //     is_hold_running_ = false;
+    //     if (hold_success_.get())
+    //     {
+    //       ROS_INFO("Hold call was successful.");
+    //     }
+    //     else
+    //     {
+    //       ROS_ERROR("Hold call was not successful.");
+    //     }
+    //   }
+    // }
 
     if(!cartesian_speed_monitor->cartesianSpeedIsBelowLimit(
                                           last_positions,
@@ -101,16 +101,16 @@ namespace pilz_cartesian_speed_observing_controller
                                           0.25 /*limit */))
     {
       ROS_ERROR("Above limit.");
-      if (!is_hold_running_)
-      {
-        ROS_INFO("Trigger hold.");
-        triggerHold();
-        is_hold_running_ = true;
-      }
-      else
-      {
-        ROS_INFO("Hold still running.");
-      }
+      // if (!is_hold_running_)
+      // {
+      //   ROS_INFO("Trigger hold.");
+      //   triggerHold();
+      //   is_hold_running_ = true;
+      // }
+      // else
+      // {
+      //   ROS_INFO("Hold still running.");
+      // }
     }
     
     }

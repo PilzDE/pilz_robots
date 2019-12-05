@@ -329,42 +329,42 @@ limitations under the License.
     <transmission name="${prefix}joint_1_trans">
       <type>transmission_interface/SimpleTransmission</type>
       <joint name="${prefix}joint_1">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
       </joint>
       <actuator name="${prefix}joint_1_motor"/>
     </transmission>
     <transmission name="${prefix}joint_2_trans">
       <type>transmission_interface/SimpleTransmission</type>
       <joint name="${prefix}joint_2">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
       </joint>
       <actuator name="${prefix}joint_2_motor"/>
     </transmission>
     <transmission name="${prefix}joint_3_trans">
       <type>transmission_interface/SimpleTransmission</type>
       <joint name="${prefix}joint_3">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
       </joint>
       <actuator name="${prefix}joint_3_motor"/>
     </transmission>
     <transmission name="${prefix}joint_4_trans">
       <type>transmission_interface/SimpleTransmission</type>
       <joint name="${prefix}joint_4">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
       </joint>
       <actuator name="${prefix}joint_4_motor"/>
     </transmission>
     <transmission name="${prefix}joint_5_trans">
       <type>transmission_interface/SimpleTransmission</type>
       <joint name="${prefix}joint_5">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
       </joint>
       <actuator name="${prefix}joint_5_motor"/>
     </transmission>
     <transmission name="${prefix}joint_6_trans">
       <type>transmission_interface/SimpleTransmission</type>
       <joint name="${prefix}joint_6">
-        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
       </joint>
       <actuator name="${prefix}joint_6_motor"/>
     </transmission>
