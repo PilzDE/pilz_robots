@@ -17,6 +17,7 @@
 #ifndef PILZ_CARTESIAN_SPEED_CONTROLLER_H
 #define PILZ_CARTESIAN_SPEED_CONTROLLER_H
 
+#include <future>
 #include <vector>
 
 #include <ros/ros.h>
@@ -45,12 +46,17 @@ public:
   virtual void stopping(const ros::Time& /*time*/);
 
 private:
+  void triggerHold();
+
+private:
   std::vector<hardware_interface::JointStateHandle> joint_state_;
   unsigned int num_hw_joints_;
   std::shared_ptr < pilz_control::CartesianSpeedMonitor > cartesian_speed_monitor;
   JointPositions last_positions;
   bool first_run {true};
   ros::ServiceClient hold_client_;
+  std::future<bool> hold_success_;
+  bool is_hold_running_{false};
 };
 
 }  // namespace pilz_cartesian_speed_observing_controller

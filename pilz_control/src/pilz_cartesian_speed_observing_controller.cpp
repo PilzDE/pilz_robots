@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include <chrono>
+#include <future>
 #include <string>
 
 #include <std_srvs/Trigger.h>
@@ -75,23 +77,40 @@ namespace pilz_cartesian_speed_observing_controller
 
     if(!first_run)
     {
+
+    if (is_hold_running_)
+    {
+      if (hold_success_.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+      {
+        is_hold_running_ = false;
+        if (hold_success_.get())
+        {
+          ROS_INFO("Hold call was successful.");
+        }
+        else
+        {
+          ROS_ERROR("Hold call was not successful.");
+        }
+      }
+    }
+
     if(!cartesian_speed_monitor->cartesianSpeedIsBelowLimit(
                                           last_positions,
                                           current_positions, 
                                           period.toSec(), 
                                           0.25 /*limit */))
     {
-      ROS_ERROR("Above limit, calling hold...");
-      std_srvs::Trigger srv;
-      if (!hold_client_.call(srv))
+      ROS_ERROR("Above limit.");
+      if (!is_hold_running_)
       {
-        ROS_ERROR("Failed to call service %s.", hold_client_.getService().c_str());
+        ROS_INFO("Trigger hold.");
+        triggerHold();
+        is_hold_running_ = true;
       }
-      if (!srv.response.success)
+      else
       {
-        ROS_ERROR("Service response: %s", srv.response.message.c_str());
+        ROS_INFO("Hold still running.");
       }
-
     }
     
     }
@@ -103,6 +122,24 @@ namespace pilz_cartesian_speed_observing_controller
 
   void PilzCartesianSpeedObservingController::stopping(const ros::Time& /*time*/)
   {}
+
+  void PilzCartesianSpeedObservingController::triggerHold()
+  {
+    hold_success_ = std::async(std::launch::async, [this]{
+      std_srvs::Trigger srv;
+      if (!hold_client_.call(srv))
+      {
+        ROS_ERROR("Failed to call service %s.", hold_client_.getService().c_str());
+        return false;
+      }
+      if (!srv.response.success)
+      {
+        ROS_ERROR("Service response: %s", srv.response.message.c_str());
+        return false;
+      }
+      return true;
+    });
+  }
 
 }  // namespace pilz_cartesian_speed_observing_controller
 
