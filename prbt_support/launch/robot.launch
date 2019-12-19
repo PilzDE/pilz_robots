@@ -29,7 +29,7 @@
        By default, spawn joint_state and joint_trajectory controllers;
        gripper controller is added to the defaults list, if gripper arg is set -->
   <arg name="spawn_controllers"
-       default="$(eval 'manipulator_joint_trajectory_controller manipulator_cartesian_speed_observing_controller manipulator_joint_state_controller' +
+       default="$(eval 'manipulator_joint_trajectory_controller manipulator_speed_observing_controller manipulator_joint_state_controller' +
                       (' gripper_joint_trajectory_controller' if arg('gripper') else ''))" />
 
   <!-- send urdf to param server -->
