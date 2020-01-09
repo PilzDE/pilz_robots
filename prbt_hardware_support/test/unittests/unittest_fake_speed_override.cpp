@@ -65,6 +65,9 @@ bool FakeSpeedOverrideTest::setSpeedOverrideParameter(double speed_override)
  * @tests{speed_override_for_simulated_robot,
  *  Tests the default value of the fake speed override.
  * }
+ * @tests{speed_override_without_operation_mode_support,
+ *  Tests the default value of the fake speed override.
+ * }
  */
 TEST_F(FakeSpeedOverrideTest, defaultSpeedOverride)
 {
