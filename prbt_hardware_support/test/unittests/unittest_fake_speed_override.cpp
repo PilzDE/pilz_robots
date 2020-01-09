@@ -26,7 +26,7 @@
 namespace prbt_hardware_support
 {
 
-static constexpr double DEFAULT_SPEED_OVERRIDE{1.0};
+static constexpr double EXPECTED_DEFAULT_SPEED_OVERRIDE{1.0};
 
 class FakeSpeedOverrideTest : public testing::Test
 {
@@ -69,7 +69,7 @@ bool FakeSpeedOverrideTest::setSpeedOverrideParameter(double speed_override)
 TEST_F(FakeSpeedOverrideTest, defaultSpeedOverride)
 {
   ASSERT_TRUE(client.call(srv));
-  EXPECT_EQ(srv.response.speed_override, DEFAULT_SPEED_OVERRIDE);
+  EXPECT_EQ(srv.response.speed_override, EXPECTED_DEFAULT_SPEED_OVERRIDE);
 }
 
 TEST_F(FakeSpeedOverrideTest, testSettingSpeedOverride)
