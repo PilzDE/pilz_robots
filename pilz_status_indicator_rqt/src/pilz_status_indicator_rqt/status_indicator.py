@@ -52,6 +52,7 @@ class PilzStatusIndicatorRqt(Plugin):
         assert self._widget.labelROS, "ROS label must be loaded from ui file"
         assert self._widget.labelPRBT, "PRBT label must be loaded from ui file"
         assert self._widget.labelOM, "OM label must be loaded from ui file"
+        assert self._widget.barSpeed, "barSpeed must be loaded from ui file"
 
         # prepare ui elements
         self._widget.labelROS.setStyleSheet("QLabel { background-color: darkgrey }")
@@ -61,6 +62,7 @@ class PilzStatusIndicatorRqt(Plugin):
         # set intial state
         self.set_ROS_status(True)
         self.set_operation_mode(OperationModes.AUTO)
+        self.set_speed(.75)
         
     def shutdown_plugin(self):
         # TODO unregister all publishers here
@@ -97,6 +99,11 @@ class PilzStatusIndicatorRqt(Plugin):
         icon_path = os.path.join(rospkg.RosPack().get_path('pilz_status_indicator_rqt'), 'resource', icon_name + '.png')
         pixmap = QPixmap(icon_path)
         self._widget.labelOM.setPixmap(pixmap)
+
+    
+    def set_speed(self, val):
+        # expecting val = 0...1
+        self._widget.barSpeed.setValue(100 * val)
         
 
     def _set_label_status(self, label, status):
