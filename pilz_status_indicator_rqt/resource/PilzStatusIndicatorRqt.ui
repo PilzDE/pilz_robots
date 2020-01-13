@@ -36,7 +36,7 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="spacing">
-    <number>0</number>
+    <number>3</number>
    </property>
    <property name="leftMargin">
     <number>0</number>
@@ -53,7 +53,19 @@
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
      <property name="spacing">
+      <number>2</number>
+     </property>
+     <property name="leftMargin">
+      <number>3</number>
+     </property>
+     <property name="topMargin">
+      <number>3</number>
+     </property>
+     <property name="rightMargin">
       <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>3</number>
      </property>
      <item>
       <widget class="QLabel" name="labelOM">
@@ -84,7 +96,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QProgressBar" name="speedBar">
+      <widget class="QProgressBar" name="barSpeed">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>1</horstretch>
@@ -110,7 +122,16 @@
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,1">
      <property name="spacing">
-      <number>5</number>
+      <number>3</number>
+     </property>
+     <property name="topMargin">
+      <number>3</number>
+     </property>
+     <property name="rightMargin">
+      <number>3</number>
+     </property>
+     <property name="bottomMargin">
+      <number>3</number>
      </property>
      <item>
       <widget class="QLabel" name="labelPRBT">
