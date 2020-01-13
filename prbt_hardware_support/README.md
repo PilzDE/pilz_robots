@@ -3,6 +3,11 @@ The prbt_hardware_support package contains files supporting the certification of
 
 There is no need to call these launch files directly; they are included from `prbt_support/robot.launch`.
 
+## Supported hardware
+Two variants of hardware are supported:
+
+TODO
+
 ## STO
 The STO function (“Safe torque off”) of the robot arm is a safety function to immediately turn off torque of the drives.
 
@@ -44,7 +49,7 @@ In operation mode T1 the robot can be moved as usual. However, if an attempt to 
 
 # Architecture
 The following diagram shows all components of the system and the connections
-between them.  
+between them.
 
 ![Component diagram of overall architecture](doc/diag_comp_overall_architecture.png)
 
