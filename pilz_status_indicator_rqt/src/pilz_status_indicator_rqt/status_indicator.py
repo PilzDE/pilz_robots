@@ -4,9 +4,9 @@ import rospkg
 
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
-#from python_qt_binding.QtCore import 
-from python_qt_binding.QtGui import QIcon, QColor
+from python_qt_binding.QtGui import QIcon, QColor, QPixmap
 from python_qt_binding.QtWidgets import QWidget
+from prbt_hardware_support.msg import OperationModes
 
 OK = "green"
 NOK = "red"
@@ -48,10 +48,19 @@ class PilzStatusIndicatorRqt(Plugin):
         # Add widget to the user interface
         context.add_widget(self._widget)
 
+        # checking if widget is loaded correctly from ui file
+        assert self._widget.labelROS, "ROS label must be loaded from ui file"
+        assert self._widget.labelPRBT, "PRBT label must be loaded from ui file"
+        assert self._widget.labelOM, "OM label must be loaded from ui file"
+
+        # prepare ui elements
         self._widget.labelROS.setStyleSheet("QLabel { background-color: darkgrey }")
         self._widget.labelPRBT.setStyleSheet("QLabel { background-color: darkgrey }")
+        self._widget.labelOM.setScaledContents(True)
 
+        # set intial state
         self.set_ROS_status(True)
+        self.set_operation_mode(OperationModes.AUTO)
         
     def shutdown_plugin(self):
         # TODO unregister all publishers here
@@ -77,6 +86,18 @@ class PilzStatusIndicatorRqt(Plugin):
     def set_PRBT_status(self, status):
         self._set_label_status(self._widget.labelPRBT, status)
 
+
+    def set_operation_mode(self, operation_mode):
+        if operation_mode == OperationModes.AUTO:
+            icon_name = 'auto'
+        elif operation_mode == OperationModes.T1:
+            icon_name = 't1'
+        elif operation_mode == OperationModes.T2:
+            icon_name = 't2'
+        icon_path = os.path.join(rospkg.RosPack().get_path('pilz_status_indicator_rqt'), 'resource', icon_name + '.png')
+        pixmap = QPixmap(icon_path)
+        self._widget.labelOM.setPixmap(pixmap)
+        
 
     def _set_label_status(self, label, status):
         if status:
