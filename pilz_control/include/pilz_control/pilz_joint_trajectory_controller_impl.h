@@ -17,6 +17,8 @@
 #ifndef PILZ_CONTROL_PILZ_JOINT_TRAJECTORY_CONTROLLER_IMPL_H
 #define PILZ_CONTROL_PILZ_JOINT_TRAJECTORY_CONTROLLER_IMPL_H
 
+#include <pilz_utils/sleep.h>
+
 namespace pilz_joint_trajectory_controller
 {
 
@@ -106,7 +108,7 @@ handleHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response
   JointTrajectoryController::preemptActiveGoal();
   triggerMovementToHoldPosition();
 
-  ros::Duration(JointTrajectoryController::stop_trajectory_duration_).sleep();
+  pilz_utils::sleep(ros::Duration(JointTrajectoryController::stop_trajectory_duration_));
 
   response.message = "Holding mode enabled";
   response.success = true;

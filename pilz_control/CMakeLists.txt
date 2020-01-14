@@ -10,6 +10,7 @@ find_package(catkin
     roslint
     controller_manager
     controller_interface
+    pilz_utils
 )
 
 # Declare catkin package
