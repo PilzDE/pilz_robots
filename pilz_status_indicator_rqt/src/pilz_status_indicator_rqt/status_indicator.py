@@ -7,6 +7,7 @@ from python_qt_binding import loadUi
 from python_qt_binding.QtGui import QIcon, QColor, QPixmap
 from python_qt_binding.QtWidgets import QWidget
 from prbt_hardware_support.msg import OperationModes
+from std_msgs.msg import Bool, Float64
 
 OK = "green"
 NOK = "red"
@@ -49,36 +50,58 @@ class PilzStatusIndicatorRqt(Plugin):
         self._widget.labelOM.setScaledContents(True)
 
         # set intial state
-        self.set_ROS_status(True)
-        self.set_operation_mode(OperationModes.AUTO)
-        self.set_speed(.75)
+        self.set_ROS_status(Bool(False))
+        self.set_PRBT_status(Bool(False))
+        om_unknown = OperationModes()
+        om_unknown.value = OperationModes.UNKNOWN
+        self.set_operation_mode(om_unknown)
+        self.set_speed(Float64(.5))
 
+        rospy.Subscriber(TOPIC_DIAGNOSTICS_ROS, Bool,
+                         self.set_ROS_status)
+        rospy.Subscriber(TOPIC_DIAGNOSTICS_PRBT, Bool,
+                         self.set_PRBT_status)
+        rospy.Subscriber(TOPIC_OPERATION_MODE, OperationModes,
+                         self.set_operation_mode)
+        rospy.Subscriber(TOPIC_SPEED_OVERRIDE, Float64, self.set_speed)
 
     def shutdown_plugin(self):
         # TODO unregister all publishers here
         pass
 
-    def set_ROS_status(self, status):
+    def set_ROS_status(self, msg):
+        status = msg.data
         self._set_label_status(self._widget.labelROS, status)
 
-    def set_PRBT_status(self, status):
+    def set_PRBT_status(self, msg):
+        status = msg.data
         self._set_label_status(self._widget.labelPRBT, status)
 
     def set_operation_mode(self, operation_mode):
-        if operation_mode == OperationModes.AUTO:
+        rospy.logdebug("set_operation_mode: " + str(operation_mode))
+        if operation_mode.value == OperationModes.AUTO:
             icon_name = 'auto'
-        elif operation_mode == OperationModes.T1:
+        elif operation_mode.value == OperationModes.T1:
             icon_name = 't1'
-        elif operation_mode == OperationModes.T2:
+        elif operation_mode.value == OperationModes.T2:
             icon_name = 't2'
+        else:  # operation_mode.value == OperationModes.UNKNOWN
+            icon_name = 'unknown'
         icon_path = os.path.join(rospkg.RosPack().get_path(
             'pilz_status_indicator_rqt'), 'resource', icon_name + '.png')
         pixmap = QPixmap(icon_path)
         self._widget.labelOM.setPixmap(pixmap)
 
-    def set_speed(self, val):
+    def set_speed(self, msg):
+        val = msg.data
         # expecting val = 0...1
-        self._widget.barSpeed.setValue(100 * val)
+        if val > 1 or val < 0:
+            rospy.logwarn("expecting speed value between 0 and 1, got {}".format(val))
+            if val > 1:
+                val = 1
+            else:
+                val = 0
+        self._widget.barSpeed.setValue(100. * val)
 
     def _set_label_status(self, label, status):
         if status:
