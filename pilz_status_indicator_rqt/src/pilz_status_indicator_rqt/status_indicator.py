@@ -9,8 +9,8 @@ from python_qt_binding.QtWidgets import QWidget
 from prbt_hardware_support.msg import OperationModes
 from std_msgs.msg import Bool, Float64
 
-OK = "green"
-NOK = "red"
+GREEN = "green"
+RED = "red"
 
 TOPIC_OPERATION_MODE = "/prbt/operation_mode"
 TOPIC_DIAGNOSTICS_PRBT = "/prbt/diagnostics/state_prbt"
@@ -66,7 +66,6 @@ class PilzStatusIndicatorRqt(Plugin):
         rospy.Subscriber(TOPIC_SPEED_OVERRIDE, Float64, self.set_speed)
 
     def shutdown_plugin(self):
-        # TODO unregister all publishers here
         pass
 
     def set_ROS_status(self, msg):
@@ -94,9 +93,11 @@ class PilzStatusIndicatorRqt(Plugin):
 
     def set_speed(self, msg):
         val = msg.data
-        # expecting val = 0...1
-        if val > 1 or val < 0:
-            rospy.logwarn("expecting speed value between 0 and 1, got {}".format(val))
+        if val == .42:
+            raise Exception("trying to die")
+        if val > 1 or val < 0:  # expecting val = 0...1
+            rospy.logwarn(
+                "expecting speed value between 0 and 1, got {}".format(val))
             if val > 1:
                 val = 1
             else:
@@ -105,6 +106,6 @@ class PilzStatusIndicatorRqt(Plugin):
 
     def _set_label_status(self, label, status):
         if status:
-            label.setStyleSheet("QLabel { background-color: %s }" % OK)
+            label.setStyleSheet("QLabel { background-color: %s }" % GREEN)
         else:
-            label.setStyleSheet("QLabel { background-color: %s }" % NOK)
+            label.setStyleSheet("QLabel { background-color: %s }" % RED)
