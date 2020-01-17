@@ -22,7 +22,7 @@ import rospy
 from python_qt_binding.QtCore import QObject
 from qt_gui.plugin import Plugin
 
-from pilz_status_indicator_rqt.status_indicator import PilzStatusIndicatorRqt, ISOViewWidget
+from pilz_status_indicator_rqt.status_indicator import PilzStatusIndicatorRqt, PilzStatusIndicatorWidget
 from pilz_status_indicator_rqt.status_indicator import *
 from prbt_hardware_support.msg import OperationModes
 from std_msgs.msg import Bool, Float64
@@ -41,7 +41,7 @@ def extract_subscriber_mock_callback(mock, topic_name):
 
 
 @patch('rospy.Subscriber')
-@patch('pilz_status_indicator_rqt.status_indicator.ISOViewWidget')
+@patch('pilz_status_indicator_rqt.status_indicator.PilzStatusIndicatorWidget')
 class TestStatusIndicator(unittest.TestCase):
     """
     TODO
