@@ -55,7 +55,7 @@ class ISOViewWidget(QWidget):
             icon_name = 't1'
         elif mode == OperationModes.T2:
             icon_name = 't2'
-        else:  # value == OperationModes.UNKNOWN
+        else:  # mode == OperationModes.UNKNOWN
             icon_name = 'unknown'
         icon_path = os.path.join(rospkg.RosPack().get_path(
             'pilz_status_indicator_rqt'), 'resource', icon_name + '.png')

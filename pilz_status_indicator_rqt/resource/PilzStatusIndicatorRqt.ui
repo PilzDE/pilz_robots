@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>312</width>
-    <height>180</height>
+    <width>270</width>
+    <height>155</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -21,20 +21,20 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>312</width>
-    <height>180</height>
+    <width>270</width>
+    <height>155</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>312</width>
-    <height>180</height>
+    <width>270</width>
+    <height>155</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout">
+  <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,2">
    <property name="spacing">
     <number>3</number>
    </property>
@@ -77,14 +77,14 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>150</width>
-         <height>150</height>
+         <width>120</width>
+         <height>120</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>150</width>
-         <height>150</height>
+         <width>120</width>
+         <height>120</height>
         </size>
        </property>
        <property name="baseSize">
@@ -94,7 +94,7 @@
         </size>
        </property>
        <property name="styleSheet">
-        <string notr="true">QLabel { background-color: blue }</string>
+        <string notr="true">QLabel { background-color: black }</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -111,7 +111,7 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>150</width>
+         <width>120</width>
          <height>0</height>
         </size>
        </property>
@@ -169,14 +169,14 @@
          </property>
          <property name="minimumSize">
           <size>
-           <width>40</width>
-           <height>40</height>
+           <width>35</width>
+           <height>35</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>40</width>
-           <height>40</height>
+           <width>35</width>
+           <height>35</height>
           </size>
          </property>
          <property name="sizeIncrement">
@@ -226,14 +226,14 @@
          </property>
          <property name="minimumSize">
           <size>
-           <width>40</width>
-           <height>40</height>
+           <width>35</width>
+           <height>35</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>40</width>
-           <height>40</height>
+           <width>35</width>
+           <height>35</height>
           </size>
          </property>
          <property name="sizeIncrement">
