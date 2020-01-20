@@ -1,21 +1,75 @@
-# Overview
-The prbt_hardware_support package contains files supporting the certification of a robot system including the PRBT manipulator according to DIN EN ISO 10218-1. As safety controllers the Pilz hardware PNOZmulti and PSS4000 are supported. A Modbus connection is used for the communication between ROS <-> safety controller.
+#### Table of Contents
+- [Introduction](#introduction)
+- [Supported DIN EN ISO 10218-1 safety features](#supported-din-en-iso-10218-1-safety-features)
+  - [Needed/supported hardware](#neededsupported-hardware) 
+  - [Definitions](#definitions)
+  - [Safe stop 1](#safe-stop-1-ss1)
+  - [Brake test](#brake-test)
+  - [Operation modes](#operation-modes)
+  - [Speed monitoring](#speed-monitoring)
+- [Overview system components](#overview-system-components)
 
-There is no need to call these launch files directly; they are included from `prbt_support/robot.launch`.
+# Introduction
+The `prbt_hardware_support` package provides support for the Pilz hardware
+PNOZmulti and PSS 4000. A number of safety feature are provided which are
+essential for a DIN EN ISO 10218-1 certifiable robot system (for more
+information see section about 
+[supported DIN EN ISO 10218-1 safety features](#supported-din-en-iso-10218-1-safety-features)).  
+  
+Due to the fact, that the communication between the Pilz safety controllers 
+and ROS is based on the Modbus communication protocol, the package also 
+contains C++ files providing ROS support for the Modbus communication protocol.
+  
+In the [system overview section](#overview-system-components),
+you can find a component diagram showing the overall architecture of our
+system. The component diagram shows all our nodes and the connection 
+between them.
 
-## STO
+**Please note:**  
+The launch files included in the `prbt_hardware_support` package, don't need to
+be called directly by the user. They already are included in our overall
+launch file (for more information on how-to run the PRBT robot with ROS see the 
+[pilz_robots-README](https://github.com/PilzDE/pilz_robots#running-on-the-real-robot).
+
+# Supported DIN EN ISO 10218-1 safety features
+The prbt_hardware_support package provides support for a number of safety
+features which are essential for a DIN EN ISO 10218-1 certifiable robot system.
+  
+**Please note:**  
+The DIN EN ISO 10218-1 support is WORK IN PROGRESS!!!  
+ 
+## Needed/supported hardware
+In order for the safety features to work, one needs certain hardware
+components supporting certain safety feature.
+Currently, we test all our features against the following 
+hardware setup:
+- Robot: Manipulator module PRBT
+- Safety controller: PSS 4000 (with special PSS 4000 program)
+- Electronic selector switch (for operation mode): PITmode
+- Enabling switch: PITenable
+- Pushbutton unit (with emergency stop): PITgatebox
+
+**Please note:**  
+Not all safety features in this section are supported by both PILZ safety 
+controllers! Currently, the PNOZmulti does not support the brake test feature 
+(for more information about the brake test feature see the 
+[brake test section](#brake-test)).
+
+
+## Definitions
+### STO
 The STO function (“Safe torque off”) of the robot arm is a safety function to immediately turn off torque of the drives.
 
-## SBC
+### SBC
 The SBC function ("Safe brake control") of the robot arm is a safety function which is used in conjunction with the STO and prevents a motion when the torque of the drives is turned off.
 
-# Safe stop 1 (SS1)
+## Safe stop 1 (SS1)
 To allow a controlled stop, the safety controller delays the STO signal by several milliseconds. This package opens a
 modbus connection to the safety controller (PNOZmulti or PSS4000). The safety controller sends an emergency
 stop signal via Modbus immediately so that ros_control has a short time interval to stop the drives via a brake ramp.
 The TCP could for example brake on the current trajectory. After execution of the brake ramp, the drivers are halted. Even if ROS would fail, the safety controller turns off the motors via STO (that would be a Stop 0 then).
 
-## Possible error cases and their handling
+### Possible error cases and their handling
 
 | Error cases                                             | Handling                                                |
 | ------------------------------------------------------- | ------------------------------------------------------- |
@@ -26,10 +80,10 @@ The TCP could for example brake on the current trajectory. After execution of th
 | STO Modbus adapter cannot connect to stop services    | ROS system will not start.                              |
 | STO Modbus adapter cannot connect to recover services | Node does start and robot can be moved until a stop is triggered. Afterwards the brakes will remain closed. |
 
-# Brake tests
+## Brake test
 Brake tests are an integral part of the SBC, since they detect misfunctions of the brakes or the brake control in general. Brake tests for each drive have to be executed at a regular interval. When the safety controller requests brake tests, they have to be executed within 1 hour, else the robot cannot be moved anymore.
 
-# Operation Modes
+## Operation Modes
 The robot system can be controlled in various modes.
 
 These modes are:
@@ -39,16 +93,32 @@ These modes are:
 
 See DIN EN ISO 10218-1 for more details or contact us: ros@pilz.de
 
-## Note
-In operation mode T1 the robot can be moved as usual. However, if an attempt to exceed the speed limit of 250 mm/s in T1 is detected, the prevailing motion is aborted and a controlled stop is performed.
+**Please note:**  
+In operation mode T1 the robot can be moved as usual. 
+However, if an attempt to exceed the speed limit of 250 mm/s in T1 is detected,
+the prevailing motion is aborted and a controlled stop is performed.
+For more information see  the [speed monitoring section](#speed-monitoring).
 
-# Architecture
+## Speed monitoring
+DIN EN ISO 10218-1 requires that in operation mode T1 no part of the robot
+moves faster than 250 mm/s. To meet this requirement, 
+the `PilzJointTrajectoryController` checks the target velocity for
+each robot-frame. If one or more robot-frames exceed the allowed speed limit,
+the controller executes a safe stop 1. (For more information about the safe
+stop 1, see [safe stop 1 section](#safe-stop-1-ss1)).  
+To re-enable the system, the user needs to release and, subsequently, 
+press the enabling switch.
+
+**Please note:**  
+Currently, only one of the PILZ controllers, namely the
+`PilzJointTrajectoryController`, can perform the speed monitoring required by
+DIN EN ISO 10218-1.
+
+# Overview system components
 The following diagram shows all components of the system and the connections
 between them.  
 
 ![Component diagram of overall architecture](doc/diag_comp_overall_architecture.png)
-
-# ROS API
 
 ## ModbusClient
 A Modbus client (for usage with the PNOZmulti or PSS4000) can be started with `roslaunch prbt_hardware_support modbus_client.launch`.
@@ -100,12 +170,5 @@ The ``OperationModeSetupExecutorNode`` sets the speed limit for each frame based
 ### Parameters
 - speed_limit_t1 [m/s] (default: 0.25)
 - speed_limit_automatic [m/s] (default: 5.0)
-
-## SpeedObserverNode
-The ``SpeedObserverNode`` observes the speed of the robot frames and triggers a controlled stop, if the current speed limit is exceeded.
-
-### Parameters
-- frequency [Hz] (default: 20.0)
-- additional_frames (optional): lets the user specify frames to observe in addition to the robot frames of the prevailing robot model
 
 <sup>*</sup>Not supported yet
