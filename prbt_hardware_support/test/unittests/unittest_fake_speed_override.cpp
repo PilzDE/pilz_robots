@@ -26,6 +26,8 @@
 namespace prbt_hardware_support
 {
 
+static constexpr double EXPECTED_DEFAULT_SPEED_OVERRIDE{1.0};
+
 class FakeSpeedOverrideTest : public testing::Test
 {
   protected:
@@ -57,6 +59,20 @@ bool FakeSpeedOverrideTest::setSpeedOverrideParameter(double speed_override)
   rec.request.config.doubles.push_back(speed_override_param);
 
   return dynamic_parameter_client.call(rec);
+}
+
+/**
+ * @tests{speed_override_for_simulated_robot,
+ *  Tests the default value of the fake speed override.
+ * }
+ * @tests{speed_override_without_operation_mode_support,
+ *  Tests the default value of the fake speed override.
+ * }
+ */
+TEST_F(FakeSpeedOverrideTest, defaultSpeedOverride)
+{
+  ASSERT_TRUE(client.call(srv));
+  EXPECT_EQ(srv.response.speed_override, EXPECTED_DEFAULT_SPEED_OVERRIDE);
 }
 
 TEST_F(FakeSpeedOverrideTest, testSettingSpeedOverride)
