@@ -22,3 +22,14 @@ install(FILES
   plugin.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
+
+#############
+## Testing ##
+#############
+
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+
+  catkin_add_nosetests(test/unit_tests/status_indicator_unit_test.py)
+  catkin_add_nosetests(test/unit_tests/status_indicator_widget_unit_test.py)
+endif()
