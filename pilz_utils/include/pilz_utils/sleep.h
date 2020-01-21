@@ -34,7 +34,8 @@ static bool sleep(const ros::Duration& sleep_duration)
   {
     return sleep_duration.sleep();
   }
-  else if (ros::Time::isValid())
+
+  if (ros::Time::isValid())
   {
     ros::Time::setNow(ros::Time::now() + sleep_duration);
     return true;
