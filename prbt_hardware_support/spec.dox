@@ -154,4 +154,18 @@
  *    - In T1 the speed override is 0.1.
  *    - In AUTOMATIC the speed override is 1.0.
  *    - If the operation mode is unknown, the speed override is set to zero.
+ *
+ *
+ * @subsection no_safety Other Setups (No ISO-10218-1 Support)
+ *
+ * @subsubsection simulated_robot Simulated Robot
+ *
+ * @definereq{speed_override_for_simulated_robot}
+ * - If the system is connected to a simulated robot instead of a real robot, the speed override (\ref speed_override) is 1.0.
+ *
+ *
+ * @subsubsection no_operation_mode No Operation Mode Support
+ *
+ * @definereq{speed_override_without_operation_mode_support}
+ * - If the system does not support operation modes, the speed override (\ref speed_override) is 1.0.
  */
