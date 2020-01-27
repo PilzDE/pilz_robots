@@ -14,17 +14,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys
 import os
+import sys
 import unittest
 
 import rospkg
 import rospy
 from mock import ANY, MagicMock, Mock, call, patch
+from prbt_hardware_support.msg import OperationModes
+from PyQt5.QtGui import QPixmap
+from python_qt_binding.QtWidgets import QApplication, QMainWindow
+
 from pilz_status_indicator_rqt.status_indicator_widget import (
     GREEN, RED, PilzStatusIndicatorWidget)
-from python_qt_binding.QtWidgets import QApplication, QMainWindow
-from prbt_hardware_support.msg import OperationModes
 
 app = QApplication(sys.argv)
 
@@ -65,15 +67,51 @@ class TestStatusIndicatorWidget(unittest.TestCase):
         self.psi.labelPRBT.setStyleSheet.assert_called_with(
             "QLabel { background-color: %s }" % RED)
 
-    @patch('rospkg.RosPack')
-    @unittest.skip(True)  # TODO
-    def test_set_operation_mode_auto(self, RosPackMock):
+    @patch('PyQt5.QtGui.QPixmap', return_value=QPixmap())
+    def test_set_operation_modes(self, QPixmapMock):
         self.psi.labelOM.setPixmap = MagicMock()
-        RosPackMock.get_path = MagicMock(
-            return_value=self.icon_path_unknown)
+        self.psi.labelOM_text.setText = MagicMock()
 
-        # RosPackMock.assert_called_with(self.icon_path_auto)
+        # QPixmapMock.return_value = QPixmap(self.icon_path_auto)   FIXME
+        # assert QPixmapMock.called
         self.psi.set_operation_mode(OperationModes.AUTO)
+        self.psi.labelOM.setPixmap.assert_called()
+        self.psi.labelOM_text.setText.assert_called_with("Auto")
+
+        self.psi.set_operation_mode(OperationModes.T1)
+        self.psi.labelOM.setPixmap.assert_called()
+        self.psi.labelOM_text.setText.assert_called_with("T1")
+
+        self.psi.set_operation_mode(OperationModes.T2)
+        self.psi.labelOM.setPixmap.assert_called()
+        self.psi.labelOM_text.setText.assert_called_with("T2")
+
+        self.psi.set_operation_mode(OperationModes.UNKNOWN)
+        self.psi.labelOM.setPixmap.assert_called()
+        self.psi.labelOM_text.setText.assert_called_with("Unknown")
+
+    def test_set_speed(self):
+        self.psi.barSpeed.setValue = MagicMock()
+
+        # 0 speed should be displayed as 0%
+        self.psi.set_speed(0)
+        self.psi.barSpeed.setValue.assert_called_with(0)
+
+        # 0.5 speed should be displayed as 50%
+        self.psi.set_speed(.5)
+        self.psi.barSpeed.setValue.assert_called_with(50)
+
+        # 1 speed should be displayed as 100%
+        self.psi.set_speed(1)
+        self.psi.barSpeed.setValue.assert_called_with(100)
+
+        # speed values below 0 should be displayed as 0%
+        self.psi.set_speed(-1)
+        self.psi.barSpeed.setValue.assert_called_with(0)
+
+        # speed values above 1 should be displayed as 100%
+        self.psi.set_speed(2)
+        self.psi.barSpeed.setValue.assert_called_with(100)
 
 
 if __name__ == '__main__':

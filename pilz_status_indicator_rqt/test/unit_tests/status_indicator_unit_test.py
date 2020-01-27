@@ -49,7 +49,7 @@ class TestStatusIndicator(unittest.TestCase):
     TODO
     """
 
-    def test_init(self, ViewMock, SubscriberMock):
+    def test_init(self, _, SubscriberMock):
         psi = PilzStatusIndicatorRqt(MockContext())
         psi._widget.set_ROS_status.assert_called_once_with(False)
         psi._widget.set_PRBT_status.assert_called_once_with(False)
@@ -63,7 +63,7 @@ class TestStatusIndicator(unittest.TestCase):
             call(TOPIC_SPEED_OVERRIDE, Float64, ANY),
         ])
 
-    def test_status_prbt(self, ViewMock, SubscriberMock):
+    def test_status_prbt(self, _, SubscriberMock):
         psi = PilzStatusIndicatorRqt(MockContext())
         psi._widget.reset_mock()
 
@@ -76,7 +76,7 @@ class TestStatusIndicator(unittest.TestCase):
         diagnostic_prbt_callback(Bool(True))
         psi._widget.set_PRBT_status.assert_called_with(True)
 
-    def test_status_ros(self, ViewMock, SubscriberMock):
+    def test_status_ros(self, _, SubscriberMock):
         psi = PilzStatusIndicatorRqt(MockContext())
         psi._widget.reset_mock()
 
@@ -89,7 +89,7 @@ class TestStatusIndicator(unittest.TestCase):
         diagnostic_ros_callback(Bool(False))
         psi._widget.set_ROS_status.assert_called_with(False)
 
-    def test_operation_mode(self, ViewMock, SubscriberMock):
+    def test_operation_mode(self, _, SubscriberMock):
         psi = PilzStatusIndicatorRqt(MockContext())
         psi._widget.reset_mock()
 
@@ -115,7 +115,7 @@ class TestStatusIndicator(unittest.TestCase):
         diagnostic_operation_mode_callback(operation_mode_msg)
         psi._widget.set_operation_mode.assert_called_with(OperationModes.AUTO)
 
-    def test_set_speed(self, ViewMock, SubscriberMock):
+    def test_set_speed(self, _, SubscriberMock):
         psi = PilzStatusIndicatorRqt(MockContext())
         psi._widget.reset_mock()
 
