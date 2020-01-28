@@ -39,13 +39,13 @@ features which are essential for a DIN EN ISO 10218-1 certifiable robot system.
 The DIN EN ISO 10218-1 support is WORK IN PROGRESS!!!  
  
 ## Needed/supported hardware
-In order for the safety features to work, one needs certain hardware
-components supporting certain safety feature.
+In order for the safety features to work, one needs special hardware
+components supporting special safety feature.
 Currently, we test all our features against the following 
 hardware setup:
 - Robot: Manipulator module PRBT
 - Safety controller: PSS 4000 (with special PSS 4000 program)
-- Electronic selector switch (for operation mode): PITmode
+- Operating mode selector switch: PITmode
 - Enabling switch: PITenable
 - Pushbutton unit (with emergency stop): PITgatebox
 
