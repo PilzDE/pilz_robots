@@ -27,7 +27,7 @@ between them.
 
 **Please note:**  
 The launch files included in the `prbt_hardware_support` package don't need to
-be called directly by the user. They already are included in our overall
+be called directly by the user. They already are included in our top-level
 launch file (for more information on how-to run the PRBT robot with ROS see the 
 [pilz_robots-README](https://github.com/PilzDE/pilz_robots#running-on-the-real-robot).
 
