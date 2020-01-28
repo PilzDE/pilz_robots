@@ -22,7 +22,7 @@ contains C++ files providing ROS support for the Modbus communication protocol.
   
 In the [system overview section](#overview-system-components),
 you can find a component diagram showing the overall architecture of our
-system. The component diagram shows all our nodes and the connection 
+system. The component diagram shows all our nodes and the connections 
 between them.
 
 **Please note:**  
