@@ -11,7 +11,7 @@
 
 # Introduction
 The `prbt_hardware_support` package provides support for the Pilz hardware
-PNOZmulti and PSS 4000. A number of safety feature are provided which are
+PNOZmulti and PSS 4000. A number of safety features are provided which are
 essential for a DIN EN ISO 10218-1 certifiable robot system (for more
 information see section about 
 [supported DIN EN ISO 10218-1 safety features](#supported-din-en-iso-10218-1-safety-features)).  
