@@ -20,15 +20,13 @@ import unittest
 
 import rospkg
 import rospy
-from mock import ANY, MagicMock, Mock, call, patch
+from mock import MagicMock, create_autospec
 from prbt_hardware_support.msg import OperationModes
 from PyQt5.QtGui import QPixmap
 from python_qt_binding.QtWidgets import QApplication, QMainWindow
 
 from pilz_status_indicator_rqt.status_indicator_widget import (
     GREEN, RED, PilzStatusIndicatorWidget)
-
-app = QApplication(sys.argv)
 
 
 class TestStatusIndicatorWidget(unittest.TestCase):
@@ -71,24 +69,29 @@ class TestStatusIndicatorWidget(unittest.TestCase):
             "QLabel { background-color: %s }" % RED)
 
     def test_set_operation_modes(self):
+        Mock_qpixmap = create_autospec(QPixmap)
         self.psi.labelOM = MagicMock()
         self.psi.labelOM_text = MagicMock()
         self.psi.labelOM.setPixmap = MagicMock()
         self.psi.labelOM_text.setText = MagicMock()
 
-        self.psi.set_operation_mode(OperationModes.AUTO)
+        self.psi.set_operation_mode(OperationModes.AUTO, Mock_qpixmap)
+        Mock_qpixmap.assert_called_with(self.icon_path_auto)
         self.psi.labelOM.setPixmap.assert_called()
         self.psi.labelOM_text.setText.assert_called_with("Auto")
 
-        self.psi.set_operation_mode(OperationModes.T1)
+        self.psi.set_operation_mode(OperationModes.T1, Mock_qpixmap)
+        Mock_qpixmap.assert_called_with(self.icon_path_t1)
         self.psi.labelOM.setPixmap.assert_called()
         self.psi.labelOM_text.setText.assert_called_with("T1")
 
-        self.psi.set_operation_mode(OperationModes.T2)
+        self.psi.set_operation_mode(OperationModes.T2, Mock_qpixmap)
+        Mock_qpixmap.assert_called_with(self.icon_path_t2)
         self.psi.labelOM.setPixmap.assert_called()
         self.psi.labelOM_text.setText.assert_called_with("T2")
 
-        self.psi.set_operation_mode(OperationModes.UNKNOWN)
+        self.psi.set_operation_mode(OperationModes.UNKNOWN, Mock_qpixmap)
+        Mock_qpixmap.assert_called_with(self.icon_path_unknown)
         self.psi.labelOM.setPixmap.assert_called()
         self.psi.labelOM_text.setText.assert_called_with("Unknown")
 

@@ -58,7 +58,7 @@ class PilzStatusIndicatorWidget(QWidget):
     def set_PRBT_status(self, status):
         self._set_label_status_view(self.labelPRBT, status)
 
-    def set_operation_mode(self, mode):
+    def set_operation_mode(self, mode, qpixmap_class=QPixmap):
         if mode == OperationModes.AUTO:
             icon_name = 'auto'
         elif mode == OperationModes.T1:
@@ -69,7 +69,7 @@ class PilzStatusIndicatorWidget(QWidget):
             icon_name = 'unknown'
         icon_path = os.path.join(rospkg.RosPack().get_path(
             'pilz_status_indicator_rqt'), 'resource', icon_name + '.png')
-        pixmap = QPixmap(icon_path)
+        pixmap = qpixmap_class(icon_path)
         self.labelOM.setPixmap(pixmap)
         self.labelOM_text.setText(icon_name.capitalize())
 
