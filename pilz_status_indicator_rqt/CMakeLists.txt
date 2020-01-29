@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package()
 catkin_python_setup()
 
-install(PROGRAMS scripts/pilz_status_indicator_rqt
+install(PROGRAMS scripts/${PROJECT_NAME}
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
