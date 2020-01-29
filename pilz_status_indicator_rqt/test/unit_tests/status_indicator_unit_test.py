@@ -15,16 +15,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-from mock import patch, ANY, Mock, MagicMock, call
 
 import rospy
-
+from mock import ANY, MagicMock, Mock, call, patch
+from prbt_hardware_support.msg import OperationModes
 from python_qt_binding.QtCore import QObject
 from qt_gui.plugin import Plugin
+from std_msgs.msg import Bool, Float64
 
 from pilz_status_indicator_rqt.status_indicator import *
-from prbt_hardware_support.msg import OperationModes
-from std_msgs.msg import Bool, Float64
 
 
 class MockContext(QObject):

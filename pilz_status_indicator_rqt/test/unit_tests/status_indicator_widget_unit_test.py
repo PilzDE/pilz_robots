@@ -37,7 +37,6 @@ class TestStatusIndicatorWidget(unittest.TestCase):
     """
 
     def setUp(self):
-        self.psi = PilzStatusIndicatorWidget()
         self.icon_path_auto = os.path.join(rospkg.RosPack().get_path(
             'pilz_status_indicator_rqt'), 'resource', 'auto.png')
         self.icon_path_t1 = os.path.join(rospkg.RosPack().get_path(
@@ -47,7 +46,10 @@ class TestStatusIndicatorWidget(unittest.TestCase):
         self.icon_path_unknown = os.path.join(rospkg.RosPack().get_path(
             'pilz_status_indicator_rqt'), 'resource', 'unknown.png')
 
+        self.psi = PilzStatusIndicatorWidget(testing=True)
+
     def test_set_ROS_status(self):
+        self.psi.labelROS = MagicMock()
         self.psi.labelROS.setStyleSheet = MagicMock()
         self.psi.set_ROS_status(True)
         self.psi.labelROS.setStyleSheet.assert_called_with(
@@ -58,6 +60,7 @@ class TestStatusIndicatorWidget(unittest.TestCase):
             "QLabel { background-color: %s }" % RED)
 
     def test_set_PRBT_status(self):
+        self.psi.labelPRBT = MagicMock()
         self.psi.labelPRBT.setStyleSheet = MagicMock()
         self.psi.set_PRBT_status(True)
         self.psi.labelPRBT.setStyleSheet.assert_called_with(
@@ -67,13 +70,12 @@ class TestStatusIndicatorWidget(unittest.TestCase):
         self.psi.labelPRBT.setStyleSheet.assert_called_with(
             "QLabel { background-color: %s }" % RED)
 
-    @patch('PyQt5.QtGui.QPixmap', return_value=QPixmap())
-    def test_set_operation_modes(self, QPixmapMock):
+    def test_set_operation_modes(self):
+        self.psi.labelOM = MagicMock()
+        self.psi.labelOM_text = MagicMock()
         self.psi.labelOM.setPixmap = MagicMock()
         self.psi.labelOM_text.setText = MagicMock()
 
-        # QPixmapMock.return_value = QPixmap(self.icon_path_auto)   FIXME
-        # assert QPixmapMock.called
         self.psi.set_operation_mode(OperationModes.AUTO)
         self.psi.labelOM.setPixmap.assert_called()
         self.psi.labelOM_text.setText.assert_called_with("Auto")
@@ -91,6 +93,7 @@ class TestStatusIndicatorWidget(unittest.TestCase):
         self.psi.labelOM_text.setText.assert_called_with("Unknown")
 
     def test_set_speed(self):
+        self.psi.barSpeed = MagicMock()
         self.psi.barSpeed.setValue = MagicMock()
 
         # 0 speed should be displayed as 0%
