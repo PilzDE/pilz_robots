@@ -32,6 +32,7 @@ namespace pilz_utils
  * When using simulated time, ros::Duration::sleep() has to be synchronized with calls to ros::Time::setNow(),
  * else it will block. This sleep function simply performs the progressing in time itself, such that it never blocks.
  * \note Simulated time is valid, if it is non-zero. Otherwise no sleep is performed.
+ * \note Modifying the simulated time in parallel to this function will lead to unpredictable results.
  * \return Returns true if sleep was performed and false if not.
  */
 static bool sleep(const ros::Duration& sleep_duration)
