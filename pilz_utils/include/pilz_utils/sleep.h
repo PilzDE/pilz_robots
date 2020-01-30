@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Pilz GmbH & Co. KG
+ * Copyright (c) 2020 Pilz GmbH & Co. KG
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -25,8 +25,14 @@ namespace pilz_utils
 {
 
 /**
- * \brief Extends ros::Duration::sleep() by increasing the simulation time, if needed.
- * \note The usage of ros::Time in this function is not thread-safe.
+ * \brief Replace the sim-time part of ros::Duration::sleep() by a progressing in time.
+ *
+ * Use this in production code in order to facilitate tests with simulated time.
+ *
+ * When using simulated time, ros::Duration::sleep() has to be synchronized with calls to ros::Time::setNow(),
+ * else it will block. This sleep function simply performs the progressing in time itself, such that it never blocks.
+ * \note Simulated time is valid, if it is non-zero. Otherwise no sleep is performed.
+ * \return Returns true if sleep was performed and false if not.
  */
 static bool sleep(const ros::Duration& sleep_duration)
 {
