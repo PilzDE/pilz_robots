@@ -28,23 +28,22 @@ RED = "red"
 
 
 class PilzStatusIndicatorWidget(QWidget):
-    def __init__(self, testing=False):
-        if not testing:
-            super(PilzStatusIndicatorWidget, self).__init__()
-            ui_file = os.path.join(rospkg.RosPack().get_path(
-                'pilz_status_indicator_rqt'), 'resource', 'PilzStatusIndicatorRqt.ui')
-            loadUi(ui_file, self)
-            self.setObjectName('PilzStatusIndicatorRqtUi')
+    def __init__(self):
+        super(PilzStatusIndicatorWidget, self).__init__()
+        ui_file = os.path.join(rospkg.RosPack().get_path(
+            'pilz_status_indicator_rqt'), 'resource', 'PilzStatusIndicatorRqt.ui')
+        loadUi(ui_file, self)
+        self.setObjectName('PilzStatusIndicatorRqtUi')
 
-            # checking if widget is loaded correctly from ui file
-            assert self.labelROS, "ROS label must be loaded from ui file"
-            assert self.labelPRBT, "PRBT label must be loaded from ui file"
-            assert self.labelOM, "OM label must be loaded from ui file"
-            assert self.labelOM_text, "OM text label must be loaded from ui file"
-            assert self.barSpeed, "barSpeed must be loaded from ui file"
+        # checking if widget is loaded correctly from ui file
+        assert self.labelROS, "ROS label must be loaded from ui file"
+        assert self.labelPRBT, "PRBT label must be loaded from ui file"
+        assert self.labelOM, "OM label must be loaded from ui file"
+        assert self.labelOM_text, "OM text label must be loaded from ui file"
+        assert self.barSpeed, "barSpeed must be loaded from ui file"
 
-            # prepare ui elements
-            self.labelOM.setScaledContents(True)
+        # prepare ui elements
+        self.labelOM.setScaledContents(True)
 
     def _set_label_status_view(self, label, status):
         if status:

@@ -28,6 +28,13 @@ from python_qt_binding.QtWidgets import QApplication, QMainWindow
 from pilz_status_indicator_rqt.status_indicator_widget import (
     GREEN, RED, PilzStatusIndicatorWidget)
 
+class TestablePilzStatusIndicatorWidget(PilzStatusIndicatorWidget):
+    """
+    Needed to skip TestStatusIndicatorWidget.__init__, especially the super
+    call within. Was not able to mock. Better solution welcome.
+    """
+    def __init__(self):
+      pass
 
 class TestStatusIndicatorWidget(unittest.TestCase):
     """
@@ -44,7 +51,7 @@ class TestStatusIndicatorWidget(unittest.TestCase):
         self.icon_path_unknown = os.path.join(rospkg.RosPack().get_path(
             'pilz_status_indicator_rqt'), 'resource', 'unknown.png')
 
-        self.psi = PilzStatusIndicatorWidget(testing=True)
+        self.psi = TestablePilzStatusIndicatorWidget()
 
     def test_set_ROS_status(self):
         self.psi.labelROS = MagicMock()
