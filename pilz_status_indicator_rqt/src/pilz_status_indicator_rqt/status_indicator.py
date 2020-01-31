@@ -58,9 +58,6 @@ class PilzStatusIndicatorRqt(Plugin):
                 self._widget.windowTitle() + (' (%d)' % context.serial_number()))
         context.add_widget(self._widget)
 
-    def shutdown_plugin(self):
-        pass
-
     def prbt_status_callback(self, msg):
         self._widget.set_PRBT_status(msg.data)
 
