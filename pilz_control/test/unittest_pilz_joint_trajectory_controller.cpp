@@ -122,6 +122,7 @@ void PilzJointTrajectoryControllerTest::startController()
 {
   ros::Time current_time{ros::Time::now()};
   controller_->starting(current_time);
+  last_update_time_ = current_time;
 }
 
 void PilzJointTrajectoryControllerTest::updateController()
