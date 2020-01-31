@@ -32,4 +32,9 @@ if(CATKIN_ENABLE_TESTING)
 
   catkin_add_nosetests(test/unit_tests/status_indicator_unit_test.py)
   catkin_add_nosetests(test/unit_tests/status_indicator_widget_unit_test.py)
+
+  # To generate coverage run:
+  #     python-coverage run -a --source src test/unit_tests/status_indicator_unit_test.py && \
+  #     python-coverage run -a --source src test/unit_tests/status_indicator_widget_unit_test.py && \
+  #     python-coverage html && see htmlcov/index.html
 endif()
