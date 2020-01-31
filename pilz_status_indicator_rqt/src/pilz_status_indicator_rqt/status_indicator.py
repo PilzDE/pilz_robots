@@ -31,11 +31,15 @@ TOPIC_SPEED_OVERRIDE = "/prbt/speed_override"
 
 class PilzStatusIndicatorRqt(Plugin):
     def __init__(self, context):
+        """Instantiate the plugin within its context with its initial state.
+
+        :param context: Context for plugin to run in of type
+                        `PluginContext`."""
         super(PilzStatusIndicatorRqt, self).__init__(context)
         self.setObjectName('PilzStatusIndicatorRqt')
         self._widget = PilzStatusIndicatorWidget(context.serial_number())
 
-        # set intial state
+        # Set initial widget state
         self._widget.set_ROS_status(False)
         self._widget.set_PRBT_status(False)
 
@@ -43,6 +47,7 @@ class PilzStatusIndicatorRqt(Plugin):
 
         self._widget.set_speed(.5)
 
+        # Subscribing to all informations we want to display
         rospy.Subscriber(TOPIC_DIAGNOSTICS_ROS, Bool, self.ros_status_callback)
         rospy.Subscriber(TOPIC_DIAGNOSTICS_PRBT, Bool,
                          self.prbt_status_callback)
@@ -53,15 +58,19 @@ class PilzStatusIndicatorRqt(Plugin):
         context.add_widget(self._widget)
 
     def prbt_status_callback(self, msg):
+        """Callback for PRBT Status."""
         self._widget.set_PRBT_status(msg.data)
 
     def ros_status_callback(self, msg):
+        """Callback for ROS Status."""
         self._widget.set_ROS_status(msg.data)
 
     def operation_mode_callback(self, msg):
+        """Callback for Operation Mode."""
         rospy.logdebug("set_operation_mode: " + str(msg))
         self._widget.set_operation_mode(msg.value)
 
     def speed_callback(self, msg):
+        """Callback for Speed Override."""
         val = msg.data
         self._widget.set_speed(val)

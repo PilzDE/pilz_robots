@@ -28,25 +28,29 @@ RED = "red"
 
 
 class PilzStatusIndicatorWidget(QWidget):
-    def __init__(self, serial_number): #pragma no cover
+    def __init__(self, serial_number):  # pragma no cover
+        """Initializes the widget. Widget content will be loaded from 
+        `PilzStatusIndicatorRqt.ui`.
+
+        :param serial_number: A serial number to differentiate multiple
+                              instances of the same widget."""
         super(PilzStatusIndicatorWidget, self).__init__()
         ui_file = os.path.join(rospkg.RosPack().get_path(
             'pilz_status_indicator_rqt'), 'resource', 'PilzStatusIndicatorRqt.ui')
         loadUi(ui_file, self)
         self.setObjectName('PilzStatusIndicatorRqtUi')
 
-        # checking if widget is loaded correctly from ui file
+        # Checking if widget is loaded correctly from ui file
         assert self.labelROS, "ROS label must be loaded from ui file"
         assert self.labelPRBT, "PRBT label must be loaded from ui file"
         assert self.labelOM, "OM label must be loaded from ui file"
         assert self.labelOM_text, "OM text label must be loaded from ui file"
         assert self.barSpeed, "barSpeed must be loaded from ui file"
 
-        # prepare ui elements
+        # Prepare ui elements
         self.labelOM.setScaledContents(True)
 
-        # Show windowTitle on left-top of each plugin. This is useful when you open multiple
-        # plugins at once.
+        # Show windowTitle on left-top of each plugin.
         if serial_number > 1:
             self.setWindowTitle(
                 self.windowTitle() + (' (%d)' % serial_number))
@@ -58,12 +62,28 @@ class PilzStatusIndicatorWidget(QWidget):
             label.setStyleSheet("QLabel { background-color: %s }" % RED)
 
     def set_ROS_status(self, status):
+        """Sets the PRBT status to be displayed in the widget, using
+        a red or green LED.
+
+        :param status: The status to set:
+                       False will be red, True will be green."""
         self._set_label_status_view(self.labelROS, status)
 
     def set_PRBT_status(self, status):
+        """Sets the PRBT status to be displayed in the widget, using
+        a red or green LED.
+
+        :param status: The status to set:
+                       False will be red, True will be green."""
         self._set_label_status_view(self.labelPRBT, status)
 
-    def set_operation_mode(self, mode, qpixmap_class=QPixmap):
+    def set_operation_mode(self, mode, _qpixmap_class=QPixmap):
+        """Sets the operation mode to be displayed in the widget, influencing
+        both the shown image and the text beneath it.
+
+        :param mode: The mode to be set of type
+                     `prbt_hardware_support.msg.OperationModes`.
+        :param _qpixmap_class: (Internal use only)"""
         if mode == OperationModes.AUTO:
             icon_name = 'auto'
         elif mode == OperationModes.T1:
@@ -71,17 +91,21 @@ class PilzStatusIndicatorWidget(QWidget):
         elif mode == OperationModes.T2:
             icon_name = 't2'
         else:  # mode == OperationModes.UNKNOWN
-            icon_name = 'unknown'
+            icon_name = 'unknown'        
         icon_path = os.path.join(rospkg.RosPack().get_path(
             'pilz_status_indicator_rqt'), 'resource', icon_name + '.png')
-        pixmap = qpixmap_class(icon_path)
+        pixmap = _qpixmap_class(icon_path)
         self.labelOM.setPixmap(pixmap)
         self.labelOM_text.setText(icon_name.capitalize())
 
     def set_speed(self, val):
+        """Sets the speed override to be displayed in the widget, influencing
+        the progress bar and the textual percentage within it.
+
+        :param val: The speed override as a value between 0 and 1."""
         if val > 1 or val < 0:  # expecting val = 0...1
             rospy.logwarn(
-                "expecting speed value between 0 and 1, got {}".format(val))
+                "expecting speed value between 0 and 1, got {} !".format(val))
             if val > 1:
                 val = 1
             else:

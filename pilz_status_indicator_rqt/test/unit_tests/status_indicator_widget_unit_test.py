@@ -28,81 +28,112 @@ from python_qt_binding.QtWidgets import QApplication, QMainWindow
 from pilz_status_indicator_rqt.status_indicator_widget import (
     GREEN, RED, PilzStatusIndicatorWidget)
 
+
 class TestablePilzStatusIndicatorWidget(PilzStatusIndicatorWidget):
     """
     Needed to skip TestStatusIndicatorWidget.__init__, especially the super
     call within. Was not able to mock. Better solution welcome.
     """
+
     def __init__(self, serial_number):
-      pass
+        pass
+
 
 class TestStatusIndicatorWidget(unittest.TestCase):
     """
-    TODO
+    These tests ensure that status changes for the widget make the correct
+    calls internally to display these information correctly.
     """
 
     def setUp(self):
-        self.icon_path_auto = os.path.join(rospkg.RosPack().get_path(
-            'pilz_status_indicator_rqt'), 'resource', 'auto.png')
-        self.icon_path_t1 = os.path.join(rospkg.RosPack().get_path(
-            'pilz_status_indicator_rqt'), 'resource', 't1.png')
-        self.icon_path_t2 = os.path.join(rospkg.RosPack().get_path(
-            'pilz_status_indicator_rqt'), 'resource', 't2.png')
-        self.icon_path_unknown = os.path.join(rospkg.RosPack().get_path(
-            'pilz_status_indicator_rqt'), 'resource', 'unknown.png')
-
+        """initializing a widget to be tested."""
         self.psi = TestablePilzStatusIndicatorWidget(0)
 
     def test_set_ROS_status(self):
+        """Testing whether the LED for the ROS status is turning correctly
+        red and green."""
+        # Preparing mocks within the widget
         self.psi.labelROS = MagicMock()
         self.psi.labelROS.setStyleSheet = MagicMock()
+
+        # Testing if light turns green for status True
         self.psi.set_ROS_status(True)
         self.psi.labelROS.setStyleSheet.assert_called_with(
             "QLabel { background-color: %s }" % GREEN)
 
+        # Testing if light turns red for status False
         self.psi.set_ROS_status(False)
         self.psi.labelROS.setStyleSheet.assert_called_with(
             "QLabel { background-color: %s }" % RED)
 
     def test_set_PRBT_status(self):
+        """Testing whether the LED for the PRBT status is turning correctly
+        red and green."""
+        # Preparing mocks within the widget
         self.psi.labelPRBT = MagicMock()
         self.psi.labelPRBT.setStyleSheet = MagicMock()
+
+        # Testing if light turns green for status True
         self.psi.set_PRBT_status(True)
         self.psi.labelPRBT.setStyleSheet.assert_called_with(
             "QLabel { background-color: %s }" % GREEN)
 
+        # Testing if light turns red for status False
         self.psi.set_PRBT_status(False)
         self.psi.labelPRBT.setStyleSheet.assert_called_with(
             "QLabel { background-color: %s }" % RED)
 
     def test_set_operation_modes(self):
+        """Testing whether setting the operation mode loads the correct icon
+        and displays the right text."""
+        # Preparing mocks within the widget
         Mock_qpixmap = create_autospec(QPixmap)
         self.psi.labelOM = MagicMock()
         self.psi.labelOM_text = MagicMock()
         self.psi.labelOM.setPixmap = MagicMock()
         self.psi.labelOM_text.setText = MagicMock()
 
+        # Operation mode Auto should load the correct icon and display the
+        # correct text.
+        icon_path_auto = os.path.join(rospkg.RosPack().get_path(
+            'pilz_status_indicator_rqt'), 'resource', 'auto.png')
         self.psi.set_operation_mode(OperationModes.AUTO, Mock_qpixmap)
-        Mock_qpixmap.assert_called_with(self.icon_path_auto)
+        Mock_qpixmap.assert_called_with(icon_path_auto)
         self.psi.labelOM.setPixmap.assert_called()
         self.psi.labelOM_text.setText.assert_called_with("Auto")
 
+        # Operation mode T1 should load the correct icon and display the
+        # correct text.
+        icon_path_t1 = os.path.join(rospkg.RosPack().get_path(
+            'pilz_status_indicator_rqt'), 'resource', 't1.png')
         self.psi.set_operation_mode(OperationModes.T1, Mock_qpixmap)
-        Mock_qpixmap.assert_called_with(self.icon_path_t1)
+        Mock_qpixmap.assert_called_with(icon_path_t1)
         self.psi.labelOM.setPixmap.assert_called()
         self.psi.labelOM_text.setText.assert_called_with("T1")
 
+        # Operation mode T2 should load the correct icon and display the
+        # correct text.
+        icon_path_t2 = os.path.join(rospkg.RosPack().get_path(
+            'pilz_status_indicator_rqt'), 'resource', 't2.png')
         self.psi.set_operation_mode(OperationModes.T2, Mock_qpixmap)
-        Mock_qpixmap.assert_called_with(self.icon_path_t2)
+        Mock_qpixmap.assert_called_with(icon_path_t2)
         self.psi.labelOM.setPixmap.assert_called()
         self.psi.labelOM_text.setText.assert_called_with("T2")
 
+        # Operation mode Unknown should load the correct icon and display the
+        # correct text.
+        icon_path_unknown = os.path.join(rospkg.RosPack().get_path(
+            'pilz_status_indicator_rqt'), 'resource', 'unknown.png')
         self.psi.set_operation_mode(OperationModes.UNKNOWN, Mock_qpixmap)
-        Mock_qpixmap.assert_called_with(self.icon_path_unknown)
+        Mock_qpixmap.assert_called_with(icon_path_unknown)
         self.psi.labelOM.setPixmap.assert_called()
         self.psi.labelOM_text.setText.assert_called_with("Unknown")
 
     def test_set_speed(self):
+        """Testing whether the speed override values are interpreted in the
+        widget correctly, both for the conversion to percentage and the
+        capping of input values between 0 and 1."""
+        # Preparing mocks within the widget
         self.psi.barSpeed = MagicMock()
         self.psi.barSpeed.setValue = MagicMock()
 
