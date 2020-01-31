@@ -304,15 +304,15 @@ TEST_F(PilzJointTrajectoryControllerTest, testD0Destructor)
 //    Parameterized tests for IsExecuting    //
 ///////////////////////////////////////////////
 
-typedef std::function<testing::AssertionResult(ControllerPtr, bool& result)> InvokeIsExecuting;
+typedef std::function<testing::AssertionResult(const ControllerPtr&, bool&)> InvokeIsExecuting;
 
-static testing::AssertionResult InvokeIsExecutingMethod(ControllerPtr controller, bool& result)
+static testing::AssertionResult InvokeIsExecutingMethod(const ControllerPtr& controller, bool& result)
 {
   result = controller->is_executing();
   return testing::AssertionSuccess();
 }
 
-static testing::AssertionResult InvokeIsExecutingServiceCallback(ControllerPtr controller, bool &result)
+static testing::AssertionResult InvokeIsExecutingServiceCallback(const ControllerPtr& controller, bool &result)
 {
   std_srvs::TriggerRequest req;
   std_srvs::TriggerResponse resp;
