@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <functional>
 #include <unistd.h>
 
 #include <gtest/gtest.h>
@@ -31,6 +32,7 @@
 typedef hardware_interface::JointCommandInterface HWInterface;
 typedef trajectory_interface::QuinticSplineSegment<double> Segment;
 typedef pilz_joint_trajectory_controller::PilzJointTrajectoryController<Segment, HWInterface> Controller;
+typedef std::shared_ptr<Controller> ControllerPtr;
 
 namespace pilz_joint_trajectory_controller
 {
@@ -72,12 +74,8 @@ protected:
 
   void updateController();
 
-  ::testing::AssertionResult waitForIsExecutingServiceResult(bool expectation);
-
-  ::testing::AssertionResult waitForIsExecutingResult(bool expectation);
-
 protected:
-  std::shared_ptr<Controller> controller_;
+  ControllerPtr controller_;
   HWInterface* hardware_ {new HWInterface()};
   ros::NodeHandle nh_ {"~"};
   ros::NodeHandle controller_nh_ {CONTROLLER_NAMESPACE};
@@ -132,50 +130,6 @@ void PilzJointTrajectoryControllerTest::updateController()
   last_update_time_ = current_time;
 }
 
-::testing::AssertionResult PilzJointTrajectoryControllerTest::waitForIsExecutingServiceResult(bool expectation)
-{
-  ros::Duration update_period{DEFAULT_UPDATE_PERIOD_SEC};
-  while (ros::ok())
-  {
-    progressInTime(update_period);
-    updateController();
-
-    std_srvs::TriggerRequest req;
-    std_srvs::TriggerResponse resp;
-    controller_->handleIsExecutingRequest(req, resp);
-
-    if (resp.success == expectation)
-    {
-      return ::testing::AssertionSuccess();
-    }
-
-    usleep(SLEEP_TIME_MSEC);
-  }
-
-  return ::testing::AssertionFailure()
-      << "Controller did not " << (expectation ? "start" : "stop") << " executing as expected.";
-}
-
-::testing::AssertionResult PilzJointTrajectoryControllerTest::waitForIsExecutingResult(bool expectation)
-{
-  ros::Duration update_period{DEFAULT_UPDATE_PERIOD_SEC};
-  while (ros::ok())
-  {
-    progressInTime(update_period);
-    updateController();
-
-    if (controller_->is_executing() == expectation)
-    {
-      return ::testing::AssertionSuccess();
-    }
-
-    usleep(SLEEP_TIME_MSEC);
-  }
-
-  return ::testing::AssertionFailure()
-      << "Controller did not " << (expectation ? "start" : "stop") << " executing as expected.";
-}
-
 /**
  * @brief Test the initialization of the PilzJointTrajectoryController.
  *
@@ -192,135 +146,6 @@ TEST_F(PilzJointTrajectoryControllerTest, testInitializiation)
   ASSERT_TRUE(ros::service::exists(controller_nh_.getNamespace() + HOLD_SERVICE, true));
   ASSERT_TRUE(ros::service::exists(controller_nh_.getNamespace() + UNHOLD_SERVICE, true));
   EXPECT_TRUE(ros::service::exists(controller_nh_.getNamespace() + IS_EXECUTING_SERVICE, true));
-}
-
-/**
- * @brief Test the is_executing service callback of the PilzJointTrajectoryController.
- *
- * Test Sequence:
- *    1. Do nothing
- *    2. Initialize controller
- *    3. Start and update controller with period > stop_trajectory_duration
- *    4. Unhold and update controller
- *    5. Send goal to controller action server and update periodically
- *    6. Update controller with period > (duration of sent goal)
- *    7. Publish goal on command topic and update periodically
- *    8. Update controller with period > (duration of sent goal)
- *    9. Publish goal on command topic and update periodically
- *    10. Hold and update controller
- *
- * Expected Results:
- *    1. is_executing service returns success=false (Controller is not executing)
- *    2. is_executing service returns success=false
- *    3. is_executing service returns success=false
- *    4. is_executing service returns success=false
- *    5. is_executing service returns success=true after a while
- *    6. is_executing service returns success=false
- *    7. is_executing service returns success=true after a while
- *    8. is_executing service returns success=false
- *    9. is_executing service returns success=true after a while
- *    10. is_executing service returns success=false
- */
-TEST_F(PilzJointTrajectoryControllerTest, testIsExecutingServiceCallback)
-{
-  /**********
-   * Step 1 *
-   **********/
-  std_srvs::TriggerRequest req;
-  std_srvs::TriggerResponse resp;
-  EXPECT_TRUE(controller_->handleIsExecutingRequest(req, resp));
-  EXPECT_FALSE(resp.success) << "Controller is executing unexpectedly";
-
-  /**********
-   * Step 2 *
-   **********/
-  ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
-  controller_->state_ = controller_->INITIALIZED;
-
-  EXPECT_TRUE(controller_->handleIsExecutingRequest(req, resp));
-  EXPECT_FALSE(resp.success) << "Controller is executing unexpectedly";
-
-  /**********
-   * Step 3 *
-   **********/
-  startController();
-  controller_->state_ = controller_->RUNNING;
-
-  updateController();
-  ros::Duration stop_duration{STOP_TRAJECTORY_DURATION + DEFAULT_UPDATE_PERIOD_SEC};
-  progressInTime(stop_duration);
-  updateController();
-
-  EXPECT_TRUE(controller_->handleIsExecutingRequest(req, resp));
-  EXPECT_FALSE(resp.success) << "Controller is executing unexpectedly";
-
-  /**********
-   * Step 4 *
-   **********/
-  EXPECT_TRUE(controller_->handleUnHoldRequest(req, resp));
-  EXPECT_TRUE(resp.success);
-
-  ros::Duration default_update_period{DEFAULT_UPDATE_PERIOD_SEC};
-  progressInTime(default_update_period);
-  updateController();
-
-  EXPECT_TRUE(controller_->handleIsExecutingRequest(req, resp));
-  EXPECT_FALSE(resp.success) << "Controller is executing unexpectedly";
-
-  /**********
-   * Step 5 *
-   **********/
-  EXPECT_EQ(1u, hardware_->getNames().size());
-  ros::Duration goal_duration{2.0};
-
-  control_msgs::FollowJointTrajectoryGoal goal;
-  goal.trajectory.joint_names = hardware_->getNames();
-  goal.trajectory.points.resize(1);
-  goal.trajectory.points[0].time_from_start = goal_duration;
-  goal.trajectory.points[0].positions = {0.1};
-
-  trajectory_action_client_.sendGoal(goal);
-  EXPECT_TRUE(waitForIsExecutingServiceResult(true));
-
-  /**********
-   * Step 6 *
-   **********/
-  progressInTime(goal_duration + default_update_period);
-  updateController();
-  EXPECT_TRUE(controller_->handleIsExecutingRequest(req, resp));
-  EXPECT_FALSE(resp.success) << "Controller is executing unexpectedly";
-
-  /**********
-   * Step 7 *
-   **********/
-  trajectory_command_publisher_->publish(goal.trajectory);
-  EXPECT_TRUE(waitForIsExecutingServiceResult(true));
-
-  /**********
-   * Step 8 *
-   **********/
-  progressInTime(goal_duration + default_update_period);
-  updateController();
-  EXPECT_TRUE(controller_->handleIsExecutingRequest(req, resp));
-  EXPECT_FALSE(resp.success) << "Controller is executing unexpectedly";
-
-  /**********
-   * Step 9 *
-   **********/
-  trajectory_command_publisher_->publish(goal.trajectory);
-  EXPECT_TRUE(waitForIsExecutingServiceResult(true));
-
-  /**********
-   * Step 10 *
-   **********/
-  EXPECT_TRUE(controller_->handleHoldRequest(req, resp));
-  EXPECT_TRUE(resp.success);
-
-  progressInTime(default_update_period);
-  updateController();
-
-  EXPECT_TRUE(controller_->handleIsExecutingRequest(req, resp));
-  EXPECT_FALSE(resp.success) << "Controller is executing unexpectedly";
 }
 
 /**
@@ -448,6 +273,77 @@ TEST_F(PilzJointTrajectoryControllerTest, testDoubleRequest)
 }
 
 /**
+ * @brief Check that a fake start (simply setting state to RUNNING) doesn't trigger that is_executing() returns true.
+ *
+ * Increases line coverage.
+ */
+TEST_F(PilzJointTrajectoryControllerTest, testFakeStart)
+{
+  controller_->state_ = controller_->RUNNING;
+  EXPECT_FALSE(controller_->is_executing()) << "Controller is executing unexpectedly";
+}
+
+/**
+ * @brief Test increases function coverage by ensuring that all Dtor variants are called.
+ */
+TEST_F(PilzJointTrajectoryControllerTest, testD0Destructor)
+{
+  ControllerPtr controller {new Controller()};
+}
+
+
+///////////////////////////////////////////////
+//    Parameterized tests for IsExecuting    //
+///////////////////////////////////////////////
+
+typedef std::function<bool(ControllerPtr)> IsExecutingType;
+
+static bool isExecutingMethod(ControllerPtr controller)
+{
+  return controller->is_executing();
+}
+
+static bool isExecutingServiceCallback(ControllerPtr controller)
+{
+  std_srvs::TriggerRequest req;
+  std_srvs::TriggerResponse resp;
+  EXPECT_TRUE(controller->handleIsExecutingRequest(req, resp));
+  return resp.success;
+}
+
+/**
+ * @brief For testing both the isExecuting method and the is_executing service callback we use parameterized tests.
+ */
+class PilzJointTrajectoryControllerIsExecutingTest : public PilzJointTrajectoryControllerTest,
+                                                     public testing::WithParamInterface<IsExecutingType>
+{
+protected:
+  testing::AssertionResult waitForIsExecutingResult(bool expectation);
+};
+
+testing::AssertionResult PilzJointTrajectoryControllerIsExecutingTest::waitForIsExecutingResult(bool expectation)
+{
+  auto is_executing {GetParam()};
+  ros::Duration update_period{DEFAULT_UPDATE_PERIOD_SEC};
+
+  while (ros::ok())
+  {
+    progressInTime(update_period);
+    updateController();
+
+    if (is_executing(controller_) == expectation)
+    {
+      return testing::AssertionSuccess();
+    }
+
+    usleep(SLEEP_TIME_MSEC);
+  }
+
+  return testing::AssertionFailure()
+      << "Controller did not " << (expectation ? "start" : "stop") << " executing as expected.";
+}
+
+/**
  * @brief Test the is_executing method of the PilzJointTrajectoryController.
  *
  * This test is analogue to the test of the is_executing callback.
@@ -476,7 +372,7 @@ TEST_F(PilzJointTrajectoryControllerTest, testDoubleRequest)
  *    9. is_executing() returns true after a while
  *    10. is_executing() returns false
  */
-TEST_F(PilzJointTrajectoryControllerTest, testIsExecuting)
+TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testIsExecuting)
 {
   /**********
    * Step 1 *
@@ -571,24 +467,8 @@ TEST_F(PilzJointTrajectoryControllerTest, testIsExecuting)
   EXPECT_FALSE(controller_->is_executing()) << "Controller is executing unexpectedly";
 }
 
-/**
- * @brief Check that a fake start (simply setting state to RUNNING) doesn't trigger that is_executing() returns true.
- *
- * Increases line coverage.
- */
-TEST_F(PilzJointTrajectoryControllerTest, testFakeStart)
-{
-  controller_->state_ = controller_->RUNNING;
-  EXPECT_FALSE(controller_->is_executing()) << "Controller is executing unexpectedly";
-}
-
-/**
- * @brief Test increases function coverage by ensuring that all Dtor variants are called.
- */
-TEST_F(PilzJointTrajectoryControllerTest, testD0Destructor)
-{
-  std::shared_ptr<Controller> controller {new Controller()};
-}
+INSTANTIATE_TEST_CASE_P(MethodAndServiceCallback, PilzJointTrajectoryControllerIsExecutingTest,
+                        testing::Values(isExecutingMethod, isExecutingServiceCallback));
 
 }  // namespace pilz_joint_trajectory_controller
 
