@@ -307,7 +307,8 @@ static bool isExecutingServiceCallback(ControllerPtr controller)
 {
   std_srvs::TriggerRequest req;
   std_srvs::TriggerResponse resp;
-  EXPECT_TRUE(controller->handleIsExecutingRequest(req, resp));
+  ASSERT_TRUE(controller->handleIsExecutingRequest(req, resp))
+      << "Callback of is_executing returned false unexpectedly.";
   return resp.success;
 }
 
