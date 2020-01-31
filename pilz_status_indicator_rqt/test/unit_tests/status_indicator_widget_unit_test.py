@@ -33,7 +33,7 @@ class TestablePilzStatusIndicatorWidget(PilzStatusIndicatorWidget):
     Needed to skip TestStatusIndicatorWidget.__init__, especially the super
     call within. Was not able to mock. Better solution welcome.
     """
-    def __init__(self):
+    def __init__(self, serial_number):
       pass
 
 class TestStatusIndicatorWidget(unittest.TestCase):
@@ -51,7 +51,7 @@ class TestStatusIndicatorWidget(unittest.TestCase):
         self.icon_path_unknown = os.path.join(rospkg.RosPack().get_path(
             'pilz_status_indicator_rqt'), 'resource', 'unknown.png')
 
-        self.psi = TestablePilzStatusIndicatorWidget()
+        self.psi = TestablePilzStatusIndicatorWidget(0)
 
     def test_set_ROS_status(self):
         self.psi.labelROS = MagicMock()

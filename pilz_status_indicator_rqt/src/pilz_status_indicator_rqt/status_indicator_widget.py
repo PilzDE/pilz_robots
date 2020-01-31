@@ -28,7 +28,7 @@ RED = "red"
 
 
 class PilzStatusIndicatorWidget(QWidget):
-    def __init__(self):
+    def __init__(self, serial_number):
         super(PilzStatusIndicatorWidget, self).__init__()
         ui_file = os.path.join(rospkg.RosPack().get_path(
             'pilz_status_indicator_rqt'), 'resource', 'PilzStatusIndicatorRqt.ui')
@@ -44,6 +44,12 @@ class PilzStatusIndicatorWidget(QWidget):
 
         # prepare ui elements
         self.labelOM.setScaledContents(True)
+
+        # Show windowTitle on left-top of each plugin. This is useful when you open multiple
+        # plugins at once.
+        if serial_number > 1:
+            self.setWindowTitle(
+                self.windowTitle() + (' (%d)' % serial_number))
 
     def _set_label_status_view(self, label, status):
         if status:

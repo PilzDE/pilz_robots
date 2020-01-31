@@ -33,7 +33,7 @@ class PilzStatusIndicatorRqt(Plugin):
     def __init__(self, context):
         super(PilzStatusIndicatorRqt, self).__init__(context)
         self.setObjectName('PilzStatusIndicatorRqt')
-        self._widget = PilzStatusIndicatorWidget()
+        self._widget = PilzStatusIndicatorWidget(context.serial_number())
 
         # set intial state
         self._widget.set_ROS_status(False)
@@ -50,12 +50,6 @@ class PilzStatusIndicatorRqt(Plugin):
                          self.operation_mode_callback)
         rospy.Subscriber(TOPIC_SPEED_OVERRIDE, Float64, self.speed_callback)
 
-        # Show _widget.windowTitle on left-top of each plugin (when
-        # it's set in _widget). This is useful when you open multiple
-        # plugins at once.
-        if context.serial_number() > 1:
-            self._widget.setWindowTitle(
-                self._widget.windowTitle() + (' (%d)' % context.serial_number()))
         context.add_widget(self._widget)
 
     def prbt_status_callback(self, msg):
