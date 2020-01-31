@@ -33,6 +33,7 @@ typedef hardware_interface::JointCommandInterface HWInterface;
 typedef trajectory_interface::QuinticSplineSegment<double> Segment;
 typedef pilz_joint_trajectory_controller::PilzJointTrajectoryController<Segment, HWInterface> Controller;
 typedef std::shared_ptr<Controller> ControllerPtr;
+typedef control_msgs::FollowJointTrajectoryGoal GoalType;
 
 namespace pilz_joint_trajectory_controller
 {
@@ -73,6 +74,8 @@ protected:
   void startController();
 
   void updateController();
+
+  GoalType generateSimpleGoal(const ros::Duration &goal_duration);
 
 protected:
   ControllerPtr controller_;
@@ -128,6 +131,17 @@ void PilzJointTrajectoryControllerTest::updateController()
   ros::Time current_time{ros::Time::now()};
   controller_->update(current_time, current_time - last_update_time_);
   last_update_time_ = current_time;
+}
+
+GoalType PilzJointTrajectoryControllerTest::generateSimpleGoal(const ros::Duration &goal_duration)
+{
+  GoalType goal;
+  goal.trajectory.joint_names = hardware_->getNames();
+  goal.trajectory.points.resize(1);
+  goal.trajectory.points[0].time_from_start = goal_duration;
+  goal.trajectory.points[0].positions = {0.1};
+
+  return goal;
 }
 
 /**
@@ -198,14 +212,8 @@ TEST_F(PilzJointTrajectoryControllerTest, testUpdateWhileHolding)
   /**********
    * Step 2 *
    **********/
-  EXPECT_EQ(1u, hardware_->getNames().size());
   ros::Duration goal_duration{2.0};
-
-  control_msgs::FollowJointTrajectoryGoal goal;
-  goal.trajectory.joint_names = hardware_->getNames();
-  goal.trajectory.points.resize(1);
-  goal.trajectory.points[0].time_from_start = goal_duration;
-  goal.trajectory.points[0].positions = {0.1};
+  GoalType goal {generateSimpleGoal(goal_duration)};
 
   trajectory_action_client_.sendGoal(goal);
 
@@ -297,15 +305,14 @@ TEST_F(PilzJointTrajectoryControllerTest, testD0Destructor)
 ///////////////////////////////////////////////
 
 typedef std::function<testing::AssertionResult(ControllerPtr, bool& result)> InvokeIsExecuting;
-typedef control_msgs::FollowJointTrajectoryGoal GoalType;
 
-static testing::AssertionResult InvokeisExecutingMethod(ControllerPtr controller, bool& result)
+static testing::AssertionResult InvokeIsExecutingMethod(ControllerPtr controller, bool& result)
 {
   result = controller->is_executing();
   return testing::AssertionSuccess();
 }
 
-static testing::AssertionResult InvokeisExecutingServiceCallback(ControllerPtr controller, bool &result)
+static testing::AssertionResult InvokeIsExecutingServiceCallback(ControllerPtr controller, bool &result)
 {
   std_srvs::TriggerRequest req;
   std_srvs::TriggerResponse resp;
@@ -332,8 +339,6 @@ protected:
    * @brief Perform init, start, unhold and update, such that controller is ready for executing.
    */
   testing::AssertionResult performFullControllerStartup();
-
-  GoalType generateSimpleGoal(const ros::Duration &goal_duration);
 
   bool is_executing_result;
 };
@@ -394,17 +399,6 @@ testing::AssertionResult PilzJointTrajectoryControllerIsExecutingTest::performFu
   updateController();
 
   return testing::AssertionSuccess();
-}
-
-GoalType PilzJointTrajectoryControllerIsExecutingTest::generateSimpleGoal(const ros::Duration &goal_duration)
-{
-  GoalType goal;
-  goal.trajectory.joint_names = hardware_->getNames();
-  goal.trajectory.points.resize(1);
-  goal.trajectory.points[0].time_from_start = goal_duration;
-  goal.trajectory.points[0].positions = {0.1};
-
-  return goal;
 }
 
 TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testNotInitialized)
@@ -593,7 +587,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStoppingAnExecution)
 }
 
 INSTANTIATE_TEST_CASE_P(MethodAndServiceCallback, PilzJointTrajectoryControllerIsExecutingTest,
-                        testing::Values(InvokeisExecutingMethod, InvokeisExecutingServiceCallback));
+                        testing::Values(InvokeIsExecutingMethod, InvokeIsExecutingServiceCallback));
 
 }  // namespace pilz_joint_trajectory_controller
 
