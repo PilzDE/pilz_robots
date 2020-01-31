@@ -28,7 +28,7 @@ RED = "red"
 
 
 class PilzStatusIndicatorWidget(QWidget):
-    def __init__(self, serial_number):
+    def __init__(self, serial_number): #pragma no cover
         super(PilzStatusIndicatorWidget, self).__init__()
         ui_file = os.path.join(rospkg.RosPack().get_path(
             'pilz_status_indicator_rqt'), 'resource', 'PilzStatusIndicatorRqt.ui')
