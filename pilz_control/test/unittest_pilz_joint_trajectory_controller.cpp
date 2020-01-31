@@ -296,27 +296,32 @@ TEST_F(PilzJointTrajectoryControllerTest, testD0Destructor)
 //    Parameterized tests for IsExecuting    //
 ///////////////////////////////////////////////
 
-typedef std::function<bool(ControllerPtr)> IsExecutingType;
+typedef std::function<testing::AssertionResult(ControllerPtr, bool& result)> InvokeIsExecuting;
 
-static bool isExecutingMethod(ControllerPtr controller)
+static testing::AssertionResult InvokeisExecutingMethod(ControllerPtr controller, bool& result)
 {
-  return controller->is_executing();
+  result = controller->is_executing();
+  return testing::AssertionSuccess();
 }
 
-static bool isExecutingServiceCallback(ControllerPtr controller)
+static testing::AssertionResult InvokeisExecutingServiceCallback(ControllerPtr controller, bool &result)
 {
   std_srvs::TriggerRequest req;
   std_srvs::TriggerResponse resp;
-  ASSERT_TRUE(controller->handleIsExecutingRequest(req, resp))
-      << "Callback of is_executing returned false unexpectedly.";
-  return resp.success;
+  if(!controller->handleIsExecutingRequest(req, resp))
+  {
+    return testing::AssertionFailure() << "Callback of is_executing returned false unexpectedly.";
+  }
+
+  result = resp.success;
+  return testing::AssertionSuccess();
 }
 
 /**
  * @brief For testing both the isExecuting method and the is_executing service callback we use parameterized tests.
  */
 class PilzJointTrajectoryControllerIsExecutingTest : public PilzJointTrajectoryControllerTest,
-                                                     public testing::WithParamInterface<IsExecutingType>
+                                                     public testing::WithParamInterface<InvokeIsExecuting>
 {
 protected:
   testing::AssertionResult waitForIsExecutingResult(bool expectation);
@@ -324,7 +329,7 @@ protected:
 
 testing::AssertionResult PilzJointTrajectoryControllerIsExecutingTest::waitForIsExecutingResult(bool expectation)
 {
-  auto is_executing {GetParam()};
+  auto invoke_is_executing {GetParam()};
   ros::Duration update_period{DEFAULT_UPDATE_PERIOD_SEC};
 
   while (ros::ok())
@@ -332,7 +337,13 @@ testing::AssertionResult PilzJointTrajectoryControllerIsExecutingTest::waitForIs
     progressInTime(update_period);
     updateController();
 
-    if (is_executing(controller_) == expectation)
+    bool is_executing_result;
+    auto assertion_result {invoke_is_executing(controller_, is_executing_result)};
+    if(assertion_result == testing::AssertionFailure())
+    {
+      return assertion_result;
+    }
+    if (is_executing_result == expectation)
     {
       return testing::AssertionSuccess();
     }
@@ -345,9 +356,7 @@ testing::AssertionResult PilzJointTrajectoryControllerIsExecutingTest::waitForIs
 }
 
 /**
- * @brief Test the is_executing method of the PilzJointTrajectoryController.
- *
- * This test is analogue to the test of the is_executing callback.
+ * @brief Test the is_executing functions of the PilzJointTrajectoryController.
  *
  * Test Sequence:
  *    1. Do nothing
@@ -375,10 +384,11 @@ testing::AssertionResult PilzJointTrajectoryControllerIsExecutingTest::waitForIs
  */
 TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testIsExecuting)
 {
-  /**********
-   * Step 1 *
-   **********/
-  EXPECT_FALSE(controller_->is_executing()) << "Controller is executing unexpectedly";
+  auto invoke_is_executing {GetParam()};
+  bool is_executing_result;
+
+  EXPECT_TRUE(invoke_is_executing(controller_, is_executing_result));
+  EXPECT_FALSE(is_executing_result) << "Controller is executing unexpectedly";
 
   /**********
    * Step 2 *
@@ -386,7 +396,8 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testIsExecuting)
   ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
   controller_->state_ = controller_->INITIALIZED;
 
-  EXPECT_FALSE(controller_->is_executing()) << "Controller is executing unexpectedly";
+  EXPECT_TRUE(invoke_is_executing(controller_, is_executing_result));
+  EXPECT_FALSE(is_executing_result) << "Controller is executing unexpectedly";
 
   /**********
    * Step 3 *
@@ -399,7 +410,8 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testIsExecuting)
   progressInTime(stop_duration);
   updateController();
 
-  EXPECT_FALSE(controller_->is_executing()) << "Controller is executing unexpectedly";
+  EXPECT_TRUE(invoke_is_executing(controller_, is_executing_result));
+  EXPECT_FALSE(is_executing_result) << "Controller is executing unexpectedly";
 
   /**********
    * Step 4 *
@@ -413,7 +425,8 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testIsExecuting)
   progressInTime(default_update_period);
   updateController();
 
-  EXPECT_FALSE(controller_->is_executing()) << "Controller is executing unexpectedly";
+  EXPECT_TRUE(invoke_is_executing(controller_, is_executing_result));
+  EXPECT_FALSE(is_executing_result) << "Controller is executing unexpectedly";
 
   /**********
    * Step 5 *
@@ -435,7 +448,8 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testIsExecuting)
    **********/
   progressInTime(goal_duration + default_update_period);
   updateController();
-  EXPECT_FALSE(controller_->is_executing()) << "Controller is executing unexpectedly";
+  EXPECT_TRUE(invoke_is_executing(controller_, is_executing_result));
+  EXPECT_FALSE(is_executing_result) << "Controller is executing unexpectedly";
 
   /**********
    * Step 7 *
@@ -448,7 +462,8 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testIsExecuting)
    **********/
   progressInTime(goal_duration + default_update_period);
   updateController();
-  EXPECT_FALSE(controller_->is_executing()) << "Controller is executing unexpectedly";
+  EXPECT_TRUE(invoke_is_executing(controller_, is_executing_result));
+  EXPECT_FALSE(is_executing_result) << "Controller is executing unexpectedly";
 
   /**********
    * Step 9 *
@@ -465,11 +480,12 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testIsExecuting)
   progressInTime(default_update_period);
   updateController();
 
-  EXPECT_FALSE(controller_->is_executing()) << "Controller is executing unexpectedly";
+  EXPECT_TRUE(invoke_is_executing(controller_, is_executing_result));
+  EXPECT_FALSE(is_executing_result) << "Controller is executing unexpectedly";
 }
 
 INSTANTIATE_TEST_CASE_P(MethodAndServiceCallback, PilzJointTrajectoryControllerIsExecutingTest,
-                        testing::Values(isExecutingMethod, isExecutingServiceCallback));
+                        testing::Values(InvokeisExecutingMethod, InvokeisExecutingServiceCallback));
 
 }  // namespace pilz_joint_trajectory_controller
 
