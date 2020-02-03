@@ -42,7 +42,7 @@ class PilzStatusIndicatorWidget(QWidget):
 
         # Checking if widget is loaded correctly from ui file
         assert self.labelROS, "ROS label must be loaded from ui file"
-        assert self.labelPRBT, "PRBT label must be loaded from ui file"
+        assert self.labelHW, "HW label must be loaded from ui file"
         assert self.labelOM, "OM label must be loaded from ui file"
         assert self.labelOM_text, "OM text label must be loaded from ui file"
         assert self.barSpeed, "barSpeed must be loaded from ui file"
@@ -62,20 +62,20 @@ class PilzStatusIndicatorWidget(QWidget):
             label.setStyleSheet("QLabel { background-color: %s }" % RED)
 
     def set_ROS_status(self, status):
-        """Sets the PRBT status to be displayed in the widget, using
+        """Sets the HW status to be displayed in the widget, using
         a red or green LED.
 
         :param status: The status to set:
                        False will be red, True will be green."""
         self._set_label_status_view(self.labelROS, status)
 
-    def set_PRBT_status(self, status):
-        """Sets the PRBT status to be displayed in the widget, using
+    def set_HW_status(self, status):
+        """Sets the HW status to be displayed in the widget, using
         a red or green LED.
 
         :param status: The status to set:
                        False will be red, True will be green."""
-        self._set_label_status_view(self.labelPRBT, status)
+        self._set_label_status_view(self.labelHW, status)
 
     def set_operation_mode(self, mode, _qpixmap_class=QPixmap):
         """Sets the operation mode to be displayed in the widget, influencing

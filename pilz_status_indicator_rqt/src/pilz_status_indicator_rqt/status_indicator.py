@@ -24,8 +24,8 @@ from qt_gui.plugin import Plugin
 from std_msgs.msg import Bool, Float64
 
 TOPIC_OPERATION_MODE = "/prbt/operation_mode"
-TOPIC_DIAGNOSTICS_PRBT = "/prbt/status_info/state_prbt"
-TOPIC_DIAGNOSTICS_ROS = "/prbt/status_info/state_ros"
+TOPIC_STATE_HW = "/prbt/status_info/state_hw"
+TOPIC_STATE_ROS = "/prbt/status_info/state_ros"
 TOPIC_SPEED_OVERRIDE = "/prbt/speed_override"
 
 
@@ -42,25 +42,25 @@ class PilzStatusIndicatorRqt(Plugin):
 
         # Set initial widget state
         self._widget.set_ROS_status(False)
-        self._widget.set_PRBT_status(False)
+        self._widget.set_HW_status(False)
 
         self._widget.set_operation_mode(OperationModes.UNKNOWN)
 
         self._widget.set_speed(.5)
 
         # Subscribing to all informations we want to display
-        rospy.Subscriber(TOPIC_DIAGNOSTICS_ROS, Bool, self.ros_status_callback)
-        rospy.Subscriber(TOPIC_DIAGNOSTICS_PRBT, Bool,
-                         self.prbt_status_callback)
+        rospy.Subscriber(TOPIC_STATE_ROS, Bool, self.ros_status_callback)
+        rospy.Subscriber(TOPIC_STATE_HW, Bool,
+                         self.hw_status_callback)
         rospy.Subscriber(TOPIC_OPERATION_MODE, OperationModes,
                          self.operation_mode_callback)
         rospy.Subscriber(TOPIC_SPEED_OVERRIDE, Float64, self.speed_callback)
 
         context.add_widget(self._widget)
 
-    def prbt_status_callback(self, msg):
-        """Callback for PRBT Status."""
-        self._widget.set_PRBT_status(msg.data)
+    def hw_status_callback(self, msg):
+        """Callback for HW Status."""
+        self._widget.set_HW_status(msg.data)
 
     def ros_status_callback(self, msg):
         """Callback for ROS Status."""

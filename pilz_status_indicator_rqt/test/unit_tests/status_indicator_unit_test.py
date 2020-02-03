@@ -53,31 +53,31 @@ class TestStatusIndicator(unittest.TestCase):
         correctly."""
         psi = PilzStatusIndicatorRqt(MockContext())
         psi._widget.set_ROS_status.assert_called_once_with(False)
-        psi._widget.set_PRBT_status.assert_called_once_with(False)
+        psi._widget.set_HW_status.assert_called_once_with(False)
         psi._widget.set_operation_mode.assert_called_once_with(
             OperationModes.UNKNOWN)
         psi._widget.set_speed.assert_called_once_with(0.5)
         SubscriberMock.assert_has_calls([
-            call(TOPIC_DIAGNOSTICS_ROS, Bool, ANY),
-            call(TOPIC_DIAGNOSTICS_PRBT, Bool, ANY),
+            call(TOPIC_STATE_ROS, Bool, ANY),
+            call(TOPIC_STATE_HW, Bool, ANY),
             call(TOPIC_OPERATION_MODE, OperationModes, ANY),
             call(TOPIC_SPEED_OVERRIDE, Float64, ANY),
         ])
 
     def test_status_prbt(self, _, SubscriberMock):
-        """Test if updates to the PRBT status are correctly passed from ROS to
+        """Test if updates to the HW status are correctly passed from ROS to
         the widget."""
         psi = PilzStatusIndicatorRqt(MockContext())
         psi._widget.reset_mock()
 
         diagnostic_prbt_callback = extract_subscriber_mock_callback(
-            SubscriberMock, TOPIC_DIAGNOSTICS_PRBT)
+            SubscriberMock, TOPIC_STATE_HW)
 
         diagnostic_prbt_callback(Bool(False))
-        psi._widget.set_PRBT_status.assert_called_with(False)
+        psi._widget.set_HW_status.assert_called_with(False)
 
         diagnostic_prbt_callback(Bool(True))
-        psi._widget.set_PRBT_status.assert_called_with(True)
+        psi._widget.set_HW_status.assert_called_with(True)
 
     def test_status_ros(self, _, SubscriberMock):
         """Test if updates to the ROS status are correctly passed from ROS to
@@ -86,7 +86,7 @@ class TestStatusIndicator(unittest.TestCase):
         psi._widget.reset_mock()
 
         diagnostic_ros_callback = extract_subscriber_mock_callback(
-            SubscriberMock, TOPIC_DIAGNOSTICS_ROS)
+            SubscriberMock, TOPIC_STATE_ROS)
 
         diagnostic_ros_callback(Bool(True))
         psi._widget.set_ROS_status.assert_called_with(True)

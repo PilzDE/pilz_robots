@@ -21,15 +21,15 @@ from numpy import arange
 from prbt_hardware_support.msg import OperationModes
 from std_msgs.msg import Bool, Float64
 
-from pilz_status_indicator_rqt.status_indicator import (TOPIC_DIAGNOSTICS_PRBT,
-                                                        TOPIC_DIAGNOSTICS_ROS,
+from pilz_status_indicator_rqt.status_indicator import (TOPIC_STATE_HW,
+                                                        TOPIC_STATE_ROS,
                                                         TOPIC_OPERATION_MODE,
                                                         TOPIC_SPEED_OVERRIDE)
 
 if __name__ == "__main__":
     pubs = [
-        rospy.Publisher(TOPIC_DIAGNOSTICS_PRBT, Bool, queue_size=1),
-        rospy.Publisher(TOPIC_DIAGNOSTICS_ROS, Bool, queue_size=1),
+        rospy.Publisher(TOPIC_STATE_HW, Bool, queue_size=1),
+        rospy.Publisher(TOPIC_STATE_ROS, Bool, queue_size=1),
         rospy.Publisher(TOPIC_OPERATION_MODE, OperationModes, queue_size=1),
         rospy.Publisher(TOPIC_SPEED_OVERRIDE, Float64, queue_size=1)
     ]

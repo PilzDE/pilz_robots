@@ -66,21 +66,21 @@ class TestStatusIndicatorWidget(unittest.TestCase):
         self.psi.labelROS.setStyleSheet.assert_called_with(
             "QLabel { background-color: %s }" % RED)
 
-    def test_set_PRBT_status(self):
-        """Testing whether the LED for the PRBT status is turning correctly
+    def test_set_HW_status(self):
+        """Testing whether the LED for the HW status is turning correctly
         red and green."""
         # Preparing mocks within the widget
-        self.psi.labelPRBT = MagicMock()
-        self.psi.labelPRBT.setStyleSheet = MagicMock()
+        self.psi.labelHW = MagicMock()
+        self.psi.labelHW.setStyleSheet = MagicMock()
 
         # Testing if light turns green for status True
-        self.psi.set_PRBT_status(True)
-        self.psi.labelPRBT.setStyleSheet.assert_called_with(
+        self.psi.set_HW_status(True)
+        self.psi.labelHW.setStyleSheet.assert_called_with(
             "QLabel { background-color: %s }" % GREEN)
 
         # Testing if light turns red for status False
-        self.psi.set_PRBT_status(False)
-        self.psi.labelPRBT.setStyleSheet.assert_called_with(
+        self.psi.set_HW_status(False)
+        self.psi.labelHW.setStyleSheet.assert_called_with(
             "QLabel { background-color: %s }" % RED)
 
     def test_set_operation_modes(self):
