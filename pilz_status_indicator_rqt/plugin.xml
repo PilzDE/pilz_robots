@@ -6,7 +6,7 @@
     <qtgui>
       <label>Pilz Status Indicator</label>
       <icon type="theme">applications-other</icon>
-      <statustip>Great user interface to provide real value.</statustip>
+      <statustip>Showing information about operation mode, status and speed override of the robot.</statustip>
     </qtgui>
   </class>
 </library>

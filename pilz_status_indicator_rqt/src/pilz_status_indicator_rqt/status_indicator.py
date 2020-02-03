@@ -24,17 +24,18 @@ from qt_gui.plugin import Plugin
 from std_msgs.msg import Bool, Float64
 
 TOPIC_OPERATION_MODE = "/prbt/operation_mode"
-TOPIC_DIAGNOSTICS_PRBT = "/prbt/diagnostics/state_prbt"
-TOPIC_DIAGNOSTICS_ROS = "/prbt/diagnostics/state_ros"
+TOPIC_DIAGNOSTICS_PRBT = "/prbt/status_info/state_prbt"
+TOPIC_DIAGNOSTICS_ROS = "/prbt/status_info/state_ros"
 TOPIC_SPEED_OVERRIDE = "/prbt/speed_override"
 
 
 class PilzStatusIndicatorRqt(Plugin):
-    def __init__(self, context):
-        """Instantiate the plugin within its context with its initial state.
+    """Implementation of the status indicator as rqt plugin. It will
+    instantiate the Qt widget and handle the connection between ROS and its
+    visual state."""
 
-        :param context: Context for plugin to run in of type
-                        `PluginContext`."""
+    def __init__(self, context):
+        """Instantiate the plugin within its context with its initial state."""
         super(PilzStatusIndicatorRqt, self).__init__(context)
         self.setObjectName('PilzStatusIndicatorRqt')
         self._widget = PilzStatusIndicatorWidget(context.serial_number())
