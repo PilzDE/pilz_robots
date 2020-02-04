@@ -69,7 +69,12 @@ install(FILES ${PROJECT_NAME}_plugins.xml
 if(CATKIN_ENABLE_TESTING)
 
   find_package(rostest REQUIRED)
-  find_package(code_coverage REQUIRED)
+
+  if(ENABLE_COVERAGE_TESTING)
+    find_package(code_coverage REQUIRED)
+    APPEND_COVERAGE_COMPILER_FLAGS()
+  endif()
+
 
   add_rostest_gtest(unittest_pilz_joint_trajectory_controller
     test/unittest_pilz_joint_trajectory_controller.test
@@ -83,7 +88,6 @@ if(CATKIN_ENABLE_TESTING)
 
   # run: catkin_make -DENABLE_COVERAGE_TESTING=ON package_name_coverage
   if(ENABLE_COVERAGE_TESTING)
-    include(CodeCoverage)
     APPEND_COVERAGE_COMPILER_FLAGS()
     set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*")
     add_code_coverage(
