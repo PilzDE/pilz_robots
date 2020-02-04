@@ -904,15 +904,14 @@ bg=red</panel_attributes>
     <coordinates>
       <x>110</x>
       <y>230</y>
-      <w>160</w>
+      <w>180</w>
       <h>130</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=()-[Publish]
 
-
-/diagnostics/state_prbt
-/diagnostics/state_ros</panel_attributes>
+/prbt/status_info/state_hw
+/prbt/status_info/state_ros</panel_attributes>
     <additional_attributes>30.0;10.0;30.0;110.0</additional_attributes>
   </element>
   <element>
