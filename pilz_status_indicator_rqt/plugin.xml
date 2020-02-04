@@ -1,0 +1,12 @@
+<library path="src">
+  <class name="PilzStatusIndicatorRqt" type="pilz_status_indicator_rqt.status_indicator.PilzStatusIndicatorRqt" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      A status indicator to show e.g. operation modes
+    </description>
+    <qtgui>
+      <label>Pilz Status Indicator</label>
+      <icon type="theme">applications-other</icon>
+      <statustip>Showing information about operation mode, status and speed override of the robot.</statustip>
+    </qtgui>
+  </class>
+</library>
