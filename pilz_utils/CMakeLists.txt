@@ -62,8 +62,11 @@ install(DIRECTORY include/${PROJECT_NAME}/
 #############
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
-  find_package(code_coverage REQUIRED)
 
+  if(ENABLE_COVERAGE_TESTING)
+    find_package(code_coverage REQUIRED)
+    APPEND_COVERAGE_COMPILER_FLAGS()
+  endif()
 
   # --- getParam unit test ---
   add_rostest_gtest(unittest_get_param
@@ -97,8 +100,6 @@ if(CATKIN_ENABLE_TESTING)
 
   # to run: catkin_make -DENABLE_COVERAGE_TESTIN=ON package_name_coverage (adding -j1 recommended)
   if(ENABLE_COVERAGE_TESTING)
-    include(CodeCoverage)
-    APPEND_COVERAGE_COMPILER_FLAGS()
     set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*")
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
