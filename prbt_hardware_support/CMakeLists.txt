@@ -81,7 +81,6 @@ if(CATKIN_ENABLE_CLANG_TIDY)
   endif()
 endif()
 
-
 ###########
 ## Build ##
 ###########

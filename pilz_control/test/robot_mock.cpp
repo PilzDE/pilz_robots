@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include <memory>
+
 #include <hardware_interface/robot_hw.h>
 #include <hardware_interface/joint_command_interface.h>
 #include <controller_manager/controller_manager.h>
@@ -31,15 +33,9 @@ public:
   RobotMock()
   {
     // register joint interface
-    pos_ = new double();
-    vel_ = new double();
-    eff_ = new double();
-    hardware_interface::JointStateHandle jnt_state_handle {JOINT_NAME, pos_, vel_, eff_};
-    cmd_ = new double();
-    hardware_interface::JointHandle jnt_handle {jnt_state_handle, cmd_};
-
+    hardware_interface::JointStateHandle jnt_state_handle {JOINT_NAME, pos_.get(), vel_.get(), eff_.get()};
+    hardware_interface::JointHandle jnt_handle {jnt_state_handle, cmd_.get()};
     pos_jnt_interface.registerHandle(jnt_handle);
-
     registerInterface(&pos_jnt_interface);
   }
 
@@ -64,10 +60,11 @@ public:
   }
 
 private:
-  double* pos_;
-  double* vel_;
-  double* eff_;
-  double* cmd_;
+  // Values have to be stored globally because HWInterface does not take ownership of values
+  std::unique_ptr<double> pos_ {new double()};
+  std::unique_ptr<double> vel_ {new double()};
+  std::unique_ptr<double> eff_ {new double()};
+  std::unique_ptr<double> cmd_ {new double()};
   hardware_interface::PositionJointInterface pos_jnt_interface;
 };
 

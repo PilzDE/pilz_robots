@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include <memory>
+
 #include <gtest/gtest.h>
 
 #include <ros/ros.h>
@@ -60,13 +62,19 @@ protected:
 
 protected:
   std::shared_ptr<Controller> controller_;
-  HWInterface* hardware_ {new HWInterface()};
+  std::unique_ptr<HWInterface> hardware_ {new HWInterface()};
   ros::NodeHandle nh_ {"~"};
   ros::NodeHandle controller_nh_ {CONTROLLER_NAMESPACE};
   ros::AsyncSpinner spinner_ {2};
   actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>
         trajectory_action_client_ {CONTROLLER_NAMESPACE + TRAJECTORY_ACTION, true};
   std::shared_ptr<ros::Publisher> trajectory_command_publisher_;
+
+  // Values have to be stored globally because HWInterface does not take ownership of values
+  std::unique_ptr<double> pos_ {new double()};
+  std::unique_ptr<double> vel_ {new double()};
+  std::unique_ptr<double> eff_ {new double()};
+  std::unique_ptr<double> cmd_ {new double()};
 };
 
 void PilzJointTrajectoryControllerTest::SetUp()
@@ -74,12 +82,8 @@ void PilzJointTrajectoryControllerTest::SetUp()
   spinner_.start();
 
   // register joint handle
-  double* pos = new double();
-  double* vel = new double();
-  double* eff = new double();
-  hardware_interface::JointStateHandle jsh {"joint1", pos, vel, eff};
-  double* cmd = new double();
-  hardware_interface::JointHandle jh {jsh, cmd};
+  hardware_interface::JointStateHandle jsh {"joint1", pos_.get(), vel_.get(), eff_.get()};
+  hardware_interface::JointHandle jh {jsh, cmd_.get()};
   hardware_->registerHandle(jh);
 
   // set joints parameter
@@ -148,7 +152,7 @@ void PilzJointTrajectoryControllerTest::SetUp()
  */
 TEST_F(PilzJointTrajectoryControllerTest, testInitializiation)
 {
-  ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
+  ASSERT_TRUE(controller_->init(hardware_.get(), nh_, controller_nh_)) << "Failed to initialize the controller.";
 
   ASSERT_TRUE(ros::service::exists(controller_nh_.getNamespace() + HOLD_SERVICE, true));
   ASSERT_TRUE(ros::service::exists(controller_nh_.getNamespace() + UNHOLD_SERVICE, true));
@@ -197,7 +201,7 @@ TEST_F(PilzJointTrajectoryControllerTest, testIsExecutingServiceCallback)
   /**********
    * Step 2 *
    **********/
-  ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
+  ASSERT_TRUE(controller_->init(hardware_.get(), nh_, controller_nh_)) << "Failed to initialize the controller.";
   controller_->state_ = controller_->INITIALIZED;
 
   EXPECT_TRUE(controller_->handleIsExecutingRequest(req, resp));
@@ -298,7 +302,7 @@ TEST_F(PilzJointTrajectoryControllerTest, testIsExecutingServiceCallback)
  */
 TEST_F(PilzJointTrajectoryControllerTest, testForceHoldServiceCallback)
 {
-  ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
+  ASSERT_TRUE(controller_->init(hardware_.get(), nh_, controller_nh_)) << "Failed to initialize the controller.";
 
   std_srvs::TriggerRequest req;
   std_srvs::TriggerResponse resp;
@@ -323,7 +327,7 @@ TEST_F(PilzJointTrajectoryControllerTest, testUpdateWhileHolding)
   /**********
    * Step 1 *
    **********/
-  ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
+  ASSERT_TRUE(controller_->init(hardware_.get(), nh_, controller_nh_)) << "Failed to initialize the controller.";
   controller_->state_ = controller_->INITIALIZED;
 
   controller_->starting(ros::Time::now());
@@ -366,7 +370,7 @@ TEST_F(PilzJointTrajectoryControllerTest, testUpdateWhileHolding)
  */
 TEST_F(PilzJointTrajectoryControllerTest, testDoubleRequest)
 {
-  ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
+  ASSERT_TRUE(controller_->init(hardware_.get(), nh_, controller_nh_)) << "Failed to initialize the controller.";
   controller_->state_ = controller_->INITIALIZED;
   controller_->starting(ros::Time::now());
 
@@ -434,7 +438,7 @@ TEST_F(PilzJointTrajectoryControllerTest, testIsExecuting)
   /**********
    * Step 2 *
    **********/
-  ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
+  ASSERT_TRUE(controller_->init(hardware_.get(), nh_, controller_nh_)) << "Failed to initialize the controller.";
   controller_->state_ = controller_->INITIALIZED;
 
   EXPECT_FALSE(controller_->is_executing()) << "Controller is executing unexpectedly";
