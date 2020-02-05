@@ -20,7 +20,7 @@ import unittest
 
 import rospkg
 import rospy
-from mock import MagicMock, create_autospec
+from mock import ANY, MagicMock, create_autospec
 from prbt_hardware_support.msg import OperationModes
 from PyQt5.QtGui import QPixmap
 from python_qt_binding.QtWidgets import QApplication, QMainWindow
@@ -99,7 +99,7 @@ class TestStatusIndicatorWidget(unittest.TestCase):
             'pilz_status_indicator_rqt'), 'resource', 'auto.png')
         self.psi.set_operation_mode(OperationModes.AUTO, Mock_qpixmap)
         Mock_qpixmap.assert_called_with(icon_path_auto)
-        self.psi.labelOM.setPixmap.assert_called()
+        self.psi.labelOM.setPixmap.assert_called_with(ANY)
         self.psi.labelOM_text.setText.assert_called_with("Auto")
 
         # Operation mode T1 should load the correct icon and display the
@@ -108,7 +108,7 @@ class TestStatusIndicatorWidget(unittest.TestCase):
             'pilz_status_indicator_rqt'), 'resource', 't1.png')
         self.psi.set_operation_mode(OperationModes.T1, Mock_qpixmap)
         Mock_qpixmap.assert_called_with(icon_path_t1)
-        self.psi.labelOM.setPixmap.assert_called()
+        self.psi.labelOM.setPixmap.assert_called_with(ANY)
         self.psi.labelOM_text.setText.assert_called_with("T1")
 
         # Operation mode T2 should load the correct icon and display the
@@ -117,7 +117,7 @@ class TestStatusIndicatorWidget(unittest.TestCase):
             'pilz_status_indicator_rqt'), 'resource', 't2.png')
         self.psi.set_operation_mode(OperationModes.T2, Mock_qpixmap)
         Mock_qpixmap.assert_called_with(icon_path_t2)
-        self.psi.labelOM.setPixmap.assert_called()
+        self.psi.labelOM.setPixmap.assert_called_with(ANY)
         self.psi.labelOM_text.setText.assert_called_with("T2")
 
         # Operation mode Unknown should load the correct icon and display the
@@ -126,7 +126,7 @@ class TestStatusIndicatorWidget(unittest.TestCase):
             'pilz_status_indicator_rqt'), 'resource', 'unknown.png')
         self.psi.set_operation_mode(OperationModes.UNKNOWN, Mock_qpixmap)
         Mock_qpixmap.assert_called_with(icon_path_unknown)
-        self.psi.labelOM.setPixmap.assert_called()
+        self.psi.labelOM.setPixmap.assert_called_with(ANY)
         self.psi.labelOM_text.setText.assert_called_with("Unknown")
 
     def test_set_speed(self):
