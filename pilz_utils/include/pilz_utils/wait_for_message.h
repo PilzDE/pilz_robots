@@ -45,4 +45,4 @@ static void waitForMessage(const std::string topic_name,
 
 }
 
-#endif // PILZ_UTILS_WAIT_FOR_Message_H
+#endif // PILZ_UTILS_WAIT_FOR_MESSAGE_H
