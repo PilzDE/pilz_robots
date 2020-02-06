@@ -1,7 +1,7 @@
 <package format="2">
 
   <name>prbt_moveit_config</name>
-  <version>0.5.11</version>
+  <version>0.5.13</version>
   <description>
      An automatically generated package with all the configuration and launch files for using the prbt with the MoveIt! Motion Planning Framework
   </description>
@@ -31,6 +31,7 @@
   <exec_depend>rviz</exec_depend>
   <exec_depend>prbt_support</exec_depend>
   <exec_depend>prbt_ikfast_manipulator_plugin</exec_depend>
+  <exec_depend>prbt_hardware_support</exec_depend>
 
   <test_depend>roslaunch</test_depend>
 

@@ -66,7 +66,7 @@ to start up the robot including planning and execution.
 ![PRBT with MotionPlanningPlugin in rviz](prbt_moveit_config/img/prbt_rviz_planning_screenshot.png)
 
 ### Configuring the robot
-Use the launch file `moveit_planning_execution.launch` to bringup the robot controllers
+Use the launch file `moveit_planning_execution.launch` to bring up the robot controllers
 with the complete moveit pipeline.
 The launch file allows to set optional parameters
 * `sim` (default: True) <br>
@@ -92,7 +92,7 @@ The launch file allows to set optional parameters
    (see e.g. [ROS-I training exercise 3.4](https://industrial-training-master.readthedocs.io/en/melodic/_source/session3/Motion-Planning-RVIZ.html))
 
 ### Running on the real robot
-1. Bringup can: `sudo ip link set can0 up type can bitrate 1000000` (after every reboot or reconnect of the CAN hardware).
+1. Activate can interface: `sudo ip link set can0 up type can bitrate 1000000` (after every reboot or reconnect of the CAN hardware).
    For persistent configuration append the following to the file `/etc/network/interfaces`
 
 ```
@@ -114,7 +114,7 @@ sudo apt install ros-melodic-pilz-trajectory-generation
 
 then replace the pipeline in the above command by `pipeline:=pilz_command_planner`.
 
-### Adjust expert paramters
+### Adjust expert parameters
 If you've created an application package with your own launch file as described in the
 [tutorials](https://wiki.ros.org/pilz_robots/Tutorials/ModelYourApplicationWithPRBT#Create_your_application_ROS_package),
 you can easily adjust many other configuration parameters.
@@ -147,6 +147,18 @@ This package provides support for the Pilz hardware PNOZmulti and PSS4000. A con
 
 ## Package: prbt_gazebo
 Provides a launch file to run the prbt manipulator inside gazebo.
+
+## Package: pilz_status_indicator_rqt
+This package defines an rqt-plugin to display information about the robots state to the user. 
+It will show:
+* Current operation mode
+* Operation state of the robot (PRBT)
+* Operation state of the ROS system
+* Current speed override
+
+![The Status Indicator Widget](pilz_status_indicator_rqt/doc/widget_screenshot.png)
+
+It can be launched with `rosrun pilz_status_indicator_rqt pilz_status_indicator_rqt` in a floating, standalone rqt instance. Alternatively it can be integrated in an existing rqt environment next to other widgets, if required.
 
 ## You need further information?
 Our international hotline staff will support you individually about our ROS packages at

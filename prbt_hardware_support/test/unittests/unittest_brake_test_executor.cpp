@@ -23,6 +23,8 @@
 
 #include <std_srvs/Trigger.h>
 
+#include <pilz_msgs/BrakeTest.h>
+
 #include <prbt_hardware_support/brake_test_executor.h>
 #include <prbt_hardware_support/BrakeTestErrorCodes.h>
 #include <prbt_hardware_support/brake_test_executor_node_service_calls.h>
@@ -87,7 +89,7 @@ TEST(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
     EXPECT_CALL(mock, sendBrakeTestResult(_)).Times(1).WillOnce(Return(true));
   }
 
-  BrakeTest brake_test_srv;
+  pilz_msgs::BrakeTest brake_test_srv;
   EXPECT_TRUE(brake_test_executor.executeBrakeTest(brake_test_srv.request, brake_test_srv.response)) << "Failed to call brake test service.";
   EXPECT_TRUE(brake_test_srv.response.success) << "Brake tests failed unexpectedly. Message: " << brake_test_srv.response.error_msg;
 }
@@ -120,10 +122,9 @@ TEST(BrakeTestExecutorTest, testBrakeTestServiceWithRobotMotion)
   EXPECT_CALL(mock, sendBrakeTestResult(_)).Times(0);
 
 
-  BrakeTest brake_test_srv;
+  pilz_msgs::BrakeTest brake_test_srv;
   EXPECT_TRUE(brake_test_executor.executeBrakeTest(brake_test_srv.request, brake_test_srv.response));
   EXPECT_FALSE(brake_test_srv.response.success) << "Brake tests was unexpectedly successful";
-  EXPECT_EQ(BrakeTestErrorCodes::ROBOT_MOTION_DETECTED, brake_test_srv.response.error_code.value);
 }
 
 /**
@@ -169,7 +170,7 @@ TEST(BrakeTestExecutorTest, testBrakeTestServiceTriggerFails)
     EXPECT_CALL(mock, sendBrakeTestResult(_)).Times(1).WillOnce(Return(true));
   }
 
-  BrakeTest brake_test_srv;
+  pilz_msgs::BrakeTest brake_test_srv;
   EXPECT_TRUE(brake_test_executor.executeBrakeTest(brake_test_srv.request, brake_test_srv.response));
   EXPECT_FALSE(brake_test_srv.response.success);
 }
@@ -211,10 +212,9 @@ TEST(BrakeTestExecutorTest, testBrakeTestResultServiceFails)
     EXPECT_CALL(mock, sendBrakeTestResult(_)).Times(1).WillOnce(Return(false));
   }
 
-  BrakeTest brake_test_srv;
+  pilz_msgs::BrakeTest brake_test_srv;
   EXPECT_TRUE(brake_test_executor.executeBrakeTest(brake_test_srv.request, brake_test_srv.response));
   EXPECT_FALSE(brake_test_srv.response.success);
-  EXPECT_EQ(brake_test_srv.response.error_code.value, BrakeTestErrorCodes::FAILURE);
 }
 
 /**
