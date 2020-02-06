@@ -304,6 +304,8 @@ TEST_F(PilzJointTrajectoryControllerTest, testD0Destructor)
 //    Parameterized tests for IsExecuting    //
 ///////////////////////////////////////////////
 
+//! The return value indicates if the call was successful (in case of a service callback), the actual result
+//! of the is-executing-function is assigned (via reference) to the second argument.
 typedef std::function<testing::AssertionResult(const ControllerPtr&, bool&)> InvokeIsExecuting;
 
 static testing::AssertionResult InvokeIsExecutingMethod(const ControllerPtr& controller, bool& result)
