@@ -300,9 +300,9 @@ TEST_F(PilzJointTrajectoryControllerTest, testD0Destructor)
 }
 
 
-///////////////////////////////////////////////
-//    Parameterized tests for IsExecuting    //
-///////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//    Parameterized tests for the "is-executing-check" functionality    //
+//////////////////////////////////////////////////////////////////////////
 
 //! The return value indicates if the call was successful (in case of a service callback), the actual result
 //! of the is-executing-function is assigned (via reference) to the second argument.
@@ -419,19 +419,9 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testNotStarted)
 }
 
 /**
- * @brief Test the is_executing functionality of the started controller.
- *
- * Test Sequence:
- *  1. Initialize and start controller.
- *  2. Update controller with period > (stop duration).
- *  3. Unhold controller.
- *
- * Expected Results:
- *  1. Controller is executing due to setHoldPosition() at start.
- *  2. Controller is not executing.
- *  3. Controller is not executing.
+ * @brief Test if the controller starts and completes the execution of the hold trajectory at start.
  */
-TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStarted)
+TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testHoldAtStart)
 {
   /**********
    * Step 1 *
@@ -468,14 +458,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStarted)
 }
 
 /**
- * @brief Test the is_executing functionality with a single action goal.
- *
- * Test Sequence:
- *  1. Send goal to controller action server.
- *  2. Update controller with period > (duration of sent goal).
- * Expected Results:
- *  1. The controller starts executing.
- *  2. Controller is no longer executing.
+ * @brief Test if the controller starts and completes the execution of a single action goal.
  */
 TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testSingleActionGoal)
 {
@@ -502,15 +485,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testSingleActionGoal)
 }
 
 /**
- * @brief Test the is_executing functionality with a single command message.
- *
- * Test Sequence:
- *  1. Publish goal on command topic.
- *  2. Update controller with period > (duration of sent goal).
- *
- * Expected Results:
- *  1. The controller starts executing.
- *  2. Controller is no longer executing.
+ * @brief Test if the controller starts and completes the execution of a single trajectory command.
  */
 TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testSingleCommandMessage)
 {
@@ -536,18 +511,8 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testSingleCommandMessage)
 }
 
 /**
- * @brief Test the is_executing functionality when stopping an execution via hold.
- *
- * Test Sequence:
- *  1. Publish goal on command topic.
- *  2. Trigger hold after controller started executing and update during hold
- *     (this can be achieved by going back in time since the current time point is after hold execution).
- *  3. Update after hold.
- *
- * Expected Results:
- *  1. The controller starts executing.
- *  2. Controller still is executing.
- *  3. Controller is no longer executing.
+ * @brief Test if the controller continues executing when hold is triggered during the execution
+ * of a single trajectory command and stops executing after completing the hold trajectory.
  */
 TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStoppingAnExecution)
 {
