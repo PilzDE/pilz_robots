@@ -98,6 +98,15 @@ if(CATKIN_ENABLE_TESTING)
   )
   #----------------------------------
 
+  # --- sleep unit test ---
+  catkin_add_gtest(unittest_sleep
+    test/unittest_sleep.cpp
+  )
+  target_link_libraries(unittest_sleep
+    ${catkin_LIBRARIES}
+  )
+  #----------------------------------
+
   # to run: catkin_make -DENABLE_COVERAGE_TESTIN=ON package_name_coverage (adding -j1 recommended)
   if(ENABLE_COVERAGE_TESTING)
     set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*")
