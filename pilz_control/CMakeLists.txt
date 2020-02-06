@@ -24,7 +24,8 @@ catkin_package(
 
 add_definitions(-std=c++11)
 
-include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
+find_package(Eigen3 REQUIRED)
+include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
 
 ################
 ## Clang tidy ##
@@ -45,7 +46,8 @@ endif()
 
 add_library(${PROJECT_NAME}
             include/${PROJECT_NAME}/pilz_joint_trajectory_controller.h
-            src/pilz_joint_trajectory_controller.cpp)
+            src/pilz_joint_trajectory_controller.cpp
+            src/cartesian_speed_monitor.cpp)
 
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
