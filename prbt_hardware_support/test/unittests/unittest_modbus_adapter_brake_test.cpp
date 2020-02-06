@@ -20,6 +20,9 @@
 #include <functional>
 #include <memory>
 
+#include <pilz_msgs/IsBrakeTestRequired.h>
+#include <pilz_msgs/IsBrakeTestRequiredResult.h>
+
 #include <prbt_hardware_support/modbus_adapter_brake_test.h>
 #include <prbt_hardware_support/modbus_msg_in_builder.h>
 #include <prbt_hardware_support/register_container.h>
@@ -111,9 +114,9 @@ TEST(ModbusAdapterBrakeTestTest, testNoMessageReceived)
                                             TEST_API_SPEC, TEST_API_WRITE_SPEC);
 
 
-  prbt_hardware_support::IsBrakeTestRequired srv;
+  pilz_msgs::IsBrakeTestRequired srv;
   EXPECT_TRUE(brake_test_adapter.isBrakeTestRequired(srv.request, srv.response));
-  EXPECT_EQ(IsBrakeTestRequiredResponse::UNKNOWN, srv.response.result);
+  EXPECT_EQ(pilz_msgs::IsBrakeTestRequiredResult::UNKNOWN, srv.response.result.value);
 }
 
 /**
@@ -136,9 +139,9 @@ TEST(ModbusAdapterBrakeTestTest, testBrakeTestRequired)
 
   brake_test_adapter.modbusMsgCallback(createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_REQUIRED));
 
-  prbt_hardware_support::IsBrakeTestRequired srv;
+  pilz_msgs::IsBrakeTestRequired srv;
   EXPECT_TRUE(brake_test_adapter.isBrakeTestRequired(srv.request, srv.response));
-  EXPECT_EQ(IsBrakeTestRequiredResponse::REQUIRED, srv.response.result);
+  EXPECT_EQ(pilz_msgs::IsBrakeTestRequiredResult::REQUIRED, srv.response.result.value);
 }
 
 /**
@@ -161,9 +164,9 @@ TEST(ModbusAdapterBrakeTestTest, testBrakeTestNotRequired)
 
   brake_test_adapter.modbusMsgCallback(createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_NOT_REQUIRED));
 
-  prbt_hardware_support::IsBrakeTestRequired srv;
+  pilz_msgs::IsBrakeTestRequired srv;
   EXPECT_TRUE(brake_test_adapter.isBrakeTestRequired(srv.request, srv.response));
-  EXPECT_EQ(IsBrakeTestRequiredResponse::NOT_REQUIRED, srv.response.result);
+  EXPECT_EQ(pilz_msgs::IsBrakeTestRequiredResult::NOT_REQUIRED, srv.response.result.value);
 }
 
 /**
@@ -191,9 +194,9 @@ TEST(ModbusAdapterBrakeTestTest, testDisconnect)
 
   brake_test_adapter.modbusMsgCallback(msg);
 
-  prbt_hardware_support::IsBrakeTestRequired srv;
+  pilz_msgs::IsBrakeTestRequired srv;
   EXPECT_TRUE(brake_test_adapter.isBrakeTestRequired(srv.request, srv.response));
-  EXPECT_EQ(IsBrakeTestRequiredResponse::UNKNOWN, srv.response.result);
+  EXPECT_EQ(pilz_msgs::IsBrakeTestRequiredResult::UNKNOWN, srv.response.result.value);
 }
 
 /**
@@ -216,9 +219,9 @@ TEST(ModbusAdapterBrakeTestTest, testModbusIncorrectApiVersion)
 
   brake_test_adapter.modbusMsgCallback(createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_REQUIRED, 0));
 
-  prbt_hardware_support::IsBrakeTestRequired srv;
+  pilz_msgs::IsBrakeTestRequired srv;
   EXPECT_TRUE(brake_test_adapter.isBrakeTestRequired(srv.request, srv.response));
-  EXPECT_EQ(IsBrakeTestRequiredResponse::UNKNOWN, srv.response.result);
+  EXPECT_EQ(pilz_msgs::IsBrakeTestRequiredResult::UNKNOWN, srv.response.result.value);
 }
 
 /**
@@ -245,9 +248,9 @@ TEST(ModbusAdapterBrakeTestTest, testModbusWithoutApiVersion)
 
   brake_test_adapter.modbusMsgCallback(msg);
 
-  prbt_hardware_support::IsBrakeTestRequired srv;
+  pilz_msgs::IsBrakeTestRequired srv;
   EXPECT_TRUE(brake_test_adapter.isBrakeTestRequired(srv.request, srv.response));
-  EXPECT_EQ(IsBrakeTestRequiredResponse::UNKNOWN, srv.response.result);
+  EXPECT_EQ(pilz_msgs::IsBrakeTestRequiredResult::UNKNOWN, srv.response.result.value);
 }
 
 /**
@@ -272,9 +275,9 @@ TEST(ModbusAdapterBrakeTestTest, testBrakeTestRequiredRegisterMissing)
                                                                        TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION),
                                                                        TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST) - 1));
 
-  prbt_hardware_support::IsBrakeTestRequired srv;
+  pilz_msgs::IsBrakeTestRequired srv;
   EXPECT_TRUE(brake_test_adapter.isBrakeTestRequired(srv.request, srv.response));
-  EXPECT_EQ(IsBrakeTestRequiredResponse::UNKNOWN, srv.response.result);
+  EXPECT_EQ(pilz_msgs::IsBrakeTestRequiredResult::UNKNOWN, srv.response.result.value);
 }
 
 /**
@@ -296,9 +299,9 @@ TEST(ModbusAdapterBrakeTestTest, testBrakeTestRequiredRegisterUndefinedValue)
 
   brake_test_adapter.modbusMsgCallback(createDefaultBrakeTestModbusMsg(555 /* some arbitrary value */));
 
-  prbt_hardware_support::IsBrakeTestRequired srv;
+  pilz_msgs::IsBrakeTestRequired srv;
   EXPECT_TRUE(brake_test_adapter.isBrakeTestRequired(srv.request, srv.response));
-  EXPECT_EQ(IsBrakeTestRequiredResponse::UNKNOWN, srv.response.result);
+  EXPECT_EQ(pilz_msgs::IsBrakeTestRequiredResult::UNKNOWN, srv.response.result.value);
 }
 
 /**

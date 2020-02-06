@@ -17,6 +17,9 @@
 #ifndef MODBUS_MSG_BRAKE_TEST_WRAPPER_H
 #define MODBUS_MSG_BRAKE_TEST_WRAPPER_H
 
+#include <pilz_msgs/IsBrakeTestRequired.h>
+#include <pilz_msgs/IsBrakeTestRequiredResult.h>
+
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/modbus_msg_wrapper.h>
@@ -53,7 +56,7 @@ public:
    *
    * @return true if the a brake test is required, otherwise false.
    */
-  IsBrakeTestRequiredResponse::_result_type getBrakeTestRequirementStatus() const;
+  pilz_msgs::IsBrakeTestRequiredResult::_value_type getBrakeTestRequirementStatus() const;
 
 private:
 
@@ -76,18 +79,18 @@ inline bool ModbusMsgBrakeTestWrapper::hasBrakeTestRequiredFlag() const
   return hasRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
 }
 
-inline IsBrakeTestRequiredResponse::_result_type ModbusMsgBrakeTestWrapper::getBrakeTestRequirementStatus() const
+inline pilz_msgs::IsBrakeTestRequiredResult::_value_type ModbusMsgBrakeTestWrapper::getBrakeTestRequirementStatus() const
 {
   switch(getRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST)))
   {
     case REGISTER_VALUE_BRAKETEST_NOT_REQUIRED:
-      return IsBrakeTestRequiredResponse::NOT_REQUIRED;
+      return pilz_msgs::IsBrakeTestRequiredResult::NOT_REQUIRED;
 
     case REGISTER_VALUE_BRAKETEST_REQUIRED:
-      return IsBrakeTestRequiredResponse::REQUIRED;
+      return pilz_msgs::IsBrakeTestRequiredResult::REQUIRED;
 
     default:
-      return IsBrakeTestRequiredResponse::UNKNOWN;
+      return pilz_msgs::IsBrakeTestRequiredResult::UNKNOWN;
   }
 }
 
