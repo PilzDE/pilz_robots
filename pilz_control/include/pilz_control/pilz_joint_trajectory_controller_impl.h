@@ -36,6 +36,9 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
 {
   bool res = JointTrajectoryController::init(hw, root_nh, controller_nh);
 
+  cartesian_speed_monitor_.reset(new pilz_control::CartesianSpeedMonitor(JointTrajectoryController::joint_names_));
+  cartesian_speed_monitor_->init();
+
   hold_position_service = controller_nh.advertiseService("hold",
                                                          &PilzJointTrajectoryController::handleHoldRequest,
                                                          this);
@@ -101,8 +104,7 @@ handleHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response
     return true;
   }
 
-  active_mode_ = Mode::HOLD;
-
+  switchToHoldMode();
   JointTrajectoryController::preemptActiveGoal();
   triggerMovementToHoldPosition();
 
@@ -178,6 +180,39 @@ triggerMovementToHoldPosition()
   JointTrajectoryController::setHoldPosition(this->time_data_.readFromRT()->uptime);
 }
 
+template <class SegmentImpl, class HardwareInterface>
+inline bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
+checkStates(const std::vector<double>& old_desired_position,
+            const std::vector<double>& new_desired_positioin,
+            const ros::Duration& period) const
+{
+  return (active_mode_ != Mode::HOLD
+          && !cartesian_speed_monitor_->cartesianSpeedIsBelowLimit(old_desired_position,
+                                                                   new_desired_positioin,
+                                                                   period.toSec(),
+                                                                   0.25 /*limit */));  // TODO: HSL
+}
+
+template <class SegmentImpl, class HardwareInterface>
+void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
+reactToFailedStateCheck(const ros::Time& updated_uptime, const Trajectory& curr_traj)
+{
+  switchToHoldMode();
+  JointTrajectoryController::preemptActiveGoal();
+  // TODO: Update desired state
+  triggerMovementToHoldPosition();
+}
+
+template <class SegmentImpl, class HardwareInterface>
+inline void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
+switchToHoldMode()
+{
+  if(active_mode_ == Mode::HOLD)
+  {
+    return;
+  }
+  active_mode_ = Mode::HOLD;
+}
 
 }  // namespace pilz_joint_trajectory_controller
 

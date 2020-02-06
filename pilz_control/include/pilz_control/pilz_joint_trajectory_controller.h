@@ -18,10 +18,12 @@
 #define PILZ_CONTROL_PILZ_JOINT_TRAJECTORY_CONTROLLER_H
 
 #include <mutex>
+#include <memory>
 
 #include <std_srvs/Trigger.h>
 
 #include <joint_trajectory_controller/joint_trajectory_controller.h>
+#include <pilz_control/cartesian_speed_monitor.h>
 
 namespace pilz_joint_trajectory_controller
 {
@@ -113,6 +115,15 @@ class PilzJointTrajectoryController
 
     void triggerMovementToHoldPosition();
 
+private:
+    bool checkStates(const std::vector<double>& old_desired_position,
+                     const std::vector<double>& new_desired_positioin,
+                     const ros::Duration& period) const override;
+    void reactToFailedStateCheck(const ros::Time& updated_uptime,
+                                 const Trajectory& curr_traj) override;
+
+    void switchToHoldMode();
+
   private:
     ros::ServiceServer hold_position_service;
     ros::ServiceServer unhold_position_service;
@@ -121,6 +132,8 @@ class PilzJointTrajectoryController
     std_srvs::TriggerRequest last_request_;
 
     Mode active_mode_ {Mode::HOLD};
+
+    std::shared_ptr<pilz_control::CartesianSpeedMonitor> cartesian_speed_monitor_;
 
     /**
      * @brief Synchronizes hold/unhold and update trajectory function to avoid
