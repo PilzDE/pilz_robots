@@ -24,8 +24,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include <pilz_utils/wait_for_topic.h>
-
 #include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/param_names.h>
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
