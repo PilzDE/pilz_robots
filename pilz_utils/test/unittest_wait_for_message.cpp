@@ -24,20 +24,20 @@
 
 #include <std_msgs/Empty.h>
 
-#include <pilz_utils/wait_for_topic.h>
+#include <pilz_utils/wait_for_message.h>
 
 static constexpr int WAITING_TIME_S{1};
 static constexpr int DEFAULT_QUEUE_SIZE{1};
 
 /**
- * @brief Tests that an asynchronous call to waitForTopic waits until someone publishes on the topic.
+ * @brief Tests that an asynchronous call to waitForMessage waits until someone publishes on the topic.
  */
-TEST(WaitForTopicTests, testAsyncCall)
+TEST(WaitForMessageTests, testAsyncCall)
 {
   using namespace pilz_utils;
   std::string topic_name{"/test_topic"};
 
-  auto wait_future = std::async([topic_name](){ waitForTopic<std_msgs::Empty>(topic_name); return true; });
+  auto wait_future = std::async([topic_name](){ waitForMessage<std_msgs::Empty>(topic_name); return true; });
 
   EXPECT_EQ(std::future_status::timeout, wait_future.wait_for(std::chrono::seconds(WAITING_TIME_S)));
 
@@ -55,7 +55,7 @@ TEST(WaitForTopicTests, testAsyncCall)
 
 int main(int argc, char *argv[])
 {
-  ros::init(argc, argv, "unittest_wait_for_topic");
+  ros::init(argc, argv, "unittest_wait_for_message");
   ros::NodeHandle nh;
 
   testing::InitGoogleTest(&argc, argv);

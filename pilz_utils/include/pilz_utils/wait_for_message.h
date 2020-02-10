@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef PILZ_UTILS_WAIT_FOR_TOPIC_H
-#define PILZ_UTILS_WAIT_FOR_TOPIC_H
+#ifndef PILZ_UTILS_WAIT_FOR_MESSAGE_H
+#define PILZ_UTILS_WAIT_FOR_MESSAGE_H
 
 #include <string>
 
@@ -28,21 +28,21 @@ namespace pilz_utils
 {
 
 /**
- * @brief Waits until someone publishes on the specified topic.
+ * @brief Waits (infinitely) until a message arrives on the specified topic.
  */
 template<class T>
-static void waitForTopic(const std::string topic_name,
-                  const double retry_timeout = DEFAULT_RETRY_TIMEOUT,
-                  const double msg_output_period = DEFAULT_MSG_OUTPUT_PERIOD)
+static void waitForMessage(const std::string topic_name,
+                           const double retry_timeout = DEFAULT_RETRY_TIMEOUT,
+                           const double msg_output_period = DEFAULT_MSG_OUTPUT_PERIOD)
 {
   while ( (ros::topic::waitForMessage<T>(topic_name, ros::Duration(retry_timeout)) == nullptr) && ros::ok())
   {
     ROS_DEBUG_STREAM_DELAYED_THROTTLE(msg_output_period,
-                                     "Waiting for topic \""
+                                     "Waiting for message on topic \""
                                      + topic_name + "\"...");
   }
 }
 
 }
 
-#endif // PILZ_UTILS_WAIT_FOR_TOPIC_H
+#endif // PILZ_UTILS_WAIT_FOR_MESSAGE_H
