@@ -15,5 +15,5 @@ limitations under the License.
 -->
 
 <launch>
-  <test test-name="unittest_wait_for_topic" pkg="pilz_utils" type="unittest_wait_for_topic" />
+  <test test-name="unittest_wait_for_message" pkg="pilz_utils" type="unittest_wait_for_message" />
 </launch>
