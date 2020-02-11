@@ -116,9 +116,7 @@ class PilzJointTrajectoryController
     void triggerMovementToHoldPosition();
 
 private:
-    bool checkStates(const std::vector<double>& old_desired_position,
-                     const std::vector<double>& new_desired_positioin,
-                     const ros::Duration& period) const override;
+    bool checkStates(const ros::Duration& period) const override;
     void reactToFailedStateCheck(const ros::Time& updated_uptime,
                                  const Trajectory& curr_traj) override;
 

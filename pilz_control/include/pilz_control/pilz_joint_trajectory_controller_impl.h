@@ -182,13 +182,11 @@ triggerMovementToHoldPosition()
 
 template <class SegmentImpl, class HardwareInterface>
 inline bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
-checkStates(const std::vector<double>& old_desired_position,
-            const std::vector<double>& new_desired_positioin,
-            const ros::Duration& period) const
+checkStates(const ros::Duration& period) const
 {
   return (active_mode_ != Mode::HOLD
-          && !cartesian_speed_monitor_->cartesianSpeedIsBelowLimit(old_desired_position,
-                                                                   new_desired_positioin,
+          && !cartesian_speed_monitor_->cartesianSpeedIsBelowLimit(JointTrajectoryController::old_desired_state_.position,
+                                                                   JointTrajectoryController::desired_state_.position,
                                                                    period.toSec(),
                                                                    0.25 /*limit */));  // TODO: HSL
 }
