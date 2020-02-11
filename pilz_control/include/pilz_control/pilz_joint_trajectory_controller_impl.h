@@ -196,7 +196,7 @@ void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 reactToFailedStateCheck(const ros::Time& updated_uptime, const Trajectory& curr_traj)
 {
   switchToHoldMode();
-  JointTrajectoryController::preemptActiveGoal();
+  triggerCancellingOfActiveGoal();
   // TODO: Update desired state
   triggerMovementToHoldPosition();
 }
@@ -210,6 +210,19 @@ switchToHoldMode()
     return;
   }
   active_mode_ = Mode::HOLD;
+}
+
+template <class SegmentImpl, class HardwareInterface>
+inline void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
+triggerCancellingOfActiveGoal()
+{
+  RealtimeGoalHandlePtr active_goal(JointTrajectoryController::rt_active_goal_);
+  if (!active_goal)
+  {
+    return;
+  }
+  JointTrajectoryController::rt_active_goal_.reset();
+  active_goal->setCanceled();
 }
 
 }  // namespace pilz_joint_trajectory_controller

@@ -122,6 +122,18 @@ private:
 
     void switchToHoldMode();
 
+    /**
+     * @brief This function basically does what it's base class counterpart
+     * JointTrajectoryController::preemptActiveGoal() does.
+     * However, in contrast to JointTrajectoryController::preemptActiveGoal(), this function
+     * only triggers the cancelling of the active goal. The actual execution of the
+     * cancelling is left to a separate thread.
+     *
+     * @note In contrast to JointTrajectoryController::preemptActiveGoal() this function
+     * is real-time safe.
+     */
+    void triggerCancellingOfActiveGoal();
+
   private:
     ros::ServiceServer hold_position_service;
     ros::ServiceServer unhold_position_service;
