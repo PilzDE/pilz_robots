@@ -120,8 +120,6 @@ private:
     void reactToFailedStateCheck(const ros::Time& updated_uptime,
                                  const Trajectory& curr_traj) override;
 
-    void switchToHoldMode();
-
     /**
      * @brief This function basically does what it's base class counterpart
      * JointTrajectoryController::preemptActiveGoal() does.

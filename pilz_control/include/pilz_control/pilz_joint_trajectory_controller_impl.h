@@ -104,7 +104,7 @@ handleHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response
     return true;
   }
 
-  switchToHoldMode();
+  active_mode_ = Mode::HOLD;
   JointTrajectoryController::preemptActiveGoal();
   triggerMovementToHoldPosition();
 
@@ -195,21 +195,9 @@ template <class SegmentImpl, class HardwareInterface>
 void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 reactToFailedStateCheck(const ros::Time& updated_uptime, const Trajectory& curr_traj)
 {
-  switchToHoldMode();
   triggerCancellingOfActiveGoal();
   // TODO: Update desired state
   triggerMovementToHoldPosition();
-}
-
-template <class SegmentImpl, class HardwareInterface>
-inline void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
-switchToHoldMode()
-{
-  if(active_mode_ == Mode::HOLD)
-  {
-    return;
-  }
-  active_mode_ = Mode::HOLD;
 }
 
 template <class SegmentImpl, class HardwareInterface>
