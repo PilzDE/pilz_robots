@@ -23,6 +23,9 @@
 #include <std_srvs/Trigger.h>
 
 #include <joint_trajectory_controller/joint_trajectory_controller.h>
+#include <joint_trajectory_controller/stop_trajectory_builder.h>
+#include <joint_trajectory_controller/hold_trajectory_manager.h>
+
 #include <pilz_control/cartesian_speed_monitor.h>
 
 namespace pilz_joint_trajectory_controller
@@ -143,6 +146,8 @@ private:
     Mode active_mode_ {Mode::HOLD};
 
     std::shared_ptr<pilz_control::CartesianSpeedMonitor> cartesian_speed_monitor_;
+    std::unique_ptr<joint_trajectory_controller::StopTrajectoryBuilder<SegmentImpl> > stop_traj_builder_;
+    std::unique_ptr<joint_trajectory_controller::HoldTrajectoryManager<SegmentImpl> > hold_traj_manager_;
 
     /**
      * @brief Synchronizes hold/unhold and update trajectory function to avoid
