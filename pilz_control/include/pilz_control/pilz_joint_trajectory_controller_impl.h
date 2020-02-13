@@ -220,7 +220,12 @@ triggerCancellingOfActiveGoal()
     return;
   }
   JointTrajectoryController::rt_active_goal_.reset();
-  active_goal->setCanceled();
+  active_goal->gh_.setCanceled();
+  // TODO: Instead of the line above, I actually want to do this:
+  //      active_goal->preallocated_result_->error_code = control_msgs::FollowJointTrajectoryResult::PATH_TOLERANCE_VIOLATED;
+  //      active_goal->setCanceled(active_goal->preallocated_result_);
+  // Unfortunately this does not work because sometimes the goal does not seems to get cancelled.
+  // It has to be investigated why! -> Probably a threading problem.
 }
 
 }  // namespace pilz_joint_trajectory_controller
