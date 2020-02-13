@@ -193,7 +193,9 @@ checkStates(const ros::Duration& period) const
 
 template <class SegmentImpl, class HardwareInterface>
 void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
-reactToFailedStateCheck(const ros::Time& updated_uptime, const Trajectory& curr_traj)
+reactToFailedStateCheck(const ros::Time& old_uptime,
+                        const typename Segment::State& old_desired,
+                        const ros::Time& curr_uptime)
 {
   triggerCancellingOfActiveGoal();
   // TODO: Update desired state
