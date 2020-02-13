@@ -187,11 +187,10 @@ template <class SegmentImpl, class HardwareInterface>
 inline bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 checkStates(const ros::Duration& period) const
 {
-  return (active_mode_ != Mode::HOLD
-          && !cartesian_speed_monitor_->cartesianSpeedIsBelowLimit(JointTrajectoryController::old_desired_state_.position,
-                                                                   JointTrajectoryController::desired_state_.position,
-                                                                   period.toSec(),
-                                                                   0.25 /*limit */));  // TODO: HSL
+  return (cartesian_speed_monitor_->cartesianSpeedIsBelowLimit(JointTrajectoryController::old_desired_state_.position,
+                                                               JointTrajectoryController::desired_state_.position,
+                                                               period.toSec(),
+                                                               0.25 /*limit */));  // TODO: HSL
 }
 
 template <class SegmentImpl, class HardwareInterface>
