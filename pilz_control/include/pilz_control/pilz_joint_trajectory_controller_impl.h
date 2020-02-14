@@ -52,8 +52,8 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
                                                          &PilzJointTrajectoryController::handleIsExecutingRequest,
                                                          this);
 
- stop_traj_builder_ = std::unique_ptr<joint_trajectory_controller::StopTrajectoryBuilder<SegmentImpl> >(new joint_trajectory_controller::StopTrajectoryBuilder<SegmentImpl>(JointTrajectoryController::getNumberOfJoints(), JointTrajectoryController::stop_trajectory_duration_));
- hold_traj_manager_ = std::unique_ptr<joint_trajectory_controller::HoldTrajectoryManager<SegmentImpl> >(new joint_trajectory_controller::HoldTrajectoryManager<SegmentImpl>(JointTrajectoryController::getNumberOfJoints()));
+  stop_traj_builder_ = std::unique_ptr<joint_trajectory_controller::StopTrajectoryBuilder<SegmentImpl> >(new joint_trajectory_controller::StopTrajectoryBuilder<SegmentImpl>(JointTrajectoryController::getNumberOfJoints(), JointTrajectoryController::stop_trajectory_duration_));
+  stop_traj_velocity_violation_ = JointTrajectoryController::createHoldTrajectory(JointTrajectoryController::getNumberOfJoints());
 
   return res;
 }
@@ -201,11 +201,11 @@ reactToFailedStateCheck(const ros::Time& curr_uptime)
 
   stop_traj_builder_->buildTrajectory(JointTrajectoryController::old_time_data_.uptime.toSec(),
                                       JointTrajectoryController::old_desired_state_,
-                                      hold_traj_manager_->getHoldTrajectory().get(), nullptr);
+                                      stop_traj_velocity_violation_.get(), nullptr);
 
-  JointTrajectoryController::updateStates(curr_uptime, hold_traj_manager_->getHoldTrajectory().get());
+  JointTrajectoryController::updateStates(curr_uptime, stop_traj_velocity_violation_.get());
 
-  JointTrajectoryController::curr_trajectory_box_.set(hold_traj_manager_->getHoldTrajectory());
+  JointTrajectoryController::curr_trajectory_box_.set(stop_traj_velocity_violation_);
 }
 
 template <class SegmentImpl, class HardwareInterface>

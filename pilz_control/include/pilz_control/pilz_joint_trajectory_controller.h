@@ -24,7 +24,6 @@
 
 #include <joint_trajectory_controller/joint_trajectory_controller.h>
 #include <joint_trajectory_controller/stop_trajectory_builder.h>
-#include <joint_trajectory_controller/hold_trajectory_manager.h>
 
 #include <pilz_control/cartesian_speed_monitor.h>
 
@@ -145,7 +144,11 @@ private:
 
     std::shared_ptr<pilz_control::CartesianSpeedMonitor> cartesian_speed_monitor_;
     std::unique_ptr<joint_trajectory_controller::StopTrajectoryBuilder<SegmentImpl> > stop_traj_builder_;
-    std::unique_ptr<joint_trajectory_controller::HoldTrajectoryManager<SegmentImpl> > hold_traj_manager_;
+    /**
+     * @brief Stores the stop trajectory which is used in case the newly calculated desired value violates the
+     * Cartesian path velocity restraint.
+     */
+    TrajectoryPtr stop_traj_velocity_violation_;
 
     /**
      * @brief Synchronizes hold/unhold and update trajectory function to avoid
