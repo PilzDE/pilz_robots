@@ -195,13 +195,12 @@ checkStates(const ros::Duration& period) const
 
 template <class SegmentImpl, class HardwareInterface>
 void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
-reactToFailedStateCheck(const ros::Time& old_uptime,
-                        const typename Segment::State& old_desired,
-                        const ros::Time& curr_uptime)
+reactToFailedStateCheck(const ros::Time& curr_uptime)
 {
   triggerCancellingOfActiveGoal();
 
-  stop_traj_builder_->buildTrajectory(old_uptime.toSec(), old_desired,
+  stop_traj_builder_->buildTrajectory(JointTrajectoryController::old_time_data_.uptime.toSec(),
+                                      JointTrajectoryController::old_desired_state_,
                                       hold_traj_manager_->getHoldTrajectory().get(), nullptr);
 
   JointTrajectoryController::updateStates(curr_uptime, hold_traj_manager_->getHoldTrajectory().get());

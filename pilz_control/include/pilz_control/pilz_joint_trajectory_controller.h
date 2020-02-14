@@ -120,9 +120,7 @@ class PilzJointTrajectoryController
 
 private:
     bool checkStates(const ros::Duration& period) const override;
-    void reactToFailedStateCheck(const ros::Time& old_uptime,
-                                 const typename Segment::State& old_desired,
-                                 const ros::Time& curr_uptime) override;
+    void reactToFailedStateCheck(const ros::Time& curr_uptime) override;
 
     /**
      * @brief This function basically does what it's base class counterpart
