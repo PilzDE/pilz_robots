@@ -9,7 +9,7 @@
 
   <!-- safe-torque-off-input from the safety controller is read to do a stop1 -->
   <!-- The signal is read via modbus and you can configure the modbus server ip -->
-  <arg name="sto" default="pnoz"/>
+  <arg name="device" default="pnoz"/>
   <arg name="read_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_read_api_spec_$(arg sto).yaml" />
   <arg name="write_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_write_api_spec_$(arg sto).yaml" />
   <arg name="sto_modbus_server_ip" default="$(eval '192.168.0.10' if sto=='pss4000' else '169.254.60.1')" />
