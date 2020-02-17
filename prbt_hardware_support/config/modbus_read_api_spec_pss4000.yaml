@@ -5,5 +5,5 @@ OPERATION_MODE: 970 # 0 = No Operation mode, 1 = T1, 2T2, 3 = Automatik, Operati
 BRAKETEST_REQUEST: 973 # 0 = Test not required, 1 = Test required
 
 # Generic: Enabled the whole time
-RUN_PERMITTED: 974 # robot is only allowed to move when the signal is 1
+STO: 974 # robot is only allowed to move when the signal is 1
 VERSION: 977 # version of modbus register specification, actual one is: 2
