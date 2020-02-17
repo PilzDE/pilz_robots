@@ -52,6 +52,11 @@ bool CartesianSpeedMonitor::cartesianSpeedIsBelowLimit(const std::vector<double>
                                                        const double& time_delta,
                                                        const double& speed_limit)
 {
+  if (speed_limit < 0.0)
+  {
+    return true;
+  }
+
   state_current_->setVariablePositions(joint_names_, current_position);
   state_desired_->setVariablePositions(joint_names_, desired_position);
 
