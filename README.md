@@ -116,7 +116,7 @@ or
 sudo apt install ros-melodic-pilz-trajectory-generation
 ```
 
-then replace the pipeline in the above command by `pipeline:=pilz_command_planner`.
+then replace the pipeline in the above command by `pipeline:=trapezoidal_command_planner`.
 
 ### Adjust expert parameters
 If you've created an application package with your own launch file as described in the
