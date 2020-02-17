@@ -186,7 +186,7 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
 template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::is_executing()
 {
-  if (JointTrajectoryController::state_ != JointTrajectoryController::RUNNING)
+  if (!JointTrajectoryController::isRunning())
   {
     return false;
   }
@@ -228,7 +228,7 @@ template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::handleUnHoldRequest(
     std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response)
 {
-  if (JointTrajectoryController::state_ == JointTrajectoryController::RUNNING && mode_->startEvent())
+  if (JointTrajectoryController::isRunning() && mode_->startEvent())
   {
     response.message = "Unhold mode (default mode) active";
     response.success = true;
@@ -290,16 +290,14 @@ inline void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::updat
 {
   switch (mode_->getCurrentMode())
   {
-    case TrajProcessingMode::unhold:
-    {
+    case TrajProcessingMode::unhold: {
       if (!isPlannedUpdateOK(time_data.period) && mode_->stopEvent())
       {
         stopMotion(time_data.uptime);
       }
       return;
     }
-    case TrajProcessingMode::stopping:
-    {
+    case TrajProcessingMode::stopping: {
       // By construction of the stop trajectory we can exclude that the execution starts in the future
       if (!isTrajectoryExecuted<typename JointTrajectoryController::Segment>(curr_traj, time_data.uptime))
       {

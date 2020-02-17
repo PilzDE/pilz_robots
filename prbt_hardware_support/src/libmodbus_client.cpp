@@ -68,17 +68,17 @@ bool LibModbusClient::init(const char* ip, unsigned int port)
 
 void LibModbusClient::setResponseTimeoutInMs(unsigned long timeout_ms)
 {
-  struct timeval response_timeout;
-  response_timeout.tv_sec = timeout_ms / 1000;
-  response_timeout.tv_usec = (timeout_ms % 1000) * 1000;
-  modbus_set_response_timeout(modbus_connection_, &response_timeout);
+  uint32_t tv_sec = static_cast<uint32_t>(timeout_ms / 1000);
+  uint32_t tv_usec = static_cast<uint32_t>((timeout_ms % 1000) * 1000);
+  modbus_set_response_timeout(modbus_connection_, tv_sec, tv_usec);
 }
 
 unsigned long LibModbusClient::getResponseTimeoutInMs()
 {
-  struct timeval response_timeout;
-  modbus_get_response_timeout(modbus_connection_, &response_timeout);
-  return static_cast<unsigned long>(response_timeout.tv_sec * 1000L + (response_timeout.tv_usec / 1000L));
+  uint32_t tv_sec;
+  uint32_t tv_usec;
+  modbus_get_response_timeout(modbus_connection_, &tv_sec, &tv_usec);
+  return static_cast<unsigned long>(tv_sec * 1000L + (tv_usec / 1000L));
 }
 
 RegCont LibModbusClient::readHoldingRegister(int addr, int nb)
@@ -120,7 +120,7 @@ RegCont LibModbusClient::writeReadHoldingRegister(const int write_addr, const Re
   }
   RegCont read_reg(static_cast<RegCont::size_type>(read_nb));
 
-  if (write_reg.size() > std::numeric_limits<int>::max())
+  if (write_reg.size() > static_cast<unsigned int>(std::numeric_limits<int>::max()))
   {
     throw std::invalid_argument("Argument \"write_reg\" must not exceed max value of type \"int\"");
   }

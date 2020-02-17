@@ -69,6 +69,7 @@ private:
   ros::NodeHandle nh_{ "~" };
   std::string controller_ns_;
   ros::Time last_update_time_;
+  ros::Duration last_period_;
   hardware_interface::RobotHW* hardware_;
 };
 
@@ -86,7 +87,7 @@ bool PJTCManagerMock<SegmentImpl, HWInterface>::loadController()
   controller_.reset(new Controller());
   if (controller_->init(hardware_->get<HWInterface>(), nh_, controller_nh))
   {
-    controller_->state_ = controller_->INITIALIZED;
+    controller_->state_ = controller_interface::ControllerBase::ControllerState::INITIALIZED;
     return true;
   }
   return false;
@@ -97,7 +98,7 @@ void PJTCManagerMock<SegmentImpl, HWInterface>::startController()
 {
   ros::Time current_time{ ros::Time::now() };
   controller_->starting(current_time);
-  controller_->state_ = controller_->RUNNING;
+  controller_->state_ = controller_interface::ControllerBase::ControllerState::RUNNING;
   last_update_time_ = current_time;
 }
 
@@ -105,14 +106,15 @@ template <class SegmentImpl, class HWInterface>
 void PJTCManagerMock<SegmentImpl, HWInterface>::update()
 {
   ros::Time current_time{ ros::Time::now() };
-  controller_->update(current_time, current_time - last_update_time_);
+  last_period_ = current_time - last_update_time_;
   last_update_time_ = current_time;
+  controller_->update(last_update_time_, last_period_);
 }
 
 template <class SegmentImpl, class HWInterface>
 ros::Duration PJTCManagerMock<SegmentImpl, HWInterface>::getCurrentPeriod()
 {
-  return ros::Time::now() - last_update_time_;
+  return last_period_;
 }
 
 template <class SegmentImpl, class HWInterface>

@@ -214,7 +214,7 @@ TEST_F(LibModbusClientTest, testNegativeNumberOfRegistersToRead)
 
 /**
  * @brief Tests that exception is thrown if the user tries
- * to call the write function with a register containing too mainy elements.
+ * to call the write function with a register containing too many elements.
  */
 TEST_F(LibModbusClientTest, testOutOfRangeRegisterSize)
 {
