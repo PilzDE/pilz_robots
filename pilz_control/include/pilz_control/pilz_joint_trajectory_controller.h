@@ -19,6 +19,7 @@
 
 #include <mutex>
 #include <memory>
+#include <atomic>
 
 #include <std_srvs/Trigger.h>
 
@@ -26,6 +27,7 @@
 #include <joint_trajectory_controller/stop_trajectory_builder.h>
 
 #include <pilz_control/cartesian_speed_monitor.h>
+#include <prbt_hardware_support/SetSpeedLimit.h>
 
 namespace pilz_joint_trajectory_controller
 {
@@ -95,6 +97,10 @@ class PilzJointTrajectoryController
      */
     bool handleIsExecutingRequest(std_srvs::TriggerRequest& request, std_srvs::TriggerResponse& response);
 
+
+    bool handleSetSpeedLimitRequest(prbt_hardware_support::SetSpeedLimit::Request& req,
+                                    prbt_hardware_support::SetSpeedLimit::Response& response);
+
   protected:
     /**
      * @brief Called if new trajectory should be handled
@@ -137,6 +143,7 @@ private:
     ros::ServiceServer hold_position_service;
     ros::ServiceServer unhold_position_service;
     ros::ServiceServer is_executing_service_;
+    ros::ServiceServer speed_limit_service_;
 
     std_srvs::TriggerRequest last_request_;
 
@@ -155,6 +162,9 @@ private:
      * threading problems.
      */
     std::mutex sync_mutex_;
+
+    //! @brief The currently max allowed speed for each frame on the Cartesian trajectory.
+    std::atomic<double> cartesian_speed_limit_ {0.0};
 };
 
 }  // namespace pilz_joint_trajectory_controller

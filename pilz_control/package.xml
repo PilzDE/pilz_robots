@@ -23,6 +23,7 @@
   <build_depend>cmake_modules</build_depend>
   <build_depend>roslint</build_depend>
   <build_depend>moveit_core</build_depend>
+  <build_depend>prbt_hardware_support</build_depend>
 
   <depend>roscpp</depend>
   <depend>joint_trajectory_controller</depend>

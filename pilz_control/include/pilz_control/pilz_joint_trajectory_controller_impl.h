@@ -52,6 +52,10 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
                                                          &PilzJointTrajectoryController::handleIsExecutingRequest,
                                                          this);
 
+  speed_limit_service_ = controller_nh.advertiseService("set_speed_limit",
+                                                        &PilzJointTrajectoryController::handleSetSpeedLimitRequest,
+                                                        this);
+
   stop_traj_builder_ = std::unique_ptr<joint_trajectory_controller::StopTrajectoryBuilder<SegmentImpl> >(new joint_trajectory_controller::StopTrajectoryBuilder<SegmentImpl>(JointTrajectoryController::getNumberOfJoints(),
                                                                                                                                                                              JointTrajectoryController::stop_trajectory_duration_,
                                                                                                                                                                              JointTrajectoryController::old_desired_state_));
@@ -192,7 +196,8 @@ checkStates(const ros::Duration& period) const
   return (cartesian_speed_monitor_->cartesianSpeedIsBelowLimit(JointTrajectoryController::old_desired_state_.position,
                                                                JointTrajectoryController::desired_state_.position,
                                                                period.toSec(),
-                                                               0.25 /*limit */));  // TODO: HSL
+                                                               cartesian_speed_limit_));
+                                                               //0.25 /*limit */));  // TODO: HSL
 }
 
 template <class SegmentImpl, class HardwareInterface>
@@ -226,6 +231,15 @@ triggerCancellingOfActiveGoal()
   //      active_goal->setCanceled(active_goal->preallocated_result_);
   // Unfortunately this does not work because sometimes the goal does not seems to get cancelled.
   // It has to be investigated why! -> Probably a threading problem.
+}
+
+template <class SegmentImpl, class HardwareInterface>
+bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
+handleSetSpeedLimitRequest(prbt_hardware_support::SetSpeedLimit::Request& req,
+                           prbt_hardware_support::SetSpeedLimit::Response& /*response*/)
+{
+  cartesian_speed_limit_ = req.speed_limit;
+  return true;
 }
 
 }  // namespace pilz_joint_trajectory_controller
