@@ -199,10 +199,11 @@ reactToFailedStateCheck(const ros::Time& curr_uptime)
 {
   triggerCancellingOfActiveGoal();
 
-  stop_traj_builder_->buildTrajectory(JointTrajectoryController::old_time_data_.uptime.toSec(),
-                                      JointTrajectoryController::old_desired_state_,
-                                      stop_traj_velocity_violation_.get(), nullptr);
-
+  stop_traj_builder_
+      ->setStartState(JointTrajectoryController::old_desired_state_)
+      ->setStartTime(JointTrajectoryController::old_time_data_.uptime.toSec())
+      ->buildTrajectory(stop_traj_velocity_violation_.get());
+  stop_traj_builder_->reset();
   JointTrajectoryController::updateStates(curr_uptime, stop_traj_velocity_violation_.get());
 
   JointTrajectoryController::curr_trajectory_box_.set(stop_traj_velocity_violation_);
