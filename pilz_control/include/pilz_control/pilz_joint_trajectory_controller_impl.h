@@ -197,7 +197,6 @@ checkStates(const ros::Duration& period) const
                                                                JointTrajectoryController::desired_state_.position,
                                                                period.toSec(),
                                                                cartesian_speed_limit_));
-                                                               //0.25 /*limit */));  // TODO: HSL
 }
 
 template <class SegmentImpl, class HardwareInterface>
