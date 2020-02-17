@@ -52,7 +52,9 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
                                                          &PilzJointTrajectoryController::handleIsExecutingRequest,
                                                          this);
 
-  stop_traj_builder_ = std::unique_ptr<joint_trajectory_controller::StopTrajectoryBuilder<SegmentImpl> >(new joint_trajectory_controller::StopTrajectoryBuilder<SegmentImpl>(JointTrajectoryController::getNumberOfJoints(), JointTrajectoryController::stop_trajectory_duration_));
+  stop_traj_builder_ = std::unique_ptr<joint_trajectory_controller::StopTrajectoryBuilder<SegmentImpl> >(new joint_trajectory_controller::StopTrajectoryBuilder<SegmentImpl>(JointTrajectoryController::getNumberOfJoints(),
+                                                                                                                                                                             JointTrajectoryController::stop_trajectory_duration_,
+                                                                                                                                                                             JointTrajectoryController::old_desired_state_));
   stop_traj_velocity_violation_ = JointTrajectoryController::createHoldTrajectory(JointTrajectoryController::getNumberOfJoints());
 
   return res;
@@ -200,7 +202,6 @@ reactToFailedStateCheck(const ros::Time& curr_uptime)
   triggerCancellingOfActiveGoal();
 
   stop_traj_builder_
-      ->setStartState(JointTrajectoryController::old_desired_state_)
       ->setStartTime(JointTrajectoryController::old_time_data_.uptime.toSec())
       ->buildTrajectory(stop_traj_velocity_violation_.get());
   stop_traj_builder_->reset();
