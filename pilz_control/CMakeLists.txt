@@ -87,6 +87,10 @@ if(CATKIN_ENABLE_TESTING)
   add_executable(robot_mock test/robot_mock.cpp)
   target_link_libraries(robot_mock ${catkin_LIBRARIES})
 
+  catkin_add_gtest(unittest_gtestable_controller
+      test/unittest_gtestable_controller.cpp)
+  target_link_libraries(unittest_gtestable_controller ${catkin_LIBRARIES})
+
   # run: catkin_make -DENABLE_COVERAGE_TESTING=ON package_name_coverage
   if(ENABLE_COVERAGE_TESTING)
     APPEND_COVERAGE_COMPILER_FLAGS()
@@ -96,6 +100,5 @@ if(CATKIN_ENABLE_TESTING)
       DEPENDS tests
     )
   endif()
-
 
 endif()
