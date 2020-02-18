@@ -16,8 +16,9 @@
 #ifndef GTESTABLE_CONTROLLER_H
 #define GTESTABLE_CONTROLLER_H
 
-
 #include <controller_interface/controller.h>
+
+#include <pilz_control/rosapiwrapper.h>
 
 namespace gtestable_controller
 {
