@@ -21,7 +21,7 @@
 #include <ros/ros.h>
 
 #include <prbt_hardware_support/GetOperationMode.h>
-#include <prbt_hardware_support/SetSpeedLimit.h>
+#include <pilz_msgs/SetSpeedLimit.h>
 
 namespace prbt_hardware_support
 {
