@@ -11,7 +11,7 @@ find_package(catkin
     controller_manager
     controller_interface
     moveit_ros_planning
-    prbt_hardware_support
+    pilz_msgs
 )
 
 # Declare catkin package
@@ -19,6 +19,7 @@ catkin_package(
   CATKIN_DEPENDS
   roscpp
   std_srvs
+  pilz_msgs
   joint_trajectory_controller
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
@@ -71,14 +72,12 @@ install(FILES ${PROJECT_NAME}_plugins.xml
 
 # test
 if(CATKIN_ENABLE_TESTING)
-
   find_package(rostest REQUIRED)
 
   if(ENABLE_COVERAGE_TESTING)
     find_package(code_coverage REQUIRED)
     APPEND_COVERAGE_COMPILER_FLAGS()
   endif()
-
 
   add_rostest_gtest(unittest_pilz_joint_trajectory_controller
     test/unittest_pilz_joint_trajectory_controller.test

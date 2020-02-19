@@ -234,8 +234,8 @@ triggerCancellingOfActiveGoal()
 
 template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
-handleSetSpeedLimitRequest(prbt_hardware_support::SetSpeedLimit::Request& req,
-                           prbt_hardware_support::SetSpeedLimit::Response& /*response*/)
+handleSetSpeedLimitRequest(pilz_msgs::SetSpeedLimit::Request& req,
+                           pilz_msgs::SetSpeedLimit::Response& /*res*/)
 {
   cartesian_speed_limit_ = req.speed_limit;
   return true;

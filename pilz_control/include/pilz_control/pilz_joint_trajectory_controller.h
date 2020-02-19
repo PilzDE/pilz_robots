@@ -27,7 +27,7 @@
 #include <joint_trajectory_controller/stop_trajectory_builder.h>
 
 #include <pilz_control/cartesian_speed_monitor.h>
-#include <prbt_hardware_support/SetSpeedLimit.h>
+#include <pilz_msgs/SetSpeedLimit.h>
 
 namespace pilz_joint_trajectory_controller
 {
@@ -98,8 +98,8 @@ class PilzJointTrajectoryController
     bool handleIsExecutingRequest(std_srvs::TriggerRequest& request, std_srvs::TriggerResponse& response);
 
 
-    bool handleSetSpeedLimitRequest(prbt_hardware_support::SetSpeedLimit::Request& req,
-                                    prbt_hardware_support::SetSpeedLimit::Response& response);
+    bool handleSetSpeedLimitRequest(pilz_msgs::SetSpeedLimit::Request& req,
+                                    pilz_msgs::SetSpeedLimit::Response& res);
 
   protected:
     /**
