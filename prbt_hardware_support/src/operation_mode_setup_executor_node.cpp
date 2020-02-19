@@ -23,7 +23,7 @@
 #include <pilz_utils/wait_for_service.h>
 
 #include <prbt_hardware_support/operation_mode_setup_executor.h>
-#include <prbt_hardware_support/SetSpeedLimit.h>
+#include <pilz_msgs/SetSpeedLimit.h>
 #include <prbt_hardware_support/set_speed_limit_func_decl.h>
 #include <prbt_hardware_support/GetOperationMode.h>
 #include <prbt_hardware_support/get_operation_mode_func_decl.h>
@@ -39,6 +39,7 @@ static const std::string PARAM_SPEED_LIMIT_AUTO_STR {"speed_limit_automatic"};
 static constexpr uint32_t DEFAULT_QUEUE_SIZE {10} ;
 
 using namespace prbt_hardware_support;
+using namespace pilz_msgs;
 
 /**
  * @brief Read necessary parameters, start and initialize the

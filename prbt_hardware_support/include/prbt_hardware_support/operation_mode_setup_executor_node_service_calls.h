@@ -21,7 +21,7 @@
 #include <ros/ros.h>
 
 #include <prbt_hardware_support/GetOperationMode.h>
-#include <prbt_hardware_support/SetSpeedLimit.h>
+#include <pilz_msgs/SetSpeedLimit.h>
 
 namespace prbt_hardware_support
 {
@@ -29,7 +29,7 @@ namespace prbt_hardware_support
 template<class T>
 static bool setSpeedLimitSrv(T& srv_client, const double& speed_limit)
 {
-  SetSpeedLimit srv_msg;
+  pilz_msgs::SetSpeedLimit srv_msg;
   srv_msg.request.speed_limit = speed_limit;
   bool call_success = srv_client.call(srv_msg);
   if (!call_success)
