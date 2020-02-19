@@ -31,7 +31,6 @@ add_definitions(-Wpedantic)
 add_message_files(
   FILES
   BrakeTestErrorCodes.msg
-  FrameSpeeds.msg
   ModbusMsgInStamped.msg
   ModbusRegisterBlock.msg
   OperationModes.msg
@@ -43,7 +42,6 @@ add_service_files(
   BrakeTest.srv
   GetOperationMode.srv
   SendBrakeTestResult.srv
-  SetSpeedLimit.srv
   WriteModbusRegister.srv
 )
 
@@ -184,17 +182,6 @@ add_dependencies(pilz_modbus_client_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${P
 target_link_libraries(pilz_modbus_client_node ${catkin_LIBRARIES} modbus)
 
 
-# +++++++++++++++++++++++++++++
-# + Build speed observer node +
-# +++++++++++++++++++++++++++++
-add_executable(
-  speed_observer_node
-  src/speed_observer_node.cpp
-  src/speed_observer.cpp
-)
-add_dependencies(speed_observer_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
-target_link_libraries(speed_observer_node ${catkin_LIBRARIES})
-
 #############
 ## Install ##
 #############
@@ -215,7 +202,6 @@ install(TARGETS
   modbus_adapter_run_permitted_node
   operation_mode_setup_executor_node
   pilz_modbus_client_node
-  speed_observer_node
   stop1_executor_node
   system_info_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -463,18 +449,6 @@ if(CATKIN_ENABLE_TESTING)
     pilz_modbus_client_node
     ${catkin_EXPORTED_TARGETS}
   )
-  #----------------------------------------
-
-  # --- Speed Observer unit test ---
-  add_rostest_gmock(unittest_speed_observer
-      test/unittests/unittest_speed_observer.test
-      test/unittests/unittest_speed_observer.cpp
-      src/speed_observer.cpp
-  )
-  target_link_libraries(unittest_speed_observer
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
-  )
-  add_dependencies(unittest_speed_observer ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------------
 
   #--- SystemInfo unit test ---
