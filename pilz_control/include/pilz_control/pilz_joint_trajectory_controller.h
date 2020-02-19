@@ -149,7 +149,7 @@ private:
 
     Mode active_mode_ {Mode::HOLD};
 
-    std::shared_ptr<pilz_control::CartesianSpeedMonitor> cartesian_speed_monitor_;
+    std::unique_ptr<pilz_control::CartesianSpeedMonitor> cartesian_speed_monitor_;
     std::unique_ptr<joint_trajectory_controller::StopTrajectoryBuilder<SegmentImpl> > stop_traj_builder_;
     /**
      * @brief Stores the stop trajectory which is used in case the newly calculated desired value violates the
