@@ -88,12 +88,21 @@ if(CATKIN_ENABLE_TESTING)
   )
   #----------------------------------
 
-  # --- waitForTopic unit test ---
-  add_rostest_gtest(unittest_wait_for_topic
-     test/unittest_wait_for_topic.test
-     test/unittest_wait_for_topic.cpp
+  # --- waitForMessage unit test ---
+  add_rostest_gtest(unittest_wait_for_message
+     test/unittest_wait_for_message.test
+     test/unittest_wait_for_message.cpp
   )
-  target_link_libraries(unittest_wait_for_topic
+  target_link_libraries(unittest_wait_for_message
+    ${catkin_LIBRARIES}
+  )
+  #----------------------------------
+
+  # --- sleep unit test ---
+  catkin_add_gtest(unittest_sleep
+    test/unittest_sleep.cpp
+  )
+  target_link_libraries(unittest_sleep
     ${catkin_LIBRARIES}
   )
   #----------------------------------

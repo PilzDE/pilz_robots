@@ -28,6 +28,7 @@
   <depend>std_srvs</depend>
   <depend>controller_manager</depend>
   <depend>controller_interface</depend> <!-- Needed for the plugin export -->
+  <depend>pilz_utils</depend>
 
   <test_depend>rostest</test_depend>
   <test_depend>code_coverage</test_depend>
