@@ -28,6 +28,7 @@
 
 #include <pilz_control/cartesian_speed_monitor.h>
 #include <pilz_msgs/SetSpeedLimit.h>
+#include <pilz_control/traj_mode_manager.h>
 
 namespace pilz_joint_trajectory_controller
 {
@@ -124,8 +125,9 @@ class PilzJointTrajectoryController
     void triggerMovementToHoldPosition();
 
 private:
-    bool checkStates(const ros::Duration& period) const override;
-    void reactToFailedStateCheck(const ros::Time& curr_uptime) override;
+    void updateFuncExtensionPoint(const typename JointTrajectoryController::TimeData& time_data) override;
+    bool isPlannedCartesianVelocityOK(const ros::Duration& period) const;
+    void stopMotion(const ros::Time& curr_uptime);
 
     /**
      * @brief This function basically does what it's base class counterpart
@@ -139,6 +141,8 @@ private:
      */
     void triggerCancellingOfActiveGoal();
 
+    bool isStopMotionFinished(const ros::Time& curr_uptime) const;
+
   private:
     ros::ServiceServer hold_position_service;
     ros::ServiceServer unhold_position_service;
@@ -148,6 +152,8 @@ private:
     std_srvs::TriggerRequest last_request_;
 
     Mode active_mode_ {Mode::HOLD};
+    std::unique_ptr<TrajProcessingModeManager> mode_ {
+      std::unique_ptr<TrajProcessingModeManager>(new TrajProcessingModeManager())};
 
     std::unique_ptr<pilz_control::CartesianSpeedMonitor> cartesian_speed_monitor_;
     std::unique_ptr<joint_trajectory_controller::StopTrajectoryBuilder<SegmentImpl> > stop_traj_builder_;

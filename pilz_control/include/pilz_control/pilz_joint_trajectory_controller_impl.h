@@ -19,6 +19,8 @@
 
 #include <pilz_utils/sleep.h>
 
+#include <joint_trajectory_controller/joint_trajectory_segment.h>
+
 namespace pilz_joint_trajectory_controller
 {
 
@@ -32,8 +34,8 @@ PilzJointTrajectoryController()
 
 template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(HardwareInterface* hw,
-                                                                     ros::NodeHandle&   root_nh,
-                                                                     ros::NodeHandle&   controller_nh)
+                                                                         ros::NodeHandle&   root_nh,
+                                                                         ros::NodeHandle&   controller_nh)
 
 {
   bool res = JointTrajectoryController::init(hw, root_nh, controller_nh);
@@ -47,8 +49,8 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
 
 
   unhold_position_service = controller_nh.advertiseService("unhold",
-                                                         &PilzJointTrajectoryController::handleUnHoldRequest,
-                                                         this);
+                                                           &PilzJointTrajectoryController::handleUnHoldRequest,
+                                                           this);
 
   is_executing_service_ = controller_nh.advertiseService("is_executing",
                                                          &PilzJointTrajectoryController::handleIsExecutingRequest,
@@ -106,22 +108,19 @@ template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 handleHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response)
 {
-  std::lock_guard<std::mutex> lock(sync_mutex_);
-
-  if(active_mode_ == Mode::HOLD)
+  if ( mode_->holdEvent() )
   {
-    response.message = "Already in hold mode";
+    JointTrajectoryController::preemptActiveGoal();
+    triggerMovementToHoldPosition();
+
+    pilz_utils::sleep(ros::Duration(JointTrajectoryController::stop_trajectory_duration_));
+
+    response.message = "Holding mode enabled";
     response.success = true;
     return true;
   }
 
-  active_mode_ = Mode::HOLD;
-  JointTrajectoryController::preemptActiveGoal();
-  triggerMovementToHoldPosition();
-
-  pilz_utils::sleep(ros::Duration(JointTrajectoryController::stop_trajectory_duration_));
-
-  response.message = "Holding mode enabled";
+  response.message = "Already in hold mode";
   response.success = true;
   return true;
 }
@@ -130,18 +129,18 @@ template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 handleUnHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response)
 {
-  std::lock_guard<std::mutex> lock(sync_mutex_);
-
-  if(active_mode_ == Mode::UNHOLD)
+  do
   {
-    response.message = "Already in unhold mode";
-    response.success = true;
-    return true;
+    TrajProcessingModeListener listener {TrajProcessingMode::hold};
+    mode_->registerListener(&listener);
+    if ( !mode_->unholdEvent() )
+    {
+      listener.waitForMode();
+    }
   }
+  while( !mode_->isUnhold() );
 
-  active_mode_ = Mode::UNHOLD;
-
-  response.message = "Default mode enabled";
+  response.message = "Unhold mode (default mode) active";
   response.success = true;
   return true;
 }
@@ -158,8 +157,7 @@ template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 updateTrajectoryCommand(const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePtr gh, std::string* error_string)
 {
-  std::lock_guard<std::mutex> lock(sync_mutex_);
-  if(active_mode_ == Mode::HOLD)
+  if (mode_->isholding())
   {
     return updateStrategyWhileHolding(msg, gh, error_string);
   }
@@ -192,8 +190,38 @@ triggerMovementToHoldPosition()
 }
 
 template <class SegmentImpl, class HardwareInterface>
+inline void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
+updateFuncExtensionPoint(const typename JointTrajectoryController::TimeData& time_data)
+{
+  switch(mode_->getCurrentMode())
+  {
+  case TrajProcessingMode::unhold:
+  {
+    if (!isPlannedCartesianVelocityOK(time_data.period))
+    {
+      stopMotion(time_data.uptime);
+    }
+    return;
+  }
+  case TrajProcessingMode::stopping:
+  {
+    if ( isStopMotionFinished(time_data.uptime) )
+    {
+      mode_->stopTrajectoryFinishedEvent();
+    }
+    return;
+  }
+  case TrajProcessingMode::hold:
+    return;
+  default:
+    stopMotion(time_data.uptime);
+    return;
+  }
+}
+
+template <class SegmentImpl, class HardwareInterface>
 inline bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
-checkStates(const ros::Duration& period) const
+isPlannedCartesianVelocityOK(const ros::Duration& period) const
 {
   return (cartesian_speed_monitor_->cartesianSpeedIsBelowLimit(JointTrajectoryController::old_desired_state_.position,
                                                                JointTrajectoryController::desired_state_.position,
@@ -203,7 +231,7 @@ checkStates(const ros::Duration& period) const
 
 template <class SegmentImpl, class HardwareInterface>
 void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
-reactToFailedStateCheck(const ros::Time& curr_uptime)
+stopMotion(const ros::Time& curr_uptime)
 {
   triggerCancellingOfActiveGoal();
 
@@ -240,6 +268,27 @@ handleSetSpeedLimitRequest(pilz_msgs::SetSpeedLimit::Request& req,
                            pilz_msgs::SetSpeedLimit::Response& /*res*/)
 {
   cartesian_speed_limit_ = req.speed_limit;
+  return true;
+}
+
+template <class SegmentImpl, class HardwareInterface>
+bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
+isStopMotionFinished(const ros::Time& curr_uptime) const
+{
+  using Segment = joint_trajectory_controller::JointTrajectorySegment<SegmentImpl>;
+
+  for (unsigned int joint_index = 0; joint_index < JointTrajectoryController::getNumberOfJoints(); ++joint_index)
+  {
+    assert((*stop_traj_velocity_violation_)[joint_index].size() == 1);
+    Segment& last_segment {(*stop_traj_velocity_violation_)[joint_index].front()};
+    if (curr_uptime.toSec() < last_segment.endTime())
+    {
+      return false;
+    }
+  }
+
+  // TODO: Is the following assumption correct?:
+  // Whenever the time is up, we assume that the hold position is reached.
   return true;
 }
 
