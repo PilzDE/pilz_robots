@@ -2,6 +2,11 @@
 Changelog for package pilz_utils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Rename waitForTopic() -> waitForMessage()
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.13 (2019-12-04)
 -------------------
 

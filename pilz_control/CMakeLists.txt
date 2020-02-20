@@ -11,6 +11,7 @@ find_package(catkin
     controller_manager
     controller_interface
     moveit_ros_planning
+    pilz_utils
     pilz_msgs
 )
 
