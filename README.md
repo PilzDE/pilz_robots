@@ -118,10 +118,7 @@ then replace the pipeline in the above command by `pipeline:=pilz_command_planne
 If you've created an application package with your own launch file as described in the
 [tutorials](https://wiki.ros.org/pilz_robots/Tutorials/ModelYourApplicationWithPRBT#Create_your_application_ROS_package),
 you can easily adjust many other configuration parameters.
-See the template and comments in the [pilz_tutorials package](https://github.com/PilzDE/pilz_tutorials).
-
-### Application Templates
-You can start developing you own application with the [pilz_templates repo](https://github.com/PilzDE/pilz_templates).
+See the comments in the [pilz_tutorials package](https://github.com/PilzDE/pilz_tutorials) and templates in the [pilz_templates repo](https://github.com/PilzDE/pilz_templates).
 
 ### Running the prbt with a gripper
 Currently only the Schunk pg70 is supported. To run it, first install the package:
