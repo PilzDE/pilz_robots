@@ -151,7 +151,6 @@ private:
 
     std_srvs::TriggerRequest last_request_;
 
-    Mode active_mode_ {Mode::HOLD};
     std::unique_ptr<TrajProcessingModeManager> mode_ {
       std::unique_ptr<TrajProcessingModeManager>(new TrajProcessingModeManager())};
 

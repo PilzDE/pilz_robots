@@ -29,7 +29,7 @@
 #include <prbt_hardware_support/get_operation_mode_func_decl.h>
 #include <prbt_hardware_support/operation_mode_setup_executor_node_service_calls.h>
 
-static const std::string SET_SPEED_LIMIT_SERVICE{"set_speed_limit"};
+static const std::string SET_SPEED_LIMIT_SERVICE{"manipulator_joint_trajectory_controller/set_speed_limit"};
 static const std::string OPERATION_MODE_TOPIC{"operation_mode"};
 static const std::string GET_SPEED_OVERRIDE_SERVICE{"get_speed_override"};
 

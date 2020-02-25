@@ -41,7 +41,7 @@ enum class TrajProcessingMode
 //        |<-               <-                <-|
 static constexpr unsigned int NUM_MODES {3};
 static constexpr std::array<TrajProcessingMode, NUM_MODES> mode_state_machine_{
-  TrajProcessingMode::hold, TrajProcessingMode::stopping, TrajProcessingMode::unhold
+  TrajProcessingMode::hold, TrajProcessingMode::unhold, TrajProcessingMode::stopping
 };
 
 inline static constexpr TrajProcessingMode getModeToIdx(const unsigned int& idx)
@@ -57,7 +57,7 @@ inline static constexpr bool isTransitionValid(const TrajProcessingMode& request
 
 inline static constexpr unsigned int getNextIndex(const unsigned int& current_idx)
 {
-  return current_idx % NUM_MODES;
+  return (current_idx+1) % NUM_MODES;
 }
 
 /**
@@ -164,11 +164,6 @@ inline TrajProcessingMode TrajProcessingModeManager::getCurrentMode()
 inline bool TrajProcessingModeManager::setMode(const TrajProcessingMode& requested_mode)
 {
   std::lock_guard<std::mutex> lk(mode_mutex_);
-  if (getCurrentModeLockFree() == requested_mode)
-  {
-    return true;
-  }
-
   const unsigned int new_idx {getNextIndex(current_mode_idx_)};
   if ( !isTransitionValid(requested_mode, new_idx) )
   {
@@ -209,7 +204,7 @@ inline void TrajProcessingModeManager::stopTrajectoryFinishedEvent()
 
 inline bool TrajProcessingModeManager::unholdEvent()
 {
-  return switchTo(TrajProcessingMode::unhold);
+  return isUnhold() || switchTo(TrajProcessingMode::unhold);
 }
 
 inline void TrajProcessingModeManager::registerListener(TrajProcessingModeListener* const listener)

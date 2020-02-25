@@ -129,16 +129,16 @@ template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 handleUnHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response)
 {
-  do
+  TrajProcessingModeListener listener {TrajProcessingMode::hold};
+  mode_->registerListener(&listener);
+  if ( !mode_->unholdEvent() )
   {
-    TrajProcessingModeListener listener {TrajProcessingMode::hold};
-    mode_->registerListener(&listener);
-    if ( !mode_->unholdEvent() )
+    listener.waitForMode();
+    if (mode_->unholdEvent())
     {
-      listener.waitForMode();
+      ROS_ERROR("Could not switch to unhold mode (default mode)");
     }
   }
-  while( !mode_->isUnhold() );
 
   response.message = "Unhold mode (default mode) active";
   response.success = true;
@@ -199,6 +199,7 @@ updateFuncExtensionPoint(const typename JointTrajectoryController::TimeData& tim
   {
     if (!isPlannedCartesianVelocityOK(time_data.period))
     {
+      mode_->holdEvent();
       stopMotion(time_data.uptime);
     }
     return;
@@ -286,8 +287,6 @@ isStopMotionFinished(const ros::Time& curr_uptime) const
       return false;
     }
   }
-
-  // TODO: Is the following assumption correct?:
   // Whenever the time is up, we assume that the hold position is reached.
   return true;
 }
