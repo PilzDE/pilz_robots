@@ -280,12 +280,11 @@ handleSetSpeedLimitRequest(pilz_msgs::SetSpeedLimit::Request& req,
 
 template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
-isStopMotionFinished(const Trajectory& curr_traj, const ros::Time& curr_uptime) const
+isStopMotionFinished(const Trajectory& curr_traj, const ros::Time& curr_uptime)
 {
   using Segment = joint_trajectory_controller::JointTrajectorySegment<SegmentImpl>;
 
-  assert(curr_traj.size() == JointTrajectoryController::getNumberOfJoints());
-  for (unsigned int joint_index = 0; joint_index < JointTrajectoryController::getNumberOfJoints(); ++joint_index)
+  for (unsigned int joint_index = 0; joint_index < curr_traj.size(); ++joint_index)
   {
     assert(curr_traj[joint_index].size() >= 1);
     const Segment& last_segment {curr_traj[joint_index].back()};

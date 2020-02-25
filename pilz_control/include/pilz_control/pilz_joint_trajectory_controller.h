@@ -136,7 +136,8 @@ private:
      */
     void triggerCancellingOfActiveGoal();
 
-    bool isStopMotionFinished(const Trajectory& curr_traj, const ros::Time& curr_uptime) const;
+private:
+    static bool isStopMotionFinished(const Trajectory& curr_traj, const ros::Time& curr_uptime);
 
   private:
     ros::ServiceServer hold_position_service;
