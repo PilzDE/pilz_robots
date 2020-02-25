@@ -125,7 +125,8 @@ class PilzJointTrajectoryController
     void triggerMovementToHoldPosition();
 
 private:
-    void updateFuncExtensionPoint(const typename JointTrajectoryController::TimeData& time_data) override;
+    void updateFuncExtensionPoint(const typename JointTrajectoryController::Trajectory& curr_traj,
+                                  const typename JointTrajectoryController::TimeData& time_data) override;
     bool isPlannedCartesianVelocityOK(const ros::Duration& period) const;
     void stopMotion(const ros::Time& curr_uptime);
 
@@ -141,7 +142,7 @@ private:
      */
     void triggerCancellingOfActiveGoal();
 
-    bool isStopMotionFinished(const ros::Time& curr_uptime) const;
+    bool isStopMotionFinished(const Trajectory& curr_traj, const ros::Time& curr_uptime) const;
 
   private:
     ros::ServiceServer hold_position_service;

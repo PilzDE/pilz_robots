@@ -18,10 +18,10 @@
 #define TRAJPROCESSINGMODEMANAGER_H
 
 #include <array>
+#include <list>
 #include <memory>
 #include <mutex>
 #include <condition_variable>
-#include <atomic>
 
 namespace pilz_joint_trajectory_controller
 {
@@ -106,10 +106,13 @@ private:
 private:
   //! @brief "Pointer" to current mode.
   unsigned int current_mode_idx_ {0};
-  //! @brief Protects the access to to the current mode.
+  //! @brief Protects the access to the current mode.
   std::mutex mode_mutex_;
 
-  std::atomic<TrajProcessingModeListener*> listener_ {nullptr};
+
+  std::list<TrajProcessingModeListener*> listener_;
+  //! @brief Protects the access to the listener list.
+  std::mutex listener_mutex_;
 };
 
 inline TrajProcessingModeListener::TrajProcessingModeListener(const TrajProcessingMode& mode)
@@ -181,10 +184,16 @@ inline bool TrajProcessingModeManager::setMode(const TrajProcessingMode& mode,
 
 inline void TrajProcessingModeManager::callListener(const TrajProcessingMode& mode)
 {
-  TrajProcessingModeListener* listener {std::atomic_exchange<TrajProcessingModeListener*>(&listener_, nullptr)};
-  if (listener && listener->isTargetModeReached(mode))
+  std::lock_guard<std::mutex> lk(listener_mutex_);
+  std::list<TrajProcessingModeListener*>::iterator it = listener_.begin();
+  while(it != listener_.end())
   {
-    listener->triggerListener();
+    TrajProcessingModeListener* listener {(*it)};
+    if (listener && listener->isTargetModeReached(mode))
+    {
+      listener->triggerListener();
+      it = listener_.erase(it);
+    }
   }
 }
 
@@ -216,7 +225,8 @@ inline bool TrajProcessingModeManager::unholdEvent()
 
 inline void TrajProcessingModeManager::registerListener(TrajProcessingModeListener* const listener)
 {
-  listener_.store(listener);
+  std::lock_guard<std::mutex> lk(listener_mutex_);
+  listener_.emplace_back(listener);
 }
 
 

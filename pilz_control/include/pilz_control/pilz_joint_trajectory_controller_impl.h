@@ -108,12 +108,15 @@ template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 handleHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response)
 {
+  TrajProcessingModeListener listener {TrajProcessingMode::hold};
+  mode_->registerListener(&listener);
   if ( mode_->stoppingEvent() )
   {
     JointTrajectoryController::preemptActiveGoal();
     triggerMovementToHoldPosition();
 
-    pilz_utils::sleep(ros::Duration(JointTrajectoryController::stop_trajectory_duration_));
+    // Wait till stop motion finished by waiting for hold mode
+    listener.waitForMode();
 
     response.message = "Holding mode enabled";
     response.success = true;
@@ -193,7 +196,8 @@ triggerMovementToHoldPosition()
 
 template <class SegmentImpl, class HardwareInterface>
 inline void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
-updateFuncExtensionPoint(const typename JointTrajectoryController::TimeData& time_data)
+updateFuncExtensionPoint(const typename JointTrajectoryController::Trajectory& curr_traj,
+                         const typename JointTrajectoryController::TimeData& time_data)
 {
   switch(mode_->getCurrentMode())
   {
@@ -208,7 +212,7 @@ updateFuncExtensionPoint(const typename JointTrajectoryController::TimeData& tim
   }
   case TrajProcessingMode::stopping:
   {
-    if ( isStopMotionFinished(time_data.uptime) )
+    if ( isStopMotionFinished(curr_traj, time_data.uptime) )
     {
       mode_->stopMotionFinishedEvent();
     }
@@ -276,14 +280,14 @@ handleSetSpeedLimitRequest(pilz_msgs::SetSpeedLimit::Request& req,
 
 template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
-isStopMotionFinished(const ros::Time& curr_uptime) const
+isStopMotionFinished(const Trajectory& curr_traj, const ros::Time& curr_uptime) const
 {
   using Segment = joint_trajectory_controller::JointTrajectorySegment<SegmentImpl>;
 
   for (unsigned int joint_index = 0; joint_index < JointTrajectoryController::getNumberOfJoints(); ++joint_index)
   {
-    assert((*stop_traj_velocity_violation_)[joint_index].size() == 1);
-    Segment& last_segment {(*stop_traj_velocity_violation_)[joint_index].front()};
+    assert(curr_traj[joint_index].size() >= 1);
+    const Segment& last_segment {curr_traj[joint_index].back()};
     if (curr_uptime.toSec() < last_segment.endTime())
     {
       return false;
