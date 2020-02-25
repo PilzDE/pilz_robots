@@ -85,7 +85,7 @@ class TrajProcessingModeManager
 {
 public:
   //! @returns true only if the a successful state switch to stopping happend, otherwise false.
-  bool holdEvent();
+  bool stoppingEvent();
   void stopTrajectoryFinishedEvent();
   //! @returns  true if a successful switch to state unhold was performed, otherwise false.
   bool unholdEvent();
@@ -98,8 +98,8 @@ public:
   TrajProcessingMode getCurrentMode();
 
 private:
-  bool switchTo(const TrajProcessingMode& mode);
-  bool setMode(const TrajProcessingMode& mode);
+  bool switchTo(const TrajProcessingMode& mode, const bool success_at_transition_only=true);
+  bool setMode(const TrajProcessingMode& mode, const bool& success_at_transition_only);
   void callListener(const TrajProcessingMode& mode);
   TrajProcessingMode getCurrentModeLockFree() const;
 
@@ -161,11 +161,17 @@ inline TrajProcessingMode TrajProcessingModeManager::getCurrentMode()
   return getCurrentModeLockFree();
 }
 
-inline bool TrajProcessingModeManager::setMode(const TrajProcessingMode& requested_mode)
+inline bool TrajProcessingModeManager::setMode(const TrajProcessingMode& mode,
+                                               const bool& success_at_transition_only)
 {
   std::lock_guard<std::mutex> lk(mode_mutex_);
+  if (!success_at_transition_only && (getCurrentModeLockFree() == mode))
+  {
+    return true;
+  }
+
   const unsigned int new_idx {getNextIndex(current_mode_idx_)};
-  if ( !isTransitionValid(requested_mode, new_idx) )
+  if ( !isTransitionValid(mode, new_idx) )
   {
     return false;
   }
@@ -182,9 +188,10 @@ inline void TrajProcessingModeManager::callListener(const TrajProcessingMode& mo
   }
 }
 
-inline bool TrajProcessingModeManager::switchTo(const TrajProcessingMode& mode)
+inline bool TrajProcessingModeManager::switchTo(const TrajProcessingMode& mode,
+                                                const bool success_at_transition_only)
 {
-  if (setMode(mode))
+  if (setMode(mode, success_at_transition_only))
   {
     callListener(mode);
     return true;
@@ -192,7 +199,7 @@ inline bool TrajProcessingModeManager::switchTo(const TrajProcessingMode& mode)
   return false;
 }
 
-inline bool TrajProcessingModeManager::holdEvent()
+inline bool TrajProcessingModeManager::stoppingEvent()
 {
   return switchTo(TrajProcessingMode::stopping);
 }
@@ -204,7 +211,7 @@ inline void TrajProcessingModeManager::stopTrajectoryFinishedEvent()
 
 inline bool TrajProcessingModeManager::unholdEvent()
 {
-  return isUnhold() || switchTo(TrajProcessingMode::unhold);
+  return switchTo(TrajProcessingMode::unhold, false);
 }
 
 inline void TrajProcessingModeManager::registerListener(TrajProcessingModeListener* const listener)

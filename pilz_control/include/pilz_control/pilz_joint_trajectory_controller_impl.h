@@ -108,7 +108,7 @@ template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 handleHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response)
 {
-  if ( mode_->holdEvent() )
+  if ( mode_->stoppingEvent() )
   {
     JointTrajectoryController::preemptActiveGoal();
     triggerMovementToHoldPosition();
@@ -201,7 +201,7 @@ updateFuncExtensionPoint(const typename JointTrajectoryController::TimeData& tim
   {
     if (!isPlannedCartesianVelocityOK(time_data.period))
     {
-      mode_->holdEvent();
+      mode_->stoppingEvent();
       stopMotion(time_data.uptime);
     }
     return;
