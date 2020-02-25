@@ -33,12 +33,6 @@
 namespace pilz_joint_trajectory_controller
 {
 
-enum class Mode
-{
-  HOLD,
-  UNHOLD
-};
-
 /**
  * @class PilzJointTrajectoryController
  * @brief Specialized controller that can be triggered by a service to
