@@ -26,6 +26,23 @@ namespace pilz_joint_trajectory_controller
 
 namespace ph = std::placeholders;
 
+template<class Segment>
+bool isStopMotionFinished(const std::vector< TrajectoryPerJoint<Segment>>& traj,
+                          const ros::Time& curr_uptime)
+{
+  for (unsigned int joint_index = 0; joint_index < traj.size(); ++joint_index)
+  {
+    assert(traj[joint_index].size() >= 1);
+    const Segment& last_segment {traj[joint_index].back()};
+    if (curr_uptime.toSec() < last_segment.endTime())
+    {
+      return false;
+    }
+  }
+  // Whenever the time is up, we assume that the hold position is reached.
+  return true;
+};
+
 template <class SegmentImpl, class HardwareInterface>
 PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 PilzJointTrajectoryController()
@@ -212,7 +229,7 @@ updateFuncExtensionPoint(const typename JointTrajectoryController::Trajectory& c
   }
   case TrajProcessingMode::stopping:
   {
-    if ( isStopMotionFinished(curr_traj, time_data.uptime) )
+    if ( isStopMotionFinished<typename JointTrajectoryController::Segment>(curr_traj, time_data.uptime) )
     {
       mode_->stopMotionFinishedEvent();
     }
@@ -275,25 +292,6 @@ handleSetSpeedLimitRequest(pilz_msgs::SetSpeedLimit::Request& req,
                            pilz_msgs::SetSpeedLimit::Response& /*res*/)
 {
   cartesian_speed_limit_ = req.speed_limit;
-  return true;
-}
-
-template <class SegmentImpl, class HardwareInterface>
-bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
-isStopMotionFinished(const Trajectory& curr_traj, const ros::Time& curr_uptime)
-{
-  using Segment = joint_trajectory_controller::JointTrajectorySegment<SegmentImpl>;
-
-  for (unsigned int joint_index = 0; joint_index < curr_traj.size(); ++joint_index)
-  {
-    assert(curr_traj[joint_index].size() >= 1);
-    const Segment& last_segment {curr_traj[joint_index].back()};
-    if (curr_uptime.toSec() < last_segment.endTime())
-    {
-      return false;
-    }
-  }
-  // Whenever the time is up, we assume that the hold position is reached.
   return true;
 }
 

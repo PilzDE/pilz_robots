@@ -33,6 +33,12 @@
 namespace pilz_joint_trajectory_controller
 {
 
+template<class Segment> using TrajectoryPerJoint  = std::vector<Segment>;
+
+template<class Segment>
+static bool isStopMotionFinished(const std::vector<TrajectoryPerJoint<Segment>>& traj,
+                                 const ros::Time& curr_uptime);
+
 /**
  * @class PilzJointTrajectoryController
  * @brief Specialized controller that can be triggered by a service to
@@ -137,8 +143,6 @@ private:
     void triggerCancellingOfActiveGoal();
 
 private:
-    static bool isStopMotionFinished(const Trajectory& curr_traj, const ros::Time& curr_uptime);
-
   private:
     ros::ServiceServer hold_position_service;
     ros::ServiceServer unhold_position_service;
