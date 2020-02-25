@@ -86,7 +86,7 @@ class TrajProcessingModeManager
 public:
   //! @returns true only if the a successful state switch to stopping happend, otherwise false.
   bool stoppingEvent();
-  void stopTrajectoryFinishedEvent();
+  void stopMotionFinishedEvent();
   //! @returns  true if a successful switch to state unhold was performed, otherwise false.
   bool unholdEvent();
 
@@ -204,7 +204,7 @@ inline bool TrajProcessingModeManager::stoppingEvent()
   return switchTo(TrajProcessingMode::stopping);
 }
 
-inline void TrajProcessingModeManager::stopTrajectoryFinishedEvent()
+inline void TrajProcessingModeManager::stopMotionFinishedEvent()
 {
   switchTo(TrajProcessingMode::hold);
 }

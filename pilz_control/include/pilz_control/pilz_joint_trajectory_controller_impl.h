@@ -210,7 +210,7 @@ updateFuncExtensionPoint(const typename JointTrajectoryController::TimeData& tim
   {
     if ( isStopMotionFinished(time_data.uptime) )
     {
-      mode_->stopTrajectoryFinishedEvent();
+      mode_->stopMotionFinishedEvent();
     }
     return;
   }
