@@ -284,6 +284,7 @@ isStopMotionFinished(const Trajectory& curr_traj, const ros::Time& curr_uptime) 
 {
   using Segment = joint_trajectory_controller::JointTrajectorySegment<SegmentImpl>;
 
+  assert(curr_traj.size() == JointTrajectoryController::getNumberOfJoints());
   for (unsigned int joint_index = 0; joint_index < JointTrajectoryController::getNumberOfJoints(); ++joint_index)
   {
     assert(curr_traj[joint_index].size() >= 1);
