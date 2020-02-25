@@ -136,7 +136,9 @@ handleUnHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& respon
     listener.waitForMode();
     if (mode_->unholdEvent())
     {
-      ROS_ERROR("Could not switch to unhold mode (default mode)");
+      response.message = "Could not switch to unhold mode (default mode)";
+      response.success = false;
+      return true;
     }
   }
 
