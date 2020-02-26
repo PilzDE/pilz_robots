@@ -19,18 +19,15 @@
 namespace pilz_control
 {
 
-CartesianSpeedMonitor::CartesianSpeedMonitor(const std::vector<std::string> &joint_names)
+CartesianSpeedMonitor::CartesianSpeedMonitor(const std::vector<std::string> &joint_names,
+                                             const robot_model::RobotModelConstPtr &kinematic_model)
   : joint_names_(joint_names)
+  , kinematic_model_(kinematic_model)
 {
-
 }
 
 void CartesianSpeedMonitor::init()
 {
-  bool load_kinematics_solvers {true}; // OTHERWISE warning TODO investigate what is best todo here. Check if loaded?
-  robot_model_loader_.reset(new robot_model_loader::RobotModelLoader("robot_description", load_kinematics_solvers));
-  kinematic_model_ = robot_model_loader_->getModel();
-
   std::vector<std::string> frames_to_observe;
   auto links = kinematic_model_->getLinkModels();
 
@@ -39,7 +36,7 @@ void CartesianSpeedMonitor::init()
     if(!link->parentJointIsFixed()) // Not sure about this...
     {
       observed_links_.insert(observed_links_.begin(), link);
-      ROS_ERROR_STREAM("Created observer for " << link->getName());
+      ROS_INFO_STREAM("Monitoring cartesian speed of link " << link->getName());
     }
   }
 
@@ -69,8 +66,8 @@ bool CartesianSpeedMonitor::cartesianSpeedIsBelowLimit(const std::vector<double>
 
     if(speed > speed_limit)
     {
-      std::cerr << "Speed limit violated by link" << link->getName() << "! Desired Speed: " << speed
-                << " speed_limit: " << speed_limit << std::endl;
+      ROS_ERROR_STREAM("Speed limit violated by link" << link->getName() << "! Desired Speed: " << speed
+                       << " speed_limit: " << speed_limit);
       return false;
     }
   }

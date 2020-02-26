@@ -17,8 +17,6 @@
 #ifndef PILZ_CONTROL_PILZ_JOINT_TRAJECTORY_CONTROLLER_IMPL_H
 #define PILZ_CONTROL_PILZ_JOINT_TRAJECTORY_CONTROLLER_IMPL_H
 
-#include <pilz_utils/sleep.h>
-
 #include <joint_trajectory_controller/joint_trajectory_segment.h>
 
 namespace pilz_joint_trajectory_controller
@@ -57,7 +55,12 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
 {
   bool res = JointTrajectoryController::init(hw, root_nh, controller_nh);
 
-  cartesian_speed_monitor_.reset(new pilz_control::CartesianSpeedMonitor(JointTrajectoryController::joint_names_));
+  using robot_model_loader::RobotModelLoader;
+  using pilz_control::CartesianSpeedMonitor;
+  bool load_kinematics_solvers {true}; // OTHERWISE warning TODO investigate what is best todo here. Check if loaded?
+  robot_model_loader_ = std::make_shared<RobotModelLoader>("robot_description", load_kinematics_solvers);
+  auto kinematic_model = robot_model_loader_->getModel();
+  cartesian_speed_monitor_.reset(new CartesianSpeedMonitor(JointTrajectoryController::joint_names_, kinematic_model));
   cartesian_speed_monitor_->init();
 
   hold_position_service = controller_nh.advertiseService("hold",

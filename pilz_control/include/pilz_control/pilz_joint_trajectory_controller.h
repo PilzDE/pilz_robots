@@ -26,6 +26,8 @@
 #include <joint_trajectory_controller/joint_trajectory_controller.h>
 #include <joint_trajectory_controller/stop_trajectory_builder.h>
 
+#include <moveit/robot_model_loader/robot_model_loader.h>
+
 #include <pilz_control/cartesian_speed_monitor.h>
 #include <pilz_msgs/SetSpeedLimit.h>
 #include <pilz_control/traj_mode_manager.h>
@@ -168,8 +170,11 @@ private:
      */
     std::mutex sync_mutex_;
 
-    //! @brief The currently max allowed speed for each frame on the Cartesian trajectory.
+    //! The currently max allowed speed for each frame on the Cartesian trajectory.
     std::atomic<double> cartesian_speed_limit_ {0.0};
+
+    //! A robot model is needed for the cartesian speed monitor. The loader must not be destroyed before it.
+    robot_model_loader::RobotModelLoaderConstPtr robot_model_loader_;
 };
 
 }  // namespace pilz_joint_trajectory_controller

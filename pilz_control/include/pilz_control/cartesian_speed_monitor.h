@@ -19,9 +19,7 @@
 
 #include <vector>
 #include <string>
-#include <future>
 
-#include <moveit/robot_model_loader/robot_model_loader.h>
 #include <moveit/robot_state/robot_state.h>
 #include <moveit/robot_model/joint_model.h>
 
@@ -31,7 +29,8 @@ namespace pilz_control
 class CartesianSpeedMonitor
 {
 public:
-  CartesianSpeedMonitor(const std::vector<std::string> &joint_names);
+  CartesianSpeedMonitor(const std::vector<std::string> &joint_names,
+                        const robot_model::RobotModelConstPtr &kinematic_model);
 
   void init();
 
@@ -47,8 +46,7 @@ public:
                           const double& time_delta);
 
 private:
-  robot_model_loader::RobotModelLoaderPtr robot_model_loader_;
-  robot_model::RobotModelPtr kinematic_model_;
+  robot_model::RobotModelConstPtr kinematic_model_;
   robot_state::RobotStatePtr state_current_;
   robot_state::RobotStatePtr state_desired_;
 
