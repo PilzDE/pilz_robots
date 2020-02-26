@@ -19,6 +19,16 @@
 namespace pilz_control
 {
 
+bool hasOnlyFixedParentJoints(const moveit::core::LinkModel * const &link)
+{
+  auto parent_link {link};
+  while (parent_link != nullptr && parent_link->parentJointIsFixed())
+  {
+    parent_link = parent_link->getParentLinkModel();
+  }
+  return parent_link == nullptr;
+}
+
 CartesianSpeedMonitor::CartesianSpeedMonitor(const std::vector<std::string> &joint_names,
                                              const robot_model::RobotModelConstPtr &kinematic_model)
   : joint_names_(joint_names)
@@ -33,9 +43,9 @@ void CartesianSpeedMonitor::init()
 
   for (const auto& link : links)
   {
-    if(!link->parentJointIsFixed()) // Not sure about this...
+    if(!hasOnlyFixedParentJoints(link))
     {
-      observed_links_.insert(observed_links_.begin(), link);
+      observed_links_.push_back(link);
       ROS_INFO_STREAM("Monitoring cartesian speed of link " << link->getName());
     }
   }
