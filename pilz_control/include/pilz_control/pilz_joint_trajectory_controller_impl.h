@@ -57,8 +57,7 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
 
   using robot_model_loader::RobotModelLoader;
   using pilz_control::CartesianSpeedMonitor;
-  bool load_kinematics_solvers {true}; // OTHERWISE warning TODO investigate what is best todo here. Check if loaded?
-  robot_model_loader_ = std::make_shared<RobotModelLoader>("robot_description", load_kinematics_solvers);
+  robot_model_loader_ = std::make_shared<RobotModelLoader>("robot_description", false);
   auto kinematic_model = robot_model_loader_->getModel();
   cartesian_speed_monitor_.reset(new CartesianSpeedMonitor(JointTrajectoryController::joint_names_, kinematic_model));
   cartesian_speed_monitor_->init();
