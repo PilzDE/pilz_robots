@@ -56,9 +56,10 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
   bool res = JointTrajectoryController::init(hw, root_nh, controller_nh);
 
   using robot_model_loader::RobotModelLoader;
-  using pilz_control::CartesianSpeedMonitor;
   robot_model_loader_ = std::make_shared<RobotModelLoader>("robot_description", false);
   auto kinematic_model = robot_model_loader_->getModel();
+
+  using pilz_control::CartesianSpeedMonitor;
   cartesian_speed_monitor_.reset(new CartesianSpeedMonitor(JointTrajectoryController::joint_names_, kinematic_model));
   cartesian_speed_monitor_->init();
 

@@ -52,7 +52,7 @@ private:
 
   std::vector<std::string> joint_names_;
 
-  std::vector< const robot_model::LinkModel * > observed_links_;
+  std::vector< const robot_model::LinkModel * > monitored_links_;
 };
 
 }  // namespace pilz_control

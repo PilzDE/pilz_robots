@@ -45,7 +45,7 @@ void CartesianSpeedMonitor::init()
   {
     if(!hasOnlyFixedParentJoints(link))
     {
-      observed_links_.push_back(link);
+      monitored_links_.push_back(link);
       ROS_INFO_STREAM("Monitoring cartesian speed of link " << link->getName());
     }
   }
@@ -70,14 +70,14 @@ bool CartesianSpeedMonitor::cartesianSpeedIsBelowLimit(const std::vector<double>
   state_current_->updateLinkTransforms();
   state_desired_->updateLinkTransforms();
 
-  for(const auto & link : observed_links_)
+  for(const auto & link : monitored_links_)
   {
     auto speed = linkSpeed(state_current_, state_desired_, link, time_delta);
 
     if(speed > speed_limit)
     {
       ROS_ERROR_STREAM("Speed limit violated by link" << link->getName() << "! Desired Speed: " << speed
-                       << " speed_limit: " << speed_limit);
+                       << ", speed_limit: " << speed_limit);
       return false;
     }
   }
