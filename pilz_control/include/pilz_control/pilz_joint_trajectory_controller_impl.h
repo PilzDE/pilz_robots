@@ -159,11 +159,11 @@ handleUnHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& respon
   ROS_ERROR_STREAM("Received unhold request");
   TrajProcessingModeListener listener {TrajProcessingMode::hold};
   mode_->registerListener(&listener);
-  if ( !mode_->unholdEvent() )
+  if (!mode_->isUnhold())
   {
     ROS_ERROR_STREAM("Wait for hold mode");
     listener.waitForMode();
-    if (mode_->unholdEvent())
+    if (!mode_->unholdEvent())
     {
       ROS_ERROR_STREAM("Could not switch to unhold mode");
       response.message = "Could not switch to unhold mode (default mode)";

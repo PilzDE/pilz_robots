@@ -201,6 +201,10 @@ inline void TrajProcessingModeManager::callListener(const TrajProcessingMode& mo
       listener->triggerListener();
       it = listener_.erase(it);
     }
+    else
+    {
+      ++it;
+    }
   }
   ROS_ERROR_STREAM("Listener called");
 }
@@ -233,6 +237,11 @@ inline bool TrajProcessingModeManager::unholdEvent()
 
 inline void TrajProcessingModeManager::registerListener(TrajProcessingModeListener* const listener)
 {
+  if (listener && listener->isTargetModeReached(getCurrentMode()))
+  {
+    listener->triggerListener();
+    return;
+  }
   std::lock_guard<std::mutex> lk(listener_mutex_);
   listener_.emplace_back(listener);
 }
