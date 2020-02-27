@@ -34,6 +34,10 @@ static const std::string JOINT_STATE_TOPIC {"/joint_states"};
 
 static const std::string GET_FIRMWARE_VERION_OBJECT{"100A"};
 
+// Currently the string is defined to be 41 characters long, but the last character can be omitted.
+// This is currently under investigation. See https://github.com/PilzDE/pilz_robots/issues/299.
+static constexpr std::size_t FIRMWARE_STRING_LENGTH{40};
+
 SystemInfo::SystemInfo(ros::NodeHandle &nh)
     : joint_names_( getNodeNames(nh) )
 {
@@ -63,6 +67,9 @@ std::string SystemInfo::getFirmwareVersionOfJoint(const std::string& joint_name)
   {
     throw SystemInfoException(srv.response.message);
   }
+
+  srv.response.value.resize(FIRMWARE_STRING_LENGTH);
+
   return srv.response.value;
 }
 
