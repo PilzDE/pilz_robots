@@ -16,8 +16,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <launch>
+  <arg name="frequency" default="20" />
 
-  <include file="$(find prbt_hardware_support)/launch/modbus_adapter_operation_mode_node.launch"/>
-  <include file="$(find prbt_hardware_support)/launch/operation_mode_setup_executor_node.launch"/>
-  <include file="$(find prbt_hardware_support)/launch/speed_observer_node.launch"/>
+  <node required="true" ns="prbt" name="speed_observer_node" pkg="prbt_hardware_support"
+        type="speed_observer_node" output="screen" >
+    <param name="observation_frequency" value="$(arg frequency)" />
+  </node>
 </launch>
