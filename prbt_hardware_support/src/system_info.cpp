@@ -36,7 +36,7 @@ static const std::string GET_FIRMWARE_VERION_OBJECT{"100A"};
 
 // Currently the string is defined to be 41 characters long, but the last character can be omitted.
 // This is currently under investigation. See https://github.com/PilzDE/pilz_robots/issues/299.
-static const std::size_t FIRMWARE_STRING_LENGTH{40};
+static constexpr std::size_t FIRMWARE_STRING_LENGTH{40};
 
 SystemInfo::SystemInfo(ros::NodeHandle &nh)
     : joint_names_( getNodeNames(nh) )
