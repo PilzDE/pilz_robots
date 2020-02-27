@@ -258,14 +258,47 @@ TEST_F(SystemInfoTests, testServiceFail)
 TEST_F(SystemInfoTests, testGetFirmwareVersions)
 {
   ASSERT_EQ(2u, joint_names_.size()) << "Number of joints in test set-up have changed => Change expected version container in test accordingly.";
-  const FirmwareCont exp_versions { {joint_names_.at(0), "101"},
-                                    {joint_names_.at(1), "777"}};
+
+  const FirmwareCont exp_versions { {joint_names_.at(0), "100 Build:11158 Date:2018-06-07 16:49:55"},
+                                    {joint_names_.at(1), "101 Build:11158 Date:2018-06-07 16:49:55"}};
 
   EXPECT_CALL(*this, executeGetObject(_,_))
       .Times(2)
       .WillRepeatedly(testing::Invoke(
                         [exp_versions](GetObject::Request& req, GetObject::Response& res){
                         res.value = exp_versions.at(req.node);
+                        res.success = true;
+                        return true;
+                      }
+                      ));
+
+  // Check that returned versions from service are correct
+  ros::NodeHandle nh{"~"};
+  SystemInfo info {nh};
+  FirmwareCont actual_version_cont {info.getFirmwareVersions()};
+  for(const auto& joint : joint_names_)
+  {
+    EXPECT_TRUE(actual_version_cont.find(joint) != actual_version_cont.cend()) << "No version for joint found";
+    EXPECT_EQ(exp_versions.at(joint), actual_version_cont.at(joint)) << "Expected and actual firmware version do not match";
+  }
+}
+
+/**
+ * @brief Tests that the firmware string is trimmed to 40chars
+ * See https://github.com/PilzDE/pilz_robots/issues/299
+ */
+TEST_F(SystemInfoTests, testGetFirmwareVersionsResizeTo40Chars)
+{
+  ASSERT_EQ(2u, joint_names_.size()) << "Number of joints in test set-up have changed => Change expected version container in test accordingly.";
+
+  const FirmwareCont exp_versions { {joint_names_.at(0), "100 Build:11158 Date:2018-06-07 16:49:55"},
+                                    {joint_names_.at(1), "101 Build:11158 Date:2018-06-07 16:49:55"}};
+
+  EXPECT_CALL(*this, executeGetObject(_,_))
+      .Times(2)
+      .WillRepeatedly(testing::Invoke(
+                        [exp_versions](GetObject::Request& req, GetObject::Response& res){
+                        res.value = exp_versions.at(req.node) + "AdditionalStuffWhichNeedsToBeRemoved";
                         res.success = true;
                         return true;
                       }
