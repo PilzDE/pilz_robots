@@ -44,7 +44,7 @@ static constexpr std::array<TrajProcessingMode, NUM_MODES> mode_state_machine_{
   TrajProcessingMode::hold, TrajProcessingMode::unhold, TrajProcessingMode::stopping
 };
 
-inline static constexpr TrajProcessingMode getModeToIdx(const unsigned int& idx)
+inline static constexpr TrajProcessingMode getMode(const unsigned int& idx)
 {
   return mode_state_machine_[idx];
 }
@@ -52,7 +52,7 @@ inline static constexpr TrajProcessingMode getModeToIdx(const unsigned int& idx)
 inline static constexpr bool isTransitionValid(const TrajProcessingMode& requested_new_mode,
                                                const unsigned int& idx_of_request_new_mode)
 {
-  return requested_new_mode == getModeToIdx(idx_of_request_new_mode);
+  return requested_new_mode == getMode(idx_of_request_new_mode);
 }
 
 inline static constexpr unsigned int getNextIndex(const unsigned int& current_idx)
@@ -155,7 +155,7 @@ inline bool TrajProcessingModeManager::isUnhold()
 
 inline TrajProcessingMode TrajProcessingModeManager::getCurrentModeLockFree() const
 {
-  return getModeToIdx(current_mode_idx_);
+  return getMode(current_mode_idx_);
 }
 
 inline TrajProcessingMode TrajProcessingModeManager::getCurrentMode()
