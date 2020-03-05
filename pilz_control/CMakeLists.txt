@@ -83,6 +83,7 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest_gtest(unittest_pilz_joint_trajectory_controller
     test/unittest_pilz_joint_trajectory_controller.test
     test/unittest_pilz_joint_trajectory_controller.cpp
+    src/cartesian_speed_monitor.cpp
   )
   target_link_libraries(unittest_pilz_joint_trajectory_controller ${catkin_LIBRARIES})
 
