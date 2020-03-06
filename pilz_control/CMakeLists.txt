@@ -10,6 +10,7 @@ find_package(catkin
     roslint
     controller_manager
     controller_interface
+    moveit_core
     moveit_ros_planning
     pilz_utils
     pilz_msgs
