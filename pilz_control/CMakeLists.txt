@@ -75,11 +75,22 @@ install(FILES ${PROJECT_NAME}_plugins.xml
 # test
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
+  find_package(geometry_msgs REQUIRED)
+  find_package(tf2 REQUIRED)
+  find_package(tf2_geometry_msgs REQUIRED)
 
   if(ENABLE_COVERAGE_TESTING)
     find_package(code_coverage REQUIRED)
     APPEND_COVERAGE_COMPILER_FLAGS()
   endif()
+
+  catkin_add_gtest(unittest_cartesian_speed_monitor
+    test/unittest_cartesian_speed_monitor.cpp
+    src/cartesian_speed_monitor.cpp
+  )
+  target_link_libraries(unittest_cartesian_speed_monitor
+    ${catkin_LIBRARIES}
+  )
 
   add_rostest_gtest(unittest_pilz_joint_trajectory_controller
     test/unittest_pilz_joint_trajectory_controller.test
