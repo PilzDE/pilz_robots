@@ -22,6 +22,7 @@
 #include <atomic>
 
 #include <std_srvs/Trigger.h>
+#include <std_srvs/SetBool.h>
 
 #include <joint_trajectory_controller/joint_trajectory_controller.h>
 #include <joint_trajectory_controller/stop_trajectory_builder.h>
@@ -29,7 +30,6 @@
 #include <moveit/robot_model_loader/robot_model_loader.h>
 
 #include <pilz_control/cartesian_speed_monitor.h>
-#include <pilz_msgs/SetSpeedLimit.h>
 #include <pilz_control/traj_mode_manager.h>
 
 namespace pilz_joint_trajectory_controller
@@ -101,8 +101,8 @@ class PilzJointTrajectoryController
     bool handleIsExecutingRequest(std_srvs::TriggerRequest& request, std_srvs::TriggerResponse& response);
 
 
-    bool handleSetSpeedLimitRequest(pilz_msgs::SetSpeedLimit::Request& req,
-                                    pilz_msgs::SetSpeedLimit::Response& res);
+    bool handleMonitorCartesianSpeedRequest(std_srvs::SetBool::Request& req,
+                                            std_srvs::SetBool::Response& res);
 
   protected:
     /**

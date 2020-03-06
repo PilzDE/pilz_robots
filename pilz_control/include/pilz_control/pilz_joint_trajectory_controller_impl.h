@@ -22,6 +22,9 @@
 namespace pilz_joint_trajectory_controller
 {
 
+static constexpr double SPEED_LIMIT_ACTIVATED{0.25};
+static constexpr double SPEED_LIMIT_NOT_ACTIVATED{-1.0};
+
 namespace ph = std::placeholders;
 
 template<class Segment>
@@ -76,8 +79,8 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
                                                          &PilzJointTrajectoryController::handleIsExecutingRequest,
                                                          this);
 
-  speed_limit_service_ = controller_nh.advertiseService("set_speed_limit",
-                                                        &PilzJointTrajectoryController::handleSetSpeedLimitRequest,
+  speed_limit_service_ = controller_nh.advertiseService("monitor_cartesian_speed",
+                                                        &PilzJointTrajectoryController::handleMonitorCartesianSpeedRequest,
                                                         this);
 
   stop_traj_builder_ = std::unique_ptr<joint_trajectory_controller::StopTrajectoryBuilder<SegmentImpl> >(new joint_trajectory_controller::StopTrajectoryBuilder<SegmentImpl>(JointTrajectoryController::getNumberOfJoints(),
@@ -303,10 +306,11 @@ triggerCancellingOfActiveGoal()
 
 template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
-handleSetSpeedLimitRequest(pilz_msgs::SetSpeedLimit::Request& req,
-                           pilz_msgs::SetSpeedLimit::Response& /*res*/)
+handleMonitorCartesianSpeedRequest(std_srvs::SetBool::Request& req,
+                                   std_srvs::SetBool::Response& res)
 {
-  cartesian_speed_limit_ = req.speed_limit;
+  cartesian_speed_limit_ = req.data ? SPEED_LIMIT_ACTIVATED : SPEED_LIMIT_NOT_ACTIVATED;
+  res.success = true;
   return true;
 }
 

@@ -934,13 +934,13 @@ lt=()..[publish]
     <coordinates>
       <x>620</x>
       <y>360</y>
-      <w>65</w>
+      <w>90</w>
       <h>375</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 layer=100
 lt=()-[Service]
-/set_speed_limit
+/monitor_cartesian_speed
 
 
 

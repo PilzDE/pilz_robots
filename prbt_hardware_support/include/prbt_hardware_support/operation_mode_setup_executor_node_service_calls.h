@@ -20,17 +20,16 @@
 
 #include <ros/ros.h>
 
-#include <prbt_hardware_support/GetOperationMode.h>
-#include <prbt_hardware_support/SetSpeedLimit.h>
+#include <std_srvs/SetBool.h>
 
 namespace prbt_hardware_support
 {
 
 template<class T>
-static bool setSpeedLimitSrv(T& srv_client, const double& speed_limit)
+static bool monitorCartesianSpeedSrv(T& srv_client, const bool active)
 {
-  SetSpeedLimit srv_msg;
-  srv_msg.request.speed_limit = speed_limit;
+  std_srvs::SetBool srv_msg;
+  srv_msg.request.data = active;
   bool call_success = srv_client.call(srv_msg);
   if (!call_success)
   {

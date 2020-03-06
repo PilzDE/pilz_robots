@@ -17,11 +17,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <launch>
 
-  <arg name="speed_limit_t1" default="0.25" />
-  <arg name="speed_limit_automatic" default="5.0" />
-
-  <node required="true" ns="prbt" pkg="prbt_hardware_support" type="operation_mode_setup_executor_node" name="operation_mode_setup_executor_node" output="screen">
-    <param name="speed_limit_t1" value="$(arg speed_limit_t1)"/>
-    <param name="speed_limit_automatic" value="$(arg speed_limit_automatic)"/>
-  </node>
+  <node required="true" ns="prbt" pkg="prbt_hardware_support" type="operation_mode_setup_executor_node"
+        name="operation_mode_setup_executor_node" output="screen"/>
 </launch>

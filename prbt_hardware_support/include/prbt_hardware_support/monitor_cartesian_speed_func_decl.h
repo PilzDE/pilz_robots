@@ -14,16 +14,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SET_SPEED_LIMIT_FUNC_DECL_H
-#define SET_SPEED_LIMIT_FUNC_DECL_H
+#ifndef MONITOR_CARTESIAN_SPEED_FUNC_DECL_H
+#define MONITOR_CARTESIAN_SPEED_FUNC_DECL_H
 
 #include <functional>
 
 namespace prbt_hardware_support
 {
 
-using SetSpeedLimitFunc = std::function<bool(const double&)>;
+using MonitorCartesianSpeedFunc = std::function<bool(const bool)>;
 
 }
 
-#endif // SET_SPEED_LIMIT_FUNC_DECL_H
+#endif // MONITOR_CARTESIAN_SPEED_FUNC_DECL_H
