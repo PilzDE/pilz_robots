@@ -131,26 +131,21 @@ template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 handleHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response)
 {
-  ROS_ERROR_STREAM("Received hold request");
   TrajProcessingModeListener listener {TrajProcessingMode::hold};
   mode_->registerListener(&listener);
   if ( mode_->stoppingEvent() )
   {
-    ROS_ERROR_STREAM("Switched to stopping mode");
     JointTrajectoryController::preemptActiveGoal();
     triggerMovementToHoldPosition();
 
     // Wait till stop motion finished by waiting for hold mode
-    ROS_ERROR_STREAM("Wait for hold mode");
     listener.waitForMode();
-    ROS_ERROR_STREAM("Switched to hold mode");
 
     response.message = "Holding mode enabled";
     response.success = true;
     return true;
   }
 
-  ROS_ERROR_STREAM("Nothing todo for hold request");
   response.message = "Already in hold mode";
   response.success = true;
   return true;
@@ -160,24 +155,19 @@ template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 handleUnHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response)
 {
-  ROS_ERROR_STREAM("Received unhold request");
   TrajProcessingModeListener listener {TrajProcessingMode::hold};
   mode_->registerListener(&listener);
   if (!mode_->isUnhold())
   {
-    ROS_ERROR_STREAM("Wait for hold mode");
     listener.waitForMode();
     if (!mode_->unholdEvent())
     {
-      ROS_ERROR_STREAM("Could not switch to unhold mode");
       response.message = "Could not switch to unhold mode (default mode)";
       response.success = false;
       return true;
     }
-    ROS_ERROR_STREAM("Switched to unhold mode");
   }
 
-  ROS_ERROR_STREAM("Unhold mode active");
   response.message = "Unhold mode (default mode) active";
   response.success = true;
   return true;
@@ -245,10 +235,8 @@ updateFuncExtensionPoint(const typename JointTrajectoryController::Trajectory& c
   }
   case TrajProcessingMode::stopping:
   {
-    ROS_ERROR_STREAM("Check if stop motion is finished");
     if ( isStopMotionFinished<typename JointTrajectoryController::Segment>(curr_traj, time_data.uptime) )
     {
-      ROS_ERROR_STREAM("Stop motion is finished");
       mode_->stopMotionFinishedEvent();
     }
     return;

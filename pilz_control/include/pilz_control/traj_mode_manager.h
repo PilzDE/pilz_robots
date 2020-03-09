@@ -167,37 +167,30 @@ inline TrajProcessingMode TrajProcessingModeManager::getCurrentMode()
 inline bool TrajProcessingModeManager::setMode(const TrajProcessingMode& mode,
                                                const bool& success_at_transition_only)
 {
-  ROS_ERROR_STREAM("Set Mode");
   std::lock_guard<std::mutex> lk(mode_mutex_);
   if (!success_at_transition_only && (getCurrentModeLockFree() == mode))
   {
-    ROS_ERROR_STREAM("Nothing to do for setMode");
     return true;
   }
 
   const unsigned int new_idx {getNextIndex(current_mode_idx_)};
   if ( !isTransitionValid(mode, new_idx) )
   {
-    ROS_ERROR_STREAM("Transition not valid");
     return false;
   }
-  ROS_ERROR_STREAM("Valid transition performed, new idx: " << new_idx);
   current_mode_idx_ = new_idx;
   return true;
 }
 
 inline void TrajProcessingModeManager::callListener(const TrajProcessingMode& mode)
 {
-  ROS_ERROR_STREAM("Call listener");
   std::lock_guard<std::mutex> lk(listener_mutex_);
   std::list<TrajProcessingModeListener*>::iterator it = listener_.begin();
   while(it != listener_.end())
   {
-    ROS_ERROR_STREAM("Listener at hand");
     TrajProcessingModeListener* listener {(*it)};
     if (listener && listener->isTargetModeReached(mode))
     {
-      ROS_ERROR_STREAM("Trigger listener");
       listener->triggerListener();
       it = listener_.erase(it);
     }
@@ -206,7 +199,6 @@ inline void TrajProcessingModeManager::callListener(const TrajProcessingMode& mo
       ++it;
     }
   }
-  ROS_ERROR_STREAM("Listener called");
 }
 
 inline bool TrajProcessingModeManager::switchTo(const TrajProcessingMode& mode,
