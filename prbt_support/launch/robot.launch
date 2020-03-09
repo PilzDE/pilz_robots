@@ -77,13 +77,12 @@
     </include>
 
     <include if="$(arg has_operation_mode_support)" file="$(find prbt_hardware_support)/launch/operation_mode.launch" />
-    <group unless="$(arg has_operation_mode_support)">
-      <node name="fake_speed_override_node" pkg="prbt_hardware_support" type="fake_speed_override_node"/>
-    </group>
+    <include unless="$(arg has_operation_mode_support)" file="$(find prbt_hardware_support)/launch/fake_operation_mode_setup.launch" />
   </group>
 
   <group if="$(eval sto.lower() == 'none')" >
     <node pkg="rosservice" type="rosservice" name="robot_init" args="call --wait /prbt/driver/init"/>
+    <include file="$(find prbt_hardware_support)/launch/fake_operation_mode_setup.launch" />
   </group>
 
   <node ns="prbt" pkg="prbt_hardware_support" name="system_info_node"
