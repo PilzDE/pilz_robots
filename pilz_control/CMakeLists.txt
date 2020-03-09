@@ -99,6 +99,13 @@ if(CATKIN_ENABLE_TESTING)
     ${catkin_LIBRARIES}
   )
 
+  catkin_add_gtest(unittest_traj_mode_listener
+    test/unittest_traj_mode_listener.cpp
+  )
+  target_link_libraries(unittest_traj_mode_listener
+    ${catkin_LIBRARIES}
+  )
+
   add_rostest_gtest(unittest_pilz_joint_trajectory_controller
     test/unittest_pilz_joint_trajectory_controller.test
     test/unittest_pilz_joint_trajectory_controller.cpp

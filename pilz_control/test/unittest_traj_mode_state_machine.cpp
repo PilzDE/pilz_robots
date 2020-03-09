@@ -78,7 +78,7 @@ TEST(TrajModeStateMachineTest, testNextTransitionInStoppingMode)
   EXPECT_TRUE(found_index);
 }
 
-}
+}  // namespace pilz_joint_trajectory_controller
 
 int main(int argc, char* argv[])
 {
