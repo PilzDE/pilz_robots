@@ -57,6 +57,19 @@ TEST(TrajModeListenerTest, testWaitAndTrigger)
   EXPECT_EQ(wait_future.wait_for(timeout), std::future_status::ready);
 }
 
+TEST(TrajModeListenerTest, testTriggerBeforeWait)
+{
+  TrajProcessingModeListener listener(TrajProcessingMode::hold);
+
+  listener.triggerListener();
+
+  std::future<void> wait_future = std::async(std::launch::async,
+                                             std::bind(&TrajProcessingModeListener::waitForMode, &listener));
+
+  std::chrono::seconds timeout{std::chrono::seconds(WAIT_FOR_RESULT_TIMEOUT)};
+  EXPECT_EQ(wait_future.wait_for(timeout), std::future_status::ready);
+}
+
 }  // namespace pilz_joint_trajectory_controller
 
 int main(int argc, char* argv[])
