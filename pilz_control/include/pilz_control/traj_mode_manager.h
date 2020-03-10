@@ -84,10 +84,10 @@ private:
 class TrajProcessingModeManager
 {
 public:
-  //! @returns true only if the a successful state switch to stopping happend, otherwise false.
+  //! @returns true only if a successful state switch to stopping was performed, otherwise false.
   bool stoppingEvent();
   void stopMotionFinishedEvent();
-  //! @returns  true if a successful switch to state unhold was performed, otherwise false.
+  //! @returns  true if in state unhold or a successful switch to state unhold was performed, otherwise false.
   bool unholdEvent();
 
 public:
