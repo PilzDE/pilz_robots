@@ -91,7 +91,7 @@ public:
   bool unholdEvent();
 
 public:
-  bool isholding();
+  bool isHolding();
   bool isUnhold();
   void registerListener(TrajProcessingModeListener* const listener);
 
@@ -142,7 +142,7 @@ inline void TrajProcessingModeListener::triggerListener()
   cond_variable_.notify_one();
 }
 
-inline bool TrajProcessingModeManager::isholding()
+inline bool TrajProcessingModeManager::isHolding()
 {
   TrajProcessingMode current_ {getCurrentMode()};
   return (current_ == TrajProcessingMode::stopping) || (current_ == TrajProcessingMode::hold);

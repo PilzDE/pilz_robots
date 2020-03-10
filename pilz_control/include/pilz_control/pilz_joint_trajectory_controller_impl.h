@@ -185,7 +185,7 @@ template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 updateTrajectoryCommand(const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePtr gh, std::string* error_string)
 {
-  if (mode_->isholding())
+  if (mode_->isHolding())
   {
     return updateStrategyWhileHolding(msg, gh, error_string);
   }
