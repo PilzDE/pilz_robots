@@ -87,10 +87,11 @@ public:
   //! @returns true only if a successful state switch to stopping was performed, otherwise false.
   bool stoppingEvent();
   void stopMotionFinishedEvent();
-  //! @returns  true if in state unhold or a successful switch to state unhold was performed, otherwise false.
+  //! @returns true if in state unhold or a successful switch to state unhold was performed, otherwise false.
   bool unholdEvent();
 
 public:
+  //! @returns true if in state stopping or hold, otherwise false.
   bool isHolding();
   bool isUnhold();
   void registerListener(TrajProcessingModeListener* const listener);
