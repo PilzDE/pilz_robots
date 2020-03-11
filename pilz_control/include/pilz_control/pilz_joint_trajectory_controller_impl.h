@@ -79,7 +79,7 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
                                                          &PilzJointTrajectoryController::handleIsExecutingRequest,
                                                          this);
 
-  speed_limit_service_ = controller_nh.advertiseService("monitor_cartesian_speed",
+  monitor_cartesian_speed_service_ = controller_nh.advertiseService("monitor_cartesian_speed",
                                                         &PilzJointTrajectoryController::handleMonitorCartesianSpeedRequest,
                                                         this);
 

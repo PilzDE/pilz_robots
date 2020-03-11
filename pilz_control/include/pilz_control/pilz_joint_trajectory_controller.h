@@ -151,7 +151,7 @@ private:
     ros::ServiceServer hold_position_service;
     ros::ServiceServer unhold_position_service;
     ros::ServiceServer is_executing_service_;
-    ros::ServiceServer speed_limit_service_;
+    ros::ServiceServer monitor_cartesian_speed_service_;
 
     std_srvs::TriggerRequest last_request_;
 

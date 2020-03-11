@@ -19,11 +19,12 @@
 
 #include <ros/ros.h>
 
+#include <std_srvs/SetBool.h>
+
 #include <pilz_utils/get_param.h>
 #include <pilz_utils/wait_for_service.h>
 
 #include <prbt_hardware_support/operation_mode_setup_executor.h>
-#include <prbt_hardware_support/SetSpeedLimit.h>
 #include <prbt_hardware_support/monitor_cartesian_speed_func_decl.h>
 #include <prbt_hardware_support/GetOperationMode.h>
 #include <prbt_hardware_support/get_operation_mode_func_decl.h>
@@ -49,7 +50,7 @@ int main(int argc, char **argv)
 
   using std::placeholders::_1;
   pilz_utils::waitForService(MONITOR_CARTESIAN_SPEED_SERVICE);
-  ros::ServiceClient monitor_cartesian_speed_srv = nh.serviceClient<SetSpeedLimit>(MONITOR_CARTESIAN_SPEED_SERVICE);
+  ros::ServiceClient monitor_cartesian_speed_srv = nh.serviceClient<std_srvs::SetBool>(MONITOR_CARTESIAN_SPEED_SERVICE);
   MonitorCartesianSpeedFunc monitor_cartesian_speed_func = std::bind(monitorCartesianSpeedSrv<ros::ServiceClient>,
                                                                      monitor_cartesian_speed_srv, _1);
 
