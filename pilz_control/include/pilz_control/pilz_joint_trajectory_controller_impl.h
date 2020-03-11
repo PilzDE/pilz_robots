@@ -92,6 +92,14 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
 }
 
 template <class SegmentImpl, class HardwareInterface>
+void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::starting(const ros::Time& time)
+{
+  JointTrajectoryController::starting();
+  mode_->unholdEvent();
+  mode_->stoppingEvent();
+}
+
+template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::is_executing()
 {
   if (JointTrajectoryController::state_ != JointTrajectoryController::RUNNING)
@@ -155,6 +163,13 @@ template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 handleUnHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response)
 {
+  if (JointTrajectoryController::state_ != JointTrajectoryController::RUNNING)
+  {
+    response.message = "Could not switch to unhold mode (default mode)";
+    response.success = false;
+    return true;
+  }
+
   TrajProcessingModeListener listener {TrajProcessingMode::hold};
   mode_->registerListener(&listener);
   if (!mode_->isUnhold())
