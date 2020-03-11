@@ -2,6 +2,11 @@
 Changelog for package prbt_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add pipeline for merging the planner into moveit (old pipeline still available)
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.13 (2019-12-04)
 -------------------
 
