@@ -94,7 +94,7 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
 template <class SegmentImpl, class HardwareInterface>
 void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::starting(const ros::Time& time)
 {
-  JointTrajectoryController::starting();
+  JointTrajectoryController::starting(time);
   mode_->unholdEvent();
   mode_->stoppingEvent();
 }
