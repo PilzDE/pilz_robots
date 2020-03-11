@@ -305,7 +305,7 @@ TEST_F(PilzJointTrajectoryControllerTest, testD0Destructor)
 //////////////////////////////////////////////////////////////////////////
 
 //! The return value indicates if the call was successful (in case of a service callback), the actual result
-//! of the is-executing-function is assigned (via reference) to the second argument.
+//! of the is-executing-check is assigned (via reference) to the second argument.
 typedef std::function<testing::AssertionResult(const ControllerPtr&, bool&)> InvokeIsExecuting;
 
 static testing::AssertionResult InvokeIsExecutingMethod(const ControllerPtr& controller, bool& result)
@@ -334,24 +334,22 @@ class PilzJointTrajectoryControllerIsExecutingTest : public PilzJointTrajectoryC
                                                      public testing::WithParamInterface<InvokeIsExecuting>
 {
 protected:
-  testing::AssertionResult invokeIsExecuting();
-  testing::AssertionResult waitForIsExecutingResult(bool expectation);
+  testing::AssertionResult invokeIsExecuting(bool& result);
+  testing::AssertionResult waitForIsExecutingResult(bool expectation, bool& result);
 
   /**
    * @brief Perform init, start, unhold and update, such that controller is ready for executing.
    */
   testing::AssertionResult performFullControllerStartup();
-
-  bool is_executing_result;
 };
 
-testing::AssertionResult PilzJointTrajectoryControllerIsExecutingTest::invokeIsExecuting()
+testing::AssertionResult PilzJointTrajectoryControllerIsExecutingTest::invokeIsExecuting(bool& result)
 {
   auto invoke_is_executing {GetParam()};
-  return invoke_is_executing(controller_, is_executing_result);
+  return invoke_is_executing(controller_, result);
 }
 
-testing::AssertionResult PilzJointTrajectoryControllerIsExecutingTest::waitForIsExecutingResult(bool expectation)
+testing::AssertionResult PilzJointTrajectoryControllerIsExecutingTest::waitForIsExecutingResult(bool expectation, bool& result)
 {
   auto invoke_is_executing {GetParam()};
   ros::Duration update_period{DEFAULT_UPDATE_PERIOD_SEC};
@@ -361,12 +359,12 @@ testing::AssertionResult PilzJointTrajectoryControllerIsExecutingTest::waitForIs
     progressInTime(update_period);
     updateController();
 
-    auto assertion_result {invoke_is_executing(controller_, is_executing_result)};
+    auto assertion_result {invoke_is_executing(controller_, result)};
     if(assertion_result == testing::AssertionFailure())
     {
       return assertion_result;
     }
-    if (is_executing_result == expectation)
+    if (result == expectation)
     {
       return testing::AssertionSuccess();
     }
@@ -405,7 +403,8 @@ testing::AssertionResult PilzJointTrajectoryControllerIsExecutingTest::performFu
 
 TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testNotInitialized)
 {
-  EXPECT_TRUE(invokeIsExecuting());
+  bool is_executing_result;
+  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
   EXPECT_FALSE(is_executing_result) << "Controller is executing unexpectedly";
 }
 
@@ -414,7 +413,8 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testNotStarted)
   ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
   controller_->state_ = controller_->INITIALIZED;
 
-  EXPECT_TRUE(invokeIsExecuting());
+  bool is_executing_result;
+  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
   EXPECT_FALSE(is_executing_result) << "Controller is executing unexpectedly";
 }
 
@@ -432,7 +432,8 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testHoldAtStart)
   startController();
   controller_->state_ = controller_->RUNNING;
 
-  EXPECT_TRUE(invokeIsExecuting());
+  bool is_executing_result;
+  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
   EXPECT_TRUE(is_executing_result) << "Controller is not executing hold trajectory at start";
 
   /**********
@@ -442,7 +443,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testHoldAtStart)
   progressInTime(stop_duration);
   updateController();
 
-  EXPECT_TRUE(invokeIsExecuting());
+  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
   EXPECT_FALSE(is_executing_result) << "Controller is executing unexpectedly";
 
   /**********
@@ -453,7 +454,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testHoldAtStart)
   EXPECT_TRUE(controller_->handleUnHoldRequest(req, resp));
   EXPECT_TRUE(resp.success);
 
-  EXPECT_TRUE(invokeIsExecuting());
+  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
   EXPECT_FALSE(is_executing_result) << "Controller is executing unexpectedly";
 }
 
@@ -471,7 +472,8 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testSingleActionGoal)
   GoalType goal {generateSimpleGoal(goal_duration)};
 
   trajectory_action_client_.sendGoal(goal);
-  EXPECT_TRUE(waitForIsExecutingResult(true));
+  bool is_executing_result;
+  EXPECT_TRUE(waitForIsExecutingResult(true, is_executing_result));
 
   /**********
    * Step 2 *
@@ -480,7 +482,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testSingleActionGoal)
   progressInTime(goal_duration + default_update_period);
   updateController();
 
-  EXPECT_TRUE(invokeIsExecuting());
+  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
   EXPECT_FALSE(is_executing_result) << "Controller is executing unexpectedly";
 }
 
@@ -498,7 +500,8 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testSingleCommandMessage)
   GoalType goal {generateSimpleGoal(goal_duration)};
 
   trajectory_command_publisher_->publish(goal.trajectory);
-  EXPECT_TRUE(waitForIsExecutingResult(true));
+  bool is_executing_result;
+  EXPECT_TRUE(waitForIsExecutingResult(true, is_executing_result));
 
   /**********
    * Step 2 *
@@ -506,7 +509,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testSingleCommandMessage)
   ros::Duration default_update_period {DEFAULT_UPDATE_PERIOD_SEC};
   progressInTime(goal_duration + default_update_period);
   updateController();
-  EXPECT_TRUE(invokeIsExecuting());
+  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
   EXPECT_FALSE(is_executing_result) << "Controller is executing unexpectedly";
 }
 
@@ -525,7 +528,8 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStoppingAnExecution)
   GoalType goal {generateSimpleGoal(goal_duration)};
 
   trajectory_command_publisher_->publish(goal.trajectory);
-  EXPECT_TRUE(waitForIsExecutingResult(true));
+  bool is_executing_result;
+  EXPECT_TRUE(waitForIsExecutingResult(true, is_executing_result));
 
   /**********
    * Step 2 *
@@ -539,7 +543,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStoppingAnExecution)
   progressInTime(-stop_duration*0.5);
   updateController();
 
-  EXPECT_TRUE(invokeIsExecuting());
+  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
   EXPECT_TRUE(is_executing_result) << "Controller is not executing as expected";
 
   /**********
@@ -549,7 +553,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStoppingAnExecution)
   progressInTime(stop_duration*0.5 + default_update_period);
   updateController();
 
-  EXPECT_TRUE(invokeIsExecuting());
+  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
   EXPECT_FALSE(is_executing_result) << "Controller is executing unexpectedly";
 }
 
