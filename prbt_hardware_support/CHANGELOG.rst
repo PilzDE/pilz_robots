@@ -2,8 +2,8 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.14 (2020-03-11)
+-------------------
 * Trim firmware string.
 * Rename waitForTopic() -> waitForMessage()
 * Add Status Indicator that shows operation mode, speed override, HW status and ROS status
