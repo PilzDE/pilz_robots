@@ -4,6 +4,7 @@ Changelog for package pilz_robots
 
 Forthcoming
 -----------
+* Add dependencies to meta-package package.xml
 
 0.4.11 (2019-09-11)
 -------------------

@@ -5,8 +5,6 @@ Changelog for package prbt_moveit_config
 Forthcoming
 -----------
 * add pipeline for merging the planner into moveit (old pipeline still available)
-* Contributors: Pilz GmbH and Co. KG
-
 * Fake speed override in case of sim:=true
 * Fix warning by change parent and child of fixed frame
 * Contributors: Pilz GmbH and Co. KG
