@@ -4,8 +4,6 @@ Changelog for package prbt_ikfast_manipulator_plugin
 
 Forthcoming
 -----------
-* integrate clang-tidy via CMake flag
-* Contributors: Pilz GmbH and Co. KG
 
 0.4.11 (2019-09-11)
 -------------------
