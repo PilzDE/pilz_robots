@@ -2,6 +2,13 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.14 (2020-03-11)
+-------------------
+* Trim firmware string.
+* Rename waitForTopic() -> waitForMessage()
+* Add Status Indicator that shows operation mode, speed override, HW status and ROS status
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.13 (2019-12-04)
 -------------------
 * Use brake-test definitions from pilz_msgs
