@@ -145,16 +145,12 @@ handleHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response
   {
     JointTrajectoryController::preemptActiveGoal();
     triggerMovementToHoldPosition();
-
-    // Wait till stop motion finished by waiting for hold mode
-    listener.waitForMode();
-
-    response.message = "Holding mode enabled";
-    response.success = true;
-    return true;
   }
 
-  response.message = "Already in hold mode";
+  // Wait till stop motion finished by waiting for hold mode
+  listener.waitForMode();
+
+  response.message = "Holding mode enabled";
   response.success = true;
   return true;
 }
