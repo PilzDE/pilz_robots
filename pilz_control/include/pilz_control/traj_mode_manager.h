@@ -36,12 +36,12 @@ enum class TrajProcessingMode
   hold
 };
 
-// "Simple" linear state machine:
-//  x ->  |->  hold  ->  unhold  ->  stopping ->|
+// "Simple" linear state machine: (start with stopping in accordance to the controller)
+//  x ->  |->  stopping  ->  hold  ->  unhold ->|
 //        |<-               <-                <-|
 static constexpr unsigned int NUM_MODES {3};
 static constexpr std::array<TrajProcessingMode, NUM_MODES> mode_state_machine_{
-  TrajProcessingMode::hold, TrajProcessingMode::unhold, TrajProcessingMode::stopping
+  TrajProcessingMode::stopping, TrajProcessingMode::hold, TrajProcessingMode::unhold
 };
 
 inline static constexpr TrajProcessingMode getMode(const unsigned int& idx)
