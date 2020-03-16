@@ -18,6 +18,7 @@
 #define PILZ_CONTROL_PILZ_JOINT_TRAJECTORY_CONTROLLER_IMPL_H
 
 #include <joint_trajectory_controller/joint_trajectory_segment.h>
+#include <joint_trajectory_controller/tolerances.h>
 
 namespace pilz_joint_trajectory_controller
 {
@@ -31,11 +32,13 @@ template<class Segment>
 bool isStopMotionFinished(const std::vector< TrajectoryPerJoint<Segment>>& traj,
                           const ros::Time& curr_uptime)
 {
+  typedef joint_trajectory_controller::SegmentTolerancesPerJoint<typename Segment::Scalar> SegmentTolerancesPerJoint;
   for (unsigned int joint_index = 0; joint_index < traj.size(); ++joint_index)
   {
     assert(traj[joint_index].size() >= 1);
     const Segment& last_segment {traj[joint_index].back()};
-    if (curr_uptime.toSec() < last_segment.endTime())
+    const SegmentTolerancesPerJoint& tolerances = last_segment.getTolerances();
+    if (curr_uptime.toSec() < last_segment.endTime() + tolerances.goal_time_tolerance)
     {
       return false;
     }
