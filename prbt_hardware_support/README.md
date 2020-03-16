@@ -29,32 +29,26 @@ between them.
 The launch files included in the `prbt_hardware_support` package don't need to
 be called directly by the user. They already are included in our top-level
 launch file (for more information on how-to run the PRBT robot with ROS see the 
-[pilz_robots-README](https://github.com/PilzDE/pilz_robots#running-on-the-real-robot).
+[pilz_robots-README](https://github.com/PilzDE/pilz_robots#running-on-the-real-robot)
+and our [application templates](https://github.com/PilzDE/pilz_application_templates).
 
 # Supported DIN EN ISO 10218-1 safety features
 The prbt_hardware_support package provides support for a number of safety
 features which are essential for a DIN EN ISO 10218-1 certifiable robot system.
   
 **Please note:**  
-The DIN EN ISO 10218-1 support is WORK IN PROGRESS!!!  
+The DIN EN ISO 10218-1 support is currently **WORK IN PROGRESS**.
  
 ## Needed/supported hardware
 In order for the safety features to work, one needs special hardware
-components supporting special safety feature.
+components supporting the required safety features.
 Currently, we test all our features against the following 
 hardware setup:
-- Robot: Manipulator module PRBT
-- Safety controller: PSS 4000 (with special PSS 4000 program)
+- Robot: Manipulator module PRBT 6
+- Safety controller: PSS 4000 (with a dedicated program)
 - Operating mode selector switch: PITmode
 - Enabling switch: PITenable
 - Pushbutton unit (with emergency stop): PITgatebox
-
-**Please note:**  
-Not all safety features in this section are supported by both PILZ safety 
-controllers! Currently, the PNOZmulti does not support the brake test feature 
-(for more information about the brake test feature see the 
-[brake test section](#brake-test)).
-
 
 ## Definitions
 ### STO
@@ -96,7 +90,7 @@ See DIN EN ISO 10218-1 for more details or contact us: ros@pilz.de
 **Please note:**  
 In operation mode T1 the robot can be moved as usual. 
 However, if an attempt to exceed the speed limit of 250 mm/s in T1 is detected,
-the prevailing motion is aborted and a controlled stop is performed.
+the current motion is aborted and a controlled stop is performed.
 For more information see  the [speed monitoring section](#speed-monitoring).
 
 ## Speed monitoring
