@@ -159,10 +159,6 @@ The ``ModbusAdapterOperationModeNode`` publishes the active operation mode on th
 Use `rosmsg show prbt_hardware_support/OperationModes` to see the definition of each value.
 
 ## OperationModeSetupExecutorNode
-The ``OperationModeSetupExecutorNode`` sets the speed limit for each frame based on the active operation mode and offers a service ``/prbt/get_speed_override``. The speed override is chosen such that a speed limit violation is unlikely if all robot motions are scaled with it.
-
-### Parameters
-- speed_limit_t1 [m/s] (default: 0.25)
-- speed_limit_automatic [m/s] (default: 5.0)
+The ``OperationModeSetupExecutorNode`` activates the speed monitoring for operation mode T1 and offers a service ``/prbt/get_speed_override``. The speed override is chosen such that a speed limit violation is unlikely if all robot motions are scaled with it.
 
 <sup>*</sup>Not supported yet
