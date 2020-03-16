@@ -76,7 +76,7 @@ bool CartesianSpeedMonitor::cartesianSpeedIsBelowLimit(const std::vector<double>
 
     if(speed > speed_limit)
     {
-      ROS_ERROR_STREAM("Speed limit violated by link" << link->getName() << "! Desired Speed: " << speed
+      ROS_ERROR_STREAM("Speed limit violated by link '" << link->getName() << "'! Desired Speed: " << speed
                        << ", speed_limit: " << speed_limit);
       return false;
     }
