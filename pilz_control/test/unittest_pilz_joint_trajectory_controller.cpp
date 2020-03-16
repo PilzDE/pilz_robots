@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
+#include <atomic>
+#include <chrono>
 #include <functional>
+#include <future>
+#include <thread>
 #include <unistd.h>
 
 #include <gtest/gtest.h>
@@ -29,7 +33,7 @@
 
 #include <pilz_control/pilz_joint_trajectory_controller.h>
 
-typedef hardware_interface::JointCommandInterface HWInterface;
+typedef hardware_interface::PositionJointInterface HWInterface;
 typedef trajectory_interface::QuinticSplineSegment<double> Segment;
 typedef pilz_joint_trajectory_controller::PilzJointTrajectoryController<Segment, HWInterface> Controller;
 typedef std::shared_ptr<Controller> ControllerPtr;
@@ -38,25 +42,100 @@ typedef control_msgs::FollowJointTrajectoryGoal GoalType;
 namespace pilz_joint_trajectory_controller
 {
 
-static const std::string CONTROLLER_NAMESPACE{"/controller_ns"};
-static const std::string TRAJECTORY_ACTION{"/follow_joint_trajectory"};
-static const std::string HOLD_SERVICE{"/hold"};
-static const std::string UNHOLD_SERVICE{"/unhold"};
-static const std::string IS_EXECUTING_SERVICE{"/is_executing"};
-static const std::string TRAJECTORY_COMMAND_TOPIC{"/command"};
-static const std::string STOP_TRAJECTORY_DURATION_PARAMETER{"stop_trajectory_duration"};
+static const std::string CONTROLLER_NAMESPACE {"/controller_ns"};
+static const std::string TRAJECTORY_ACTION {"/follow_joint_trajectory"};
+static const std::string HOLD_SERVICE {"/hold"};
+static const std::string UNHOLD_SERVICE {"/unhold"};
+static const std::string IS_EXECUTING_SERVICE {"/is_executing"};
+static const std::string MONITOR_CARTESIAN_SPEED_SERVICE {"/monitor_cartesian_speed"};
+static const std::string TRAJECTORY_COMMAND_TOPIC {"/command"};
 
-static constexpr double TIME_COMPARISON_TOLERANCE_SEC{0.000001};
-static constexpr double STOP_TRAJECTORY_DURATION{0.2};
-static constexpr double TIME_SIMULATION_START_SEC{0.1};
-static constexpr double DEFAULT_UPDATE_PERIOD_SEC{0.008};
+static const std::string STOP_TRAJECTORY_DURATION_PARAMETER {"stop_trajectory_duration"};
+static const std::string JOINTS_PARAMETER {"joints"};
+static const std::string JOINT_NAME {"joint1"};
 
-static constexpr unsigned int SLEEP_TIME_MSEC{10};
+static constexpr double DEFAULT_GOAL_DURATION_SEC {1.0};
+static constexpr double DEFAULT_UPDATE_PERIOD_SEC {0.008};
+static constexpr double STOP_TRAJECTORY_DURATION_SEC {0.2};
+static constexpr double TIME_SIMULATION_START_SEC {0.1};
+static constexpr double VELOCITY_COMPARISON_EPS {0.01};
+static constexpr double WAIT_FOR_ACTION_RESULT_TIMEOUT_SEC {5.0};
+
+static constexpr unsigned int SLEEP_TIME_MSEC {5};
+static constexpr unsigned int WAIT_FOR_ACTION_SERVER_TIMEOUT_MSEC {5000};
+static constexpr unsigned int WAIT_FOR_HOLD_FUTURE_MSEC {1000};
+static constexpr unsigned int WAIT_FOR_MOVEMENT_STARTED_MSEC {1000};
 
 static void progressInTime(const ros::Duration& period)
 {
-  ros::Time current_time{ros::Time::now()};
+  ros::Time current_time {ros::Time::now()};
   ros::Time::setNow(current_time + period);
+}
+
+static ros::Duration getGoalDuration(const GoalType &goal)
+{
+  return goal.trajectory.points.back().time_from_start;
+}
+
+static bool waitForUsingSystemTime(const std::function<bool()>& is_condition_fulfilled,
+                                   const std::chrono::milliseconds& timeout)
+{
+  const std::chrono::system_clock::time_point start {std::chrono::system_clock::now()};
+  do
+  {
+    if (is_condition_fulfilled())
+    {
+      return true;
+    }
+    if (std::chrono::system_clock::now() - start > timeout)
+    {
+      return false;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_TIME_MSEC));
+  }
+  while (ros::ok());
+  return false;
+}
+
+template<typename T>
+bool isFutureReady(const std::future<T>& this_future)
+{
+  return this_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
+}
+
+class RobotMock
+{
+public:
+  RobotMock(HWInterface* hardware);
+
+  void update(const ros::Duration& period);
+
+  bool isMoving();
+
+private:
+  double pos_, vel_, eff_, cmd_;
+};
+
+RobotMock::RobotMock(HWInterface* hardware)
+{
+  pos_ = 0.0;
+  vel_ = 0.0;
+  eff_ = 0.0;
+  hardware_interface::JointStateHandle jsh {JOINT_NAME, &pos_, &vel_, &eff_};
+  cmd_ = 0.0;
+  hardware_interface::JointHandle jh {jsh, &cmd_};
+  hardware->registerHandle(jh);
+}
+
+void RobotMock::update(const ros::Duration& period)
+{
+vel_ = (cmd_ - pos_) / period.toSec();
+pos_ = cmd_;
+}
+
+bool RobotMock::isMoving()
+{
+  return std::abs(vel_) > VELOCITY_COMPARISON_EPS;
 }
 
 /**
@@ -75,35 +154,47 @@ protected:
 
   void updateController();
 
-  GoalType generateSimpleGoal(const ros::Duration &goal_duration);
+  bool updateControllerUntil(const std::function<bool()>& is_condition_fulfilled,
+                             const std::chrono::milliseconds& timeout);
+
+  bool waitForActionServer(const std::chrono::milliseconds& timeout
+                           = std::chrono::milliseconds(WAIT_FOR_ACTION_SERVER_TIMEOUT_MSEC));
+
+  bool waitForActionResult(bool perform_controller_updates = false,
+                           const ros::Duration& timeout = ros::Duration(WAIT_FOR_ACTION_RESULT_TIMEOUT_SEC));
+
+  GoalType generateSimpleGoal(const ros::Duration& goal_duration = ros::Duration(DEFAULT_GOAL_DURATION_SEC));
+
+  testing::AssertionResult checkForHold();
+
+  testing::AssertionResult checkForUnhold();
+
+  /**
+   * @brief Perform init, start, unhold and update, such that controller is ready for executing.
+   */
+  testing::AssertionResult performFullControllerStartup();
 
 protected:
   ControllerPtr controller_;
   HWInterface* hardware_ {new HWInterface()};
+  std::unique_ptr<RobotMock> robot_;
   ros::NodeHandle nh_ {"~"};
   ros::NodeHandle controller_nh_ {CONTROLLER_NAMESPACE};
   ros::AsyncSpinner spinner_ {2};
   actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>
         trajectory_action_client_ {CONTROLLER_NAMESPACE + TRAJECTORY_ACTION, true};
   std::shared_ptr<ros::Publisher> trajectory_command_publisher_;
-  ros::Time last_update_time_{TIME_SIMULATION_START_SEC};
+  ros::Time last_update_time_ {TIME_SIMULATION_START_SEC};
 };
 
 void PilzJointTrajectoryControllerTest::SetUp()
 {
   spinner_.start();
 
-  // register joint handle
-  double* pos = new double();
-  double* vel = new double();
-  double* eff = new double();
-  hardware_interface::JointStateHandle jsh {"joint1", pos, vel, eff};
-  double* cmd = new double();
-  hardware_interface::JointHandle jh {jsh, cmd};
-  hardware_->registerHandle(jh);
+  robot_.reset(new RobotMock(hardware_));
 
   // set joints parameter
-  controller_nh_.setParam("joints", std::vector<std::string>( {"joint1"} ));
+  controller_nh_.setParam(JOINTS_PARAMETER, std::vector<std::string>( {JOINT_NAME} ));
 
   // Setup controller
   controller_ = std::make_shared<Controller>();
@@ -112,184 +203,155 @@ void PilzJointTrajectoryControllerTest::SetUp()
           nh_.advertise<trajectory_msgs::JointTrajectory>(CONTROLLER_NAMESPACE + TRAJECTORY_COMMAND_TOPIC, 1));
 
   // Set stop trajectory duration on parameter server (will be read in controller_->init())
-  controller_nh_.setParam(STOP_TRAJECTORY_DURATION_PARAMETER, STOP_TRAJECTORY_DURATION);
+  controller_nh_.setParam(STOP_TRAJECTORY_DURATION_PARAMETER, STOP_TRAJECTORY_DURATION_SEC);
 
   // Set up simulated time
-  ros::Time start_time{TIME_SIMULATION_START_SEC};
+  ros::Time start_time {TIME_SIMULATION_START_SEC};
   ros::Time::setNow(start_time);
 }
 
 void PilzJointTrajectoryControllerTest::startController()
 {
-  ros::Time current_time{ros::Time::now()};
+  ros::Time current_time {ros::Time::now()};
   controller_->starting(current_time);
   last_update_time_ = current_time;
 }
 
 void PilzJointTrajectoryControllerTest::updateController()
 {
-  ros::Time current_time{ros::Time::now()};
+  ros::Time current_time {ros::Time::now()};
   controller_->update(current_time, current_time - last_update_time_);
+  robot_->update(current_time - last_update_time_);
   last_update_time_ = current_time;
+}
+
+
+bool PilzJointTrajectoryControllerTest::updateControllerUntil(const std::function<bool()>& is_condition_fulfilled,
+                                                              const std::chrono::milliseconds& timeout)
+{
+  const std::chrono::system_clock::time_point start {std::chrono::system_clock::now()};
+  do
+  {
+    if (is_condition_fulfilled())
+    {
+      return true;
+    }
+    if (std::chrono::system_clock::now() - start > timeout)
+    {
+      return false;
+    }
+    progressInTime(ros::Duration(DEFAULT_UPDATE_PERIOD_SEC));
+    updateController();
+    std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_TIME_MSEC));
+  }
+  while (ros::ok());
+  return false;
+}
+
+bool PilzJointTrajectoryControllerTest::waitForActionServer(const std::chrono::milliseconds& timeout)
+{
+  return waitForUsingSystemTime([this](){ return trajectory_action_client_.isServerConnected(); }, timeout);
+}
+
+bool PilzJointTrajectoryControllerTest::waitForActionResult(bool perform_controller_updates,
+                                                            const ros::Duration& timeout)
+{
+  std::future<bool> wait_for_result_future = std::async(std::launch::async,
+                                                        [this, &timeout]()
+                                                        {
+                                                          return trajectory_action_client_.waitForResult(timeout);
+                                                        });
+  while (!isFutureReady(wait_for_result_future))
+  {
+    progressInTime(ros::Duration(DEFAULT_UPDATE_PERIOD_SEC));
+    if (perform_controller_updates)
+    {
+      updateController();
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_TIME_MSEC));
+  }
+  return wait_for_result_future.get();
 }
 
 GoalType PilzJointTrajectoryControllerTest::generateSimpleGoal(const ros::Duration &goal_duration)
 {
+  static double position_sign {1.0};
+  position_sign *= -1.0;
+
   GoalType goal;
   goal.trajectory.joint_names = hardware_->getNames();
   goal.trajectory.points.resize(1);
   goal.trajectory.points[0].time_from_start = goal_duration;
-  goal.trajectory.points[0].positions = {0.1};
+  goal.trajectory.points[0].positions = {position_sign};
 
   return goal;
 }
 
-/**
- * @brief Test the initialization of the PilzJointTrajectoryController.
- *
- * Test Sequence:
- *    1. Construct the controller and call init().
- *
- * Expected Results:
- *    1. The hold/unhold services and the is_executing service exist.
- */
-TEST_F(PilzJointTrajectoryControllerTest, testInitializiation)
+testing::AssertionResult PilzJointTrajectoryControllerTest::checkForHold()
 {
-  ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
-
-  ASSERT_TRUE(ros::service::exists(controller_nh_.getNamespace() + HOLD_SERVICE, true));
-  ASSERT_TRUE(ros::service::exists(controller_nh_.getNamespace() + UNHOLD_SERVICE, true));
-  EXPECT_TRUE(ros::service::exists(controller_nh_.getNamespace() + IS_EXECUTING_SERVICE, true));
-}
-
-/**
- * @brief Test the hold/unhold service callbacks of the PilzJointTrajectoryController.
- *
- * Test Sequence:
- *    1. Call the hold callback.
- *    2. Call the unhold callback.
- *
- * Expected Results:
- *    1. Callback returns true.
- *    2. Callback returns true.
- */
-TEST_F(PilzJointTrajectoryControllerTest, testForceHoldServiceCallback)
-{
-  ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
-
-  std_srvs::TriggerRequest req;
-  std_srvs::TriggerResponse resp;
-  ASSERT_TRUE(controller_->handleUnHoldRequest(req, resp));
-
-  ASSERT_TRUE(controller_->handleHoldRequest(req, resp));
-}
-
-/**
- * @brief Test the update strategy of the PilzJointTrajectoryController while in HOLD mode.
- *
- * Test Sequence:
- *    1. Initialize and start controller and perform initial update
- *    2. Send goal to controller action server and update with small period
- *
- * Expected Results:
- *    1. Controller is executing (entering HOLD mode at startup)
- *    2. Action result is returned and error_code is INVALID_GOAL
- */
-TEST_F(PilzJointTrajectoryControllerTest, testUpdateWhileHolding)
-{
-  /**********
-   * Step 1 *
-   **********/
-  ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
-  controller_->state_ = controller_->INITIALIZED;
-
-  startController();
-  controller_->state_ = controller_->RUNNING;
-
-  updateController();
-  EXPECT_TRUE(controller_->is_executing()) << "Controller is not executing as expected";
-
-  /**********
-   * Step 2 *
-   **********/
-  ros::Duration goal_duration{2.0};
-  GoalType goal {generateSimpleGoal(goal_duration)};
-
+  GoalType goal {generateSimpleGoal()};
   trajectory_action_client_.sendGoal(goal);
-
-  ros::Duration period{DEFAULT_UPDATE_PERIOD_SEC};
-  progressInTime(period);
-  updateController();
-
-  trajectory_action_client_.waitForResult();
-  EXPECT_EQ(control_msgs::FollowJointTrajectoryResult::INVALID_GOAL, trajectory_action_client_.getResult()->error_code)
-      << "Obtained error code " << trajectory_action_client_.getResult()->error_code << " for goal while in HOLD mode.";
+  if (!waitForActionResult())
+  {
+    return testing::AssertionFailure() << "Failed to get result after sending goal in hold mode.";
+  }
+  if (trajectory_action_client_.getResult()->error_code != control_msgs::FollowJointTrajectoryResult::INVALID_GOAL)
+  {
+    return testing::AssertionFailure() << "Error code is " << trajectory_action_client_.getResult()->error_code
+                                       << ", should have been INVALID_GOAL";
+  }
+  return testing::AssertionSuccess();
 }
 
-
-/**
- * @brief Test for correct return values and elapsed times in case of subsequent calls to hold/unhold function.
- *
- * Test Sequence:
- *    0. Start controller and perform initial update.
- *    1. Request DEFAULT twice.
- *    2. Request HOLDING.
- *    3. Request HOLDING again.
- *
- * Expected Results:
- *    0. Controller is executing (entering HOLD mode at startup).
- *    1. Each Response contains success==True.
- *    2. Response contains success==True. The elapsed time corresponds to the expected stop trajectory duration.
- *    3. Response contains success==True. The second call does not trigger a stop trajectory.
- */
-TEST_F(PilzJointTrajectoryControllerTest, testDoubleRequest)
+testing::AssertionResult PilzJointTrajectoryControllerTest::checkForUnhold()
 {
-  ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
-  controller_->state_ = controller_->INITIALIZED;
-  startController();
+  GoalType goal {generateSimpleGoal()};
+  trajectory_action_client_.sendGoal(goal);
+  if (!waitForActionResult(true))
+  {
+    return testing::AssertionFailure() << "Failed to get result after sending goal in unhold mode.";
+  }
+  if (trajectory_action_client_.getResult()->error_code != control_msgs::FollowJointTrajectoryResult::SUCCESSFUL)
+  {
+    return testing::AssertionFailure() << "Error code is " << trajectory_action_client_.getResult()->error_code
+                                       << ", should have been SUCCESSFUL";
+  }
+  return testing::AssertionSuccess();
+}
 
+testing::AssertionResult PilzJointTrajectoryControllerTest::performFullControllerStartup()
+{
+  if (!controller_->init(hardware_, nh_, controller_nh_))
+  {
+    return testing::AssertionFailure() << "Failed to initialize the controller.";
+  }
+  if (!waitForActionServer())
+  {
+    return testing::AssertionFailure() << "Failed to connect to action server.";
+  }
+  controller_->state_ = controller_->INITIALIZED;
+
+  startController();
   controller_->state_ = controller_->RUNNING;
 
+  ros::Duration stop_duration{STOP_TRAJECTORY_DURATION_SEC + 2*DEFAULT_UPDATE_PERIOD_SEC};
+  progressInTime(stop_duration);
   updateController();
-  EXPECT_TRUE(controller_->is_executing()) << "Controller is not executing as expected";
 
   std_srvs::TriggerRequest req;
   std_srvs::TriggerResponse resp;
-  ASSERT_TRUE(controller_->handleUnHoldRequest(req, resp));
-  EXPECT_TRUE(resp.success);
-  ASSERT_TRUE(controller_->handleUnHoldRequest(req, resp));
-  EXPECT_TRUE(resp.success);
+  if (!(controller_->handleUnHoldRequest(req, resp) && resp.success))
+  {
+    return testing::AssertionFailure() << "Unholding the controller failed.";
+  }
 
-  ros::Time start_hold_time{ros::Time::now()};
-  ASSERT_TRUE(controller_->handleHoldRequest(req, resp));
-  EXPECT_TRUE(resp.success);
-  EXPECT_NEAR(ros::Time::now().toSec(), start_hold_time.toSec() + STOP_TRAJECTORY_DURATION, TIME_COMPARISON_TOLERANCE_SEC);
-
-  updateController();
-
-  // Second hold should not sleep
-  start_hold_time = ros::Time::now();
-  ASSERT_TRUE(controller_->handleHoldRequest(req, resp));
-  EXPECT_TRUE(resp.success);
-  EXPECT_NEAR(ros::Time::now().toSec(), start_hold_time.toSec(), TIME_COMPARISON_TOLERANCE_SEC);
-
-  // Now we should have stopped
-  ros::Duration period{DEFAULT_UPDATE_PERIOD_SEC};
-  progressInTime(period);
-  updateController();
-  EXPECT_FALSE(controller_->is_executing());
+  return testing::AssertionSuccess();
 }
 
-/**
- * @brief Check that a fake start (simply setting state to RUNNING) doesn't trigger that is_executing() returns true.
- *
- * Increases line coverage.
- */
-TEST_F(PilzJointTrajectoryControllerTest, testFakeStart)
-{
-  controller_->state_ = controller_->RUNNING;
-  EXPECT_FALSE(controller_->is_executing()) << "Controller is executing unexpectedly";
-}
+
+///////////////////////////////////////
+//    The actual tests start here    //
+///////////////////////////////////////
 
 /**
  * @brief Test increases function coverage by ensuring that all Dtor variants are called.
@@ -297,6 +359,195 @@ TEST_F(PilzJointTrajectoryControllerTest, testFakeStart)
 TEST_F(PilzJointTrajectoryControllerTest, testD0Destructor)
 {
   ControllerPtr controller {new Controller()};
+  SUCCEED();
+}
+
+TEST_F(PilzJointTrajectoryControllerTest, testInitializiation)
+{
+  ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
+
+  ASSERT_TRUE(ros::service::exists(controller_nh_.getNamespace() + HOLD_SERVICE, true));
+  ASSERT_TRUE(ros::service::exists(controller_nh_.getNamespace() + UNHOLD_SERVICE, true));
+  EXPECT_TRUE(ros::service::exists(controller_nh_.getNamespace() + IS_EXECUTING_SERVICE, true));
+
+  EXPECT_TRUE(waitForActionServer());
+}
+
+TEST_F(PilzJointTrajectoryControllerTest, testUnholdFailureWhenNotStarted)
+{
+  ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
+  controller_->state_ = controller_->INITIALIZED;
+
+  std_srvs::TriggerRequest req;
+  std_srvs::TriggerResponse resp;
+  EXPECT_TRUE(controller_->handleUnHoldRequest(req, resp));
+  EXPECT_FALSE(resp.success);
+}
+
+TEST_F(PilzJointTrajectoryControllerTest, testHoldAtStart)
+{
+  ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
+  ASSERT_TRUE(waitForActionServer());
+  controller_->state_ = controller_->INITIALIZED;
+
+  startController();
+  controller_->state_ = controller_->RUNNING;
+
+  EXPECT_TRUE(checkForHold());
+}
+
+TEST_F(PilzJointTrajectoryControllerTest, testUnholdSuccess)
+{
+  ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
+  ASSERT_TRUE(waitForActionServer());
+  controller_->state_ = controller_->INITIALIZED;
+
+  startController();
+  controller_->state_ = controller_->RUNNING;
+
+  std_srvs::TriggerRequest req;
+  std_srvs::TriggerResponse resp;
+  // run async such that stop trajectory can be executed in the meantime
+  std::future<bool> unhold_future = std::async(std::launch::async,
+                                               [this, &req, &resp]()
+                                               {
+                                                 return controller_->handleUnHoldRequest(req, resp);
+                                               });
+
+  std::chrono::milliseconds unhold_timeout {WAIT_FOR_HOLD_FUTURE_MSEC};
+  EXPECT_TRUE(updateControllerUntil([&unhold_future](){ return isFutureReady(unhold_future); }, unhold_timeout));
+  EXPECT_TRUE(resp.success);
+  EXPECT_TRUE(checkForUnhold());
+}
+
+TEST_F(PilzJointTrajectoryControllerTest, testHoldSuccessAfterUnhold)
+{
+  ASSERT_TRUE(performFullControllerStartup());
+
+  std_srvs::TriggerRequest req;
+  std_srvs::TriggerResponse resp;
+  // run async such that stop trajectory can be executed in the meantime
+  std::future<bool> hold_future = std::async(std::launch::async,
+                                             [this, &req, &resp]()
+                                             {
+                                               return controller_->handleHoldRequest(req, resp);
+                                             });
+
+  std::chrono::milliseconds hold_timeout {WAIT_FOR_HOLD_FUTURE_MSEC};
+  EXPECT_TRUE(updateControllerUntil([&hold_future](){ return isFutureReady(hold_future); }, hold_timeout));
+  EXPECT_TRUE(resp.success);
+  EXPECT_TRUE(checkForHold());
+}
+
+TEST_F(PilzJointTrajectoryControllerTest, testDoubleHoldSuccess)
+{
+  ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
+  ASSERT_TRUE(waitForActionServer());
+  controller_->state_ = controller_->INITIALIZED;
+
+  startController();
+  controller_->state_ = controller_->RUNNING;
+
+  std_srvs::TriggerRequest req;
+  std_srvs::TriggerResponse resp;
+  // run async such that stop trajectory can be executed in the meantime
+  std::future<bool> hold_future = std::async(std::launch::async,
+                                             [this, &req, &resp]()
+                                             {
+                                               return controller_->handleHoldRequest(req, resp);
+                                             });
+
+  std::chrono::milliseconds hold_timeout {WAIT_FOR_HOLD_FUTURE_MSEC};
+  EXPECT_TRUE(updateControllerUntil([&hold_future](){ return isFutureReady(hold_future); }, hold_timeout));
+  EXPECT_TRUE(resp.success);
+  EXPECT_TRUE(checkForHold());
+
+  EXPECT_TRUE(controller_->handleHoldRequest(req, resp));
+  EXPECT_TRUE(resp.success);
+  EXPECT_TRUE(checkForHold());
+}
+
+TEST_F(PilzJointTrajectoryControllerTest, testDoubleUnholdSuccess)
+{
+  ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
+  ASSERT_TRUE(waitForActionServer());
+  controller_->state_ = controller_->INITIALIZED;
+
+  startController();
+  controller_->state_ = controller_->RUNNING;
+
+  std_srvs::TriggerRequest req;
+  std_srvs::TriggerResponse resp;
+  // run async such that stop trajectory can be executed in the meantime
+  std::future<bool> unhold_future = std::async(std::launch::async,
+                                               [this, &req, &resp]()
+                                               {
+                                                 return controller_->handleUnHoldRequest(req, resp);
+                                               });
+
+  std::chrono::milliseconds unhold_timeout {WAIT_FOR_HOLD_FUTURE_MSEC};
+  EXPECT_TRUE(updateControllerUntil([&unhold_future](){ return isFutureReady(unhold_future); }, unhold_timeout));
+  EXPECT_TRUE(resp.success);
+  EXPECT_TRUE(checkForUnhold());
+
+  EXPECT_TRUE(controller_->handleUnHoldRequest(req, resp));
+  EXPECT_TRUE(resp.success);
+  EXPECT_TRUE(checkForUnhold());
+}
+
+TEST_F(PilzJointTrajectoryControllerTest, testRepeatHoldAndUnholdSuccess)
+{
+  ASSERT_TRUE(performFullControllerStartup());
+
+  const unsigned int number_of_iterations {3U};
+  for (unsigned int i = 0; i < number_of_iterations; ++i)
+  {
+    std_srvs::TriggerRequest req;
+    std_srvs::TriggerResponse resp;
+    // run async such that stop trajectory can be executed in the meantime
+    std::future<bool> hold_future = std::async(std::launch::async,
+                                               [this, &req, &resp]()
+                                               {
+                                                 return controller_->handleHoldRequest(req, resp);
+                                               });
+
+    std::chrono::milliseconds hold_timeout {WAIT_FOR_HOLD_FUTURE_MSEC};
+    EXPECT_TRUE(updateControllerUntil([&hold_future](){ return isFutureReady(hold_future); }, hold_timeout));
+    EXPECT_TRUE(resp.success);
+    EXPECT_TRUE(checkForHold());
+
+    EXPECT_TRUE(controller_->handleUnHoldRequest(req, resp));
+    EXPECT_TRUE(resp.success);
+    EXPECT_TRUE(checkForUnhold());
+  }
+}
+
+TEST_F(PilzJointTrajectoryControllerTest, testHoldDuringGoalExecution)
+{
+  ASSERT_TRUE(performFullControllerStartup());
+
+  GoalType goal {generateSimpleGoal()};
+  trajectory_action_client_.sendGoal(goal);
+
+  std::chrono::milliseconds movement_timeout {WAIT_FOR_MOVEMENT_STARTED_MSEC};
+  EXPECT_TRUE(updateControllerUntil([this](){ return robot_->isMoving(); }, movement_timeout));
+
+  std_srvs::TriggerRequest req;
+  std_srvs::TriggerResponse resp;
+  // run async such that stop trajectory can be executed in the meantime
+  std::future<bool> hold_future = std::async(std::launch::async,
+                                             [this, &req, &resp]()
+                                             {
+                                               return controller_->handleHoldRequest(req, resp);
+                                             });
+
+  std::chrono::milliseconds hold_timeout {WAIT_FOR_HOLD_FUTURE_MSEC};
+  EXPECT_TRUE(updateControllerUntil([&hold_future](){ return isFutureReady(hold_future); }, hold_timeout));
+  EXPECT_TRUE(resp.success);
+  EXPECT_TRUE(checkForHold());
+
+  EXPECT_TRUE(waitForActionResult());
+  EXPECT_EQ(trajectory_action_client_.getResult()->error_code, control_msgs::FollowJointTrajectoryResult::INVALID_GOAL);
 }
 
 
@@ -335,12 +586,6 @@ class PilzJointTrajectoryControllerIsExecutingTest : public PilzJointTrajectoryC
 {
 protected:
   testing::AssertionResult invokeIsExecuting(bool& result);
-  testing::AssertionResult waitForIsExecutingResult(bool expectation, bool& result);
-
-  /**
-   * @brief Perform init, start, unhold and update, such that controller is ready for executing.
-   */
-  testing::AssertionResult performFullControllerStartup();
 };
 
 testing::AssertionResult PilzJointTrajectoryControllerIsExecutingTest::invokeIsExecuting(bool& result)
@@ -349,63 +594,24 @@ testing::AssertionResult PilzJointTrajectoryControllerIsExecutingTest::invokeIsE
   return invoke_is_executing(controller_, result);
 }
 
-testing::AssertionResult PilzJointTrajectoryControllerIsExecutingTest::waitForIsExecutingResult(bool expectation, bool& result)
-{
-  auto invoke_is_executing {GetParam()};
-  ros::Duration update_period{DEFAULT_UPDATE_PERIOD_SEC};
-
-  while (ros::ok())
-  {
-    progressInTime(update_period);
-    updateController();
-
-    auto assertion_result {invoke_is_executing(controller_, result)};
-    if(assertion_result == testing::AssertionFailure())
-    {
-      return assertion_result;
-    }
-    if (result == expectation)
-    {
-      return testing::AssertionSuccess();
-    }
-
-    usleep(SLEEP_TIME_MSEC);
-  }
-
-  return testing::AssertionFailure()
-      << "Controller did not " << (expectation ? "start" : "stop") << " executing as expected.";
-}
-
-testing::AssertionResult PilzJointTrajectoryControllerIsExecutingTest::performFullControllerStartup()
-{
-  if (!controller_->init(hardware_, nh_, controller_nh_))
-  {
-    return testing::AssertionFailure() << "Failed to initialize the controller.";
-  }
-  controller_->state_ = controller_->INITIALIZED;
-
-  startController();
-  controller_->state_ = controller_->RUNNING;
-
-  std_srvs::TriggerRequest req;
-  std_srvs::TriggerResponse resp;
-  if (!(controller_->handleUnHoldRequest(req, resp) && resp.success))
-  {
-    return testing::AssertionFailure() << "Unholding the controller failed.";
-  }
-
-  ros::Duration stop_duration{STOP_TRAJECTORY_DURATION + DEFAULT_UPDATE_PERIOD_SEC};
-  progressInTime(stop_duration);
-  updateController();
-
-  return testing::AssertionSuccess();
-}
-
 TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testNotInitialized)
 {
   bool is_executing_result;
   EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_FALSE(is_executing_result) << "Controller is executing unexpectedly";
+  EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
+}
+
+/**
+ * @brief Check that a fake start (simply setting state to RUNNING) doesn't trigger that is_executing() returns true.
+ *
+ * Increases line coverage.
+ */
+TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testFakeStart)
+{
+  controller_->state_ = controller_->RUNNING;
+  bool is_executing_result;
+  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
+  EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
 }
 
 TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testNotStarted)
@@ -415,17 +621,11 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testNotStarted)
 
   bool is_executing_result;
   EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_FALSE(is_executing_result) << "Controller is executing unexpectedly";
+  EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
 }
 
-/**
- * @brief Test if the controller starts and completes the execution of the hold trajectory at start.
- */
-TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testHoldAtStart)
+TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStopTrajExecutionAtStart)
 {
-  /**********
-   * Step 1 *
-   **********/
   ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
   controller_->state_ = controller_->INITIALIZED;
 
@@ -434,127 +634,121 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testHoldAtStart)
 
   bool is_executing_result;
   EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_TRUE(is_executing_result) << "Controller is not executing hold trajectory at start";
+  EXPECT_TRUE(is_executing_result) << "Failed to detect stop trajectory execution at start.";
 
-  /**********
-   * Step 2 *
-   **********/
-  ros::Duration stop_duration{STOP_TRAJECTORY_DURATION + DEFAULT_UPDATE_PERIOD_SEC};
+  ros::Duration stop_duration{STOP_TRAJECTORY_DURATION_SEC + 2*DEFAULT_UPDATE_PERIOD_SEC};
   progressInTime(stop_duration);
   updateController();
 
   EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_FALSE(is_executing_result) << "Controller is executing unexpectedly";
-
-  /**********
-   * Step 3 *
-   **********/
-  std_srvs::TriggerRequest req;
-  std_srvs::TriggerResponse resp;
-  EXPECT_TRUE(controller_->handleUnHoldRequest(req, resp));
-  EXPECT_TRUE(resp.success);
-
-  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_FALSE(is_executing_result) << "Controller is executing unexpectedly";
+  EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
 }
 
-/**
- * @brief Test if the controller starts and completes the execution of a single action goal.
- */
-TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testSingleActionGoal)
+TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testNotExecutingAfterUnhold)
+{
+  ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
+  controller_->state_ = controller_->INITIALIZED;
+
+  startController();
+  controller_->state_ = controller_->RUNNING;
+
+  std_srvs::TriggerRequest req;
+  std_srvs::TriggerResponse resp;
+  // run async such that stop trajectory can be executed in the meantime
+  std::future<bool> unhold_future = std::async(std::launch::async,
+                                               [this, &req, &resp]()
+                                               {
+                                                 return controller_->handleUnHoldRequest(req, resp);
+                                               });
+
+  std::chrono::milliseconds unhold_timeout {WAIT_FOR_HOLD_FUTURE_MSEC};
+  EXPECT_TRUE(updateControllerUntil([&unhold_future](){ return isFutureReady(unhold_future); }, unhold_timeout));
+  EXPECT_TRUE(resp.success);
+  
+  bool is_executing_result;
+  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
+  EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
+}
+
+TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testActionGoalExecution)
 {
   ASSERT_TRUE(performFullControllerStartup());
 
-  /**********
-   * Step 1 *
-   **********/
-  ros::Duration goal_duration{2.0};
-  GoalType goal {generateSimpleGoal(goal_duration)};
-
+  GoalType goal {generateSimpleGoal()};
   trajectory_action_client_.sendGoal(goal);
-  bool is_executing_result;
-  EXPECT_TRUE(waitForIsExecutingResult(true, is_executing_result));
 
-  /**********
-   * Step 2 *
-   **********/
+  std::chrono::milliseconds movement_timeout {WAIT_FOR_MOVEMENT_STARTED_MSEC};
+  EXPECT_TRUE(updateControllerUntil([this](){ return robot_->isMoving(); }, movement_timeout));
+
+  bool is_executing_result;
+  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
+  EXPECT_TRUE(is_executing_result) << "Failed to detect action goal execution";
+
   ros::Duration default_update_period {DEFAULT_UPDATE_PERIOD_SEC};
-  progressInTime(goal_duration + default_update_period);
+  progressInTime(getGoalDuration(goal) + default_update_period);
   updateController();
 
   EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_FALSE(is_executing_result) << "Controller is executing unexpectedly";
+  EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
 }
 
-/**
- * @brief Test if the controller starts and completes the execution of a single trajectory command.
- */
-TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testSingleCommandMessage)
+TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testTrajCommandExecution)
 {
   ASSERT_TRUE(performFullControllerStartup());
 
-  /**********
-   * Step 1 *
-   **********/
-  ros::Duration goal_duration{2.0};
-  GoalType goal {generateSimpleGoal(goal_duration)};
-
+  GoalType goal {generateSimpleGoal()};
   trajectory_command_publisher_->publish(goal.trajectory);
-  bool is_executing_result;
-  EXPECT_TRUE(waitForIsExecutingResult(true, is_executing_result));
 
-  /**********
-   * Step 2 *
-   **********/
-  ros::Duration default_update_period {DEFAULT_UPDATE_PERIOD_SEC};
-  progressInTime(goal_duration + default_update_period);
-  updateController();
+  std::chrono::milliseconds movement_timeout {WAIT_FOR_MOVEMENT_STARTED_MSEC};
+  EXPECT_TRUE(updateControllerUntil([this](){ return robot_->isMoving(); }, movement_timeout));
+
+  bool is_executing_result;
   EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_FALSE(is_executing_result) << "Controller is executing unexpectedly";
+  EXPECT_TRUE(is_executing_result) << "Failed to detect trajectory command execution";
+
+  ros::Duration default_update_period {DEFAULT_UPDATE_PERIOD_SEC};
+  progressInTime(getGoalDuration(goal) + default_update_period);
+  updateController();
+
+  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
+  EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
 }
 
-/**
- * @brief Test if the controller continues executing when hold is triggered during the execution
- * of a single trajectory command and stops executing after completing the hold trajectory.
- */
-TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStoppingAnExecution)
+TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStopTrajExecutionAtHold)
 {
   ASSERT_TRUE(performFullControllerStartup());
 
-  /**********
-   * Step 1 *
-   **********/
-  ros::Duration goal_duration{2.0};
-  GoalType goal {generateSimpleGoal(goal_duration)};
+  GoalType goal {generateSimpleGoal()};
+  trajectory_action_client_.sendGoal(goal);
 
-  trajectory_command_publisher_->publish(goal.trajectory);
-  bool is_executing_result;
-  EXPECT_TRUE(waitForIsExecutingResult(true, is_executing_result));
+  std::chrono::milliseconds movement_timeout {WAIT_FOR_MOVEMENT_STARTED_MSEC};
+  EXPECT_TRUE(updateControllerUntil([this](){ return robot_->isMoving(); }, movement_timeout));
 
-  /**********
-   * Step 2 *
-   **********/
   std_srvs::TriggerRequest req;
   std_srvs::TriggerResponse resp;
-  EXPECT_TRUE(controller_->handleHoldRequest(req, resp));
+  // run async such that stop trajectory can be executed in the meantime
+  std::future<bool> hold_future = std::async(std::launch::async,
+                                             [this, &req, &resp]()
+                                             {
+                                               return controller_->handleHoldRequest(req, resp);
+                                             });
+
+  EXPECT_TRUE(waitForActionResult());
+  // the following fails due to https://github.com/ros-controls/ros_controllers/issues/174
+  // EXPECT_EQ(trajectory_action_client_.getResult()->error_code, control_msgs::FollowJointTrajectoryResult::INVALID_GOAL);
+
+  updateController();
+
+  bool is_executing_result;
+  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
+  EXPECT_TRUE(is_executing_result) << "Failed to detect stop trajectory execution";
+
+  std::chrono::milliseconds hold_timeout {WAIT_FOR_HOLD_FUTURE_MSEC};
+  EXPECT_TRUE(updateControllerUntil([&hold_future](){ return isFutureReady(hold_future); }, hold_timeout));
   EXPECT_TRUE(resp.success);
 
-  ros::Duration stop_duration{STOP_TRAJECTORY_DURATION};
-  progressInTime(-stop_duration*0.5);
-  updateController();
-
   EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_TRUE(is_executing_result) << "Controller is not executing as expected";
-
-  /**********
-   * Step 3 *
-   **********/
-  ros::Duration default_update_period {DEFAULT_UPDATE_PERIOD_SEC};
-  progressInTime(stop_duration*0.5 + default_update_period);
-  updateController();
-
-  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_FALSE(is_executing_result) << "Controller is executing unexpectedly";
+  EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
 }
 
 INSTANTIATE_TEST_CASE_P(MethodAndServiceCallback, PilzJointTrajectoryControllerIsExecutingTest,
