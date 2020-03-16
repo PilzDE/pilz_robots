@@ -19,7 +19,7 @@
 #include <controller_manager/controller_manager.h>
 
 static const std::string CONTROLLER_NS_PARAM_NAME {"controller_ns_string"};
-static const std::string JOINT_NAME {"joint1"};
+static const std::string JOINT_NAME {"shoulder_to_right_arm"};
 
 /**
  * @brief The RobotMock used by the integrationtest of the pilz_joint_trajectory_controller

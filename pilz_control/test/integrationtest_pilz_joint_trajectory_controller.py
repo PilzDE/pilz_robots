@@ -14,12 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import unittest
 import rospy
 import threading
 from rospy.exceptions import ROSException
-from std_srvs.srv import Trigger, TriggerRequest
+from std_srvs.srv import Trigger, TriggerRequest, SetBool, SetBoolRequest
 from control_msgs.msg import *
 from trajectory_msgs.msg import JointTrajectoryPoint
 
@@ -28,10 +27,11 @@ from actionlib_msgs.msg import *
 
 PACKAGE_NAME = 'pilz_control'
 CONTROLLER_NS_PARAM_NAME = 'controller_ns_string'
-JOINT_NAMES = ['joint1']
+JOINT_NAMES = ['shoulder_to_right_arm']
 HOLD_SERVICE_NAME = '/test_joint_trajectory_controller/hold'
 UNHOLD_SERVICE_NAME = '/test_joint_trajectory_controller/unhold'
 IS_EXECUTING_SERVICE_NAME = '/test_joint_trajectory_controller/is_executing'
+CARTESIAN_SPEED_SERVICE_NAME = '/test_joint_trajectory_controller/monitor_cartesian_speed'
 ACTION_NAME = '/test_joint_trajectory_controller/follow_joint_trajectory'
 STATE_TOPIC_NAME = '/test_joint_trajectory_controller/state'
 
@@ -164,6 +164,24 @@ class TrajectoryDispatcher:
   def getLastState(self):
       return self._client.get_state()
 
+class SetMonitoredCartesianSpeed:
+    def __init__(self):
+        service_name = controller_ns + CARTESIAN_SPEED_SERVICE_NAME
+        rospy.wait_for_service(service_name, WAIT_FOR_SERVICE_TIMEOUT_S)
+        self._set_catesian_speed_srv = rospy.ServiceProxy(service_name, SetBool)
+
+    def _call(self, monitoring_on_off_flag):
+        req = SetBoolRequest()
+        req.data = monitoring_on_off_flag
+        resp = self._set_catesian_speed_srv(req)
+        return resp.success
+
+    def turnSpeedMonitoringOff(self):
+        return self._call(False)
+
+    def turnSpeedMonitoringOn(self):
+        return self._call(True)
+
 
 ## Wrapper for the service querying if the controller is executing
 class IsExecutingServiceWrapper:
@@ -225,7 +243,7 @@ class IntegrationtestPilzJointTrajectoryController(unittest.TestCase):
     #        3. Service call is successful.
     #        4. Goal is executed.
     #        5. Goal execution is stopped. The robot is led into a hold position, but not stopped abruptly.
-    def runTest(self):
+    def test_hold_unhold_functionality(self):
 
         rospy.loginfo("1. Set up hold service and trajectory dispatcher.")
         action_name = controller_ns + ACTION_NAME
@@ -233,6 +251,9 @@ class IntegrationtestPilzJointTrajectoryController(unittest.TestCase):
         hold_srv = StopServiceWrapper()
         trajectory_dispatcher = TrajectoryDispatcher()
         is_executing_srv = IsExecutingServiceWrapper()
+        monitored_cartesian_speed_srv = SetMonitoredCartesianSpeed()
+
+        self.assertTrue(monitored_cartesian_speed_srv.turnSpeedMonitoringOff(), 'Could not turn off speed monitoring')
 
         rospy.loginfo("2. Send goal to controller action server. Default startup state should be holding!!!!")
         trajectory_dispatcher.dispatchTrajectory(goal_position = DEFAULT_GOAL_POSITION, time_from_start = 1)
@@ -244,7 +265,7 @@ class IntegrationtestPilzJointTrajectoryController(unittest.TestCase):
         self.assertTrue(hold_srv.requestDefaultMode(), 'Switch to Mode DEFAULT failed.')
 
         rospy.loginfo("4. Send goal to controller action server.")
-        trajectory_dispatcher.dispatchTrajectory(goal_position = DEFAULT_GOAL_POSITION, time_from_start = 1)
+        trajectory_dispatcher.dispatchTrajectory(goal_position = DEFAULT_GOAL_POSITION, time_from_start = 0.5)
         result = trajectory_dispatcher.waitForResult()
         self.assertEqual(FollowJointTrajectoryResult.SUCCESSFUL, result.error_code, 'Action goal was not successful.')
 
