@@ -65,6 +65,7 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
   using pilz_control::CartesianSpeedMonitor;
   cartesian_speed_monitor_.reset(new CartesianSpeedMonitor(JointTrajectoryController::joint_names_, kinematic_model));
   cartesian_speed_monitor_->init();
+  cartesian_speed_limit_ = SPEED_LIMIT_ACTIVATED;
 
   hold_position_service = controller_nh.advertiseService("hold",
                                                          &PilzJointTrajectoryController::handleHoldRequest,
