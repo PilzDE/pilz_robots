@@ -52,7 +52,7 @@ static const std::string TRAJECTORY_COMMAND_TOPIC {"/command"};
 
 static const std::string STOP_TRAJECTORY_DURATION_PARAMETER {"stop_trajectory_duration"};
 static const std::string JOINTS_PARAMETER {"joints"};
-static const std::string JOINT_NAME {"joint1"};
+static const std::string JOINT_NAME {"shoulder_to_right_arm"};
 
 static constexpr double DEFAULT_GOAL_DURATION_SEC {1.0};
 static constexpr double DEFAULT_UPDATE_PERIOD_SEC {0.008};
@@ -103,6 +103,9 @@ bool isFutureReady(const std::future<T>& this_future)
   return this_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
 }
 
+/**
+ * @brief For simplicity this robot only keeps one joint of the two joints defined in the urdf.
+ */
 class RobotMock
 {
 public:
