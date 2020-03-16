@@ -78,9 +78,10 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::is_executing
   {
     auto uptime {JointTrajectoryController::time_data_.readFromRT()->uptime.toSec()};
     typename TrajectoryPerJoint::const_iterator segment_it = findSegment(curr_traj[i], uptime);
+    const auto& tolerances = segment_it->getTolerances();
     // Times that preceed the trajectory start time are ignored here, so is_executing() returns false
     // even if there is a current trajectory that will be executed in the future.
-    if (segment_it != curr_traj[i].end() && uptime <= segment_it->endTime())
+    if (segment_it != curr_traj[i].end() && uptime < segment_it->endTime() + tolerances.goal_time_tolerance)
     {
       is_executing = true;
       break;
