@@ -298,6 +298,7 @@ class TestPilzJointTrajectoryController(unittest.TestCase):
 
         self.assertTrue(self._move_to(position=far_away_position, duration=0.1),
                         "Cartesian speed monitor did not detect speed limit violation")
+        self.assertEqual(GoalStatus.PREEMPTED, self._trajectory_dispatcher.get_last_state(), 'Goal was not preempted.')
 
         self.assertTrue(self._move_to(position=far_away_position, duration=0.5,
                                  expected_error_code=FollowJointTrajectoryResult.INVALID_GOAL),
