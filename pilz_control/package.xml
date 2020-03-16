@@ -31,7 +31,6 @@
   <depend>moveit_core</depend>
   <depend>moveit_ros_planning</depend>
   <depend>pilz_msgs</depend>
-  <depend>pilz_utils</depend>
 
   <test_depend>rostest</test_depend>
   <test_depend>code_coverage</test_depend>
