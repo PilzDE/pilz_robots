@@ -33,8 +33,8 @@ limitations under the License.
   <!-- Set gripper -->
   <arg name="gripper" default="" />
 
-  <!-- Set STO handler -->
-  <arg name="sto" default="pnoz"/>
+  <!-- Set safety HW handler -->
+  <arg name="safety_hw" default="pnoz"/>
   <arg name="read_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_read_api_spec_$(arg sto).yaml" />
   <arg name="write_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_write_api_spec_$(arg sto).yaml" />
 
@@ -84,7 +84,7 @@ limitations under the License.
     <include file="$(find prbt_support)/launch/robot.launch" >
       <arg name="gripper" value="$(arg gripper)" />
       <arg name="load_robot_description" value="false" />
-      <arg name="sto" value="$(arg sto)" />
+      <arg name="safety_hw" value="$(arg safety_hw)" />
       <arg name="read_api_spec_file" value="$(arg read_api_spec_file)" />
       <arg name="write_api_spec_file" value="$(arg write_api_spec_file)" />
       <arg name="has_braketest_support" value="$(arg has_braketest_support)" />
