@@ -51,12 +51,14 @@ static const std::string MONITOR_CARTESIAN_SPEED_SERVICE {"/monitor_cartesian_sp
 static const std::string TRAJECTORY_COMMAND_TOPIC {"/command"};
 
 static const std::string STOP_TRAJECTORY_DURATION_PARAMETER {"stop_trajectory_duration"};
+static const std::string GOAL_TIME_TOLERANCE_PARAMETER {"constraints/goal_time"};
 static const std::string JOINTS_PARAMETER {"joints"};
-static const std::string JOINT_NAME {"shoulder_to_right_arm"};
+static const std::vector<std::string> JOINT_NAMES {"shoulder_to_right_arm", "shoulder_to_left_arm"};
 
 static constexpr double DEFAULT_GOAL_DURATION_SEC {1.0};
 static constexpr double DEFAULT_UPDATE_PERIOD_SEC {0.008};
 static constexpr double STOP_TRAJECTORY_DURATION_SEC {0.2};
+static constexpr double GOAL_TIME_TOLERANCE_SEC {0.01};
 static constexpr double TIME_SIMULATION_START_SEC {0.1};
 static constexpr double VELOCITY_COMPARISON_EPS {0.01};
 static constexpr double WAIT_FOR_ACTION_RESULT_TIMEOUT_SEC {5.0};
@@ -104,7 +106,7 @@ bool isFutureReady(const std::future<T>& this_future)
 }
 
 /**
- * @brief For simplicity this robot only keeps one joint of the two joints defined in the urdf.
+ * @brief For simplicity this robot only updates one joint of the two joints defined in the urdf.
  */
 class RobotMock
 {
@@ -116,18 +118,18 @@ public:
   bool isMoving();
 
 private:
-  double pos_, vel_, eff_, cmd_;
+  double pos_ = 0.0, vel_ = 0.0, eff_ = 0.0, cmd_ = 0.0;
+  double pos2_ = 0.0, vel2_ = 0.0, eff2_ = 0.0, cmd2_ = 0.0;
 };
 
 RobotMock::RobotMock(HWInterface* hardware)
 {
-  pos_ = 0.0;
-  vel_ = 0.0;
-  eff_ = 0.0;
-  hardware_interface::JointStateHandle jsh {JOINT_NAME, &pos_, &vel_, &eff_};
-  cmd_ = 0.0;
+  hardware_interface::JointStateHandle jsh {JOINT_NAMES.at(0), &pos_, &vel_, &eff_};
   hardware_interface::JointHandle jh {jsh, &cmd_};
   hardware->registerHandle(jh);
+  hardware_interface::JointStateHandle jsh2 {JOINT_NAMES.at(1), &pos2_, &vel2_, &eff2_};
+  hardware_interface::JointHandle jh2 {jsh2, &cmd2_};
+  hardware->registerHandle(jh2);
 }
 
 void RobotMock::update(const ros::Duration& period)
@@ -197,7 +199,7 @@ void PilzJointTrajectoryControllerTest::SetUp()
   robot_.reset(new RobotMock(hardware_));
 
   // set joints parameter
-  controller_nh_.setParam(JOINTS_PARAMETER, std::vector<std::string>( {JOINT_NAME} ));
+  controller_nh_.setParam(JOINTS_PARAMETER, JOINT_NAMES);
 
   // Setup controller
   controller_ = std::make_shared<Controller>();
@@ -207,6 +209,8 @@ void PilzJointTrajectoryControllerTest::SetUp()
 
   // Set stop trajectory duration on parameter server (will be read in controller_->init())
   controller_nh_.setParam(STOP_TRAJECTORY_DURATION_PARAMETER, STOP_TRAJECTORY_DURATION_SEC);
+
+  controller_nh_.setParam(GOAL_TIME_TOLERANCE_PARAMETER, GOAL_TIME_TOLERANCE_SEC);
 
   // Set up simulated time
   ros::Time start_time {TIME_SIMULATION_START_SEC};
@@ -278,14 +282,16 @@ bool PilzJointTrajectoryControllerTest::waitForActionResult(bool perform_control
 
 GoalType PilzJointTrajectoryControllerTest::generateSimpleGoal(const ros::Duration &goal_duration)
 {
-  static double position_sign {1.0};
-  position_sign *= -1.0;
+  static unsigned int position_index {0};
+  position_index = (++position_index) % 3;
+
+  const std::vector<double> alternating_positions {0.0, 1.0, -1.0};
 
   GoalType goal;
-  goal.trajectory.joint_names = hardware_->getNames();
+  goal.trajectory.joint_names = JOINT_NAMES;
   goal.trajectory.points.resize(1);
   goal.trajectory.points[0].time_from_start = goal_duration;
-  goal.trajectory.points[0].positions = {position_sign};
+  goal.trajectory.points[0].positions = {alternating_positions[position_index], 0.0};
 
   return goal;
 }
