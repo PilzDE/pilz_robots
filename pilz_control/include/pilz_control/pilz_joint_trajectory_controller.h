@@ -37,8 +37,14 @@ namespace pilz_joint_trajectory_controller
 
 template<class Segment> using TrajectoryPerJoint  = std::vector<Segment>;
 
+/**
+ * @brief Check if a trajectory is executed currently.
+ *
+ * @note Times that preceed the trajectory start time are ignored here, so isTrajectoryExecuted() returns false
+ * even if there is a current trajectory that will be executed in the future.
+ */
 template<class Segment>
-static bool isStopMotionFinished(const std::vector<TrajectoryPerJoint<Segment>>& traj,
+static bool isTrajectoryExecuted(const std::vector<TrajectoryPerJoint<Segment>>& traj,
                                  const ros::Time& curr_uptime);
 
 /**

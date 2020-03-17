@@ -29,22 +29,20 @@ static constexpr double SPEED_LIMIT_NOT_ACTIVATED{-1.0};
 namespace ph = std::placeholders;
 
 template<class Segment>
-bool isStopMotionFinished(const std::vector< TrajectoryPerJoint<Segment>>& traj,
+bool isTrajectoryExecuted(const std::vector< TrajectoryPerJoint<Segment>>& traj,
                           const ros::Time& curr_uptime)
 {
-  typedef joint_trajectory_controller::SegmentTolerancesPerJoint<typename Segment::Scalar> SegmentTolerancesPerJoint;
   for (unsigned int joint_index = 0; joint_index < traj.size(); ++joint_index)
   {
-    assert(traj[joint_index].size() >= 1);
-    const Segment& last_segment {traj[joint_index].back()};
-    const SegmentTolerancesPerJoint& tolerances = last_segment.getTolerances();
-    if (curr_uptime.toSec() < last_segment.endTime() + tolerances.goal_time_tolerance)
+    const auto& segment_it = findSegment(traj[joint_index], curr_uptime.toSec());
+    const auto& tolerances = segment_it->getTolerances();
+    if (segment_it != traj[joint_index].end()
+        && curr_uptime.toSec() < segment_it->endTime() + tolerances.goal_time_tolerance)
     {
-      return false;
+      return true;
     }
   }
-  // Whenever the time is up, we assume that the hold position is reached.
-  return true;
+  return false;
 };
 
 template <class SegmentImpl, class HardwareInterface>
@@ -120,24 +118,9 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::is_executing
   }
 
   Trajectory& curr_traj = *curr_traj_ptr;
+  auto uptime {JointTrajectoryController::time_data_.readFromRT()->uptime};
 
-  bool is_executing {false};
-
-  for (unsigned int i = 0; i < JointTrajectoryController::joints_.size(); ++i)
-  {
-    auto uptime {JointTrajectoryController::time_data_.readFromRT()->uptime.toSec()};
-    typename TrajectoryPerJoint::const_iterator segment_it = findSegment(curr_traj[i], uptime);
-    const auto& tolerances = segment_it->getTolerances();
-    // Times that preceed the trajectory start time are ignored here, so is_executing() returns false
-    // even if there is a current trajectory that will be executed in the future.
-    if (segment_it != curr_traj[i].end() && uptime < segment_it->endTime() + tolerances.goal_time_tolerance)
-    {
-      is_executing = true;
-      break;
-    }
-  }
-
-  return is_executing;
+  return isTrajectoryExecuted<typename JointTrajectoryController::Segment>(curr_traj, uptime);
 }
 
 template <class SegmentImpl, class HardwareInterface>
@@ -251,7 +234,8 @@ updateFuncExtensionPoint(const typename JointTrajectoryController::Trajectory& c
   }
   case TrajProcessingMode::stopping:
   {
-    if ( isStopMotionFinished<typename JointTrajectoryController::Segment>(curr_traj, time_data.uptime) )
+    // By construction of the stop trajectory we can exclude that the execution starts in the future
+    if ( !isTrajectoryExecuted<typename JointTrajectoryController::Segment>(curr_traj, time_data.uptime) )
     {
       mode_->stopMotionFinishedEvent();
     }
