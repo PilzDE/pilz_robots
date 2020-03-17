@@ -27,6 +27,9 @@
 #include <ros/package.h>
 #include <actionlib/client/simple_action_client.h>
 
+#include <std_srvs/SetBool.h>
+#include <std_srvs/Trigger.h>
+
 #include <controller_interface/controller_base.h>
 #include <trajectory_interface/quintic_spline_segment.h>
 #include <control_msgs/FollowJointTrajectoryAction.h>
@@ -283,9 +286,8 @@ bool PilzJointTrajectoryControllerTest::waitForActionResult(bool perform_control
 GoalType PilzJointTrajectoryControllerTest::generateSimpleGoal(const ros::Duration &goal_duration)
 {
   static unsigned int position_index {0};
-  position_index = (++position_index) % 3;
-
-  const std::vector<double> alternating_positions {0.0, 1.0, -1.0};
+  const std::vector<double> alternating_positions {0.5, -0.25, -0.5};
+  position_index = (++position_index) % alternating_positions.size();
 
   GoalType goal;
   goal.trajectory.joint_names = JOINT_NAMES;
