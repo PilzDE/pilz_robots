@@ -34,6 +34,7 @@ CartesianSpeedMonitor::CartesianSpeedMonitor(const std::vector<std::string> &joi
   : joint_names_(joint_names)
   , kinematic_model_(kinematic_model)
 {
+  assert(joint_names_.size() == kinematic_model_->getVariableCount());
 }
 
 void CartesianSpeedMonitor::init()

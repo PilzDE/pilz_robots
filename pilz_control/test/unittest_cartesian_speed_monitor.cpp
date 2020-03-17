@@ -48,6 +48,8 @@ protected:
   std::vector<std::string> joint_names_;
 };
 
+using CartesianSpeedMonitorDeathTest = CartesianSpeedMonitorTest;
+
 void CartesianSpeedMonitorTest::SetUp()
 {
   moveit::core::RobotModelBuilder builder("test_robot", "base");
@@ -75,6 +77,13 @@ void CartesianSpeedMonitorTest::SetUp()
 
   model_ = builder.build();
   joint_names_ = model_->getVariableNames();
+}
+
+TEST_F(CartesianSpeedMonitorDeathTest, testUnmatchedJointCount)
+{
+  joint_names_.resize(joint_names_.size()-1);
+  EXPECT_DEATH_IF_SUPPORTED(CartesianSpeedMonitor monitor(joint_names_, model_),
+                            ".+CartesianSpeedMonitor.+Assertion .+ failed.");
 }
 
 TEST_F(CartesianSpeedMonitorTest, testLinkSpeedNoMovement)
