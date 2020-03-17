@@ -86,6 +86,11 @@ TEST_F(CartesianSpeedMonitorDeathTest, testUnmatchedJointCount)
                             ".+CartesianSpeedMonitor.+Assertion .+ failed.");
 }
 
+/**
+ * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
+ * Tests speed monitoring of all moveable links.
+ * }
+ */
 TEST_F(CartesianSpeedMonitorTest, testLinkSpeedNoMovement)
 {
   robot_state::RobotStatePtr state(new robot_state::RobotState(model_));
@@ -102,6 +107,11 @@ TEST_F(CartesianSpeedMonitorTest, testLinkSpeedNoMovement)
   EXPECT_NEAR(speed, 0.0, SPEED_COMPARISON_TOLERANCE);
 }
 
+/**
+ * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
+ * Tests speed monitoring of all moveable links.
+ * }
+ */
 TEST_F(CartesianSpeedMonitorTest, testLinkSpeedMoveJoint1)
 {
   robot_state::RobotStatePtr state(new robot_state::RobotState(model_));
@@ -126,6 +136,11 @@ TEST_F(CartesianSpeedMonitorTest, testLinkSpeedMoveJoint1)
   EXPECT_NEAR(speed, expected_velocity, SPEED_COMPARISON_TOLERANCE);
 }
 
+/**
+ * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
+ * Tests speed monitoring of all moveable links.
+ * }
+ */
 TEST_F(CartesianSpeedMonitorTest, testLinkSpeedMoveJoint2)
 {
   robot_state::RobotStatePtr state(new robot_state::RobotState(model_));
@@ -150,6 +165,11 @@ TEST_F(CartesianSpeedMonitorTest, testLinkSpeedMoveJoint2)
   EXPECT_NEAR(speed, expected_velocity, SPEED_COMPARISON_TOLERANCE);
 }
 
+/**
+ * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
+ * Tests speed monitoring of all moveable links.
+ * }
+ */
 TEST_F(CartesianSpeedMonitorTest, testLinkSpeedLinearInTime)
 {
   robot_state::RobotStatePtr state(new robot_state::RobotState(model_));
@@ -174,6 +194,11 @@ TEST_F(CartesianSpeedMonitorTest, testLinkSpeedLinearInTime)
   EXPECT_NEAR(speed2 * factor, speed, SPEED_COMPARISON_TOLERANCE);
 }
 
+/**
+ * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
+ * Tests speed monitoring of all moveable links.
+ * }
+ */
 TEST_F(CartesianSpeedMonitorTest, testBelowLimitMoveJoint2)
 {
   CartesianSpeedMonitor monitor(joint_names_, model_);
@@ -188,6 +213,11 @@ TEST_F(CartesianSpeedMonitorTest, testBelowLimitMoveJoint2)
   EXPECT_FALSE(monitor.cartesianSpeedIsBelowLimit({ 0.0, 0.0 }, { 0.0, angular_displacement }, time_delta, limit));
 }
 
+/**
+ * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
+ * Tests speed monitoring of all moveable links.
+ * }
+ */
 TEST_F(CartesianSpeedMonitorTest, testBelowLimitMoveJoint1)
 {
   CartesianSpeedMonitor monitor(joint_names_, model_);

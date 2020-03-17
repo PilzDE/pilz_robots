@@ -75,7 +75,7 @@ void OperationModeSetupExecutorTest::TearDown()
 }
 
 /**
- * @tests{Speed_limits_per_operation_mode,
+ * @tests{speed_monitoring_per_operation_mode,
  * Tests that the cartesian speed is monitored depending on the current operation mode.
  * }
  *
@@ -113,7 +113,7 @@ TEST_F(OperationModeSetupExecutorTest, testUpdateOperationMode)
 }
 
 /**
- * @tests{Speed_limits_per_operation_mode,
+ * @tests{speed_monitoring_per_operation_mode,
  * Test updateOperationMode() with no change in operation mode.
  * }
  *
@@ -151,7 +151,7 @@ TEST_F(OperationModeSetupExecutorTest, testUpdateOperationModeSameMode)
 }
 
 /**
- * @tests{Speed_limits_per_operation_mode,
+ * @tests{speed_monitoring_per_operation_mode,
  * Test updateOperationMode() with no change in time.
  * }
  *
@@ -189,7 +189,7 @@ TEST_F(OperationModeSetupExecutorTest, testUpdateOperationModeSameTime)
 }
 
 /**
- * @tests{Speed_limits_per_operation_mode,
+ * @tests{speed_monitoring_per_operation_mode,
  * Test updateOperationMode() with unknown operation mode.
  * }
  *

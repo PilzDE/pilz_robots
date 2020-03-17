@@ -159,10 +159,6 @@ MATCHER_P2(SpeedAtILe, i, x,
 }
 
 /**
- * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
- * Tests the correct observation of frames and handling of slow speeds.
- * }
- *
  * Test Sequence:
  *    1. Publish tf movements that are within the speed limit
  *    2. Start speed observing
@@ -216,13 +212,6 @@ TEST_F(SpeedObserverUnitTest, testStartupAndTopic)
 }
 
 /**
- * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
- * Tests the correct handling of too high speeds.
- * }
- * @tests{Stop1_on_violation_of_speed_limit,
- * Tests that Stop 1 is triggered if speed limit is violated.
- * }
- *
  * Test Sequence:
  *    1. Publish tf movements that have a too high speed
  *    2. Start speed observing
@@ -281,16 +270,6 @@ TEST_F(SpeedObserverUnitTest, testTooHighSpeed)
 }
 
 /**
- * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
- * Tests the correct handling of changed speed limits.
- * }
- * @tests{Speed_limits_per_operation_mode,
- * Test that speed limits can be changed.
- * }
- * @tests{Stop1_on_violation_of_speed_limit,
- * Tests that Stop 1 is triggered if after changing the speed limit.
- * }
- *
  * Test Sequence:
  *    1. Publish tf movements with speed of 0.3,
  *    1. Start observer, set speed limit to 0.4
@@ -369,13 +348,6 @@ TEST_F(SpeedObserverUnitTest, testSetSpeedLimit)
 }
 
 /**
- * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
- * Tests the correct handling of no tf.
- * }
- * @tests{Monitor_Speed_of_user_defined_tf_frames,
- * Tests the correct handling of no tf.
- * }
- *
  * Test Sequence:
  *    1. Start observer
  *

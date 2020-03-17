@@ -382,6 +382,11 @@ TEST_F(PilzJointTrajectoryControllerTest, testInitializiation)
   EXPECT_TRUE(waitForActionServer());
 }
 
+/**
+ * @tests{end_holding,
+ * Tests unholding before the controller is started.
+ * }
+ */
 TEST_F(PilzJointTrajectoryControllerTest, testUnholdFailureWhenNotStarted)
 {
   ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
@@ -393,6 +398,14 @@ TEST_F(PilzJointTrajectoryControllerTest, testUnholdFailureWhenNotStarted)
   EXPECT_FALSE(resp.success);
 }
 
+/**
+ * @tests{hold_at_controller_start,
+ * Tests that the controller is holded once it is started.
+ * }
+ * @tests{no_execution_during_hold,
+ * Tests that the controller is holded once it is started.
+ * }
+ */
 TEST_F(PilzJointTrajectoryControllerTest, testHoldAtStart)
 {
   ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
@@ -405,6 +418,11 @@ TEST_F(PilzJointTrajectoryControllerTest, testHoldAtStart)
   EXPECT_TRUE(checkForHold());
 }
 
+/**
+ * @tests{end_holding,
+ * Tests unholding the controller.
+ * }
+ */
 TEST_F(PilzJointTrajectoryControllerTest, testUnholdSuccess)
 {
   ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
@@ -429,6 +447,14 @@ TEST_F(PilzJointTrajectoryControllerTest, testUnholdSuccess)
   EXPECT_TRUE(checkForUnhold());
 }
 
+/**
+ * @tests{start_holding,
+ * Tests holding the controller.
+ * }
+ * @tests{no_execution_during_hold,
+ * Tests holding the controller.
+ * }
+ */
 TEST_F(PilzJointTrajectoryControllerTest, testHoldSuccessAfterUnhold)
 {
   ASSERT_TRUE(performFullControllerStartup());
@@ -448,6 +474,14 @@ TEST_F(PilzJointTrajectoryControllerTest, testHoldSuccessAfterUnhold)
   EXPECT_TRUE(checkForHold());
 }
 
+/**
+ * @tests{start_holding,
+ * Tests holding the controller.
+ * }
+ * @tests{no_execution_during_hold,
+ * Tests holding the controller.
+ * }
+ */
 TEST_F(PilzJointTrajectoryControllerTest, testDoubleHoldSuccess)
 {
   ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
@@ -476,6 +510,11 @@ TEST_F(PilzJointTrajectoryControllerTest, testDoubleHoldSuccess)
   EXPECT_TRUE(checkForHold());
 }
 
+/**
+ * @tests{end_holding,
+ * Tests unholding the controller.
+ * }
+ */
 TEST_F(PilzJointTrajectoryControllerTest, testDoubleUnholdSuccess)
 {
   ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
@@ -504,6 +543,17 @@ TEST_F(PilzJointTrajectoryControllerTest, testDoubleUnholdSuccess)
   EXPECT_TRUE(checkForUnhold());
 }
 
+/**
+ * @tests{end_holding,
+ * Tests unholding the controller.
+ * }
+ * @tests{start_holding,
+ * Tests holding the controller.
+ * }
+ * @tests{no_execution_during_hold,
+ * Tests holding the controller.
+ * }
+ */
 TEST_F(PilzJointTrajectoryControllerTest, testRepeatHoldAndUnholdSuccess)
 {
   ASSERT_TRUE(performFullControllerStartup());
@@ -531,6 +581,14 @@ TEST_F(PilzJointTrajectoryControllerTest, testRepeatHoldAndUnholdSuccess)
   }
 }
 
+/**
+ * @tests{start_holding,
+ * Tests holding the controller with a running trajectory.
+ * }
+ * @tests{no_execution_during_hold,
+ * Tests holding the controller with a running trajectory.
+ * }
+ */
 TEST_F(PilzJointTrajectoryControllerTest, testHoldDuringGoalExecution)
 {
   ASSERT_TRUE(performFullControllerStartup());
