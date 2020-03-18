@@ -57,5 +57,5 @@
  *
  * @definereq{Stop1_on_violation_of_speed_limit}
  *  - If the monitored speed exceeds 250 mm/s,
- *    the Controller is holded (\ref hold_state).
+ *    the Controller is holded (\ref controller_hold).
  */
