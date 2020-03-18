@@ -32,6 +32,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #include <pilz_control/cartesian_speed_monitor.h>
+#include <pilz_control/cartesian_speed_monitor_exception.h>
 
 static constexpr double SPEED_COMPARISON_TOLERANCE{ 0.001 };
 static constexpr double SMALL_SKIP{ 0.01 };
@@ -47,8 +48,6 @@ protected:
   moveit::core::RobotModelPtr model_;
   std::vector<std::string> joint_names_;
 };
-
-using CartesianSpeedMonitorDeathTest = CartesianSpeedMonitorTest;
 
 void CartesianSpeedMonitorTest::SetUp()
 {
@@ -79,11 +78,10 @@ void CartesianSpeedMonitorTest::SetUp()
   joint_names_ = model_->getVariableNames();
 }
 
-TEST_F(CartesianSpeedMonitorDeathTest, testUnmatchedJointCount)
+TEST_F(CartesianSpeedMonitorTest, testUnmatchedJointCount)
 {
   joint_names_.resize(joint_names_.size()-1);
-  EXPECT_DEATH_IF_SUPPORTED(CartesianSpeedMonitor monitor(joint_names_, model_),
-                            ".+CartesianSpeedMonitor.+Assertion .+ failed.");
+  EXPECT_THROW(CartesianSpeedMonitor monitor(joint_names_, model_), pilz_control::CartesianSpeedMonitorException);
 }
 
 /**

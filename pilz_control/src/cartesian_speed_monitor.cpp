@@ -15,6 +15,7 @@
  */
 
 #include <pilz_control/cartesian_speed_monitor.h>
+#include <pilz_control/cartesian_speed_monitor_exception.h>
 
 namespace pilz_control
 {
@@ -34,7 +35,10 @@ CartesianSpeedMonitor::CartesianSpeedMonitor(const std::vector<std::string> &joi
   : joint_names_(joint_names)
   , kinematic_model_(kinematic_model)
 {
-  assert(joint_names_.size() == kinematic_model_->getVariableCount());
+  if(joint_names_.size() != kinematic_model_->getVariableCount())
+  {
+    throw CartesianSpeedMonitorException("Size of joint_names does not match variable count of robot model.");
+  }
 }
 
 void CartesianSpeedMonitor::init()
