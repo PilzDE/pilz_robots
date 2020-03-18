@@ -177,10 +177,10 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
   /**********
    * Step 3 *
    **********/
-  ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::STO));
-  unsigned int sto_register = api_spec.getRegisterDefinition(modbus_api_spec::STO);
+  ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::RUN_PERMITTED));
+  unsigned int run_permitted_register = api_spec.getRegisterDefinition(modbus_api_spec::RUN_PERMITTED);
 
-  modbus_server.setHoldingRegister({{sto_register, 1}});
+  modbus_server.setHoldingRegister({{run_permitted_register, 1}});
 
   EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(
                 is_brake_test_required_client, pilz_msgs::IsBrakeTestRequiredResult::REQUIRED));

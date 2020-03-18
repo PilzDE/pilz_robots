@@ -35,8 +35,8 @@ limitations under the License.
 
   <!-- Set safety HW handler -->
   <arg name="safety_hw" default="pnoz"/>
-  <arg name="read_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_read_api_spec_$(arg sto).yaml" />
-  <arg name="write_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_write_api_spec_$(arg sto).yaml" />
+  <arg name="read_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_read_api_spec_$(arg safety_hw).yaml" />
+  <arg name="write_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_write_api_spec_$(arg safety_hw).yaml" />
 
   <!-- Set braketest usage -->
   <arg name="has_braketest_support" default="false"/>
@@ -79,7 +79,7 @@ limitations under the License.
   </group>
 
   <!-- run the "real robot" interface nodes -->
-  <!--   - this includes: robot_state, canopen, and sto nodes -->
+  <!--   - this includes: robot_state, canopen, and run_permitted nodes -->
   <group unless="$(arg sim)">
     <include file="$(find prbt_support)/launch/robot.launch" >
       <arg name="gripper" value="$(arg gripper)" />

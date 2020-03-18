@@ -43,14 +43,14 @@ Changelog for package prbt_hardware_support
 
 0.5.8 (2019-09-10)
 ------------------
-* add missing transition to STO state machine
-* revise STO specification
+* add missing transition to RUN_PERMITTED state machine
+* revise RUN_PERMITTED specification
 * integrate clang-tidy via CMake flag
 * Contributors: Pilz GmbH and Co. KG
 
 0.5.7 (2019-08-29)
 ------------------
-* Add state machine for STO handling to allow skipping of hold/unhold if needed
+* Add state machine for RUN_PERMITTED handling to allow skipping of hold/unhold if needed
 * add operation mode functionality
 * add write capability to PilzModbusReadClient, rename PilzModbusReadClient -> PilzModbusClient
 * enter hold mode at braketest execution
@@ -72,7 +72,7 @@ Changelog for package prbt_hardware_support
 ------------------
 * increased modbus response timeout to 20ms
 * publish brake test requests obtained from safety controller via modbus
-* sto_modbus_adapter waits for the services to appear instead of throwing exceptions
+* run_permitted_modbus_adapter waits for the services to appear instead of throwing exceptions
 * Add ability to execute a braketest on each drive.
 * Add service to access the active operation mode
 * Contributors: Pilz GmbH and Co. KG
@@ -112,4 +112,4 @@ Changelog for package prbt_hardware_support
 
 0.4.0 (2018-11-06)
 ------------------
-* Modbus client node and STO modbus adapter node for Stop 1 functionality
+* Modbus client node and RUN_PERMITTED modbus adapter node for Stop 1 functionality

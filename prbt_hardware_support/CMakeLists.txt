@@ -94,14 +94,14 @@ include_directories(SYSTEM ${catkin_INCLUDE_DIRS}) #Must be declared SYSTEM to a
 include_directories(${pilz_utils_INCLUDE_DIRS})
 
 
-# MODBUS_ADAPTER_STO_NODE
-add_executable(modbus_adapter_sto_node
-  src/modbus_adapter_sto_node.cpp
-  src/modbus_adapter_sto.cpp
-  src/modbus_msg_sto_wrapper.cpp
+# MODBUS_ADAPTER_RUN_PERMITTED_NODE
+add_executable(modbus_adapter_run_permitted_node
+  src/modbus_adapter_run_permitted_node.cpp
+  src/modbus_adapter_run_permitted.cpp
+  src/modbus_msg_run_permitted_wrapper.cpp
 )
-add_dependencies(modbus_adapter_sto_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
-target_link_libraries(modbus_adapter_sto_node ${catkin_LIBRARIES})
+add_dependencies(modbus_adapter_run_permitted_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(modbus_adapter_run_permitted_node ${catkin_LIBRARIES})
 
 # STOP1_EXECUTOR_NODE
 add_executable(stop1_executor_node
@@ -207,7 +207,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
   PATTERN ".svn" EXCLUDE)
 
 install(TARGETS
-  modbus_adapter_sto_node
+  modbus_adapter_run_permitted_node
   pilz_modbus_client_node
   stop1_executor_node
   canopen_braketest_adapter_node
@@ -357,14 +357,14 @@ if(CATKIN_ENABLE_TESTING)
   #----------------------------------
 
   #--- StoModbusAdapter intrgration test ---
-  catkin_add_gmock(unittest_modbus_adapter_sto
-    test/unittests/unittest_modbus_adapter_sto.cpp
-    src/modbus_adapter_sto.cpp
-    src/modbus_msg_sto_wrapper.cpp
+  catkin_add_gmock(unittest_modbus_adapter_run_permitted
+    test/unittests/unittest_modbus_adapter_run_permitted.cpp
+    src/modbus_adapter_run_permitted.cpp
+    src/modbus_msg_run_permitted_wrapper.cpp
     src/modbus_msg_in_builder.cpp
   )
-  target_link_libraries(unittest_modbus_adapter_sto ${catkin_LIBRARIES})
-  add_dependencies(unittest_modbus_adapter_sto ${${PROJECT_NAME}_EXPORTED_TARGETS})
+  target_link_libraries(unittest_modbus_adapter_run_permitted ${catkin_LIBRARIES})
+  add_dependencies(unittest_modbus_adapter_run_permitted ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------
 
   # --- Stop integration test ---
@@ -380,7 +380,7 @@ if(CATKIN_ENABLE_TESTING)
   )
   add_dependencies(integrationtest_stop1
     pilz_modbus_client_node
-    modbus_adapter_sto_node
+    modbus_adapter_run_permitted_node
     stop1_executor_node
     ${${PROJECT_NAME}_EXPORTED_TARGETS}
   )

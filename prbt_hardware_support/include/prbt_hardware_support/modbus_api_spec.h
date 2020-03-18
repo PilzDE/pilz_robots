@@ -33,7 +33,7 @@ static const std::string READ_API_SPEC_PARAM_NAME {"read_api_spec/"};
 
 namespace modbus_api_spec
 {
-  static const std::string STO {"STO"};
+  static const std::string RUN_PERMITTED {"RUN_PERMITTED"};
   static const std::string VERSION {"VERSION"};
   static const std::string BRAKETEST_REQUEST {"BRAKETEST_REQUEST"};
   static const std::string OPERATION_MODE {"OPERATION_MODE"};
