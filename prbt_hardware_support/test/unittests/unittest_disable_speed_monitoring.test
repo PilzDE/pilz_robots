@@ -16,9 +16,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <launch>
-  <arg name="controller_name" default="manipulator_joint_trajectory_controller" />
+  <include file="$(find prbt_hardware_support)/launch/fake_operation_mode_setup.launch" />
 
-  <node name="fake_speed_override_node" pkg="prbt_hardware_support" type="fake_speed_override_node"/>
-  <node name="disable_speed_monitoring" pkg="rosservice" type="rosservice"
-        args="call --wait /prbt/$(arg controller_name)/monitor_cartesian_speed 'data: false'"/>
+  <test pkg="prbt_hardware_support" type="unittest_disable_speed_monitoring"
+        test-name="unittest_disable_speed_monitoring">
+  </test>
 </launch>

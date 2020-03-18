@@ -515,7 +515,7 @@ if(CATKIN_ENABLE_TESTING)
   add_dependencies(unittest_operation_mode_setup_executor ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------------
 
-  #--- OperationModeSetupExecutor unit test ---
+  #--- FakeSpeedOverride unit test ---
   add_rostest_gtest(unittest_fake_speed_override
       test/unittests/unittest_fake_speed_override.test
       test/unittests/unittest_fake_speed_override.cpp
@@ -524,6 +524,21 @@ if(CATKIN_ENABLE_TESTING)
     ${catkin_LIBRARIES}
   )
   add_dependencies(unittest_fake_speed_override
+    fake_speed_override_node
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  )
+  #----------------------------------------
+
+  #--- DisableSpeedMonitoring unit test ---
+  add_rostest_gmock(unittest_disable_speed_monitoring
+      test/unittests/unittest_disable_speed_monitoring.test
+      test/unittests/unittest_disable_speed_monitoring.cpp
+  )
+  target_link_libraries(unittest_disable_speed_monitoring
+    ${catkin_LIBRARIES}
+    ${pilz_testutils_LIBRARIES}
+  )
+  add_dependencies(unittest_disable_speed_monitoring
     fake_speed_override_node
     ${${PROJECT_NAME}_EXPORTED_TARGETS}
   )
