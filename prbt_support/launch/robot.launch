@@ -12,7 +12,7 @@
   <arg name="safety_hw" default="pnoz"/>
   <arg name="read_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_read_api_spec_$(arg safety_hw).yaml" />
   <arg name="write_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_write_api_spec_$(arg safety_hw).yaml" />
-  <arg name="run_permitted_modbus_server_ip" default="$(eval '192.168.0.10' if safety_hw=='pss4000' else '169.254.60.1')" />
+  <arg name="modbus_server_ip" default="$(eval '192.168.0.10' if safety_hw=='pss4000' else '169.254.60.1')" />
 
   <!-- Set braketest usage -->
   <arg name="has_braketest_support" default="false"/>
@@ -68,7 +68,7 @@
 
     <node pkg="rosservice" type="rosservice" name="robot_init" args="call --wait /prbt/driver/init"/>
     <include file="$(find prbt_hardware_support)/launch/modbus_client.launch">
-      <arg name="modbus_server_ip" value="$(arg run_permitted_modbus_server_ip)" />
+      <arg name="modbus_server_ip" value="$(arg modbus_server_ip)" />
     </include>
     <include file="$(find prbt_hardware_support)/launch/modbus_adapter_run_permitted_node.launch" />
     <include file="$(find prbt_hardware_support)/launch/stop1_executor_node.launch" />
