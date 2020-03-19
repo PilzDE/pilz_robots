@@ -45,9 +45,11 @@ DEFAULT_GOAL_POSITION = 0.1
 
 controller_ns = rospy.get_param(CONTROLLER_NS_PARAM_NAME)
 
+
 class ObservationException(Exception):
     """Exception class used by MovementObserver"""
     pass
+
 
 class MovementObserver:
     """Class that subscribes to the robot mock state to observe the movement.
@@ -63,7 +65,14 @@ class MovementObserver:
         self._actual_velocity_lock = threading.Lock()
 
         state_topic_name = controller_ns + STATE_TOPIC_NAME
-        self._subscriber = rospy.Subscriber(state_topic_name, JointTrajectoryControllerState, self.controller_state_callback)
+        self._subscriber = rospy.Subscriber(state_topic_name, JointTrajectoryControllerState,
+                                            self.controller_state_callback)
+
+        self._stop_observer_thread_lock = threading.Lock()
+        self._stop_observer_thread = None
+
+        self._stop_trajectory_ok_lock = threading.Lock()
+        self._stop_trajectory_ok = False
 
     def controller_state_callback(self, data):
         with self._actual_position_lock:
@@ -81,12 +90,12 @@ class MovementObserver:
         start_loop = rospy.Time.now()
         while self._check_position_threshold(position_threshold):
             r.sleep()
-            if(timeout < (rospy.Time.now() - start_loop).to_sec()):
-              raise ObservationException("Position not above defined threshold within timeout")
+            if timeout < (rospy.Time.now() - start_loop).to_sec():
+                raise ObservationException("Position not above defined threshold within timeout")
 
-    def observe_stop(self, max_deceleration = MAX_DECELERATION, timeout = STOP_DURATION_UPPER_BOUND_S):
-        """ Blocking observation that the robot stops within timeout seconds,
-            ensures that the deceleration stays below max_deceleration.
+    def _observe_stop_trajectory(self, max_deceleration=MAX_DECELERATION, timeout=STOP_DURATION_UPPER_BOUND_S):
+        """ Observes that the robot stops within the specified timeout while the deceleration stays below
+        the maximum deceleration.
 
         :param max_deceleration: Max allowed deceleration. The deceleration has to be positive.
         :param timeout: Time in which robot has to stop.
@@ -104,7 +113,10 @@ class MovementObserver:
             # Timeout check
             stop_duration = (rospy.Time.now() - start_stop).to_sec()
             if timeout < stop_duration:
-                raise ObservationException('Stop lasted too long: ' + str(stop_duration) + ' seconds.')
+                with self._stop_trajectory_ok_lock:
+                    self._stop_trajectory_ok = False
+                rospy.logerr('Stop lasted too long: ' + str(stop_duration) + ' seconds.')
+                return
 
             # Noting to be done if no actual_velocity was observed
             if actual_velocity is None:
@@ -112,7 +124,9 @@ class MovementObserver:
 
             # Check if stopped
             if abs(actual_velocity) == 0.0:
-                return True
+                with self._stop_trajectory_ok_lock:
+                    self._stop_trajectory_ok = True
+                return
 
             old_velocity = actual_velocity
 
@@ -121,7 +135,28 @@ class MovementObserver:
             # Check for abrupt stop
             with self._actual_position_lock:
                 if max_deceleration < abs(self._actual_velocity - old_velocity) * SLEEP_RATE_HZ:
-                    raise ObservationException("Abrupt stop detected!")
+                    with self._stop_trajectory_ok_lock:
+                        self._stop_trajectory_ok = False
+                    rospy.logerr("Abrupt stop detected")
+                    return
+
+    def start_stop_observation(self):
+        with self._stop_observer_thread_lock:
+            if self._stop_observer_thread is not None:
+                rospy.logerr("Somebody did already trigger stop observation")
+                return
+            self._stop_observer_thread = threading.Thread(target=self._observe_stop_trajectory)
+            self._stop_observer_thread.start()
+
+    def wait_for_end_of_stop_observation(self):
+        with self._stop_observer_thread_lock:
+            if self._stop_observer_thread is None:
+                return False
+            self._stop_observer_thread.join()
+            self._stop_observer_thread = None
+
+        with self._stop_trajectory_ok_lock:
+            return self._stop_trajectory_ok
 
 
 class TrajectoryDispatcher:
@@ -162,6 +197,7 @@ class TrajectoryDispatcher:
         """
         return self._client.get_state()
 
+
 class SetMonitoredCartesianSpeed:
     def __init__(self):
         service_name = controller_ns + CARTESIAN_SPEED_SERVICE_NAME
@@ -194,6 +230,7 @@ class IsExecutingServiceWrapper:
 
         return resp.success
 
+
 class StopServiceWrapper:
     """Abstraction around the service call to switch the controller between DEFAULT and HOLDING mode."""
     def __init__(self):
@@ -224,6 +261,7 @@ class StopServiceWrapper:
         resp = self._hold_srv(req)
 
         return resp.success
+
 
 class TestPilzJointTrajectoryController(unittest.TestCase):
     def __init__(self, *args, **kwargs):
@@ -269,21 +307,22 @@ class TestPilzJointTrajectoryController(unittest.TestCase):
         """Activate hold mode while robot is moving and evaluate executed stop."""
         is_executing_srv = IsExecutingServiceWrapper()
 
-        self._start_motion(position = 0.2, duration = 5)
+        self._start_motion(position=0.2, duration=5)
 
         # Wait for movement to commence
-        MovementObserver().observe_until_position_greater(0.11, 3)
+        motion_observer = MovementObserver()
+        motion_observer.observe_until_position_greater(0.11, 3)
         self.assertTrue(is_executing_srv.call(), "Controller is not executing")
         rospy.loginfo("Robot is moving -> Switch into HOLDING mode")
-        self.assertTrue(self._hold_srv.request_holding_mode(), 'Switch to Mode HOLDING failed.')
-
         # Make sure robot stops (not abruptly)
-        MovementObserver().observe_stop()
-        rospy.loginfo("Stop of robot observed!")
+        motion_observer.start_stop_observation()
+        self.assertTrue(self._hold_srv.request_holding_mode(), "Switch to Mode HOLDING failed.")
+        self.assertTrue(motion_observer.wait_for_end_of_stop_observation(), "Stop trajectory incorrect")
+        rospy.loginfo("Stop of robot observed")
 
         self.assertTrue(self._wait_for_motion_result(), "Motion failed")
 
-        self.assertEqual(GoalStatus.PREEMPTED, self._trajectory_dispatcher.get_last_state(), 'Goal was not preempted.')
+        self.assertEqual(GoalStatus.PREEMPTED, self._trajectory_dispatcher.get_last_state(), "Goal was not preempted")
 
     def test_speed_monitoring(self):
         """Tests if controller detects Cartesian speed limit violation and switches to hold mode."""
@@ -296,13 +335,16 @@ class TestPilzJointTrajectoryController(unittest.TestCase):
         self.assertTrue(self._move_to(position=DEFAULT_GOAL_POSITION, duration=0.5),
                         "Motion to default position failed")
 
-        self.assertTrue(self._move_to(position=far_away_position, duration=0.1),
-                        "Cartesian speed monitor did not detect speed limit violation")
+        move_result = self._move_to(position=far_away_position, duration=0.1)
+        # Unfortunately, the goal returns SUCCESSFUL as error_code, in case the motion
+        # is cancelled. Therefore, the following check is commented out.
+        # self.assertFalse(move_result, "Cartesian speed monitor did not detect speed limit violation")
+
         self.assertEqual(GoalStatus.PREEMPTED, self._trajectory_dispatcher.get_last_state(), 'Goal was not preempted.')
 
         self.assertTrue(self._move_to(position=far_away_position, duration=0.5,
-                                 expected_error_code=FollowJointTrajectoryResult.INVALID_GOAL),
-                         "Controller did not block motion execution although controller should be in 'hold' mode")
+                                      expected_error_code=FollowJointTrajectoryResult.INVALID_GOAL),
+                        "Controller did not block motion execution although controller should be in 'hold' mode")
 
         self.assertTrue(self._hold_srv.request_default_mode(), "Switch to 'unhold' mode failed")
 
