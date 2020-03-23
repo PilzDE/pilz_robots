@@ -53,7 +53,9 @@ void CartesianSpeedMonitorTest::SetUp()
 {
   moveit::core::RobotModelBuilder builder("test_robot", "base");
 
-  // link1 is rotated about the y-axis
+  // keep in mind that we always rotate around the x-axis, so
+  // by the following transformation to the origin of link1 we obtain
+  // a rotation of link1 around the (base) y-axis
   geometry_msgs::Pose origin1;
   tf2::Quaternion quat1;
   quat1.setRPY(0.0, 0.0, -0.5 * M_PI);
@@ -72,6 +74,12 @@ void CartesianSpeedMonitorTest::SetUp()
   geometry_msgs::Pose origin3;
   origin3.position.y = 1.0;
 
+  // as a result if we fix joint2 such that link2 is in perpendicular position and move joint1,
+  // the maximal velocity is in the origins of link2 and link3 which move equally fast
+  // if we fix joint2 such that the angle between link1 and link2 is above 90 degree and move joint1,
+  // the origin of link3 moves faster than the origin of link2
+  // if we fix joint2 such that the angle between link1 and link2 is below 90 degree and move joint1,
+  // the origin of link3 moves slower than the origin of link2
   builder.addChain("link2->link3", "fixed", { origin3 });
 
   model_ = builder.build();
