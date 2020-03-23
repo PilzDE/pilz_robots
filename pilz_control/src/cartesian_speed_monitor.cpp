@@ -43,7 +43,6 @@ CartesianSpeedMonitor::CartesianSpeedMonitor(const std::vector<std::string> &joi
 
 void CartesianSpeedMonitor::init()
 {
-  std::vector<std::string> frames_to_observe;
   auto links = kinematic_model_->getLinkModels();
 
   for (const auto& link : links)
