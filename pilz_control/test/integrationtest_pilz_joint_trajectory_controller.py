@@ -349,31 +349,33 @@ class TestPilzJointTrajectoryController(unittest.TestCase):
 
     def test_speed_monitoring(self):
         """Tests if controller detects Cartesian speed limit violation and switches to hold mode."""
-        far_away_position = list(DEFAULT_GOAL_POSITION)
-        far_away_position[0] += 0.4
-
         self.assertTrue(self._turn_on_speed_monitoring(), "Could not turn on speed monitoring")
 
-        self.assertTrue(self._hold_srv.request_default_mode(), "Switch to default mode failed")
+        # Test speed monitoring for all joints
+        for i in range(len(JOINT_NAMES)):
+            far_away_position = list(DEFAULT_GOAL_POSITION)
+            far_away_position[i] += 0.4
 
-        self.assertTrue(self._move_to(position=DEFAULT_GOAL_POSITION, duration=0.5),
-                        "Motion to default position failed")
+            self.assertTrue(self._hold_srv.request_default_mode(), "Switch to default mode failed")
 
-        move_result = self._move_to(position=far_away_position, duration=0.1)
-        # Unfortunately, the goal returns SUCCESSFUL as error_code, in case the motion
-        # is cancelled. Therefore, the following check is commented out.
-        # self.assertFalse(move_result, "Cartesian speed monitor did not detect speed limit violation")
+            self.assertTrue(self._move_to(position=DEFAULT_GOAL_POSITION, duration=0.5),
+                            "Motion to default position failed")
 
-        self.assertEqual(GoalStatus.PREEMPTED, self._trajectory_dispatcher.get_last_state(), 'Goal was not preempted.')
+            move_result = self._move_to(position=far_away_position, duration=0.1)
+            # Unfortunately, the goal returns SUCCESSFUL as error_code, in case the motion
+            # is cancelled. Therefore, the following check is commented out.
+            # self.assertFalse(move_result, "Cartesian speed monitor did not detect speed limit violation")
 
-        self.assertTrue(self._move_to(position=far_away_position, duration=0.5,
-                                      expected_error_code=FollowJointTrajectoryResult.INVALID_GOAL),
-                        "Controller did not block motion execution although controller should be in 'hold' mode")
+            self.assertEqual(GoalStatus.PREEMPTED, self._trajectory_dispatcher.get_last_state(), 'Goal was not preempted.')
 
-        self.assertTrue(self._hold_srv.request_default_mode(), "Switch to 'unhold' mode failed")
+            self.assertTrue(self._move_to(position=far_away_position, duration=0.5,
+                                          expected_error_code=FollowJointTrajectoryResult.INVALID_GOAL),
+                            "Controller did not block motion execution although controller should be in 'hold' mode")
 
-        self.assertTrue(self._move_to(position=far_away_position, duration=0.5),
-                        "Controller did not allow motion execution, although controller should be in 'unhold' mode")
+            self.assertTrue(self._hold_srv.request_default_mode(), "Switch to 'unhold' mode failed")
+
+            self.assertTrue(self._move_to(position=far_away_position, duration=0.5),
+                            "Controller did not allow motion execution, although controller should be in 'unhold' mode")
 
 
 if __name__ == '__main__':
