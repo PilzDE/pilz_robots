@@ -27,7 +27,7 @@ from actionlib_msgs.msg import *
 
 PACKAGE_NAME = 'pilz_control'
 CONTROLLER_NS_PARAM_NAME = 'controller_ns_string'
-JOINT_NAMES = ['shoulder_to_right_arm']
+JOINT_NAMES = ['shoulder_to_right_arm', 'shoulder_to_left_arm']
 HOLD_SERVICE_NAME = '/test_joint_trajectory_controller/hold'
 UNHOLD_SERVICE_NAME = '/test_joint_trajectory_controller/unhold'
 IS_EXECUTING_SERVICE_NAME = '/test_joint_trajectory_controller/is_executing'
@@ -41,7 +41,7 @@ STOP_DURATION_UPPER_BOUND_S = 0.31
 MAX_DECELERATION = 0.2
 
 # Default goal position of the test trajectory
-DEFAULT_GOAL_POSITION = 0.1
+DEFAULT_GOAL_POSITION = [0.1, 0]
 
 controller_ns = rospy.get_param(CONTROLLER_NS_PARAM_NAME)
 
@@ -76,19 +76,40 @@ class MovementObserver:
 
     def controller_state_callback(self, data):
         with self._actual_position_lock:
-            self._actual_position = data.actual.positions[0]
+            self._actual_position = data.actual.positions
         with self._actual_velocity_lock:
-            self._actual_velocity = data.actual.velocities[0]
+            self._actual_velocity = data.actual.velocities
 
-    def _check_position_threshold(self, position_threshold):
+    def _is_position_threshold_reached(self, position_threshold):
         with self._actual_position_lock:
-            return (self._actual_position is None) or (self._actual_position < position_threshold)
+            if self._actual_position is None:
+                return False
+            current_pos = list(self._actual_position)
+
+        for i in range(len(position_threshold)):
+            if current_pos[i] < position_threshold[i]:
+                return False
+        return True
+
+    @staticmethod
+    def _is_deceleration_limit_violated(actual_velocity, old_velocity, max_deceleration):
+        for i in range(len(actual_velocity)):
+            if max_deceleration < (abs(actual_velocity[i] - old_velocity[i]) * SLEEP_RATE_HZ):
+                return True
+        return False
+
+    @staticmethod
+    def _is_stop_motion_finished(actual_velocity):
+        for i in range(len(actual_velocity)):
+            if abs(actual_velocity[i]) != 0.0:
+                return False
+        return True
 
     def observe_until_position_greater(self, position_threshold, timeout):
         """ Blocking observation until the observed position is above the position_threshold. """
         r = rospy.Rate(SLEEP_RATE_HZ)
         start_loop = rospy.Time.now()
-        while self._check_position_threshold(position_threshold):
+        while not self._is_position_threshold_reached(position_threshold):
             r.sleep()
             if timeout < (rospy.Time.now() - start_loop).to_sec():
                 raise ObservationException("Position not above defined threshold within timeout")
@@ -105,12 +126,6 @@ class MovementObserver:
 
         # Main observation loop, not infinite due to timeout
         while True:
-            # Obtain local of actual velocity
-            actual_velocity = None
-            with self._actual_position_lock:
-                actual_velocity = self._actual_velocity
-
-            # Timeout check
             stop_duration = (rospy.Time.now() - start_stop).to_sec()
             if timeout < stop_duration:
                 with self._stop_trajectory_ok_lock:
@@ -118,12 +133,14 @@ class MovementObserver:
                 rospy.logerr('Stop lasted too long: ' + str(stop_duration) + ' seconds.')
                 return
 
-            # Noting to be done if no actual_velocity was observed
-            if actual_velocity is None:
-                continue
+            # Obtain local of actual velocity
+            with self._actual_position_lock:
+                # Noting to be done if no actual_velocity was observed
+                if self._actual_velocity is None:
+                    continue
+                actual_velocity = list(self._actual_velocity)
 
-            # Check if stopped
-            if abs(actual_velocity) == 0.0:
+            if self._is_stop_motion_finished(actual_velocity):
                 with self._stop_trajectory_ok_lock:
                     self._stop_trajectory_ok = True
                 return
@@ -134,11 +151,14 @@ class MovementObserver:
 
             # Check for abrupt stop
             with self._actual_position_lock:
-                if max_deceleration < abs(self._actual_velocity - old_velocity) * SLEEP_RATE_HZ:
-                    with self._stop_trajectory_ok_lock:
-                        self._stop_trajectory_ok = False
-                    rospy.logerr("Abrupt stop detected")
-                    return
+                limit_violated = self._is_deceleration_limit_violated(self._actual_velocity,
+                                                                      old_velocity,
+                                                                      max_deceleration)
+            if limit_violated:
+                with self._stop_trajectory_ok_lock:
+                    self._stop_trajectory_ok = False
+                rospy.logerr("Abrupt stop detected")
+                return
 
     def start_stop_observation(self):
         with self._stop_observer_thread_lock:
@@ -175,7 +195,7 @@ class TrajectoryDispatcher:
         :param time_from_start: The time of the only position to be achieved (Starting at 0)
         """
         point = JointTrajectoryPoint()
-        point.positions = [goal_position]
+        point.positions = goal_position
         point.time_from_start = rospy.Duration(time_from_start)
 
         goal = FollowJointTrajectoryGoal()
@@ -307,15 +327,18 @@ class TestPilzJointTrajectoryController(unittest.TestCase):
         """Activate hold mode while robot is moving and evaluate executed stop."""
         is_executing_srv = IsExecutingServiceWrapper()
 
-        self._start_motion(position=0.2, duration=5)
+        new_pos = list(DEFAULT_GOAL_POSITION)
+        new_pos[0] += 0.1
+
+        self._start_motion(position=new_pos, duration=5)
 
         # Wait for movement to commence
         motion_observer = MovementObserver()
-        motion_observer.observe_until_position_greater(0.11, 3)
+        motion_observer.observe_until_position_greater([0.11, 0.0], 3)
         self.assertTrue(is_executing_srv.call(), "Controller is not executing")
-        rospy.loginfo("Robot is moving -> Switch into HOLDING mode")
         # Make sure robot stops (not abruptly)
         motion_observer.start_stop_observation()
+        rospy.loginfo("Robot is moving -> Switch into HOLDING mode")
         self.assertTrue(self._hold_srv.request_holding_mode(), "Switch to Mode HOLDING failed.")
         self.assertTrue(motion_observer.wait_for_end_of_stop_observation(), "Stop trajectory incorrect")
         rospy.loginfo("Stop of robot observed")
@@ -326,7 +349,8 @@ class TestPilzJointTrajectoryController(unittest.TestCase):
 
     def test_speed_monitoring(self):
         """Tests if controller detects Cartesian speed limit violation and switches to hold mode."""
-        far_away_position = 0.5
+        far_away_position = list(DEFAULT_GOAL_POSITION)
+        far_away_position[0] += 0.4
 
         self.assertTrue(self._turn_on_speed_monitoring(), "Could not turn on speed monitoring")
 

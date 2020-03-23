@@ -14,12 +14,25 @@
  * limitations under the License.
  */
 
+#include <array>
+#include <sstream>
+
 #include <hardware_interface/robot_hw.h>
 #include <hardware_interface/joint_command_interface.h>
 #include <controller_manager/controller_manager.h>
 
 static const std::string CONTROLLER_NS_PARAM_NAME {"controller_ns_string"};
-static const std::string JOINT_NAME {"shoulder_to_right_arm"};
+
+constexpr unsigned int NUM_JOINTS {2};
+constexpr std::array<const char*, NUM_JOINTS> JOINT_NAMES = { "shoulder_to_right_arm", "shoulder_to_left_arm" };
+
+struct JointData
+{
+  double pos {0.0};
+  double vel {0.0};
+  double eff {0.0};
+  double cmd {0.0};
+};
 
 /**
  * @brief The RobotMock used by the integrationtest of the pilz_joint_trajectory_controller
@@ -30,17 +43,17 @@ class RobotMock : public hardware_interface::RobotHW
 public:
   RobotMock()
   {
-    // register joint interface
-    pos_ = new double();
-    vel_ = new double();
-    eff_ = new double();
-    hardware_interface::JointStateHandle jnt_state_handle {JOINT_NAME, pos_, vel_, eff_};
-    cmd_ = new double();
-    hardware_interface::JointHandle jnt_handle {jnt_state_handle, cmd_};
+    for (unsigned int i = 0; i<NUM_JOINTS; ++i)
+    {
+      std::ostringstream os;
+      os << JOINT_NAMES.at(i);
+      hardware_interface::JointStateHandle jnt_state_handle {os.str(),
+            &(data_.at(i).pos), &(data_.at(i).vel), &(data_.at(i).eff)};
+      hardware_interface::JointHandle jnt_handle {jnt_state_handle, &(data_.at(i).cmd)};
+      pos_jnt_interface_.registerHandle(jnt_handle);
+    }
 
-    pos_jnt_interface.registerHandle(jnt_handle);
-
-    registerInterface(&pos_jnt_interface);
+    registerInterface(&pos_jnt_interface_);
   }
 
   void read()
@@ -49,8 +62,11 @@ public:
 
   void write()
   {
-    *vel_ = (*cmd_ - *pos_) / getPeriod().toSec();
-    *pos_ = *cmd_;
+    for (unsigned int i = 0; i<NUM_JOINTS; ++i)
+    {
+      data_.at(i).vel = (data_.at(i).cmd - data_.at(i).pos) / getPeriod().toSec();
+      data_.at(i).pos = data_.at(i).cmd;
+    }
   }
 
   ros::Time getTime() const
@@ -64,11 +80,8 @@ public:
   }
 
 private:
-  double* pos_;
-  double* vel_;
-  double* eff_;
-  double* cmd_;
-  hardware_interface::PositionJointInterface pos_jnt_interface;
+  std::array<JointData, NUM_JOINTS> data_ { JointData(), JointData() };
+  hardware_interface::PositionJointInterface pos_jnt_interface_;
 };
 
 // Runs as node

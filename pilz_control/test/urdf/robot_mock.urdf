@@ -96,5 +96,5 @@
     <child link="hand_left_link"/>
     <origin xyz="0 0 0.125"/>
   </joint>
-  
+
 </robot>
