@@ -159,8 +159,6 @@ private:
     ros::ServiceServer is_executing_service_;
     ros::ServiceServer monitor_cartesian_speed_service_;
 
-    std_srvs::TriggerRequest last_request_;
-
     std::unique_ptr<TrajProcessingModeManager> mode_ {
       std::unique_ptr<TrajProcessingModeManager>(new TrajProcessingModeManager())};
 
