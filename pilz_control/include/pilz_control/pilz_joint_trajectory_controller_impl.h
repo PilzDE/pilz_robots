@@ -94,14 +94,6 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
 }
 
 template <class SegmentImpl, class HardwareInterface>
-void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::starting(const ros::Time& time)
-{
-  JointTrajectoryController::starting(time);
-  mode_->unholdEvent();
-  mode_->stoppingEvent();
-}
-
-template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::is_executing()
 {
   if (JointTrajectoryController::state_ != JointTrajectoryController::RUNNING)
