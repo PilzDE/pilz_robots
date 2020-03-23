@@ -93,7 +93,7 @@ TEST_F(CartesianSpeedMonitorTest, testUnmatchedJointCount)
 }
 
 /**
- * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
+ * @tests{Monitor_Speed_of_all_links_until_TCP,
  * Tests speed monitoring of all moveable links.
  * }
  */
@@ -114,7 +114,7 @@ TEST_F(CartesianSpeedMonitorTest, testLinkSpeedNoMovement)
 }
 
 /**
- * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
+ * @tests{Monitor_Speed_of_all_links_until_TCP,
  * Tests speed monitoring of all moveable links.
  * }
  */
@@ -143,7 +143,7 @@ TEST_F(CartesianSpeedMonitorTest, testLinkSpeedMoveJoint1)
 }
 
 /**
- * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
+ * @tests{Monitor_Speed_of_all_links_until_TCP,
  * Tests speed monitoring of all moveable links.
  * }
  */
@@ -172,7 +172,7 @@ TEST_F(CartesianSpeedMonitorTest, testLinkSpeedMoveJoint2)
 }
 
 /**
- * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
+ * @tests{Monitor_Speed_of_all_links_until_TCP,
  * Tests speed monitoring of all moveable links.
  * }
  */
@@ -201,7 +201,7 @@ TEST_F(CartesianSpeedMonitorTest, testLinkSpeedLinearInTime)
 }
 
 /**
- * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
+ * @tests{Monitor_Speed_of_all_links_until_TCP,
  * Tests speed monitoring of all moveable links.
  * }
  */
@@ -220,7 +220,7 @@ TEST_F(CartesianSpeedMonitorTest, testBelowLimitMoveJoint2)
 }
 
 /**
- * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
+ * @tests{Monitor_Speed_of_all_links_until_TCP,
  * Tests speed monitoring of all moveable links.
  * }
  */

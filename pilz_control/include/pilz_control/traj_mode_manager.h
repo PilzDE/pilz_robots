@@ -61,13 +61,15 @@ inline static constexpr unsigned int getNextIndex(const unsigned int& current_id
 }
 
 /**
- * @brief Listener to wait for a specified modes to be reached.
+ * @brief Listener to wait for a specified mode to be reached.
  */
 class TrajProcessingModeListener
 {
 public:
+   //! @param mode Mode to wait for.
   TrajProcessingModeListener(const TrajProcessingMode& mode);
   void waitForMode();
+  //! @returns true if the given mode corresponds to the target mode, otherwise false.
   bool isTargetModeReached(const TrajProcessingMode& mode) const;
   void triggerListener();
 
@@ -75,6 +77,7 @@ private:
   std::mutex mutex_;
   std::condition_variable cond_variable_;
   bool cond_fulfilled_ {false};
+  //! @brief Mode to wait for.
   const TrajProcessingMode mode_;
 };
 
@@ -86,6 +89,7 @@ class TrajProcessingModeManager
 public:
   //! @returns true only if a successful state switch to stopping was performed, otherwise false.
   bool stoppingEvent();
+  //! @brief Switch to hold.
   void stopMotionFinishedEvent();
   //! @returns true if in state unhold or a successful switch to state unhold was performed, otherwise false.
   bool unholdEvent();

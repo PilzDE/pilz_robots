@@ -26,32 +26,64 @@
 namespace pilz_control
 {
 
+//! @brief Monitors the cartesian speed of all moving links of a position-controlled robot.
 class CartesianSpeedMonitor
 {
 public:
+  /**
+   * @brief Constructor.
+   *
+   * @param joint_names List of joint names of controlled joints. The same order has to be used for joint positions.
+   * @param kinematic_model MoveIt robot model used for computing the forward kinematics.
+   * @throw CartesianSpeedMonitorException if the number of joint names does not match the variable count in kinematic_model.
+   */
   CartesianSpeedMonitor(const std::vector<std::string> &joint_names,
                         const robot_model::RobotModelConstPtr &kinematic_model);
 
+   //! @brief Initialize speed monitor by collecting all moveable links.
   void init();
 
+  /**
+   * @brief Check if cartesian speed of all links is below the speed limit.
+   *
+   * @param current_position Current positions of controlled joints.
+   * @param desired_position Desired positions of controlled joints.
+   * @param time_delta Time for reaching the desired positions.
+   * @param speed_limit
+   *
+   * @returns False if the speed limit is violated, otherwise true.
+   */
   bool cartesianSpeedIsBelowLimit(const std::vector<double>& current_position,
                                   const std::vector<double>& desired_position,
                                   const double& time_delta,
                                   const double& speed_limit);
 
 public:
-  static double linkSpeed(const robot_state::RobotStateConstPtr& current_state, // Important! Keep this RobotStateConstPtr to allow efficient
-                          const robot_state::RobotStateConstPtr& desired_state, // getGlobalLinkTransform calls
+  /**
+   * @brief Compute the cartesian speed of a single robot link.
+   *
+   * @param current_state
+   * @param desired_state
+   * @param link
+   * @param time_delta Time for reaching the desired state.
+   *
+   * @returns The computed cartesian speed.
+   */
+  static double linkSpeed(const robot_state::RobotStateConstPtr& current_state, // !!! Keep this RobotStateConstPtr for
+                          const robot_state::RobotStateConstPtr& desired_state, // efficient getGlobalLinkTransform calls
                           const moveit::core::LinkModel* link,
                           const double& time_delta);
 
 private:
   robot_model::RobotModelConstPtr kinematic_model_;
+  //! @brief The robot states are kept in order to allow efficient getGlobalLinkTransform calls
   robot_state::RobotStatePtr state_current_;
+  //! @brief The robot states are kept in order to allow efficient getGlobalLinkTransform calls
   robot_state::RobotStatePtr state_desired_;
 
   std::vector<std::string> joint_names_;
 
+  //! @brief All moveable robot links are monitored
   std::vector< const robot_model::LinkModel * > monitored_links_;
 };
 

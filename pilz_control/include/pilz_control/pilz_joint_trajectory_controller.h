@@ -40,8 +40,11 @@ template<class Segment> using TrajectoryPerJoint  = std::vector<Segment>;
 /**
  * @brief Check if a trajectory is executed currently.
  *
+ * @param traj Targeted trajectory.
+ * @param curr_uptime Current uptime of the controller.
  * @note Times that preceed the trajectory start time are ignored here, so isTrajectoryExecuted() returns false
  * even if there is a current trajectory that will be executed in the future.
+ * @return True if trajectory is executed currently, otherwise false.
  */
 template<class Segment>
 static bool isTrajectoryExecuted(const std::vector<TrajectoryPerJoint<Segment>>& traj,
@@ -49,8 +52,13 @@ static bool isTrajectoryExecuted(const std::vector<TrajectoryPerJoint<Segment>>&
 
 /**
  * @class PilzJointTrajectoryController
- * @brief Specialized controller that can be triggered by a service to
+ * @brief Specialized controller implementing ISO-10218-1 required features.
+ *
+ * Through the hold service the controller can be triggered to
  * move the robot to its hold position and refuse further trajectories.
+ * The different modes of the controller (stopping, hold, unhold) are managed
+ * by the TrajProcessingModeManager. In addition cartesian speed monitoring is realized
+ * with the pilz_control::CartesianSpeedMonitor.
  */
 template <class SegmentImpl, class HardwareInterface>
 class PilzJointTrajectoryController
@@ -108,9 +116,16 @@ class PilzJointTrajectoryController
      */
     bool handleIsExecutingRequest(std_srvs::TriggerRequest& request, std_srvs::TriggerResponse& response);
 
-
-    bool handleMonitorCartesianSpeedRequest(std_srvs::SetBool::Request& req,
-                                            std_srvs::SetBool::Response& res);
+    /**
+     * @brief Service callback for (de-)activate the cartesian speed monitoring.
+     *
+     * @param request If request.data==true the speed monitoring is activated, else it is deactivated.
+     * @param response success: Always true.
+     *
+     * @return Always true.
+     */
+    bool handleMonitorCartesianSpeedRequest(std_srvs::SetBool::Request& request,
+                                            std_srvs::SetBool::Response& response);
 
   protected:
     /**
@@ -135,9 +150,34 @@ class PilzJointTrajectoryController
     void triggerMovementToHoldPosition();
 
 private:
+    /**
+     * @brief Invoke cartesian speed monitoring. Perform controlled stop in case of speed limit violation.
+     *
+     * The actual procedure depends on the current mode.
+     * - unhold: check the (desired) velocity and trigger controller stop in case of speed limit violation.
+     * - stopping: check if the stop trajectory execution is complete. If yes, trigger hold.
+     * - hold: nothing to do.
+     *
+     * @param curr_traj Currently executed trajectory. Needed in order to detect a completed stop motion.
+     * @param time_data Updated time data of the controller.
+     */
     void updateFuncExtensionPoint(const typename JointTrajectoryController::Trajectory& curr_traj,
                                   const typename JointTrajectoryController::TimeData& time_data) override;
+
+    /**
+     * @brief Trigger cartesian speed monitoring using the current and the desired joint states.
+     *
+     * @param period The time passed since the last update.
+     *
+     * @returns False if the cartesian speed monitoring is active and the speed limit violated, otherwise true.
+     */
     bool isPlannedCartesianVelocityOK(const ros::Duration& period) const;
+
+    /**
+     * @brief Cancel the currently active goal and trigger a controller stop.
+     *
+     * @param curr_uptime Current uptime of controller.
+     */
     void stopMotion(const ros::Time& curr_uptime);
 
     /**
@@ -159,6 +199,7 @@ private:
     ros::ServiceServer is_executing_service_;
     ros::ServiceServer monitor_cartesian_speed_service_;
 
+    //! @brief Manages the different modes of the controller (stopping, hold, unhold).
     std::unique_ptr<TrajProcessingModeManager> mode_ {
       std::unique_ptr<TrajProcessingModeManager>(new TrajProcessingModeManager())};
 

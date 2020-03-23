@@ -20,6 +20,7 @@
 namespace pilz_control
 {
 
+//! @return True if all parent joints in the chain below the specified link are fixed, otherwise false.
 bool hasOnlyFixedParentJoints(const moveit::core::LinkModel * const &link)
 {
   auto parent_link {link};

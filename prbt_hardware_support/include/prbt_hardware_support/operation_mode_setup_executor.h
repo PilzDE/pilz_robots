@@ -33,7 +33,7 @@ namespace prbt_hardware_support
 {
 
 /**
- * @brief Sets the allowed speed limit for each frame based on
+ * @brief Activates speed monitoring and sets the speed override based on
  * the current operation mode.
  */
 class OperationModeSetupExecutor
