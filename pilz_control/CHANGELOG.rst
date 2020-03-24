@@ -2,8 +2,8 @@
 Changelog for package pilz_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.12 (2020-03-24)
+-------------------
 * Minor fixes
 * integrate clang-tidy via CMake flag
 * Better handling consecutive calls on the hold service of joint trajectory controller

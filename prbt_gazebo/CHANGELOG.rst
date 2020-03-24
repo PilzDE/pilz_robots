@@ -2,8 +2,8 @@
 Changelog for package prbt_gazebo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.12 (2020-03-24)
+-------------------
 * integrate clang-tidy via CMake flag
 * Contributors: Pilz GmbH and Co. KG
 

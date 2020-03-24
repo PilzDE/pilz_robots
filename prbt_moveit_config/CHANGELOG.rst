@@ -2,8 +2,8 @@
 Changelog for package prbt_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.12 (2020-03-24)
+-------------------
 * add pipeline for merging the planner into moveit (old pipeline still available)
 * Fake speed override in case of sim:=true
 * Fix warning by change parent and child of fixed frame

@@ -2,8 +2,8 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.12 (2020-03-24)
+-------------------
 * Fake speed override in case of sim:=true
 * Add frame speed monitoring
 * integrate clang-tidy via CMake flag
