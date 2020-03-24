@@ -33,6 +33,26 @@ bool hasOnlyFixedParentJoints(const moveit::core::LinkModel * const &link)
   return parent_link == nullptr;
 }
 
+//! @return True if the link is part of an end effector, otherwise false.
+bool isEndEffectorLink(const moveit::core::LinkModel * const &link, const robot_model::RobotModelConstPtr &robot_model)
+{
+  const auto& end_effectors {robot_model->getEndEffectors()};
+  for (const auto& end_effector : end_effectors)
+  {
+    const auto& eef_parent_group_and_link_name {end_effector->getEndEffectorParentGroup()};
+    auto parent_link {link->getParentLinkModel()};
+    while (parent_link != nullptr)
+    {
+      if (parent_link->getName() == eef_parent_group_and_link_name.second)
+      {
+        return true;
+      }
+      parent_link = parent_link->getParentLinkModel();
+    }
+  }
+  return false;
+}
+
 CartesianSpeedMonitor::CartesianSpeedMonitor(const std::vector<std::string> &joint_names,
                                              const robot_model::RobotModelConstPtr &kinematic_model)
   : joint_names_(joint_names)
@@ -56,7 +76,7 @@ void CartesianSpeedMonitor::init()
 
   for (const auto& link : links)
   {
-    if(!hasOnlyFixedParentJoints(link))
+    if(!hasOnlyFixedParentJoints(link) && !isEndEffectorLink(link, kinematic_model_))
     {
       monitored_links_.push_back(link);
       ROS_INFO_STREAM("Monitoring cartesian speed of link " << link->getName());
