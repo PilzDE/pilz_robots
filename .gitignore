@@ -4,3 +4,5 @@
 .idea/
 *.bag
 .vscode/
+doc/html
+doc/manifest.yaml
