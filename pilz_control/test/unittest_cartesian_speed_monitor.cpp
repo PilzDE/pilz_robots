@@ -37,19 +37,7 @@
 static constexpr double SPEED_COMPARISON_TOLERANCE{ 0.001 };
 static constexpr double SMALL_SKIP{ 0.01 };
 
-using pilz_control::CartesianSpeedMonitor;
-
-class CartesianSpeedMonitorTest : public testing::Test
-{
-protected:
-  void SetUp() override;
-
-protected:
-  moveit::core::RobotModelPtr model_;
-  std::vector<std::string> joint_names_;
-};
-
-void CartesianSpeedMonitorTest::SetUp()
+static void buildTestModel(moveit::core::RobotModelConstPtr& model)
 {
   moveit::core::RobotModelBuilder builder("test_robot", "base");
 
@@ -82,19 +70,36 @@ void CartesianSpeedMonitorTest::SetUp()
   // the origin of link3 moves slower than the origin of link2
   builder.addChain("link2->link3", "fixed", { origin3 });
 
-  model_ = builder.build();
+  model = builder.build();
+}
+
+using pilz_control::CartesianSpeedMonitor;
+
+class CartesianSpeedMonitorTest : public testing::Test
+{
+protected:
+  void SetUp() override;
+
+protected:
+  moveit::core::RobotModelConstPtr model_;
+  std::vector<std::string> joint_names_;
+};
+
+void CartesianSpeedMonitorTest::SetUp()
+{
+  buildTestModel(model_);
   joint_names_ = model_->getVariableNames();
 }
 
-TEST_F(CartesianSpeedMonitorTest, testUnmatchedJointCount)
+TEST_F(CartesianSpeedMonitorTest, testUnmatchedJointNames)
 {
-  joint_names_.resize(joint_names_.size()-1);
-  EXPECT_THROW(CartesianSpeedMonitor monitor(joint_names_, model_), pilz_control::CartesianSpeedMonitorException);
+  joint_names_.push_back("invalid_joint_name");
+  EXPECT_THROW(CartesianSpeedMonitor monitor(joint_names_, model_), pilz_control::RobotModelVariableNamesMismatch);
 }
 
 /**
  * @tests{Monitor_Speed_of_all_links_until_TCP,
- * Tests speed monitoring of all moveable links.
+ * Tests correct link speed for no motion.
  * }
  */
 TEST_F(CartesianSpeedMonitorTest, testLinkSpeedNoMovement)
@@ -102,81 +107,56 @@ TEST_F(CartesianSpeedMonitorTest, testLinkSpeedNoMovement)
   robot_state::RobotStatePtr state(new robot_state::RobotState(model_));
   state->setToDefaultValues();
   state->updateLinkTransforms();
-  moveit::core::LinkModel* link = model_->getLinkModel("link2");
-  double time_delta = 1.0;
+  const moveit::core::LinkModel* link = model_->getLinkModel("link2");
+  const double time_delta = 1.0;
 
-  double speed = CartesianSpeedMonitor::linkSpeed(state, state, link, time_delta);
+  double speed = pilz_control::linkSpeed(state, state, link, time_delta);
   EXPECT_NEAR(speed, 0.0, SPEED_COMPARISON_TOLERANCE);
 
   link = model_->getLinkModel("link3");
-  speed = CartesianSpeedMonitor::linkSpeed(state, state, link, time_delta);
+  speed = pilz_control::linkSpeed(state, state, link, time_delta);
   EXPECT_NEAR(speed, 0.0, SPEED_COMPARISON_TOLERANCE);
 }
 
 /**
  * @tests{Monitor_Speed_of_all_links_until_TCP,
- * Tests speed monitoring of all moveable links.
+ * Tests correct link speed moving a single joint.
  * }
  */
-TEST_F(CartesianSpeedMonitorTest, testLinkSpeedMoveJoint1)
+TEST_F(CartesianSpeedMonitorTest, testLinkSpeedMoveSingleJoint)
 {
   robot_state::RobotStatePtr state(new robot_state::RobotState(model_));
   state->setToDefaultValues();
   state->updateLinkTransforms();
 
   robot_state::RobotStatePtr state2(new robot_state::RobotState(model_));
-  state2->setToDefaultValues();
-  double angular_displacement{ 0.1 };
-  state2->setVariablePosition(joint_names_[0], angular_displacement);
-  state2->updateLinkTransforms();
+  const double angular_displacement{ 0.1 };
+  const double time_delta{ 0.3 };
 
-  moveit::core::LinkModel* link = model_->getLinkModel("link2");
-  double time_delta = 0.4;
-  double expected_velocity = angular_displacement / time_delta;
+  for (const std::string& joint_name : joint_names_)
+  {
+    state2->setToDefaultValues();
+    state2->setVariablePosition(joint_name, angular_displacement);
+    state2->updateLinkTransforms();
 
-  double speed = CartesianSpeedMonitor::linkSpeed(state, state2, link, time_delta);
-  EXPECT_NEAR(speed, expected_velocity, SPEED_COMPARISON_TOLERANCE);
+    const moveit::core::LinkModel* link = model_->getLinkModel("link2");
+    double speed = pilz_control::linkSpeed(state, state2, link, time_delta);
+    double expected_velocity = (joint_name == "base-link1-joint") ? (angular_displacement / time_delta) : 0.0;
+    EXPECT_NEAR(speed, expected_velocity, SPEED_COMPARISON_TOLERANCE);
 
-  link = model_->getLinkModel("link3");
-  speed = CartesianSpeedMonitor::linkSpeed(state, state2, link, time_delta);
-  EXPECT_NEAR(speed, expected_velocity, SPEED_COMPARISON_TOLERANCE);
+    link = model_->getLinkModel("link3");
+    speed = pilz_control::linkSpeed(state, state2, link, time_delta);
+    expected_velocity = angular_displacement / time_delta;
+    EXPECT_NEAR(speed, expected_velocity, SPEED_COMPARISON_TOLERANCE);
+  }
 }
 
 /**
  * @tests{Monitor_Speed_of_all_links_until_TCP,
- * Tests speed monitoring of all moveable links.
+ * Tests that link speed scales linearly in time.
  * }
  */
-TEST_F(CartesianSpeedMonitorTest, testLinkSpeedMoveJoint2)
-{
-  robot_state::RobotStatePtr state(new robot_state::RobotState(model_));
-  state->setToDefaultValues();
-  state->updateLinkTransforms();
-
-  robot_state::RobotStatePtr state2(new robot_state::RobotState(model_));
-  state2->setToDefaultValues();
-  double angular_displacement{ 0.1 };
-  state2->setVariablePosition(joint_names_[1], angular_displacement);
-  state2->updateLinkTransforms();
-
-  moveit::core::LinkModel* link = model_->getLinkModel("link2");
-  double time_delta = 0.3;
-
-  double speed = CartesianSpeedMonitor::linkSpeed(state, state2, link, time_delta);
-  EXPECT_NEAR(speed, 0.0, SPEED_COMPARISON_TOLERANCE);
-
-  link = model_->getLinkModel("link3");
-  double expected_velocity = angular_displacement / time_delta;
-  speed = CartesianSpeedMonitor::linkSpeed(state, state2, link, time_delta);
-  EXPECT_NEAR(speed, expected_velocity, SPEED_COMPARISON_TOLERANCE);
-}
-
-/**
- * @tests{Monitor_Speed_of_all_links_until_TCP,
- * Tests speed monitoring of all moveable links.
- * }
- */
-TEST_F(CartesianSpeedMonitorTest, testLinkSpeedLinearInTime)
+TEST_F(CartesianSpeedMonitorTest, testLinkSpeedLinearScalingInTime)
 {
   robot_state::RobotStatePtr state(new robot_state::RobotState(model_));
   state->setToDefaultValues();
@@ -188,59 +168,65 @@ TEST_F(CartesianSpeedMonitorTest, testLinkSpeedLinearInTime)
   state2->setVariablePositions(angular_displacements);
   state2->updateLinkTransforms();
 
-  moveit::core::LinkModel* link = model_->getLinkModel("link3");
+  const moveit::core::LinkModel* link = model_->getLinkModel("link3");
   double time_delta = 0.1;
 
-  double speed = CartesianSpeedMonitor::linkSpeed(state, state2, link, time_delta);
+  const double speed = pilz_control::linkSpeed(state, state2, link, time_delta);
 
-  double factor = 2.0;
+  const double factor = 2.0;
   time_delta *= factor;
-  double speed2 = CartesianSpeedMonitor::linkSpeed(state, state2, link, time_delta);
+  const double speed2 = pilz_control::linkSpeed(state, state2, link, time_delta);
 
   EXPECT_NEAR(speed2 * factor, speed, SPEED_COMPARISON_TOLERANCE);
 }
 
 /**
  * @tests{Monitor_Speed_of_all_links_until_TCP,
- * Tests speed monitoring of all moveable links.
+ * Tests monitoring all links moving a single joint.
  * }
  */
-TEST_F(CartesianSpeedMonitorTest, testBelowLimitMoveJoint2)
+TEST_F(CartesianSpeedMonitorTest, testBelowLimitMoveSingleJoint)
 {
   CartesianSpeedMonitor monitor(joint_names_, model_);
   monitor.init();
 
-  double angular_displacement = 0.1;
-  double time_delta = 0.2;
-  double limit = angular_displacement / time_delta + SMALL_SKIP;
-  EXPECT_TRUE(monitor.cartesianSpeedIsBelowLimit({ 0.0, 0.0 }, { 0.0, angular_displacement }, time_delta, limit));
+  const double angular_displacement = 0.1;
+  const double time_delta = 0.2;
 
-  limit = angular_displacement / time_delta - SMALL_SKIP;
-  EXPECT_FALSE(monitor.cartesianSpeedIsBelowLimit({ 0.0, 0.0 }, { 0.0, angular_displacement }, time_delta, limit));
+  const std::vector<double> current_positions(joint_names_.size(), 0.0);
+
+  for (unsigned int joint_index = 0; joint_index < joint_names_.size(); ++joint_index)
+  {
+    std::vector<double> desired_positions(joint_names_.size(), 0.0);
+    desired_positions.at(joint_index) = angular_displacement;
+
+    double limit = angular_displacement / time_delta + SMALL_SKIP;
+    EXPECT_TRUE(monitor.cartesianSpeedIsBelowLimit(current_positions, desired_positions, time_delta, limit));
+
+    limit = angular_displacement / time_delta - SMALL_SKIP;
+    EXPECT_FALSE(monitor.cartesianSpeedIsBelowLimit(current_positions, desired_positions, time_delta, limit));
+  }
 }
 
 /**
  * @tests{Monitor_Speed_of_all_links_until_TCP,
- * Tests speed monitoring of all moveable links.
+ * Tests monitoring all links moving a single joint when the links are not in their default perpendicular position.
  * }
  */
-TEST_F(CartesianSpeedMonitorTest, testBelowLimitMoveJoint1)
+TEST_F(CartesianSpeedMonitorTest, testBelowLimitLinksNotPerpendicular)
 {
   CartesianSpeedMonitor monitor(joint_names_, model_);
   monitor.init();
 
-  double angular_displacement = 0.1;
-  double time_delta = 0.2;
-  double limit = angular_displacement / time_delta + SMALL_SKIP;
-  EXPECT_TRUE(monitor.cartesianSpeedIsBelowLimit({ 0.0, 0.0 }, { angular_displacement, 0.0 }, time_delta, limit));
+  const double angular_displacement = 0.1;
+  const double time_delta = 0.2;
 
-  limit = angular_displacement / time_delta - SMALL_SKIP;
-  EXPECT_FALSE(monitor.cartesianSpeedIsBelowLimit({ 0.0, 0.0 }, { angular_displacement, 0.0 }, time_delta, limit));
-
-  // move link2/3 out of perpendicular position
-  limit = angular_displacement / time_delta + SMALL_SKIP;
-  EXPECT_FALSE(
-      monitor.cartesianSpeedIsBelowLimit({ 0.0, 0.5 * M_PI }, { angular_displacement, 0.5 * M_PI }, time_delta, limit));
+  // put link2/3 out of perpendicular position
+  const double limit = angular_displacement / time_delta + SMALL_SKIP;
+  EXPECT_FALSE(monitor.cartesianSpeedIsBelowLimit({ 0.0, 0.5 * M_PI },
+                                                  { angular_displacement, 0.5 * M_PI },
+                                                  time_delta,
+                                                  limit));
 }
 
 TEST_F(CartesianSpeedMonitorTest, testD0Destructor)

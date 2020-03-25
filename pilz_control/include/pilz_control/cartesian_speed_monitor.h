@@ -25,17 +25,39 @@
 
 namespace pilz_control
 {
+/**
+ * @brief Compute the cartesian speed of a single robot link.
+ *
+ * @param current_state Current state of the robot. The link transforms have to be up-to-date.
+ * @param desired_state Desired state of the robot in the future. The link transforms have to be up-to-date.
+ * @param link Robot link under observation.
+ * @param time_delta Time[s] for reaching the desired state.
+ * @returns Cartesian speed[m/s].
+ */
+static double linkSpeed(const robot_state::RobotStateConstPtr& current_state, // We require that the link transforms
+                        const robot_state::RobotStateConstPtr& desired_state, // are up-to-date in this context, such
+                                                                              // that we can use the more efficient
+                                                                              // const-version getGlobalLinkTransform()
+                        const moveit::core::LinkModel* link,
+                        const double& time_delta)
+{
+  const auto p1_cart {current_state->getGlobalLinkTransform(link)};
+  const auto p2_cart {desired_state->getGlobalLinkTransform(link)};
+
+  const auto dist {(p2_cart.translation() - p1_cart.translation()).norm()};
+  const auto speed {dist / time_delta};
+
+  return speed;
+}
 
 //! @brief Monitors the cartesian speed of all moving links of a position-controlled robot.
 class CartesianSpeedMonitor
 {
 public:
   /**
-   * @brief Constructor.
-   *
    * @param joint_names List of joint names of controlled joints. The same order has to be used for joint positions.
    * @param kinematic_model MoveIt robot model used for computing the forward kinematics.
-   * @throw CartesianSpeedMonitorException if the number of joint names does not match the variable count in kinematic_model.
+   * @throw RobotModelVariableNamesMismatch if the joint names do not match variable names in kinematic_model.
    */
   CartesianSpeedMonitor(const std::vector<std::string> &joint_names,
                         const robot_model::RobotModelConstPtr &kinematic_model);
@@ -48,8 +70,8 @@ public:
    *
    * @param current_position Current positions of controlled joints.
    * @param desired_position Desired positions of controlled joints.
-   * @param time_delta Time for reaching the desired positions.
-   * @param speed_limit
+   * @param time_delta Time[s] for reaching the desired positions.
+   * @param speed_limit Speed limit in m/s.
    *
    * @returns False if the speed limit is violated, otherwise true.
    */
@@ -58,30 +80,14 @@ public:
                                   const double& time_delta,
                                   const double& speed_limit);
 
-public:
-  /**
-   * @brief Compute the cartesian speed of a single robot link.
-   *
-   * @param current_state
-   * @param desired_state
-   * @param link
-   * @param time_delta Time for reaching the desired state.
-   *
-   * @returns The computed cartesian speed.
-   */
-  static double linkSpeed(const robot_state::RobotStateConstPtr& current_state, // !!! Keep this RobotStateConstPtr for
-                          const robot_state::RobotStateConstPtr& desired_state, // efficient getGlobalLinkTransform calls
-                          const moveit::core::LinkModel* link,
-                          const double& time_delta);
-
 private:
-  robot_model::RobotModelConstPtr kinematic_model_;
+  const robot_model::RobotModelConstPtr kinematic_model_;
   //! @brief The robot states are kept in order to allow efficient getGlobalLinkTransform calls
   robot_state::RobotStatePtr state_current_;
   //! @brief The robot states are kept in order to allow efficient getGlobalLinkTransform calls
   robot_state::RobotStatePtr state_desired_;
 
-  std::vector<std::string> joint_names_;
+  const std::vector<std::string> joint_names_;
 
   //! @brief All moveable robot links are monitored
   std::vector< const robot_model::LinkModel * > monitored_links_;

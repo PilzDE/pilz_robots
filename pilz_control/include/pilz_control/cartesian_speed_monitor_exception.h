@@ -18,17 +18,15 @@
 #define PILZ_CONTROL_CARTESIAN_SPEED_MONITOR_EXCEPTION_H
 
 #include <stdexcept>
+#include <string>
 
 namespace pilz_control
 {
-/**
- * @brief Exception thrown by the CartesianSpeedMonitor class.
- */
-class CartesianSpeedMonitorException : public std::runtime_error
+class RobotModelVariableNamesMismatch : public std::invalid_argument
 {
 public:
-  CartesianSpeedMonitorException(const std::string &what_arg)
-    : std::runtime_error(what_arg)
+  RobotModelVariableNamesMismatch()
+    : std::invalid_argument("The given names do not match the robot model variable names.")
   {
   }
 };

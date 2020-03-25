@@ -66,13 +66,13 @@ CartesianSpeedMonitor::CartesianSpeedMonitor(const std::vector<std::string> &joi
                    return std::find(variable_names.begin(), variable_names.end(), name) == variable_names.end();
                  }))
   {
-    throw CartesianSpeedMonitorException("Size of joint_names does not match variable count of robot model.");
+    throw RobotModelVariableNamesMismatch();
   }
 }
 
 void CartesianSpeedMonitor::init()
 {
-  auto links = kinematic_model_->getLinkModels();
+  const auto& links = kinematic_model_->getLinkModels();
 
   for (const auto& link : links)
   {
@@ -105,31 +105,17 @@ bool CartesianSpeedMonitor::cartesianSpeedIsBelowLimit(const std::vector<double>
 
   for(const auto & link : monitored_links_)
   {
-    auto speed = linkSpeed(state_current_, state_desired_, link, time_delta);
+    const auto& speed = linkSpeed(state_current_, state_desired_, link, time_delta);
 
     if(speed > speed_limit)
     {
       ROS_ERROR_STREAM("Speed limit violated by link '" << link->getName() << "'! Desired Speed: " << speed
-                       << ", speed_limit: " << speed_limit);
+                       << "m/s, speed_limit: " << speed_limit << "m/s");
       return false;
     }
   }
 
   return true;
-}
-
-double CartesianSpeedMonitor::linkSpeed(const robot_state::RobotStateConstPtr& current_state, // Important! Keep this RobotStateConstPtr to allow efficient
-                                        const robot_state::RobotStateConstPtr& desired_state, // getGlobalLinkTransform calls
-                                        const moveit::core::LinkModel* link,
-                                        const double& time_delta)
-{
-  auto p1_cart {current_state->getGlobalLinkTransform(link)};
-  auto p2_cart {desired_state->getGlobalLinkTransform(link)};
-
-  auto dist {(p2_cart.translation() - p1_cart.translation()).norm()};
-  auto speed {dist / time_delta};
-
-  return speed;
 }
 
 
