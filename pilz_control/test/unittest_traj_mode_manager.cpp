@@ -37,7 +37,7 @@ inline bool modeReached(const std::future<void>& wait_future, int timeout = WAIT
   return wait_future.wait_for(std::chrono::seconds(timeout)) == std::future_status::ready;
 }
 
-TEST(TrajModeManagerTest, testInitialModeStopping)
+TEST(TrajModeManagerTest, testStoppingMode)
 {
   TrajProcessingModeManager manager;
   EXPECT_EQ(manager.getCurrentMode(), TrajProcessingMode::stopping);

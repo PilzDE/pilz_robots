@@ -21,61 +21,50 @@
 namespace pilz_joint_trajectory_controller
 {
 
-TEST(TrajModeStateMachineTest, testIsTransitionValid)
+testing::AssertionResult getModeIndex(const TrajProcessingMode& mode, unsigned int& idx)
 {
   for (unsigned int i = 0; i < NUM_MODES; ++i)
   {
-    auto mode = getMode(i);
-    EXPECT_TRUE(isTransitionValid(mode, i));
+    if (getMode(i) == mode)
+    {
+      idx = i;
+      return testing::AssertionSuccess();
+    }
   }
+  return testing::AssertionFailure() << "Failure finding mode index";
 }
 
 TEST(TrajModeStateMachineTest, testNextTransitionInHoldMode)
 {
-  TrajProcessingMode mode{TrajProcessingMode::hold};
-  bool found_index{false};
-  for (unsigned int i = 0; i < NUM_MODES; ++i)
-  {
-    if (isTransitionValid(mode, i))
-    {
-      found_index = true;
-      auto next_index = getNextIndex(i);
-      EXPECT_TRUE(isTransitionValid(TrajProcessingMode::unhold, next_index));
-    }
-  }
-  EXPECT_TRUE(found_index);
+  const TrajProcessingMode mode{TrajProcessingMode::hold};
+
+  unsigned int idx;
+  ASSERT_TRUE(getModeIndex(mode, idx));
+
+  const auto next_index = getNextIndex(idx);
+  EXPECT_TRUE(isTransitionValid(TrajProcessingMode::unhold, next_index));
 }
 
 TEST(TrajModeStateMachineTest, testNextTransitionInUnholdMode)
 {
-  TrajProcessingMode mode{TrajProcessingMode::unhold};
-  bool found_index{false};
-  for (unsigned int i = 0; i < NUM_MODES; ++i)
-  {
-    if (isTransitionValid(mode, i))
-    {
-      found_index = true;
-      auto next_index = getNextIndex(i);
-      EXPECT_TRUE(isTransitionValid(TrajProcessingMode::stopping, next_index));
-    }
-  }
-  EXPECT_TRUE(found_index);
+  const TrajProcessingMode mode{TrajProcessingMode::unhold};
+
+  unsigned int idx;
+  ASSERT_TRUE(getModeIndex(mode, idx));
+
+  const auto next_index = getNextIndex(idx);
+  EXPECT_TRUE(isTransitionValid(TrajProcessingMode::stopping, next_index));
 }
 
 TEST(TrajModeStateMachineTest, testNextTransitionInStoppingMode)
 {
-  TrajProcessingMode mode{TrajProcessingMode::stopping};
-  bool found_index{false};
-  for (unsigned int i = 0; i < NUM_MODES; ++i)
-  {
-    if (isTransitionValid(mode, i))
-    {
-      found_index = true;
-      auto next_index = getNextIndex(i);
-      EXPECT_TRUE(isTransitionValid(TrajProcessingMode::hold, next_index));
-    }
-  }
-  EXPECT_TRUE(found_index);
+  const TrajProcessingMode mode{TrajProcessingMode::stopping};
+
+  unsigned int idx;
+  ASSERT_TRUE(getModeIndex(mode, idx));
+
+  const auto next_index = getNextIndex(idx);
+  EXPECT_TRUE(isTransitionValid(TrajProcessingMode::hold, next_index));
 }
 
 }  // namespace pilz_joint_trajectory_controller
