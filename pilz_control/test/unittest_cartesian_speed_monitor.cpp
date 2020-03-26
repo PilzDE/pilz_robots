@@ -110,11 +110,11 @@ TEST_F(CartesianSpeedMonitorTest, testLinkSpeedNoMovement)
   const moveit::core::LinkModel* link = model_->getLinkModel("link2");
   const double time_delta = 1.0;
 
-  double speed = pilz_control::linkSpeed(state, state, link, time_delta);
+  double speed = pilz_control::linkSpeed(state.get(), state.get(), link, time_delta);
   EXPECT_NEAR(speed, 0.0, SPEED_COMPARISON_TOLERANCE);
 
   link = model_->getLinkModel("link3");
-  speed = pilz_control::linkSpeed(state, state, link, time_delta);
+  speed = pilz_control::linkSpeed(state.get(), state.get(), link, time_delta);
   EXPECT_NEAR(speed, 0.0, SPEED_COMPARISON_TOLERANCE);
 }
 
@@ -140,12 +140,12 @@ TEST_F(CartesianSpeedMonitorTest, testLinkSpeedMoveSingleJoint)
     state2->updateLinkTransforms();
 
     const moveit::core::LinkModel* link = model_->getLinkModel("link2");
-    double speed = pilz_control::linkSpeed(state, state2, link, time_delta);
+    double speed = pilz_control::linkSpeed(state.get(), state2.get(), link, time_delta);
     double expected_velocity = (joint_name == "base-link1-joint") ? (angular_displacement / time_delta) : 0.0;
     EXPECT_NEAR(speed, expected_velocity, SPEED_COMPARISON_TOLERANCE);
 
     link = model_->getLinkModel("link3");
-    speed = pilz_control::linkSpeed(state, state2, link, time_delta);
+    speed = pilz_control::linkSpeed(state.get(), state2.get(), link, time_delta);
     expected_velocity = angular_displacement / time_delta;
     EXPECT_NEAR(speed, expected_velocity, SPEED_COMPARISON_TOLERANCE);
   }
@@ -171,11 +171,11 @@ TEST_F(CartesianSpeedMonitorTest, testLinkSpeedLinearScalingInTime)
   const moveit::core::LinkModel* link = model_->getLinkModel("link3");
   double time_delta = 0.1;
 
-  const double speed = pilz_control::linkSpeed(state, state2, link, time_delta);
+  const double speed = pilz_control::linkSpeed(state.get(), state2.get(), link, time_delta);
 
   const double factor = 2.0;
   time_delta *= factor;
-  const double speed2 = pilz_control::linkSpeed(state, state2, link, time_delta);
+  const double speed2 = pilz_control::linkSpeed(state.get(), state2.get(), link, time_delta);
 
   EXPECT_NEAR(speed2 * factor, speed, SPEED_COMPARISON_TOLERANCE);
 }

@@ -105,7 +105,7 @@ bool CartesianSpeedMonitor::cartesianSpeedIsBelowLimit(const std::vector<double>
 
   for(const auto & link : monitored_links_)
   {
-    const auto& speed = linkSpeed(state_current_, state_desired_, link, time_delta);
+    const auto& speed = linkSpeed(state_current_.get(), state_desired_.get(), link, time_delta);
 
     if(speed > speed_limit)
     {

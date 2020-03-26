@@ -34,10 +34,10 @@ namespace pilz_control
  * @param time_delta Time[s] for reaching the desired state.
  * @returns Cartesian speed[m/s].
  */
-static double linkSpeed(const robot_state::RobotStateConstPtr& current_state, // We require that the link transforms
-                        const robot_state::RobotStateConstPtr& desired_state, // are up-to-date in this context, such
-                                                                              // that we can use the more efficient
-                                                                              // const-version getGlobalLinkTransform()
+static double linkSpeed(const robot_state::RobotState* current_state, // We require that the link transforms
+                        const robot_state::RobotState* desired_state, // are up-to-date in this context, such
+                                                                      // that we can use the more efficient
+                                                                      // const-version getGlobalLinkTransform()
                         const moveit::core::LinkModel* link,
                         const double& time_delta)
 {
