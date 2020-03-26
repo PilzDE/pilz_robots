@@ -28,7 +28,7 @@ namespace pilz_joint_trajectory_controller
 
 static constexpr int WAIT_FOR_RESULT_TIMEOUT{1};
 
-TEST(TrajModeListenerTest, testIsTargetModeReached)
+TEST(TrajModeListenerTest, testisTargetMode)
 {
   std::array<TrajProcessingMode, 3> modes {
     TrajProcessingMode::unhold, TrajProcessingMode::stopping, TrajProcessingMode::hold};
@@ -38,7 +38,7 @@ TEST(TrajModeListenerTest, testIsTargetModeReached)
     TrajProcessingModeListener listener(target_mode);
     for (const auto& mode : modes)
     {
-      EXPECT_EQ(listener.isTargetModeReached(mode), mode==target_mode);
+      EXPECT_EQ(listener.isTargetMode(mode), mode==target_mode);
     }
   }
 }

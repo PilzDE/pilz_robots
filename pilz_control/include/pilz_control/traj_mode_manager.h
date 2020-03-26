@@ -71,7 +71,7 @@ public:
   TrajProcessingModeListener(const TrajProcessingMode& mode);
   void waitForMode();
   //! @returns true if the given mode corresponds to the target mode, otherwise false.
-  bool isTargetModeReached(const TrajProcessingMode& mode) const;
+  bool isTargetMode(const TrajProcessingMode& mode) const;
   //! @brief Notify the listener that the target mode is reached.
   void triggerListener();
 
@@ -143,7 +143,7 @@ inline void TrajProcessingModeListener::waitForMode()
   }
 }
 
-inline bool TrajProcessingModeListener::isTargetModeReached(const TrajProcessingMode& mode) const
+inline bool TrajProcessingModeListener::isTargetMode(const TrajProcessingMode& mode) const
 {
   return mode == mode_;
 }
@@ -196,7 +196,7 @@ inline void TrajProcessingModeManager::callListener(const TrajProcessingMode& mo
   while(it != listener_.end())
   {
     TrajProcessingModeListener* listener {(*it)};
-    if (listener && listener->isTargetModeReached(mode))
+    if (listener && listener->isTargetMode(mode))
     {
       listener->triggerListener();
       it = listener_.erase(it);
@@ -236,7 +236,7 @@ inline bool TrajProcessingModeManager::unholdEvent()
 
 inline void TrajProcessingModeManager::registerListener(TrajProcessingModeListener* const listener)
 {
-  if (listener && listener->isTargetModeReached(getCurrentMode()))
+  if (listener && listener->isTargetMode(getCurrentMode()))
   {
     listener->triggerListener();
     return;
