@@ -17,11 +17,11 @@
 #ifndef TRAJPROCESSINGMODEMANAGER_H
 #define TRAJPROCESSINGMODEMANAGER_H
 
-#include <array>
 #include <list>
 #include <memory>
 #include <mutex>
 #include <condition_variable>
+#include <unordered_map>
 
 namespace pilz_joint_trajectory_controller
 {
@@ -36,29 +36,30 @@ enum class TrajProcessingMode
   hold
 };
 
-// "Simple" linear state machine: (start with stopping in accordance to the controller)
-//  x ->  |->  stopping  ->  hold  ->  unhold ->|
-//        |<-               <-                <-|
-static constexpr unsigned int NUM_MODES {3};
-static constexpr std::array<TrajProcessingMode, NUM_MODES> mode_state_machine_{
-  TrajProcessingMode::stopping, TrajProcessingMode::hold, TrajProcessingMode::unhold
+/**
+ * @brief Stores the TrajProcessingMode state machine and can be used to determine if a transition is valid.
+ */
+class TrajProcessingModeStateMachine
+{
+public:
+  /**
+   * @brief Returns true if a transition between the current_mode and the requested_mode exists,
+   * otherwise false.
+   */
+  bool isTransitionValid(const TrajProcessingMode& current_mode,
+                         const TrajProcessingMode& requested_mode) const;
+
+private:
+  // "Simple" linear state machine: (start with stopping in accordance to the controller)
+  //  x ->  |->  stopping  ->  hold  ->  unhold ->|
+  //        |<-               <-                <-|
+  const std::unordered_map<TrajProcessingMode, TrajProcessingMode> mode_machine_
+  {
+    {TrajProcessingMode::stopping,  TrajProcessingMode::hold},
+    {TrajProcessingMode::hold,      TrajProcessingMode::unhold},
+    {TrajProcessingMode::unhold,    TrajProcessingMode::stopping},
+  };
 };
-
-inline static constexpr TrajProcessingMode getMode(const unsigned int& idx)
-{
-  return mode_state_machine_[idx];
-}
-
-inline static constexpr bool isTransitionValid(const TrajProcessingMode& requested_new_mode,
-                                               const unsigned int& idx_of_request_new_mode)
-{
-  return requested_new_mode == getMode(idx_of_request_new_mode);
-}
-
-inline static constexpr unsigned int getNextIndex(const unsigned int& current_idx)
-{
-  return (current_idx+1) % NUM_MODES;
-}
 
 /**
  * @brief Listener to wait for a specified mode to be reached.
@@ -66,7 +67,7 @@ inline static constexpr unsigned int getNextIndex(const unsigned int& current_id
 class TrajProcessingModeListener
 {
 public:
-   //! @param mode Mode to wait for.
+  //! @param mode Mode to wait for.
   TrajProcessingModeListener(const TrajProcessingMode& mode);
   void waitForMode();
   //! @returns true if the given mode corresponds to the target mode, otherwise false.
@@ -106,15 +107,14 @@ public:
 private:
   //! @brief Perform full transition if possible.
   bool switchTo(const TrajProcessingMode& mode, const bool success_at_transition_only=true);
-  bool setMode(const TrajProcessingMode& mode, const bool& success_at_transition_only);
+  bool setMode(const TrajProcessingMode& requested_mode, const bool& success_at_transition_only);
   //! @brief Triggers all registered listeners whose target mode is reached.
   void callListener(const TrajProcessingMode& mode);
   //! @brief Use only if lock on \ref mode_mutex_ is already acquired.
-  TrajProcessingMode getCurrentModeLockFree() const;
 
 private:
-  //! @brief "Pointer" to current mode.
-  unsigned int current_mode_idx_ {0};
+  const TrajProcessingModeStateMachine mode_state_machine_;
+  TrajProcessingMode current_mode_ {TrajProcessingMode::stopping};
   //! @brief Protects the access to the current mode.
   std::mutex mode_mutex_;
 
@@ -122,6 +122,12 @@ private:
   //! @brief Protects the access to the listener list.
   std::mutex listener_mutex_;
 };
+
+inline bool TrajProcessingModeStateMachine::isTransitionValid(const TrajProcessingMode& current_mode,
+                                                              const TrajProcessingMode& requested_mode) const
+{
+  return mode_machine_.at(current_mode) == requested_mode;
+}
 
 inline TrajProcessingModeListener::TrajProcessingModeListener(const TrajProcessingMode& mode)
   : mode_(mode)
@@ -151,8 +157,8 @@ inline void TrajProcessingModeListener::triggerListener()
 
 inline bool TrajProcessingModeManager::isHolding()
 {
-  TrajProcessingMode current_ {getCurrentMode()};
-  return (current_ == TrajProcessingMode::stopping) || (current_ == TrajProcessingMode::hold);
+  TrajProcessingMode current_mode {getCurrentMode()};
+  return (current_mode == TrajProcessingMode::stopping) || (current_mode == TrajProcessingMode::hold);
 }
 
 inline bool TrajProcessingModeManager::isUnhold()
@@ -160,32 +166,26 @@ inline bool TrajProcessingModeManager::isUnhold()
   return getCurrentMode() == TrajProcessingMode::unhold;
 }
 
-inline TrajProcessingMode TrajProcessingModeManager::getCurrentModeLockFree() const
-{
-  return getMode(current_mode_idx_);
-}
-
 inline TrajProcessingMode TrajProcessingModeManager::getCurrentMode()
 {
   std::lock_guard<std::mutex> lk(mode_mutex_);
-  return getCurrentModeLockFree();
+  return current_mode_;
 }
 
-inline bool TrajProcessingModeManager::setMode(const TrajProcessingMode& mode,
+inline bool TrajProcessingModeManager::setMode(const TrajProcessingMode& requested_mode,
                                                const bool& success_at_transition_only)
 {
   std::lock_guard<std::mutex> lk(mode_mutex_);
-  if (!success_at_transition_only && (getCurrentModeLockFree() == mode))
+  if (!success_at_transition_only && (current_mode_ == requested_mode))
   {
     return true;
   }
 
-  const unsigned int new_idx {getNextIndex(current_mode_idx_)};
-  if ( !isTransitionValid(mode, new_idx) )
+  if ( !mode_state_machine_.isTransitionValid(current_mode_, requested_mode) )
   {
     return false;
   }
-  current_mode_idx_ = new_idx;
+  current_mode_ = requested_mode;
   return true;
 }
 

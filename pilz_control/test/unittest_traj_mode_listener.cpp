@@ -17,6 +17,7 @@
 #include <chrono>
 #include <functional>
 #include <future>
+#include <array>
 
 #include <gtest/gtest.h>
 
@@ -29,14 +30,14 @@ static constexpr int WAIT_FOR_RESULT_TIMEOUT{1};
 
 TEST(TrajModeListenerTest, testIsTargetModeReached)
 {
-  for (unsigned int i = 0; i < NUM_MODES; ++i)
-  {
-    auto target_mode = getMode(i);
-    TrajProcessingModeListener listener(target_mode);
+  std::array<TrajProcessingMode, 3> modes {
+    TrajProcessingMode::unhold, TrajProcessingMode::stopping, TrajProcessingMode::hold};
 
-    for (unsigned int j = 0; j < NUM_MODES; ++j)
+  for (const auto& target_mode : modes)
+  {
+    TrajProcessingModeListener listener(target_mode);
+    for (const auto& mode : modes)
     {
-      auto mode = getMode(i);
       EXPECT_EQ(listener.isTargetModeReached(mode), mode==target_mode);
     }
   }
