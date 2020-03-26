@@ -50,7 +50,7 @@ static double linkSpeed(const robot_state::RobotStateConstPtr& current_state, //
   return speed;
 }
 
-//! @brief Monitors the cartesian speed of all moving links of a position-controlled robot.
+//! @brief Monitors the cartesian speed of all links of a position-controlled robot (end effector is excluded).
 class CartesianSpeedMonitor
 {
 public:
@@ -62,14 +62,14 @@ public:
   CartesianSpeedMonitor(const std::vector<std::string> &joint_names,
                         const robot_model::RobotModelConstPtr &kinematic_model);
 
-   //! @brief Initialize speed monitor by collecting all moveable links.
+   //! @brief Prepares the CartesianSpeedMonitor for execution.
   void init();
 
   /**
-   * @brief Check if cartesian speed of all links is below the speed limit.
+   * @brief Check if cartesian speed of all monitored links is below the speed limit.
    *
-   * @param current_position Current positions of controlled joints.
-   * @param desired_position Desired positions of controlled joints.
+   * @param current_position Current positions[rad] of controlled joints in the order of \ref joint_names_.
+   * @param desired_position Desired positions[rad] of controlled joints in the order of \ref joint_names_.
    * @param time_delta Time[s] for reaching the desired positions.
    * @param speed_limit Speed limit in m/s.
    *
@@ -82,14 +82,14 @@ public:
 
 private:
   const robot_model::RobotModelConstPtr kinematic_model_;
-  //! @brief The robot states are kept in order to allow efficient getGlobalLinkTransform calls
+  //! @brief The robot states are kept in order to allow efficient getGlobalLinkTransform calls.
   robot_state::RobotStatePtr state_current_;
-  //! @brief The robot states are kept in order to allow efficient getGlobalLinkTransform calls
+  //! @brief The robot states are kept in order to allow efficient getGlobalLinkTransform calls.
   robot_state::RobotStatePtr state_desired_;
 
   const std::vector<std::string> joint_names_;
 
-  //! @brief All moveable robot links are monitored
+  //! @brief Stores all monitored links.
   std::vector< const robot_model::LinkModel * > monitored_links_;
 };
 

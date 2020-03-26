@@ -22,6 +22,9 @@
 
 namespace pilz_control
 {
+/**
+ * @brief Throw this exception when given names do not match the robot model variable names.
+ */
 class RobotModelVariableNamesMismatch : public std::invalid_argument
 {
 public:

@@ -54,7 +54,7 @@ void OperationModeSetupExecutor::updateOperationMode(const OperationModes& opera
     break;
   }
 
-  if (monitor_cartesian_speed.is_initialized() && monitor_cartesian_speed_func_)
+  if (monitor_cartesian_speed && monitor_cartesian_speed_func_)
   {
     monitor_cartesian_speed_func_(monitor_cartesian_speed.get());
   }

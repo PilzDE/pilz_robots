@@ -48,8 +48,8 @@
  * @subsubsection speed_monitoring Speed Monitoring
  *
  * @definereq{Monitor_Speed_of_all_links_until_TCP}
- *  - The system monitors all links of the robot (including the TCP) in order to determine their
- *    translational speed.
+ *  - The system monitors all links of the robot (including the TCP, but not the end effector)
+ *    in order to determine their translational speed.
  *
  * @definereq{Stop1_on_violation_of_speed_limit}
  *  - If the monitored speed exceeds 250 mm/s, the controller is holded (\ref controller_hold).

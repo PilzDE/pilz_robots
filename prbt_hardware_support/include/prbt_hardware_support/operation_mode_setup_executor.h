@@ -59,7 +59,7 @@ private:
   //! The active speed override
   std::atomic<double> speed_override_{0.0};
 
-  //! Function used to propagate speed limit changes into the system.
+  //! Function used to (de-)activate cartesian speed monitoring.
   MonitorCartesianSpeedFunc monitor_cartesian_speed_func_;
   //! Time stamp of the last received operation mode.
   ros::Time time_stamp_last_op_mode_ {ros::Time(0)};

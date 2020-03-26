@@ -149,7 +149,7 @@ class PilzJointTrajectoryController
 
 private:
     /**
-     * @brief Invoke cartesian speed monitoring. Perform controlled stop in case of speed limit violation.
+     * @brief Invoke cartesian speed monitoring and perform controlled stop in case of speed limit violation.
      *
      * The actual procedure depends on the current mode.
      * - unhold: check the (desired) velocity and trigger controller stop in case of speed limit violation.
@@ -167,7 +167,7 @@ private:
      *
      * @param period The time passed since the last update.
      *
-     * @returns False if the cartesian speed monitoring is active and the speed limit violated, otherwise true.
+     * @returns False if one or more links violate the Cartesian speed limit, otherwise true.
      */
     bool isPlannedCartesianVelocityOK(const ros::Duration& period) const;
 
@@ -218,7 +218,13 @@ private:
     //! The currently max allowed speed for each frame on the Cartesian trajectory.
     std::atomic<double> cartesian_speed_limit_ {0.0};
 
-    //! A robot model is needed for the cartesian speed monitor. The loader must not be destroyed before it.
+    /**
+     * @brief Used for loading a RobotModel for the CartesianSpeedMonitor.
+     * 
+     * @note The RobotModelLoader uses a pluginlib::ClassLoader, which must not go out of scope
+     * while the RobotModel is used, see http://wiki.ros.org/pluginlib. Since the RobotModel is injected into
+     * the member cartesian_speed_monitor_, the loader has to be stored as well.
+     */
     robot_model_loader::RobotModelLoaderConstPtr robot_model_loader_;
 };
 

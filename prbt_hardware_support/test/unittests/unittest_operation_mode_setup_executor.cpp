@@ -220,7 +220,7 @@ public:
   MOCK_METHOD0(getService, std::string());
 };
 
-MATCHER_P(IsMonitorCartesianSpeedCorrect, active_flag, "") { return arg.request.data == active_flag; }
+MATCHER_P(IsSpeedMonitoringSettingCorrect, active_flag, "") { return arg.request.data == active_flag; }
 
 /**
  * @brief Tests the correct behavior in case the MonitorCartesianSpeed service
@@ -234,7 +234,7 @@ TEST_F(OperationModeSetupExecutorTest, testMonitorCartesianSpeedSrvSuccess)
 
   MonitorCartesianSpeedServiceMock mock;
   EXPECT_CALL(mock, getService()).WillRepeatedly(Return("TestServiceName"));
-  EXPECT_CALL(mock, call(IsMonitorCartesianSpeedCorrect(exp_active_flag))).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(mock, call(IsSpeedMonitoringSettingCorrect(exp_active_flag))).Times(1).WillOnce(Return(true));
 
   EXPECT_TRUE(monitorCartesianSpeedSrv<MonitorCartesianSpeedServiceMock>(mock, exp_active_flag));
 }

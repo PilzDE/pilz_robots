@@ -71,6 +71,7 @@ public:
   void waitForMode();
   //! @returns true if the given mode corresponds to the target mode, otherwise false.
   bool isTargetModeReached(const TrajProcessingMode& mode) const;
+  //! @brief Notify the listener that the target mode is reached.
   void triggerListener();
 
 private:
@@ -95,7 +96,7 @@ public:
   bool unholdEvent();
 
 public:
-  //! @returns true if in state stopping or hold, otherwise false.
+  //! @brief Check if in state stopping or hold.
   bool isHolding();
   bool isUnhold();
   void registerListener(TrajProcessingModeListener* const listener);
@@ -103,9 +104,12 @@ public:
   TrajProcessingMode getCurrentMode();
 
 private:
+  //! @brief Perform full transition if possible.
   bool switchTo(const TrajProcessingMode& mode, const bool success_at_transition_only=true);
   bool setMode(const TrajProcessingMode& mode, const bool& success_at_transition_only);
+  //! @brief Triggers all registered listeners whose target mode is reached.
   void callListener(const TrajProcessingMode& mode);
+  //! @brief Use only if lock on \ref mode_mutex_ is already acquired.
   TrajProcessingMode getCurrentModeLockFree() const;
 
 private:
@@ -113,7 +117,6 @@ private:
   unsigned int current_mode_idx_ {0};
   //! @brief Protects the access to the current mode.
   std::mutex mode_mutex_;
-
 
   std::list<TrajProcessingModeListener*> listener_;
   //! @brief Protects the access to the listener list.
@@ -123,7 +126,6 @@ private:
 inline TrajProcessingModeListener::TrajProcessingModeListener(const TrajProcessingMode& mode)
   : mode_(mode)
 {
-
 }
 
 inline void TrajProcessingModeListener::waitForMode()

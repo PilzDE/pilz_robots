@@ -46,7 +46,8 @@ class DisableSpeedMonitoringTest : public testing::Test, public testing::AsyncTe
 
 /**
  * @tests{speed_monitoring_without_operation_mode_support,
- *  Tests the deactivation of the speed monitoring.
+ *  Tests that speed monitoring gets deactivated via service call from the disable_speed_monitoring node
+ *  once the service is advertised.
  * }
  */
 TEST_F(DisableSpeedMonitoringTest, testDisableSpeedMonitoring)
@@ -68,7 +69,8 @@ TEST_F(DisableSpeedMonitoringTest, testDisableSpeedMonitoring)
   EXPECT_CALL(service_mock, callback(Field(&std_srvs::SetBoolRequest::data, false), _))
     .WillOnce(DoAll(SetArgReferee<1>(response), ACTION_OPEN_BARRIER(SPEED_MONITOR_CALLBACK_EVENT)));
 
-  ros::ServiceServer speed_monitor_srv = nh.advertiseService(SPEED_MONITOR_SERVICE_NAME, &SpeedMonitorServiceMock::callback, &service_mock);
+  ros::ServiceServer speed_monitor_srv = nh.advertiseService(SPEED_MONITOR_SERVICE_NAME,
+                                                             &SpeedMonitorServiceMock::callback, &service_mock);
   
   BARRIER(SPEED_MONITOR_CALLBACK_EVENT);
 }

@@ -28,6 +28,13 @@ static constexpr double SPEED_LIMIT_NOT_ACTIVATED{-1.0};
 
 namespace ph = std::placeholders;
 
+/**
+ * @brief Check if a trajectory is in execution at a given uptime of the controller.
+ *
+ * A trajectory is considered to be in execution at a given time point,
+ * if the time point is included in the time interval of at least one segment of the trajectory,
+ * or if it lies inside the goal_time_tolerance of at least one segment.
+ */
 template<class Segment>
 bool isTrajectoryExecuted(const std::vector< TrajectoryPerJoint<Segment>>& traj,
                           const ros::Time& curr_uptime)
