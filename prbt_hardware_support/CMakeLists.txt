@@ -216,9 +216,9 @@ install(TARGETS
   modbus_adapter_run_permitted_node
   operation_mode_setup_executor_node
   pilz_modbus_client_node
+  speed_observer_node
   stop1_executor_node
   system_info_node
-  speed_observer_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
