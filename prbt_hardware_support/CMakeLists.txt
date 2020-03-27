@@ -208,16 +208,17 @@ install(DIRECTORY include/${PROJECT_NAME}/
   PATTERN ".svn" EXCLUDE)
 
 install(TARGETS
+  brake_test_executor_node
+  canopen_braketest_adapter_node
+  fake_speed_override_node
+  modbus_adapter_brake_test_node
+  modbus_adapter_operation_mode_node
   modbus_adapter_run_permitted_node
+  operation_mode_setup_executor_node
   pilz_modbus_client_node
   stop1_executor_node
-  canopen_braketest_adapter_node
-  modbus_adapter_brake_test_node
-  brake_test_executor_node
-  modbus_adapter_operation_mode_node
   system_info_node
   speed_observer_node
-  fake_speed_override_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
