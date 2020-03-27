@@ -5,7 +5,7 @@
   <arg name="gripper" default="" />
 
   <!-- Configure modbus settings depending on the configured saftey hardware -->
-  <arg name="safety_hw" default="pnoz"/>
+  <arg name="safety_hw" default="pss4000"/>
     <arg name="read_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_read_api_spec_$(arg safety_hw).yaml" />
     <arg name="write_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_write_api_spec_$(arg safety_hw).yaml" />
     <arg name="modbus_server_ip" default="$(eval '192.168.0.10' if safety_hw=='pss4000' else '169.254.60.1')" />
