@@ -43,7 +43,7 @@ using namespace prbt_hardware_support;
 static const std::string FRAME_SPEEDS_TOPIC_NAME{ "/frame_speeds" };
 static const std::string FAKE_CONTROLLER_JOINT_STATES_TOPIC_NAME{ "/fake_controller_joint_states" };
 static const std::string OPERATION_MODE_TOPIC{ "operation_mode" };
-static const std::string RUN_PERMITTED_SERVICE{ "safe_torque_off" };
+static const std::string RUN_PERMITTED_SERVICE{ "run_permitted" };
 static const std::string ADDITIONAL_FRAMES_PARAM_NAME{ "additional_frames" };
 static const std::string SPEED_LIMIT_T1_PARAM_NAME{ "speed_limit_t1" };
 static const std::string SPEED_LIMIT_AUTOMATIC_PARAM_NAME{ "speed_limit_automatic" };

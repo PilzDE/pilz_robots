@@ -77,7 +77,7 @@ int main(int argc, char **argv)
   TServiceCallFunc halt_func = std::bind(callService, halt_srv);
 
   Stop1Executor stop1_executor(hold_func, unhold_func, recover_func, halt_func);
-  ros::ServiceServer run_permitted_serv = nh.advertiseService("safe_torque_off",
+  ros::ServiceServer run_permitted_serv = nh.advertiseService("run_permitted",
                                                     &Stop1Executor::updateRunPermittedCallback,
                                                     &stop1_executor);
 

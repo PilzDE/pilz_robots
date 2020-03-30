@@ -89,7 +89,7 @@ public:
    */
   void updateRunPermitted(const bool run_permitted);
   bool updateRunPermittedCallback(std_srvs::SetBool::Request &req,
-                         std_srvs::SetBool::Response &res);
+                                  std_srvs::SetBool::Response &res);
 
 protected:
   /**

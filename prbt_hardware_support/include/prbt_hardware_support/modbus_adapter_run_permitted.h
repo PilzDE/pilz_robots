@@ -38,7 +38,7 @@ class ModbusAdapterRunPermitted
 {
 public:
   ModbusAdapterRunPermitted(UpdateRunPermittedFunc&& update_run_permitted_func,
-                   const ModbusApiSpec& api_spec);
+                            const ModbusApiSpec& api_spec);
 
 public:
   /**
