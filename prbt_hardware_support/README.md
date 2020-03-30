@@ -3,34 +3,38 @@ The prbt_hardware_support package contains files supporting the certification of
 
 There is no need to call these launch files directly; they are included from `prbt_support/robot.launch`.
 
-## STO
-The RUN_PERMITTED function (“Safe torque off”) of the robot arm is a safety function to immediately turn off torque of the drives. The behavior can be triggered via the
+# Supported configurations
+The following table contains supported configuration options, the default options as per  are highlighted in _italic_. Most of that functionality is implemented in this package while being configured in `prbt_support/robot.launch`.
+
+| Parameter Description| Options | Argument name in <br> `prbt_support/robot.launch`| Option values in <br> `prbt_support/robot.launch`
+| - | - | - | - |
+| Gripper Model | *No gripper*, Schunk PG plus 70 | `gripper` | *`<empty_string>`*, `pg70` |
+| Safety Controller Hardware         | _PSS4000_, PNOZmulti | `safety_hw` | *`pss4000`*, `pnoz` |
+| Brake Test Support | *True*, False | `has_braketest_support` | *`true`*, `false` |
+| Operation Mode Support| *True*, False | `has_operation_mode_support` | *`true`*, `false` |
+| Visual Status Indicator| *True*, False | `visual_status_indicator` | *`true`*, `false` |
+
+For more on gripper models see also [prbt_grippers](https://github.com/PilzDE/prbt_grippers).
+
+# Safety Features
+
+## Run permitted signal
+The STO function (Safe torque off) of the robot arm is a safety function to immediately turn off torque of the drives. The behavior can be triggered via the
 RUN_PERMITTED signal.
 
-## SBC
-The SBC function ("Safe brake control") of the robot arm is a safety function which is used in conjunction with the RUN_PERMITTED and prevents a motion when the torque of the drives is turned off.
+## Safe brake control
+The SBC function (Safe brake control) of the robot arm is a safety function which is used in conjunction with the RUN_PERMITTED and prevents a motion when the torque of the drives is turned off.
 
-# Safe stop 1 (SS1)
+## Safe stop 1 (SS1)
 To allow a controlled stop, the safety controller delays the RUN_PERMITTED signal by several milliseconds. This package opens a
 modbus connection to the safety controller (PNOZmulti or PSS4000). The safety controller sends an emergency
 stop signal via Modbus immediately so that ros_control has a short time interval to stop the drives via a brake ramp.
 The TCP could for example brake on the current trajectory. After execution of the brake ramp, the drivers are halted. Even if ROS would fail, the safety controller turns off the motors via RUN_PERMITTED (that would be a Stop 0 then).
 
-## Possible error cases and their handling
+## Brake tests
+Brake tests are an integral part of the SBC, since they detect malfunction of the brakes or the brake control in general. Brake tests for each drive have to be executed at a regular interval. When the safety controller requests brake tests, they have to be executed within 1 hour, else the robot cannot be moved anymore.
 
-| Error cases                                             | Handling                                                |
-| ------------------------------------------------------- | ------------------------------------------------------- |
-| Modbus client crashes                                   | ROS system is shutdown which leads to an abrupt stop of the robot. |
-| RUN_PERMITTED Modbus adapter crashes                              | ROS system is shutdown which leads to an abrupt stop of the robot. |
-| Connection loss between PNOZmulti/PSS4000 & Modbus client        | Stop 1 is triggered                                     |
-| System overload (messages don't arrive in time)         | In case a Stop 1 message does not arrive in time, the safety controller will automatically perform a hard stop. In case a Stop 1-release message does not get through, brakes will remain closed. |
-| RUN_PERMITTED Modbus adapter cannot connect to stop services    | ROS system will not start.                              |
-| RUN_PERMITTED Modbus adapter cannot connect to recover services | Node does start and robot can be moved until a stop is triggered. Afterwards the brakes will remain closed. |
-
-# Brake tests
-Brake tests are an integral part of the SBC, since they detect misfunctions of the brakes or the brake control in general. Brake tests for each drive have to be executed at a regular interval. When the safety controller requests brake tests, they have to be executed within 1 hour, else the robot cannot be moved anymore.
-
-# Operation Modes
+## Operation Modes
 The robot system can be controlled in various modes.
 
 These modes are:
@@ -42,6 +46,18 @@ See DIN EN ISO 10218-1 for more details or contact us: ros@pilz.de
 
 ## Note
 In operation mode T1 the robot can be moved as usual. However, if an attempt to exceed the speed limit of 250 mm/s in T1 is detected, the prevailing motion is aborted and a controlled stop is performed.
+
+
+# Possible error cases and their handling
+
+| Error cases                                             | Handling                                                |
+| ------------------------------------------------------- | ------------------------------------------------------- |
+| Modbus client crashes                                   | ROS system is shutdown which leads to an abrupt stop of the robot. |
+| RUN_PERMITTED Modbus adapter crashes                              | ROS system is shutdown which leads to an abrupt stop of the robot. |
+| Connection loss between PNOZmulti/PSS4000 & Modbus client        | Stop 1 is triggered                                     |
+| System overload (messages don't arrive in time)         | In case a Stop 1 message does not arrive in time, the safety controller will automatically perform a hard stop. In case a Stop 1-release message does not get through, brakes will remain closed. |
+| RUN_PERMITTED Modbus adapter cannot connect to stop services    | ROS system will not start.                              |
+| RUN_PERMITTED Modbus adapter cannot connect to recover services | Node does start and robot can be moved until a stop is triggered. Afterwards the brakes will remain closed. |
 
 # Architecture
 The following diagram shows all components of the system and the connections
