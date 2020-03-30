@@ -3,6 +3,19 @@ The prbt_hardware_support package contains files supporting the certification of
 
 There is no need to call these launch files directly; they are included from `prbt_support/robot.launch`.
 
+# Supported configurations
+The following table contains supported configuration options, the default options as per  are highlighted in _italic_. Most of that functionality is implemented in this package while being configured in `prbt_support/robot.launch`.
+
+| Parameter Description| Options | Argument name in <br> `prbt_support/robot.launch`| Option values in <br> `prbt_support/robot.launch`
+| - | - | - | - |
+| Gripper Model | *No gripper*, Schunk PG plus 70 | `gripper` | *`<empty_string>`*, `pg70` |
+| Safety Controller Hardware         | _PSS4000_, PNOZmulti | `safety_hw` | *`pss4000`*, `pnoz` |
+| Brake Test Support | *True*, False | `has_braketest_support` | *`true`*, `false` |
+| Operation Mode Support| *True*, False | `has_operation_mode_support` | *`true`*, `false` |
+| Visual Status Indicator| *True*, False | `visual_status_indicator` | *`true`*, `false` |
+
+For more on gripper models see also [prbt_grippers](https://github.com/PilzDE/prbt_grippers).
+
 # Safety Features
 
 ## Run permitted signal
