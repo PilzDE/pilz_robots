@@ -65,7 +65,7 @@ static const std::string UNHOLD_SERVICE_NAME {"unhold"};
 
 /**
  * @brief Stop1IntegrationTest checks if the chain
- * ModbusServerMock -> ModbusReadClient -> StoModbusAdapter -> ManipulatorMock functions properly
+ * ModbusServerMock -> ModbusReadClient -> RunPermittedModbusAdapter -> ManipulatorMock functions properly
  *
  * @note the test is derived from testing::AsyncTest which allows the asynchronous processes to re-sync
  *
@@ -110,15 +110,15 @@ void Stop1IntegrationTest::TearDown()
 }
 
 /**
- * @brief Test that correct service calls occurs based on STO state.
+ * @brief Test that correct service calls occurs based on RUN_PERMITTED state.
  *
  * @tests{execution_of_stop1,
  *  Test that drives are recovered and controller is unhold
- *  after STO switch: false->true.
+ *  after RUN_PERMITTED switch: false->true.
  * }
  *
  * @tests{Stop1_Trigger,
- *  Test that Stop 1 is triggered if STO value changes to false.
+ *  Test that Stop 1 is triggered if RUN_PERMITTED value changes to false.
  * }
  *
  *
@@ -127,13 +127,13 @@ void Stop1IntegrationTest::TearDown()
  *
  *
  * Data send via:
- * ModbusServerMock -> ModbusReadClient -> StoModbusAdapter -> ManipulatorMock connection
+ * ModbusServerMock -> ModbusReadClient -> RunPermittedModbusAdapter -> ManipulatorMock connection
  *
  * Test Sequence:
  *    1. Start Modbus-server in seperate thread. Make sure that the nodes are up.
- *       Send a STO clear message with the correct API version.
- *    2. Send a STO active message with the correct API version.
- *    3. Send a STO clear message with the correct API version.
+ *       Send a RUN_PERMITTED clear message with the correct API version.
+ *    2. Send a RUN_PERMITTED active message with the correct API version.
+ *    3. Send a RUN_PERMITTED clear message with the correct API version.
  *    4. Terminate Modbus-server to cause a disconnect.
  *
  * Expected Results:
@@ -170,7 +170,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
                                     std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port) );
 
   waitForNode("/pilz_modbus_client_node");
-  waitForNode("/modbus_adapter_sto_node");
+  waitForNode("/modbus_adapter_run_permitted_node");
   waitForNode("/stop1_executor_node");
 
   using std::placeholders::_1;
@@ -183,7 +183,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
   {
     InSequence dummy;
 
-    // Call from STO clear
+    // Call from RUN_PERMITTED clear
     EXPECT_CALL(manipulator, holdCb(_,_)).Times(0);
     EXPECT_CALL(manipulator, haltCb(_,_)).Times(0);
     EXPECT_CALL(manipulator, recoverCb(_,_)).Times(1).WillOnce(DoAll(SetArgReferee<1>(res_exp), Return(true)));
@@ -195,11 +195,11 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
   ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::VERSION));
   unsigned int version_register = api_spec.getRegisterDefinition(modbus_api_spec::VERSION);
 
-  ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::STO));
-  unsigned int sto_register = api_spec.getRegisterDefinition(modbus_api_spec::STO);
+  ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::RUN_PERMITTED));
+  unsigned int run_permitted_register = api_spec.getRegisterDefinition(modbus_api_spec::RUN_PERMITTED);
 
   modbus_server.setHoldingRegister({{version_register, MODBUS_API_VERSION_VALUE},
-                                    {sto_register, modbus_api::v2::MODBUS_STO_CLEAR_VALUE}});
+                                    {run_permitted_register, modbus_api::v2::MODBUS_RUN_PERMITTED_CLEAR_VALUE}});
 
   /**********
    * Step 2 *
@@ -209,14 +209,14 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
     {
       InSequence dummy;
 
-      // Call from STO active
+      // Call from RUN_PERMITTED active
       EXPECT_CALL(manipulator, unholdCb(_,_)).Times(0);
       EXPECT_CALL(manipulator, recoverCb(_,_)).Times(0);
       EXPECT_CALL(manipulator, holdCb(_,_)).Times(1).WillOnce(DoAll(SetArgReferee<1>(res_exp), Return(true)));
       EXPECT_CALL(manipulator, haltCb(_,_)).Times(1).WillOnce(Invoke(std::bind(&Stop1IntegrationTest::serviceCallStub, this, "halt_callback", res_exp, _1, _2)));
     }
 
-    modbus_server.setHoldingRegister({{sto_register, modbus_api::v2::MODBUS_STO_ACTIVE_VALUE}});
+    modbus_server.setHoldingRegister({{run_permitted_register, modbus_api::v2::MODBUS_RUN_PERMITTED_ACTIVE_VALUE}});
 
     /**********
      * Step 3 *
@@ -226,14 +226,14 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
     {
       InSequence dummy;
 
-      // Call from STO clear
+      // Call from RUN_PERMITTED clear
       EXPECT_CALL(manipulator, holdCb(_,_)).Times(0);
       EXPECT_CALL(manipulator, haltCb(_,_)).Times(0);
       EXPECT_CALL(manipulator, recoverCb(_,_)).Times(1).WillOnce(DoAll(SetArgReferee<1>(res_exp), Return(true)));
       EXPECT_CALL(manipulator, unholdCb(_,_)).Times(1).WillOnce(Invoke(std::bind(&Stop1IntegrationTest::serviceCallStub, this, "unhold_callback", res_exp, _1, _2)));
     }
 
-    modbus_server.setHoldingRegister({{sto_register, modbus_api::v2::MODBUS_STO_CLEAR_VALUE}});
+    modbus_server.setHoldingRegister({{run_permitted_register, modbus_api::v2::MODBUS_RUN_PERMITTED_CLEAR_VALUE}});
 
     /**********
      * Step 4 *

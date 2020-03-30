@@ -120,8 +120,8 @@ private:
   ros::NodeHandle nh_;
   //! Publisher for frame speed message
   ros::Publisher frame_speeds_pub_;
-  //! Client for sto service
-  ros::ServiceClient sto_client_;
+  //! Client for run_permitted service
+  ros::ServiceClient run_permitted_client_;
   //! Needed to receive tf2 transformations over the wire, see https://wiki.ros.org/tf2/Tutorials/
   tf2_ros::Buffer tf_buffer_;
   //! Listing to TF Transforms
