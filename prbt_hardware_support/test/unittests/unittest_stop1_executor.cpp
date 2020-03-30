@@ -115,16 +115,16 @@ TEST_F(Stop1ExecutorTest, testDestructor)
 {
   {
     std::shared_ptr<Stop1Executor> adapter_run_permitted {new Stop1Executor( std::bind(&Stop1ExecutorTest::hold_func,    this),
-                                                                   std::bind(&Stop1ExecutorTest::unhold_func,  this),
-                                                                   std::bind(&Stop1ExecutorTest::recover_func, this),
-                                                                   std::bind(&Stop1ExecutorTest::halt_func,    this) ) };
+                                                                             std::bind(&Stop1ExecutorTest::unhold_func,  this),
+                                                                             std::bind(&Stop1ExecutorTest::recover_func, this),
+                                                                             std::bind(&Stop1ExecutorTest::halt_func,    this) ) };
   }
 
   {
     Stop1Executor adapter_run_permitted( std::bind(&Stop1ExecutorTest::hold_func,    this),
-                               std::bind(&Stop1ExecutorTest::unhold_func,  this),
-                               std::bind(&Stop1ExecutorTest::recover_func, this),
-                               std::bind(&Stop1ExecutorTest::halt_func,    this) );
+                                         std::bind(&Stop1ExecutorTest::unhold_func,  this),
+                                         std::bind(&Stop1ExecutorTest::recover_func, this),
+                                         std::bind(&Stop1ExecutorTest::halt_func,    this) );
   }
 }
 

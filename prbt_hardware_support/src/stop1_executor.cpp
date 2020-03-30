@@ -59,7 +59,7 @@ void Stop1Executor::updateRunPermitted(const bool run_permitted)
 }
 
 bool Stop1Executor::updateRunPermittedCallback(std_srvs::SetBool::Request &req,
-                                      std_srvs::SetBool::Response &res)
+                                               std_srvs::SetBool::Response &res)
 {
   updateRunPermitted(req.data);
   res.success = true;

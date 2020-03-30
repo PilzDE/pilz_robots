@@ -78,8 +78,8 @@ int main(int argc, char **argv)
 
   Stop1Executor stop1_executor(hold_func, unhold_func, recover_func, halt_func);
   ros::ServiceServer run_permitted_serv = nh.advertiseService("run_permitted",
-                                                    &Stop1Executor::updateRunPermittedCallback,
-                                                    &stop1_executor);
+                                                              &Stop1Executor::updateRunPermittedCallback,
+                                                              &stop1_executor);
 
   ros::spin();
 
