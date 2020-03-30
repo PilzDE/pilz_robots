@@ -248,7 +248,7 @@ TEST_F(ModbusAdapterRunPermittedTest, testNoRunPermitted)
  */
 TEST_F(ModbusAdapterRunPermittedTest, ModbusMsgExceptionCTOR)
 {
-  std::shared_ptr<ModbusMsgRunPermittedWrapperException> exception_ptr{new ModbusMsgRunPermittedWrapperException("test")};
+  std::shared_ptr<ModbusMsgRunPermittedStatusMissing> exception_ptr{new ModbusMsgRunPermittedStatusMissing("test")};
 }
 
 } // namespace prbt_hardware_support

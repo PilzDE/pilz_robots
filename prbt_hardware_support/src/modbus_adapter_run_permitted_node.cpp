@@ -29,7 +29,7 @@
 
 using namespace prbt_hardware_support;
 
-static const std::string RUN_PERMITTED_SERVICE_NAME{"safe_torque_off"};
+static const std::string RUN_PERMITTED_SERVICE_NAME{"run_permitted"};
 
 // LCOV_EXCL_START
 static void sendRunPermittedUpdate(ros::ServiceClient& run_permitted_service, const bool run_permitted)

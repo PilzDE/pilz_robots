@@ -40,7 +40,7 @@ public:
   /**
    * @brief Calls ModbusMsgWrapper::checkStructuralIntegrity().
    *
-   * @throw ModbusMsgRunPermittedWrapperException if RUN_PERMITTED register is missing.
+   * @throw ModbusMsgRunPermittedStatusMissing if RUN_PERMITTED register is missing.
    */
   virtual void checkStructuralIntegrity() const override;
 
@@ -50,7 +50,7 @@ public:
    * @return true if the RUN_PERMITTED is active (manipulator should stop)
    * @return false if the RUN_PERMITTED is clear (manipulator can move)
    */
-  bool getRUN_PERMITTED() const;
+  bool getRunPermitted() const;
 
 private:
   /**
@@ -59,16 +59,16 @@ private:
    * @return true if a RUN_PERMITTED is defined
    * @return false if there is no RUN_PERMITTED defined in the message
    */
-  bool hasRUN_PERMITTED() const;
+  bool hasRunPermitted() const;
 
 };
 
-inline bool ModbusMsgRunPermittedWrapper::hasRUN_PERMITTED() const
+inline bool ModbusMsgRunPermittedWrapper::hasRunPermitted() const
 {
   return hasRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::RUN_PERMITTED));
 }
 
-inline bool ModbusMsgRunPermittedWrapper::getRUN_PERMITTED() const
+inline bool ModbusMsgRunPermittedWrapper::getRunPermitted() const
 {
   return getRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::RUN_PERMITTED));
 }

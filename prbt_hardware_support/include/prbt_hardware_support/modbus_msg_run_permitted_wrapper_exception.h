@@ -30,10 +30,10 @@ namespace prbt_hardware_support
    * does not contain the required information.
    *
    */
-  class ModbusMsgRunPermittedWrapperException : public ModbusMsgWrapperException
+  class ModbusMsgRunPermittedStatusMissing : public ModbusMsgWrapperException
   {
     public:
-      ModbusMsgRunPermittedWrapperException( const std::string& what_arg ):
+      ModbusMsgRunPermittedStatusMissing( const std::string& what_arg ):
         ModbusMsgWrapperException(what_arg)
       {
       }

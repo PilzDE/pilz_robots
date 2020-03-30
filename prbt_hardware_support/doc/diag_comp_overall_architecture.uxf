@@ -291,7 +291,7 @@ lt=[subscribe]-(</panel_attributes>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=()-
-/safe_torque_off
+/run_permitted
 
 
 
@@ -690,7 +690,7 @@ lt=-(</panel_attributes>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=()-
-/safe_torque_off</panel_attributes>
+/run_permitted</panel_attributes>
     <additional_attributes>140.0;20.0;10.0;20.0</additional_attributes>
   </element>
   <element>

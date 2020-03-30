@@ -15,8 +15,8 @@ void ModbusMsgRunPermittedWrapper::checkStructuralIntegrity() const
 {
   ModbusMsgWrapper::checkStructuralIntegrity();
 
-  if(!hasRUN_PERMITTED())
+  if(!hasRunPermitted())
   {
-    throw ModbusMsgRunPermittedWrapperException("Received message does not contain a RUN_PERMITTED status.");
+    throw ModbusMsgRunPermittedStatusMissing("Received message does not contain a RUN_PERMITTED status.");
   }
 }

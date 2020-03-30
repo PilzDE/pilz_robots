@@ -28,7 +28,7 @@ namespace prbt_hardware_support
 {
 
 static const std::string FRAME_SPEEDS_TOPIC_NAME{ "frame_speeds" };
-static const std::string RUN_PERMITTED_SERVICE{ "safe_torque_off" };
+static const std::string RUN_PERMITTED_SERVICE{ "run_permitted" };
 
 SpeedObserver::SpeedObserver(ros::NodeHandle& nh, std::string& reference_frame,
                              std::vector<std::string>& frames_to_observe)

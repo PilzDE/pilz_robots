@@ -48,7 +48,7 @@ static const std::string BARRIER_LIMIT{ "BARRIER_LIMIT" };
 static const std::string BARRIER_LIMIT_LOW{ "BARRIER_LIMIT_LOW" };
 
 static const std::string FRAME_SPEEDS_TOPIC_NAME{ "/frame_speeds" };
-static const std::string STOP_TOPIC_NAME{ "/safe_torque_off" };
+static const std::string RUN_PERMITTED_SERVICE_NAME{ "/run_permitted" };
 static const std::string TEST_BASE_FRAME{ "test_base" };
 static const std::string TEST_FRAME_A{ "a" };
 static const std::string TEST_FRAME_B{ "b" };
@@ -84,9 +84,9 @@ void SpeedObserverUnitTest::SetUp()
 {
   speed_subscriber_ =
       nh_.subscribe<FrameSpeeds>(FRAME_SPEEDS_TOPIC_NAME, 1, &SpeedObserverUnitTest::frame_speeds_cb_mock, this);
-  stop_subscriber_ = nh_.advertiseService(STOP_TOPIC_NAME, &SpeedObserverUnitTest::stop_cb_mock, this);
+  stop_subscriber_ = nh_.advertiseService(RUN_PERMITTED_SERVICE_NAME, &SpeedObserverUnitTest::stop_cb_mock, this);
 
-  pilz_utils::waitForService(STOP_TOPIC_NAME);
+  pilz_utils::waitForService(RUN_PERMITTED_SERVICE_NAME);
 }
 
 void SpeedObserverUnitTest::publishTfAtSpeed(const double speed, const double publish_frequency)

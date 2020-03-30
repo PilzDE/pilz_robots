@@ -25,7 +25,7 @@
  *
  *
  *
- * @subsubsection run_permitted_stop1 Safe torque off (RUN_PERMITTED) and  Stop 1
+ * @subsubsection run_permitted_stop1 Run permitted and Stop 1
  *
  * @note RUN_PERMITTED == 1/TRUE  <-> manipulator is allowed to move freely
  * @note RUN_PERMITTED == 0/FALSE <-> manipulator is NOT allowed to move (except for stop motion)
