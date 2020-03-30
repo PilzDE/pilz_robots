@@ -27,12 +27,12 @@ namespace pilz_joint_trajectory_controller
 
 static constexpr int WAIT_FOR_RESULT_TIMEOUT{1};
 
-inline std::future<void> waitForModeAsync(TrajProcessingModeListener& listener)
+inline std::future<void> waitForHoldAsync(HoldModeListener& listener)
 {
-  return std::async(std::launch::async, std::bind(&TrajProcessingModeListener::waitForMode, &listener));
+  return std::async(std::launch::async, std::bind(&HoldModeListener::waitForHold, &listener));
 }
 
-inline bool modeReached(const std::future<void>& wait_future, int timeout = WAIT_FOR_RESULT_TIMEOUT)
+inline bool holdReached(const std::future<void>& wait_future, int timeout = WAIT_FOR_RESULT_TIMEOUT)
 {
   return wait_future.wait_for(std::chrono::seconds(timeout)) == std::future_status::ready;
 }
@@ -42,10 +42,10 @@ TEST(TrajModeManagerTest, testStoppingMode)
   TrajProcessingModeManager manager;
   EXPECT_EQ(manager.getCurrentMode(), TrajProcessingMode::stopping);
 
-  EXPECT_FALSE(manager.unholdEvent());
+  EXPECT_FALSE(manager.startEvent());
   EXPECT_EQ(manager.getCurrentMode(), TrajProcessingMode::stopping);
 
-  EXPECT_FALSE(manager.stoppingEvent());
+  EXPECT_FALSE(manager.stopEvent());
   EXPECT_EQ(manager.getCurrentMode(), TrajProcessingMode::stopping);
 }
 
@@ -60,7 +60,7 @@ TEST(TrajModeManagerTest, testHoldMode)
   manager.stopMotionFinishedEvent();
   EXPECT_EQ(manager.getCurrentMode(), TrajProcessingMode::hold);
 
-  EXPECT_FALSE(manager.stoppingEvent());
+  EXPECT_FALSE(manager.stopEvent());
   EXPECT_EQ(manager.getCurrentMode(), TrajProcessingMode::hold);
 }
 
@@ -72,10 +72,10 @@ TEST(TrajModeManagerTest, testUnholdMode)
   manager.stopMotionFinishedEvent();
   ASSERT_EQ(manager.getCurrentMode(), TrajProcessingMode::hold);
 
-  EXPECT_TRUE(manager.unholdEvent());
+  EXPECT_TRUE(manager.startEvent());
   EXPECT_EQ(manager.getCurrentMode(), TrajProcessingMode::unhold);
 
-  EXPECT_TRUE(manager.unholdEvent());
+  EXPECT_TRUE(manager.startEvent());
   EXPECT_EQ(manager.getCurrentMode(), TrajProcessingMode::unhold);
 
   manager.stopMotionFinishedEvent();
@@ -90,17 +90,17 @@ TEST(TrajModeManagerTest, testCycleThroughModes)
   const unsigned int number_of_iterations {3U};
   for (unsigned int i = 0; i < number_of_iterations; ++i)
   {
-    EXPECT_FALSE(manager.stoppingEvent());
-    EXPECT_FALSE(manager.unholdEvent());
+    EXPECT_FALSE(manager.stopEvent());
+    EXPECT_FALSE(manager.startEvent());
     manager.stopMotionFinishedEvent();
     EXPECT_EQ(manager.getCurrentMode(), TrajProcessingMode::hold);
 
-    EXPECT_FALSE(manager.stoppingEvent());
-    EXPECT_TRUE(manager.unholdEvent());
+    EXPECT_FALSE(manager.stopEvent());
+    EXPECT_TRUE(manager.startEvent());
     EXPECT_EQ(manager.getCurrentMode(), TrajProcessingMode::unhold);
 
-    EXPECT_TRUE(manager.unholdEvent());
-    EXPECT_TRUE(manager.stoppingEvent());
+    EXPECT_TRUE(manager.startEvent());
+    EXPECT_TRUE(manager.stopEvent());
     EXPECT_EQ(manager.getCurrentMode(), TrajProcessingMode::stopping);
   }
 }
@@ -117,28 +117,10 @@ TEST(TrajModeManagerTest, testIsHolding)
 
   EXPECT_TRUE(manager.isHolding());
 
-  ASSERT_TRUE(manager.unholdEvent());
+  ASSERT_TRUE(manager.startEvent());
   ASSERT_EQ(manager.getCurrentMode(), TrajProcessingMode::unhold);
 
   EXPECT_FALSE(manager.isHolding());
-}
-
-TEST(TrajModeManagerTest, testIsUnhold)
-{
-  TrajProcessingModeManager manager;
-  ASSERT_EQ(manager.getCurrentMode(), TrajProcessingMode::stopping);
-
-  EXPECT_FALSE(manager.isUnhold());
-
-  manager.stopMotionFinishedEvent();
-  ASSERT_EQ(manager.getCurrentMode(), TrajProcessingMode::hold);
-
-  EXPECT_FALSE(manager.isUnhold());
-
-  ASSERT_TRUE(manager.unholdEvent());
-  ASSERT_EQ(manager.getCurrentMode(), TrajProcessingMode::unhold);
-
-  EXPECT_TRUE(manager.isUnhold());
 }
 
 TEST(TrajModeManagerTest, testListenerModeAlreadyReached)
@@ -146,11 +128,14 @@ TEST(TrajModeManagerTest, testListenerModeAlreadyReached)
   TrajProcessingModeManager manager;
   ASSERT_EQ(manager.getCurrentMode(), TrajProcessingMode::stopping);
 
-  TrajProcessingModeListener listener(TrajProcessingMode::stopping);
-  manager.registerListener(&listener);
+  manager.stopMotionFinishedEvent();
+  ASSERT_EQ(manager.getCurrentMode(), TrajProcessingMode::hold);
 
-  auto wait_future = waitForModeAsync(listener);
-  EXPECT_TRUE(modeReached(wait_future));
+  HoldModeListener listener;
+  EXPECT_FALSE(manager.stopEvent(&listener));
+
+  auto wait_future = waitForHoldAsync(listener);
+  EXPECT_TRUE(holdReached(wait_future));
 }
 
 TEST(TrajModeManagerTest, testListenerModeNotReached)
@@ -158,14 +143,14 @@ TEST(TrajModeManagerTest, testListenerModeNotReached)
   TrajProcessingModeManager manager;
   ASSERT_EQ(manager.getCurrentMode(), TrajProcessingMode::stopping);
 
-  TrajProcessingModeListener listener(TrajProcessingMode::hold);
-  manager.registerListener(&listener);
+  HoldModeListener listener;
+  EXPECT_FALSE(manager.stopEvent(&listener));
 
-  auto wait_future = waitForModeAsync(listener);
-  EXPECT_FALSE(modeReached(wait_future));
+  auto wait_future = waitForHoldAsync(listener);
+  EXPECT_FALSE(holdReached(wait_future));
 
   listener.triggerListener();  // make sure wait finishes eventually
-  EXPECT_TRUE(modeReached(wait_future));
+  EXPECT_TRUE(holdReached(wait_future));
 }
 
 TEST(TrajModeManagerTest, testListenerSwitchToMode)
@@ -173,13 +158,14 @@ TEST(TrajModeManagerTest, testListenerSwitchToMode)
   TrajProcessingModeManager manager;
   ASSERT_EQ(manager.getCurrentMode(), TrajProcessingMode::stopping);
 
-  TrajProcessingModeListener listener(TrajProcessingMode::hold);
-  manager.registerListener(&listener);
-
-  auto wait_future = waitForModeAsync(listener);
+  HoldModeListener listener;
+  EXPECT_FALSE(manager.stopEvent(&listener));
+  auto wait_future = waitForHoldAsync(listener);
 
   manager.stopMotionFinishedEvent();
-  EXPECT_TRUE(modeReached(wait_future));
+  ASSERT_EQ(manager.getCurrentMode(), TrajProcessingMode::hold);
+
+  EXPECT_TRUE(holdReached(wait_future));
 }
 
 }  // namespace pilz_joint_trajectory_controller

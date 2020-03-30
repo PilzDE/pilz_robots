@@ -126,16 +126,15 @@ template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 handleHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response)
 {
-  TrajProcessingModeListener listener {TrajProcessingMode::hold};
-  mode_->registerListener(&listener);
-  if ( mode_->stoppingEvent() )
+  HoldModeListener listener;
+  if (mode_->stopEvent(&listener))
   {
     JointTrajectoryController::preemptActiveGoal();
     triggerMovementToHoldPosition();
   }
 
   // Wait till stop motion finished by waiting for hold mode
-  listener.waitForMode();
+  listener.waitForHold();
 
   response.message = "Holding mode enabled";
   response.success = true;
@@ -146,28 +145,16 @@ template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
 handleUnHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response)
 {
-  if (JointTrajectoryController::state_ != JointTrajectoryController::RUNNING)
+  if ( JointTrajectoryController::state_ == JointTrajectoryController::RUNNING
+       && mode_->startEvent() )
   {
-    response.message = "Could not switch to unhold mode (default mode)";
-    response.success = false;
+    response.message = "Unhold mode (default mode) active";
+    response.success = true;
     return true;
   }
 
-  TrajProcessingModeListener listener {TrajProcessingMode::hold};
-  mode_->registerListener(&listener);
-  if (!mode_->isUnhold())
-  {
-    listener.waitForMode();
-    if (!mode_->unholdEvent())
-    {
-      response.message = "Could not switch to unhold mode (default mode)";
-      response.success = false;
-      return true;
-    }
-  }
-
-  response.message = "Unhold mode (default mode) active";
-  response.success = true;
+  response.message = "Could not switch to unhold mode (default mode)";
+  response.success = false;
   return true;
 }
 
@@ -226,8 +213,10 @@ updateFuncExtensionPoint(const typename JointTrajectoryController::Trajectory& c
   {
     if (!isPlannedCartesianVelocityOK(time_data.period))
     {
-      mode_->stoppingEvent();
-      stopMotion(time_data.uptime);
+      if (mode_->stopEvent())
+      {
+        stopMotion(time_data.uptime);
+      }
     }
     return;
   }

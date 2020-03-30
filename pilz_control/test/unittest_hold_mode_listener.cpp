@@ -28,27 +28,12 @@ namespace pilz_joint_trajectory_controller
 
 static constexpr int WAIT_FOR_RESULT_TIMEOUT{1};
 
-TEST(TrajModeListenerTest, testisTargetMode)
+TEST(HoldModeListenerTest, testWaitAndTrigger)
 {
-  std::array<TrajProcessingMode, 3> modes {
-    TrajProcessingMode::unhold, TrajProcessingMode::stopping, TrajProcessingMode::hold};
-
-  for (const auto& target_mode : modes)
-  {
-    TrajProcessingModeListener listener(target_mode);
-    for (const auto& mode : modes)
-    {
-      EXPECT_EQ(listener.isTargetMode(mode), mode==target_mode);
-    }
-  }
-}
-
-TEST(TrajModeListenerTest, testWaitAndTrigger)
-{
-  TrajProcessingModeListener listener(TrajProcessingMode::hold);
+  HoldModeListener listener;
 
   std::future<void> wait_future = std::async(std::launch::async,
-                                             std::bind(&TrajProcessingModeListener::waitForMode, &listener));
+                                             std::bind(&HoldModeListener::waitForHold, &listener));
 
   std::chrono::seconds timeout{std::chrono::seconds(WAIT_FOR_RESULT_TIMEOUT)};
   EXPECT_EQ(wait_future.wait_for(timeout), std::future_status::timeout);
@@ -57,14 +42,14 @@ TEST(TrajModeListenerTest, testWaitAndTrigger)
   EXPECT_EQ(wait_future.wait_for(timeout), std::future_status::ready);
 }
 
-TEST(TrajModeListenerTest, testTriggerBeforeWait)
+TEST(HoldModeListenerTest, testTriggerBeforeWait)
 {
-  TrajProcessingModeListener listener(TrajProcessingMode::hold);
+  HoldModeListener listener;
 
   listener.triggerListener();
 
   std::future<void> wait_future = std::async(std::launch::async,
-                                             std::bind(&TrajProcessingModeListener::waitForMode, &listener));
+                                             std::bind(&HoldModeListener::waitForHold, &listener));
 
   std::chrono::seconds timeout{std::chrono::seconds(WAIT_FOR_RESULT_TIMEOUT)};
   EXPECT_EQ(wait_future.wait_for(timeout), std::future_status::ready);

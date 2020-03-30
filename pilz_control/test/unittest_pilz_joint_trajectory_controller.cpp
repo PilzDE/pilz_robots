@@ -436,15 +436,14 @@ TEST_F(PilzJointTrajectoryControllerTest, testUnholdSuccess)
 
   std_srvs::TriggerRequest req;
   std_srvs::TriggerResponse resp;
-  // run async such that stop trajectory can be executed in the meantime
-  std::future<bool> unhold_future = std::async(std::launch::async,
-                                               [this, &req, &resp]()
-                                               {
-                                                 return controller_->handleUnHoldRequest(req, resp);
-                                               });
+  EXPECT_TRUE(controller_->handleUnHoldRequest(req, resp));
+  EXPECT_FALSE(resp.success);
 
-  std::chrono::milliseconds unhold_timeout {WAIT_FOR_HOLD_FUTURE_MSEC};
-  EXPECT_TRUE(updateControllerUntil([&unhold_future](){ return isFutureReady(unhold_future); }, unhold_timeout));
+  ros::Duration stop_duration{STOP_TRAJECTORY_DURATION_SEC + 2*DEFAULT_UPDATE_PERIOD_SEC};
+  progressInTime(stop_duration);
+  updateController();
+
+  EXPECT_TRUE(controller_->handleUnHoldRequest(req, resp));
   EXPECT_TRUE(resp.success);
   EXPECT_TRUE(checkForUnhold());
 }
@@ -519,26 +518,10 @@ TEST_F(PilzJointTrajectoryControllerTest, testDoubleHoldSuccess)
  */
 TEST_F(PilzJointTrajectoryControllerTest, testDoubleUnholdSuccess)
 {
-  ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
-  ASSERT_TRUE(waitForActionServer());
-  controller_->state_ = controller_->INITIALIZED;
-
-  startController();
-  controller_->state_ = controller_->RUNNING;
+  ASSERT_TRUE(performFullControllerStartup());
 
   std_srvs::TriggerRequest req;
   std_srvs::TriggerResponse resp;
-  // run async such that stop trajectory can be executed in the meantime
-  std::future<bool> unhold_future = std::async(std::launch::async,
-                                               [this, &req, &resp]()
-                                               {
-                                                 return controller_->handleUnHoldRequest(req, resp);
-                                               });
-
-  std::chrono::milliseconds unhold_timeout {WAIT_FOR_HOLD_FUTURE_MSEC};
-  EXPECT_TRUE(updateControllerUntil([&unhold_future](){ return isFutureReady(unhold_future); }, unhold_timeout));
-  EXPECT_TRUE(resp.success);
-  EXPECT_TRUE(checkForUnhold());
 
   EXPECT_TRUE(controller_->handleUnHoldRequest(req, resp));
   EXPECT_TRUE(resp.success);
@@ -715,24 +698,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStopTrajExecutionAtStar
 
 TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testNotExecutingAfterUnhold)
 {
-  ASSERT_TRUE(controller_->init(hardware_, nh_, controller_nh_)) << "Failed to initialize the controller.";
-  controller_->state_ = controller_->INITIALIZED;
-
-  startController();
-  controller_->state_ = controller_->RUNNING;
-
-  std_srvs::TriggerRequest req;
-  std_srvs::TriggerResponse resp;
-  // run async such that stop trajectory can be executed in the meantime
-  std::future<bool> unhold_future = std::async(std::launch::async,
-                                               [this, &req, &resp]()
-                                               {
-                                                 return controller_->handleUnHoldRequest(req, resp);
-                                               });
-
-  std::chrono::milliseconds unhold_timeout {WAIT_FOR_HOLD_FUTURE_MSEC};
-  EXPECT_TRUE(updateControllerUntil([&unhold_future](){ return isFutureReady(unhold_future); }, unhold_timeout));
-  EXPECT_TRUE(resp.success);
+  ASSERT_TRUE(performFullControllerStartup());
   
   bool is_executing_result;
   EXPECT_TRUE(invokeIsExecuting(is_executing_result));

@@ -62,65 +62,57 @@ private:
 };
 
 /**
- * @brief Listener to wait for a specified mode to be reached.
+ * @brief Listener to wait for the hold mode to be reached.
  */
-class TrajProcessingModeListener
+class HoldModeListener
 {
 public:
-  //! @param mode Mode to wait for.
-  TrajProcessingModeListener(const TrajProcessingMode& mode);
-  void waitForMode();
-  //! @returns true if the given mode corresponds to the target mode, otherwise false.
-  bool isTargetMode(const TrajProcessingMode& mode) const;
-  //! @brief Notify the listener that the target mode is reached.
+  void waitForHold();
+  //! @brief Notify the listener that the hold mode is reached.
   void triggerListener();
 
 private:
   std::mutex mutex_;
   std::condition_variable cond_variable_;
   bool cond_fulfilled_ {false};
-  //! @brief Mode to wait for.
-  const TrajProcessingMode mode_;
 };
 
 /**
  * @brief Encapsulates a state machine managing the current Trajectory-Processing-Mode.
+ * 
+ * All events are mutually exclusive. Initial mode is stopping in accordance to the controller.
  */
 class TrajProcessingModeManager
 {
 public:
-  //! @returns true only if a successful state switch to stopping was performed, otherwise false.
-  bool stoppingEvent();
+  //! @return True only if a successful state switch to stopping was performed, otherwise false.
+  bool stopEvent(HoldModeListener* const listener = nullptr);
   //! @brief Switch to hold.
   void stopMotionFinishedEvent();
-  //! @returns true if in state unhold or a successful switch to state unhold was performed, otherwise false.
-  bool unholdEvent();
+  //! @return True if in state unhold or a successful switch to state unhold was performed, otherwise false.
+  bool startEvent();
 
 public:
   //! @brief Check if in state stopping or hold.
   bool isHolding();
-  bool isUnhold();
-  void registerListener(TrajProcessingModeListener* const listener);
-
   TrajProcessingMode getCurrentMode();
 
 private:
-  //! @brief Perform full transition if possible.
-  bool switchTo(const TrajProcessingMode& mode, const bool success_at_transition_only=true);
-  bool setMode(const TrajProcessingMode& requested_mode, const bool& success_at_transition_only);
+  /**
+   * @brief Perform transition if possible.
+   * @return True if transition was performed, otherwise false.
+   */
+  bool switchTo(const TrajProcessingMode& mode);
+  void registerHoldListener(HoldModeListener* const listener);
   //! @brief Triggers all registered listeners whose target mode is reached.
-  void callListener(const TrajProcessingMode& mode);
-  //! @brief Use only if lock on \ref mode_mutex_ is already acquired.
+  void callHoldListener();
 
 private:
   const TrajProcessingModeStateMachine mode_state_machine_;
   TrajProcessingMode current_mode_ {TrajProcessingMode::stopping};
-  //! @brief Protects the access to the current mode.
-  std::mutex mode_mutex_;
-
-  std::list<TrajProcessingModeListener*> listener_;
-  //! @brief Protects the access to the listener list.
-  std::mutex listener_mutex_;
+  std::list<HoldModeListener*> listener_;
+  //! @brief Protects the access to member variables.
+  std::mutex mutex_;
 };
 
 inline bool TrajProcessingModeStateMachine::isTransitionValid(const TrajProcessingMode& current_mode,
@@ -129,12 +121,7 @@ inline bool TrajProcessingModeStateMachine::isTransitionValid(const TrajProcessi
   return mode_machine_.at(current_mode) == requested_mode;
 }
 
-inline TrajProcessingModeListener::TrajProcessingModeListener(const TrajProcessingMode& mode)
-  : mode_(mode)
-{
-}
-
-inline void TrajProcessingModeListener::waitForMode()
+inline void HoldModeListener::waitForHold()
 {
   std::unique_lock<std::mutex> lk(mutex_);
   while(!cond_fulfilled_)
@@ -143,12 +130,7 @@ inline void TrajProcessingModeListener::waitForMode()
   }
 }
 
-inline bool TrajProcessingModeListener::isTargetMode(const TrajProcessingMode& mode) const
-{
-  return mode == mode_;
-}
-
-inline void TrajProcessingModeListener::triggerListener()
+inline void HoldModeListener::triggerListener()
 {
   std::lock_guard<std::mutex> lk(mutex_);
   cond_fulfilled_ = true;
@@ -161,42 +143,34 @@ inline bool TrajProcessingModeManager::isHolding()
   return (current_mode == TrajProcessingMode::stopping) || (current_mode == TrajProcessingMode::hold);
 }
 
-inline bool TrajProcessingModeManager::isUnhold()
-{
-  return getCurrentMode() == TrajProcessingMode::unhold;
-}
-
 inline TrajProcessingMode TrajProcessingModeManager::getCurrentMode()
 {
-  std::lock_guard<std::mutex> lk(mode_mutex_);
+  std::lock_guard<std::mutex> lk(mutex_);
   return current_mode_;
 }
 
-inline bool TrajProcessingModeManager::setMode(const TrajProcessingMode& requested_mode,
-                                               const bool& success_at_transition_only)
+inline bool TrajProcessingModeManager::switchTo(const TrajProcessingMode& mode)
 {
-  std::lock_guard<std::mutex> lk(mode_mutex_);
-  if (!success_at_transition_only && (current_mode_ == requested_mode))
+  if (mode_state_machine_.isTransitionValid(current_mode_, mode))
   {
+    current_mode_ = mode;
     return true;
   }
-
-  if ( !mode_state_machine_.isTransitionValid(current_mode_, requested_mode) )
-  {
-    return false;
-  }
-  current_mode_ = requested_mode;
-  return true;
+  return false;
 }
 
-inline void TrajProcessingModeManager::callListener(const TrajProcessingMode& mode)
+inline void TrajProcessingModeManager::registerHoldListener(HoldModeListener* const listener)
 {
-  std::lock_guard<std::mutex> lk(listener_mutex_);
-  std::list<TrajProcessingModeListener*>::iterator it = listener_.begin();
+  listener_.emplace_back(listener);
+}
+
+inline void TrajProcessingModeManager::callHoldListener()
+{
+  std::list<HoldModeListener*>::iterator it = listener_.begin();
   while(it != listener_.end())
   {
-    TrajProcessingModeListener* listener {(*it)};
-    if (listener && listener->isTargetMode(mode))
+    HoldModeListener* listener {(*it)};
+    if (listener)
     {
       listener->triggerListener();
       it = listener_.erase(it);
@@ -208,43 +182,36 @@ inline void TrajProcessingModeManager::callListener(const TrajProcessingMode& mo
   }
 }
 
-inline bool TrajProcessingModeManager::switchTo(const TrajProcessingMode& mode,
-                                                const bool success_at_transition_only)
+inline bool TrajProcessingModeManager::stopEvent(HoldModeListener* const listener)
 {
-  if (setMode(mode, success_at_transition_only))
+  std::lock_guard<std::mutex> lk(mutex_);
+  bool transition_performed { switchTo(TrajProcessingMode::stopping) };
+  registerHoldListener(listener);
+  if (current_mode_ == TrajProcessingMode::hold)
   {
-    callListener(mode);
+    callHoldListener();
+  }
+  return transition_performed;
+}
+
+inline bool TrajProcessingModeManager::startEvent()
+{
+  std::lock_guard<std::mutex> lk(mutex_);
+  if (current_mode_ == TrajProcessingMode::unhold || switchTo(TrajProcessingMode::unhold))
+  {
     return true;
   }
   return false;
 }
 
-inline bool TrajProcessingModeManager::stoppingEvent()
-{
-  return switchTo(TrajProcessingMode::stopping);
-}
-
 inline void TrajProcessingModeManager::stopMotionFinishedEvent()
 {
-  switchTo(TrajProcessingMode::hold);
-}
-
-inline bool TrajProcessingModeManager::unholdEvent()
-{
-  return switchTo(TrajProcessingMode::unhold, false);
-}
-
-inline void TrajProcessingModeManager::registerListener(TrajProcessingModeListener* const listener)
-{
-  if (listener && listener->isTargetMode(getCurrentMode()))
+  std::lock_guard<std::mutex> lk(mutex_);
+  if (switchTo(TrajProcessingMode::hold))
   {
-    listener->triggerListener();
-    return;
+    callHoldListener();
   }
-  std::lock_guard<std::mutex> lk(listener_mutex_);
-  listener_.emplace_back(listener);
 }
-
 
 }
 

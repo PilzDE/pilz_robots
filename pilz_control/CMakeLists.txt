@@ -98,10 +98,10 @@ if(CATKIN_ENABLE_TESTING)
     ${catkin_LIBRARIES}
   )
 
-  catkin_add_gtest(unittest_traj_mode_listener
-    test/unittest_traj_mode_listener.cpp
+  catkin_add_gtest(unittest_hold_mode_listener
+    test/unittest_hold_mode_listener.cpp
   )
-  target_link_libraries(unittest_traj_mode_listener
+  target_link_libraries(unittest_hold_mode_listener
     ${catkin_LIBRARIES}
   )
 
