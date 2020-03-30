@@ -38,7 +38,7 @@ STATE_TOPIC_NAME = '/test_joint_trajectory_controller/state'
 WAIT_FOR_SERVICE_TIMEOUT_S = 10
 SLEEP_RATE_HZ = 10
 STOP_DURATION_UPPER_BOUND_S = 0.31
-MAX_DECELERATION = 0.2
+MAX_DECELERATION = 7.85
 
 # Default goal position of the test trajectory
 DEFAULT_GOAL_POSITION = [0.1, 0]
@@ -60,9 +60,10 @@ class MovementObserver:
     """
     def __init__(self):
         self._actual_position = None
-        self._actual_position_lock = threading.Lock()
         self._actual_velocity = None
-        self._actual_velocity_lock = threading.Lock()
+        self._last_time_stamp = 0.0
+        self._controller_state_delta_t = None
+        self._controller_state_lock = threading.Lock()
 
         state_topic_name = controller_ns + STATE_TOPIC_NAME
         self._subscriber = rospy.Subscriber(state_topic_name, JointTrajectoryControllerState,
@@ -75,13 +76,14 @@ class MovementObserver:
         self._stop_trajectory_ok = False
 
     def controller_state_callback(self, data):
-        with self._actual_position_lock:
+        with self._controller_state_lock:
             self._actual_position = data.actual.positions
-        with self._actual_velocity_lock:
             self._actual_velocity = data.actual.velocities
+            self._controller_state_delta_t = data.header.stamp.to_sec() - self._last_time_stamp
+            self._last_time_stamp = data.header.stamp.to_sec()
 
     def _is_position_threshold_reached(self, position_threshold):
-        with self._actual_position_lock:
+        with self._controller_state_lock:
             if self._actual_position is None:
                 return False
             current_pos = list(self._actual_position)
@@ -92,9 +94,9 @@ class MovementObserver:
         return True
 
     @staticmethod
-    def _is_deceleration_limit_violated(actual_velocity, old_velocity, max_deceleration):
+    def _is_deceleration_limit_violated(actual_velocity, old_velocity, delta_t, max_deceleration):
         for i in range(len(actual_velocity)):
-            if max_deceleration < (abs(actual_velocity[i] - old_velocity[i]) * SLEEP_RATE_HZ):
+            if ((old_velocity[i] - actual_velocity[i]) * delta_t) > max_deceleration:
                 return True
         return False
 
@@ -134,7 +136,7 @@ class MovementObserver:
                 return
 
             # Obtain local of actual velocity
-            with self._actual_position_lock:
+            with self._controller_state_lock:
                 # Noting to be done if no actual_velocity was observed
                 if self._actual_velocity is None:
                     continue
@@ -150,9 +152,10 @@ class MovementObserver:
             r.sleep()
 
             # Check for abrupt stop
-            with self._actual_position_lock:
+            with self._controller_state_lock:
                 limit_violated = self._is_deceleration_limit_violated(self._actual_velocity,
                                                                       old_velocity,
+                                                                      self._controller_state_delta_t,
                                                                       max_deceleration)
             if limit_violated:
                 with self._stop_trajectory_ok_lock:
@@ -318,6 +321,8 @@ class TestPilzJointTrajectoryController(unittest.TestCase):
                                       expected_error_code=FollowJointTrajectoryResult.INVALID_GOAL),
                         "Motion did not fail although controller should be in 'hold' mode at startup")
 
+        if not self._hold_srv.request_default_mode():
+            rospy.sleep(STOP_DURATION_UPPER_BOUND_S)
         self.assertTrue(self._hold_srv.request_default_mode(), 'Switch to default mode failed')
 
         self.assertTrue(self._move_to(position=DEFAULT_GOAL_POSITION, duration=0.5),
@@ -367,6 +372,10 @@ class TestPilzJointTrajectoryController(unittest.TestCase):
             # self.assertFalse(move_result, "Cartesian speed monitor did not detect speed limit violation")
 
             self.assertEqual(GoalStatus.PREEMPTED, self._trajectory_dispatcher.get_last_state(), 'Goal was not preempted.')
+            motion_observer = MovementObserver()
+            # Make sure robot stops (not abruptly)
+            motion_observer.start_stop_observation()
+            self.assertTrue(motion_observer.wait_for_end_of_stop_observation(), "Stop trajectory incorrect")
 
             self.assertTrue(self._move_to(position=far_away_position, duration=0.5,
                                           expected_error_code=FollowJointTrajectoryResult.INVALID_GOAL),
