@@ -34,7 +34,7 @@ limitations under the License.
   <arg name="gripper" default="" />
 
   <!-- Set safety HW handler -->
-  <arg name="safety_hw" default="pnoz"/>
+  <arg name="safety_hw" default="pss4000"/>
   <arg name="read_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_read_api_spec_$(arg safety_hw).yaml" />
   <arg name="write_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_write_api_spec_$(arg safety_hw).yaml" />
 
