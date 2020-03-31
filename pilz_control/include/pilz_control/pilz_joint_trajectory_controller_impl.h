@@ -134,7 +134,7 @@ handleHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response
   }
 
   // Wait till stop motion finished by waiting for hold mode
-  listener.waitForHold();
+  listener.wait();
 
   response.message = "Holding mode enabled";
   response.success = true;
@@ -211,12 +211,9 @@ updateFuncExtensionPoint(const typename JointTrajectoryController::Trajectory& c
   {
   case TrajProcessingMode::unhold:
   {
-    if (!isPlannedCartesianVelocityOK(time_data.period))
+    if (!isPlannedCartesianVelocityOK(time_data.period) && mode_->stopEvent())
     {
-      if (mode_->stopEvent())
-      {
-        stopMotion(time_data.uptime);
-      }
+      stopMotion(time_data.uptime);
     }
     return;
   }

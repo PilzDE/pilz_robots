@@ -27,9 +27,9 @@ namespace pilz_joint_trajectory_controller
 
 static constexpr int WAIT_FOR_RESULT_TIMEOUT{1};
 
-inline std::future<void> waitForHoldAsync(HoldModeListener& listener)
+inline std::future<void> waitAsync(HoldModeListener& listener)
 {
-  return std::async(std::launch::async, std::bind(&HoldModeListener::waitForHold, &listener));
+  return std::async(std::launch::async, std::bind(&HoldModeListener::wait, &listener));
 }
 
 inline bool holdReached(const std::future<void>& wait_future, int timeout = WAIT_FOR_RESULT_TIMEOUT)
@@ -134,7 +134,7 @@ TEST(TrajModeManagerTest, testListenerModeAlreadyReached)
   HoldModeListener listener;
   EXPECT_FALSE(manager.stopEvent(&listener));
 
-  auto wait_future = waitForHoldAsync(listener);
+  auto wait_future = waitAsync(listener);
   EXPECT_TRUE(holdReached(wait_future));
 }
 
@@ -146,7 +146,7 @@ TEST(TrajModeManagerTest, testListenerModeNotReached)
   HoldModeListener listener;
   EXPECT_FALSE(manager.stopEvent(&listener));
 
-  auto wait_future = waitForHoldAsync(listener);
+  auto wait_future = waitAsync(listener);
   EXPECT_FALSE(holdReached(wait_future));
 
   listener.triggerListener();  // make sure wait finishes eventually
@@ -160,7 +160,7 @@ TEST(TrajModeManagerTest, testListenerSwitchToMode)
 
   HoldModeListener listener;
   EXPECT_FALSE(manager.stopEvent(&listener));
-  auto wait_future = waitForHoldAsync(listener);
+  auto wait_future = waitAsync(listener);
 
   manager.stopMotionFinishedEvent();
   ASSERT_EQ(manager.getCurrentMode(), TrajProcessingMode::hold);

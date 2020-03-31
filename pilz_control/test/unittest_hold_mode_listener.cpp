@@ -33,7 +33,7 @@ TEST(HoldModeListenerTest, testWaitAndTrigger)
   HoldModeListener listener;
 
   std::future<void> wait_future = std::async(std::launch::async,
-                                             std::bind(&HoldModeListener::waitForHold, &listener));
+                                             std::bind(&HoldModeListener::wait, &listener));
 
   std::chrono::seconds timeout{std::chrono::seconds(WAIT_FOR_RESULT_TIMEOUT)};
   EXPECT_EQ(wait_future.wait_for(timeout), std::future_status::timeout);
@@ -49,7 +49,7 @@ TEST(HoldModeListenerTest, testTriggerBeforeWait)
   listener.triggerListener();
 
   std::future<void> wait_future = std::async(std::launch::async,
-                                             std::bind(&HoldModeListener::waitForHold, &listener));
+                                             std::bind(&HoldModeListener::wait, &listener));
 
   std::chrono::seconds timeout{std::chrono::seconds(WAIT_FOR_RESULT_TIMEOUT)};
   EXPECT_EQ(wait_future.wait_for(timeout), std::future_status::ready);
