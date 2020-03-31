@@ -32,9 +32,9 @@ These acceptance tests check that the real robot system reacts to a BrakeTest se
   6. Run `rosservice call /prbt/brake_test_required`
 ### Expected Results
   1. The robot starts properly and is moveable via Rviz.
-  2. A Service returns True
+  2. Service returns `result: 1`
   3. The brake test is executed for all joints (Multiple *clicks* should be audible).
-     The service responds with correct result code (for more information run `rosmsg show BrakeTestErrorCodes`).
+     The service responds with result code `0` (for more information run `rosmsg show BrakeTestErrorCodes`).
   4. No robot motion is executed.
-  5. No brake test is executed. The service responds with correct result code and a descriptive error message.
-  6. A Service returns False
+  5. No brake test is executed. The service responds with result code 71 and a descriptive error message.
+  6. Service returns `result: -1`
