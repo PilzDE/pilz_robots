@@ -92,8 +92,7 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
                                                         &PilzJointTrajectoryController::handleMonitorCartesianSpeedRequest,
                                                         this);
 
-  stop_traj_builder_ = std::unique_ptr<joint_trajectory_controller::StopTrajectoryBuilder<SegmentImpl> >(new joint_trajectory_controller::StopTrajectoryBuilder<SegmentImpl>(JointTrajectoryController::getNumberOfJoints(),
-                                                                                                                                                                             JointTrajectoryController::stop_trajectory_duration_,
+  stop_traj_builder_ = std::unique_ptr<joint_trajectory_controller::StopTrajectoryBuilder<SegmentImpl> >(new joint_trajectory_controller::StopTrajectoryBuilder<SegmentImpl>(JointTrajectoryController::stop_trajectory_duration_,
                                                                                                                                                                              JointTrajectoryController::old_desired_state_));
   stop_traj_velocity_violation_ = JointTrajectoryController::createHoldTrajectory(JointTrajectoryController::getNumberOfJoints());
 
