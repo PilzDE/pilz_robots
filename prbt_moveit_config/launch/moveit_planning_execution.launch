@@ -33,17 +33,6 @@ limitations under the License.
   <!-- Set gripper -->
   <arg name="gripper" default="" />
 
-  <!-- Set safety HW handler -->
-  <arg name="safety_hw" default="pss4000"/>
-  <arg name="read_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_read_api_spec_$(arg safety_hw).yaml" />
-  <arg name="write_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_write_api_spec_$(arg safety_hw).yaml" />
-
-  <!-- Set braketest usage -->
-  <arg name="has_braketest_support" default="false"/>
-
-  <!-- Set operation mode support -->
-  <arg name="has_operation_mode_support" default="false"/>
-
   <!-- Load robot description to parameter server. Can be set to false to let someone else load the model -->
   <arg name="load_robot_description" default="true" />
 
@@ -84,11 +73,6 @@ limitations under the License.
     <include file="$(find prbt_support)/launch/robot.launch" >
       <arg name="gripper" value="$(arg gripper)" />
       <arg name="load_robot_description" value="false" />
-      <arg name="safety_hw" value="$(arg safety_hw)" />
-      <arg name="read_api_spec_file" value="$(arg read_api_spec_file)" />
-      <arg name="write_api_spec_file" value="$(arg write_api_spec_file)" />
-      <arg name="has_braketest_support" value="$(arg has_braketest_support)" />
-      <arg name="has_operation_mode_support" value="$(arg has_operation_mode_support)" />
     </include>
   </group>
 
