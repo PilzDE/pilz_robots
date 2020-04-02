@@ -26,7 +26,7 @@
 namespace prbt_hardware_support
 {
   /**
-   * @brief Expection thrown upon construction of ModbusMsgRunPermittedWrapper of the message
+   * @brief Expection thrown upon construction of ModbusMsgRunPermittedWrapper if the message
    * does not contain the required information.
    *
    */
