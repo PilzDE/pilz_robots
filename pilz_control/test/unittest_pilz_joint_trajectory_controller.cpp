@@ -67,7 +67,6 @@ static constexpr double DEFAULT_UPDATE_PERIOD_SEC {0.008};
 static constexpr double STOP_TRAJECTORY_DURATION_SEC {0.2};
 static constexpr double GOAL_TIME_TOLERANCE_SEC {0.01};
 static constexpr double TIME_SIMULATION_START_SEC {0.1};
-static constexpr double VELOCITY_COMPARISON_EPS {0.01};
 static constexpr double WAIT_FOR_ACTION_RESULT_TIMEOUT_SEC {5.0};
 
 static constexpr unsigned int SLEEP_TIME_MSEC {5};
@@ -401,7 +400,7 @@ TEST_F(PilzJointTrajectoryControllerTest, testHoldSuccessAfterUnhold)
 
 /**
  * @tests{start_holding,
- * Tests holding the controller.
+ * Tests triggering hold two times successively.
  * }
  * @tests{no_execution_during_hold,
  * Tests triggering hold two times successively.
@@ -409,10 +408,7 @@ TEST_F(PilzJointTrajectoryControllerTest, testHoldSuccessAfterUnhold)
  */
 TEST_F(PilzJointTrajectoryControllerTest, testDoubleHoldSuccess)
 {
-  ASSERT_TRUE(manager_->loadController()) << "Failed to initialize the controller.";
-  ASSERT_TRUE(waitForActionServer());
-
-  manager_->startController();
+  ASSERT_TRUE(performFullControllerStartup());
 
   std_srvs::TriggerRequest req;
   std_srvs::TriggerResponse resp;
