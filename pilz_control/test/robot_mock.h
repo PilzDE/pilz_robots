@@ -24,6 +24,7 @@
 
 constexpr unsigned int NUM_JOINTS {2};
 constexpr std::array<const char*, NUM_JOINTS> JOINT_NAMES = { "shoulder_to_right_arm", "shoulder_to_left_arm" };
+constexpr double JOINT_VELOCITY_EPS {0.001};
 
 struct JointData
 {
@@ -35,7 +36,7 @@ struct JointData
 
 /**
  * @brief The RobotMock used by the integrationtest of the pilz_joint_trajectory_controller
- * Registers a single JointStateHandle with the interface to allow interaction with the controller_manager
+ * Registers NUM_JOINTS JointStateHandles with the interface to allow interaction with the controller_manager
  */
 class RobotMock : public hardware_interface::RobotHW
 {
@@ -44,6 +45,8 @@ public:
 
   void read();
   void write(const ros::Duration& period);
+
+  bool isMoving(const double& eps = JOINT_VELOCITY_EPS);
 
 private:
   std::array<JointData, NUM_JOINTS> data_ { JointData(), JointData() };

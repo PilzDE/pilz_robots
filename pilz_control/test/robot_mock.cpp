@@ -45,3 +45,8 @@ void RobotMock::write(const ros::Duration& period)
     data_.at(i).pos = data_.at(i).cmd;
   }
 }
+
+bool RobotMock::isMoving(const double& eps)
+{
+  return std::any_of(data_.begin(), data_.end(), [eps](const JointData& data){ return std::abs(data.vel) > eps; });
+}
