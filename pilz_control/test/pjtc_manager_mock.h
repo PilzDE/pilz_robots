@@ -32,7 +32,7 @@
 namespace pilz_joint_trajectory_controller
 {
 
-//! @brief Manages a single JointTrajectoryController. Intended for usage with simulated time.
+//! @brief Manages a single PilzJointTrajectoryController (PJTC). Intended for usage with simulated time.
 template <class SegmentImpl, class HWInterface>
 class PJTCManagerMock
 {

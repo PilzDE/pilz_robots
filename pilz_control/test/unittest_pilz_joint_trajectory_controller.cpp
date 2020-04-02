@@ -37,7 +37,7 @@
 #include <control_msgs/FollowJointTrajectoryAction.h>
 
 #include <pilz_control/pilz_joint_trajectory_controller.h>
-#include "controller_manager_mock.h"
+#include "pjtc_manager_mock.h"
 #include "robot_mock.h"
 
 using HWInterface = hardware_interface::PositionJointInterface;
