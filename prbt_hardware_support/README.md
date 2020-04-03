@@ -53,7 +53,11 @@ hardware setup:
 - Pushbutton unit (with emergency stop): PITgatebox
 
 ## Configurations supported by hardware
-The following table contains the supported configurations. The default configuration is highlighted in _italic_. Most of the functionality is implemented in this package. It can be configured in `prbt_support/robot.launch`.
+The following table contains the officially supported configurations for 
+the respective safety controller.
+The default configuration is highlighted in _italic_. 
+Most of the functionality is implemented in this package. 
+It can be configured in `prbt_support/robot.launch`.
 
 | Parameter Description| Options | Argument name in <br> `prbt_support/robot.launch`| Option values in <br> `prbt_support/robot.launch`
 | - | - | - | - |
@@ -67,26 +71,44 @@ For more on gripper models see also [prbt_grippers](https://github.com/PilzDE/pr
 
 ## Definitions
 ### RUN_PERMITTED signal
-The RUN_PERMITTED is a state required in the safety controller for the robot to operate. It is sent to the ROS system to inform it in the case of an upcoming STO of the robot.
+The RUN_PERMITTED is a state required in the safety controller for 
+the robot to operate. It is sent to the ROS system to inform it in the 
+case of an upcoming STO of the robot.
 
 **Please note:**
-The ROS nodes only react on changes of the signal, so it may be necessary to retrigger RUN_PERMITTED in order to enable the drives at start.
+The ROS nodes only react on changes of the signal, so it may be necessary 
+to re-trigger RUN_PERMITTED in order to enable the drives at start.
 
 ### STO
-The STO function (“Safe torque off”) of the robot arm is a safety function to immediately turn off torque of the drives. The behavior triggers the RUN_PERMITTED signal.
+The STO function (“Safe torque off”) of the robot arm is a safety function 
+to immediately turn off torque of the drives. The behavior triggers the 
+RUN_PERMITTED signal.
 
 ### SBC
-The SBC function ("Safe brake control") of the robot arm is a safety function which is used in conjunction with the RUN_PERMITTED and prevents a motion when the torque of the drives is turned off.
+The SBC function ("Safe brake control") of the robot arm is a safety function
+which is used in conjunction with the RUN_PERMITTED and prevents a motion when
+the torque of the drives is turned off.
 
 ## Safe stop 1 (SS1)
-To allow a controlled stop, the safety controller delays the STO signal by several milliseconds. This package opens a
-modbus connection to the safety controller (PNOZmulti or PSS4000). The safety controller sends a `RUN_PERMITTED=false` 
-signal via Modbus immediately so that ros_control has a short time interval to stop the drives via a brake ramp.
-The TCP could for example brake on the current trajectory. After execution of the brake ramp, the drivers are halted. Even if ROS would fail, the safety controller turns off the motors via STO (that would be a Stop 0 then).
+To allow a controlled stop, the safety controller delays the STO signal by
+several milliseconds. The STO signal, otherwise, would lead to an immediate stop
+of the robot via Stop 0. The time delay gives the ros_control time to
+stop the drives with a well defined brake ramp.  
+The safety controller informs the ros_control about the stop request
+via Modbus connection. The Modbus connection is opened by this package.  
+After the execution of the brake ramp, the drivers are halted.
 
+**Please note:**  
+Should ROS fail (for what ever reason), the safety controller still ensures
+that the robot is stopped by executing a Stop 0. The Stop 0 is executed after
+the above described time delay.
 
 ## Brake test
-Brake tests are an integral part of the SBC, since they detect misfunctions of the brakes or the brake control in general. Brake tests for each drive have to be executed at a regular interval. When the safety controller requests brake tests, they have to be executed within 1 hour, else the robot cannot be moved anymore.
+Brake tests are an integral part of the safe brake control (SBC) functionality,
+since they detect malfunctions of the brakes or the brake control in general.
+Brake tests for each drive have to be executed at a regular interval. 
+When the safety controller requests brake tests, they have to be executed 
+within 1 hour, else the robot cannot be moved anymore.
 
 ## Operation Modes
 The robot system can be controlled in various modes.
@@ -94,7 +116,9 @@ The robot system can be controlled in various modes.
 These modes are:
   - T1: Speed reduced to 250 mm/s (each robot-frame), enabling switch must be pressed
   - T2<sup>*</sup>: The robot moves at full speed but still the enabling switch must be pressed
-  - AUTOMATIC: The robot moves at full speed and follows a predefined program/process. No enabling switch is needed but safety has to be ensured by safety peripherie (fences, light curtains, ...).
+  - AUTOMATIC: The robot moves at full speed and follows a predefined program/process. 
+    No enabling switch is needed but safety has to be ensured by safety 
+    peripherie (fences, light curtains, ...).
 
 See DIN EN ISO 10218-1 for more details or contact us: ros@pilz.de
 
@@ -137,11 +161,13 @@ between them.
 ![Component diagram of overall architecture](doc/diag_comp_overall_architecture.png)
 
 ## ModbusClient
-A Modbus client (for usage with the PNOZmulti or PSS4000) can be started with `roslaunch prbt_hardware_support modbus_client.launch`.
+A Modbus client (for usage with the PNOZmulti or PSS4000) can be started 
+with `roslaunch prbt_hardware_support modbus_client.launch`.
 
 ### Published Topics
 - ~/pilz_modbus_client_node/modbus_read (prbt_hardware_support/ModbusMsgInStamped)
-  - Holds information about the modbus holding register. Timestamp is only updated if the register content changed.
+  - Holds information about the modbus holding register. 
+    Timestamp is only updated if the register content changed.
 
 ### Parameters
 - modbus_server_ip
@@ -161,26 +187,39 @@ important for the Safe stop 1 functionality and must NOT be given, if the
 If the parameters are not given the default values for these parameters are used.
 
 ## ModbusAdapterRunPermittedNode
-The ``ModbusAdapterRunPermitted`` is noticed via the topic `/pilz_modbus_client_node/modbus_read` if the RUN_PERMITTED is true or false and reacts as follows calling the corresponding services of the controllers and drivers:
+The ``ModbusAdapterRunPermitted`` is noticed via the topic 
+`/pilz_modbus_client_node/modbus_read` if the RUN_PERMITTED is true or false 
+and reacts as follows calling the corresponding services of the controllers 
+and drivers:
 - **RUN_PERMITTED true:**
 enable drives, unhold controllers
 - **RUN_PERMITTED false:**
 hold controllers, disable drives
 
 ## ModbusAdapterBrakeTestNode
-The ``ModbusAdapterBrakeTestNode`` offers the `/prbt/brake_test_required` service which informs if the PSS4000 requests
+The ``ModbusAdapterBrakeTestNode`` offers the `/prbt/brake_test_required` 
+service which informs if the PSS4000 requests
 a brake test or if a brake test request is no longer prevailing.
 
 ## BraketestExecutorNode
-The ``BraketestExecutorNode`` offers the `/execute_braketest` service which, in interaction with the ``CanOpenBraketestAdapter``,
-executes a braketest on each drive of the manipulator. This can only be done, if the robot is stopped. So, if you want to execute a braketest, ensure that the robot stands still.
+The ``BraketestExecutorNode`` offers the `/execute_braketest` service which, 
+in interaction with the ``CanOpenBraketestAdapter``,
+executes a braketest on each drive of the manipulator. This can only be done, 
+if the robot is stopped. So, if you want to execute a braketest, 
+ensure that the robot stands still.
 
 ## ModbusAdapterOperationModeNode
-The ``ModbusAdapterOperationModeNode`` publishes the active operation mode on the topic `/prbt/operation_mode` everytime it changes and offers the `/get_operation_mode` service for accessing the active operation mode.
+The ``ModbusAdapterOperationModeNode`` publishes the active operation mode 
+on the topic `/prbt/operation_mode` everytime it changes and offers 
+the `/get_operation_mode` service for accessing the active operation mode.
 
-Use `rosmsg show prbt_hardware_support/OperationModes` to see the definition of each value.
+Use `rosmsg show prbt_hardware_support/OperationModes` to see the definition 
+of each value.
 
 ## OperationModeSetupExecutorNode
-The ``OperationModeSetupExecutorNode`` activates the speed monitoring for operation mode T1 and offers a service ``/prbt/get_speed_override``. The speed override is chosen such that a speed limit violation is unlikely if all robot motions are scaled with it.
+The ``OperationModeSetupExecutorNode`` activates the speed monitoring for 
+operation mode T1 and offers a service ``/prbt/get_speed_override``. 
+The speed override is chosen such that a speed limit violation is unlikely if 
+all robot motions are scaled with it.
 
 <sup>*</sup>Not supported yet
