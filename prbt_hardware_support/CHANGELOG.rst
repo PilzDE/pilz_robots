@@ -2,6 +2,12 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Adopted default configuration for launchfiles
+* Renaming of STO into RUN_PERMITTED
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.14 (2020-03-11)
 -------------------
 * Trim firmware string.
