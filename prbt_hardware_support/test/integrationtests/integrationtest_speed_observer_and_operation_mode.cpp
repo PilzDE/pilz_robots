@@ -43,7 +43,7 @@ using namespace prbt_hardware_support;
 static const std::string FRAME_SPEEDS_TOPIC_NAME{ "/frame_speeds" };
 static const std::string FAKE_CONTROLLER_JOINT_STATES_TOPIC_NAME{ "/fake_controller_joint_states" };
 static const std::string OPERATION_MODE_TOPIC{ "operation_mode" };
-static const std::string STO_SERVICE{ "safe_torque_off" };
+static const std::string RUN_PERMITTED_SERVICE{ "run_permitted" };
 static const std::string ADDITIONAL_FRAMES_PARAM_NAME{ "additional_frames" };
 static const std::string SPEED_LIMIT_T1_PARAM_NAME{ "speed_limit_t1" };
 static const std::string SPEED_LIMIT_AUTOMATIC_PARAM_NAME{ "speed_limit_automatic" };
@@ -57,7 +57,7 @@ static const double SQRT_2_HALF{ 1 / sqrt(2) };
 static const double TEST_FREQUENCY{ 10 };
 static const std::string TEST_WORLD_FRAME{ "world" };
 
-MATCHER_P(StoState, x, "Sto state " + std::string(negation ? "is not" : "is") + ": " + PrintToString(x) + ".")
+MATCHER_P(RunPermittedState, x, "RunPermitted state " + std::string(negation ? "is not" : "is") + ": " + PrintToString(x) + ".")
 {
   return arg.data == x;
 }
@@ -90,7 +90,7 @@ public:
   void SetUp() override;
   void TearDown() override;
 
-  MOCK_METHOD2(sto_cb, bool(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res));
+  MOCK_METHOD2(run_permitted_cb, bool(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res));
   MOCK_METHOD1(frame_speeds_cb, void(const FrameSpeeds::ConstPtr& msg));
 
   void publishTfAtSpeed(double speed, const std::string& frame);
@@ -104,13 +104,13 @@ protected:
   ros::NodeHandle pnh_{ "~" };
   ros::AsyncSpinner spinner_{2};
   ros::Subscriber subscriber_;
-  ros::ServiceServer sto_srv_;
+  ros::ServiceServer run_permitted_srv_;
   ros::Publisher fake_controller_joint_states_pub_;
   ros::Publisher operation_mode_pub_;
   std::vector<std::string> additional_frames_;
   bool joint_publisher_running_{ false };
   bool tf_publisher_running_{ false };
-  std_srvs::SetBool::Response sto_res;
+  std_srvs::SetBool::Response run_permitted_res;
   double speed_limit_t1_;
   double speed_limit_automatic_;
 };
@@ -134,10 +134,10 @@ void SpeedObserverIntegrationTest::SetUp()
     ROS_DEBUG_STREAM("- " << frame);
   }
 
-  sto_srv_ = nh_.advertiseService(STO_SERVICE, &SpeedObserverIntegrationTest::sto_cb, this);
+  run_permitted_srv_ = nh_.advertiseService(RUN_PERMITTED_SERVICE, &SpeedObserverIntegrationTest::run_permitted_cb, this);
 
-  sto_res.success = true;
-  sto_res.message = "testing ...";
+  run_permitted_res.success = true;
+  run_permitted_res.message = "testing ...";
 
   waitForNode("/speed_observer_node");
   waitForNode("/operation_mode_setup_executor_node");
@@ -247,8 +247,8 @@ void SpeedObserverIntegrationTest::stopTfPublisher()
  *    2. Joint motion with a speed higher than the T1 limit is faked.
  *
  * Expected Results:
- *    1. Sto is *not* triggered
- *    2. Sto is triggered
+ *    1. RunPermitted is *not* triggered
+ *    2. RunPermitted is triggered
  */
 TEST_F(SpeedObserverIntegrationTest, testOperationModeT1)
 {
@@ -257,7 +257,7 @@ TEST_F(SpeedObserverIntegrationTest, testOperationModeT1)
    **********/
   ROS_DEBUG("Step 1");
 
-  EXPECT_CALL(*this, sto_cb(_, _)).Times(0);
+  EXPECT_CALL(*this, run_permitted_cb(_, _)).Times(0);
 
   EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_)))
       .WillOnce(Return())
@@ -275,9 +275,9 @@ TEST_F(SpeedObserverIntegrationTest, testOperationModeT1)
    **********/
   ROS_DEBUG("Step 2");
 
-  EXPECT_CALL(*this, sto_cb(StoState(false), _))
-      .WillOnce(DoAll(SetArgReferee<1>(sto_res), ACTION_OPEN_BARRIER(BARRIER_STOP_HAPPENED)))
-      .WillRepeatedly(DoAll(SetArgReferee<1>(sto_res), Return(true)));
+  EXPECT_CALL(*this, run_permitted_cb(RunPermittedState(false), _))
+      .WillOnce(DoAll(SetArgReferee<1>(run_permitted_res), ACTION_OPEN_BARRIER(BARRIER_STOP_HAPPENED)))
+      .WillRepeatedly(DoAll(SetArgReferee<1>(run_permitted_res), Return(true)));
 
   std::thread pubisher_thread = std::thread(&SpeedObserverIntegrationTest::publishJointStatesAtSpeed, this,
                                             speed_limit_t1_ + 0.01);
@@ -317,9 +317,9 @@ TEST_F(SpeedObserverIntegrationTest, testOperationModeT1)
  *    3. Publish Operation Mode T1.
  *
  * Expected Results:
- *    1. Sto is *not* triggered
- *    2. Sto is *not* triggered
- *    3. Sto is triggered
+ *    1. RunPermitted is *not* triggered
+ *    2. RunPermitted is *not* triggered
+ *    3. RunPermitted is triggered
  */
 TEST_F(SpeedObserverIntegrationTest, testOperationModeAuto)
 {
@@ -328,7 +328,7 @@ TEST_F(SpeedObserverIntegrationTest, testOperationModeAuto)
    **********/
   ROS_DEBUG("Step 1");
 
-  EXPECT_CALL(*this, sto_cb(_, _)).Times(0);
+  EXPECT_CALL(*this, run_permitted_cb(_, _)).Times(0);
 
   EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_)))
       .WillOnce(Return())
@@ -345,7 +345,7 @@ TEST_F(SpeedObserverIntegrationTest, testOperationModeAuto)
    **********/
   ROS_DEBUG("Step 2");
 
-  EXPECT_CALL(*this, sto_cb(_, _)).Times(0);
+  EXPECT_CALL(*this, run_permitted_cb(_, _)).Times(0);
 
   EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_)))
       .WillOnce(Return())
@@ -362,9 +362,9 @@ TEST_F(SpeedObserverIntegrationTest, testOperationModeAuto)
    **********/
   ROS_DEBUG("Step 3");
 
-  EXPECT_CALL(*this, sto_cb(StoState(false), _))
-      .WillOnce(DoAll(SetArgReferee<1>(sto_res), ACTION_OPEN_BARRIER(BARRIER_STOP_HAPPENED)))
-      .WillRepeatedly(DoAll(SetArgReferee<1>(sto_res), Return(true)));
+  EXPECT_CALL(*this, run_permitted_cb(RunPermittedState(false), _))
+      .WillOnce(DoAll(SetArgReferee<1>(run_permitted_res), ACTION_OPEN_BARRIER(BARRIER_STOP_HAPPENED)))
+      .WillRepeatedly(DoAll(SetArgReferee<1>(run_permitted_res), Return(true)));
 
   publishOperationMode(OperationModes::T1);
   BARRIER({ BARRIER_STOP_HAPPENED });
@@ -402,7 +402,7 @@ TEST_F(SpeedObserverIntegrationTest, testOperationModeAuto)
  *       Publish the additionally defined TF tree at speed.
  *
  * Expected Results:
- *    1. Sto is triggered
+ *    1. RunPermitted is triggered
  */
 TEST_F(SpeedObserverIntegrationTest, testAdditionalTFTree)
 {
@@ -411,9 +411,9 @@ TEST_F(SpeedObserverIntegrationTest, testAdditionalTFTree)
   EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_)))
       .WillRepeatedly(Return());
 
-  EXPECT_CALL(*this, sto_cb(StoState(false), _))
-      .WillOnce(DoAll(SetArgReferee<1>(sto_res), ACTION_OPEN_BARRIER(BARRIER_STOP_HAPPENED)))
-      .WillRepeatedly(DoAll(SetArgReferee<1>(sto_res), Return(true)));
+  EXPECT_CALL(*this, run_permitted_cb(RunPermittedState(false), _))
+      .WillOnce(DoAll(SetArgReferee<1>(run_permitted_res), ACTION_OPEN_BARRIER(BARRIER_STOP_HAPPENED)))
+      .WillRepeatedly(DoAll(SetArgReferee<1>(run_permitted_res), Return(true)));
 
   publishOperationMode(OperationModes::T1);
 
@@ -435,7 +435,7 @@ TEST_F(SpeedObserverIntegrationTest, testAdditionalTFTree)
 }
 
 /**
- * @brief Tests speed observer with STO service returning no success.
+ * @brief Tests speed observer with RUN_PERMITTED service returning no success.
  *
  * @tests{Monitor_Speed_of_all_tf_frames_until_TCP,
  * Tests that robot model is read correctly by providing a custom xacro.
@@ -453,22 +453,22 @@ TEST_F(SpeedObserverIntegrationTest, testAdditionalTFTree)
  *
  * Test Sequence:
  *    1. Publish Operation Mode T1.
- *       Set up the STO service to return success = false.
+ *       Set up the RUN_PERMITTED service to return success = false.
  *
  * Expected Results:
- *    1. Sto is triggered and error message is produced
+ *    1. RunPermitted is triggered and error message is produced
  */
-TEST_F(SpeedObserverIntegrationTest, testStoServiceNoSuccess)
+TEST_F(SpeedObserverIntegrationTest, testRunPermittedServiceNoSuccess)
 {
   /**********
    * Step 1 *
    **********/
   ROS_DEBUG("Step 1");
 
-  sto_res.success = false;
-  EXPECT_CALL(*this, sto_cb(StoState(false), _))
-      .WillOnce(DoAll(SetArgReferee<1>(sto_res), ACTION_OPEN_BARRIER(BARRIER_NO_SVC_SUCESS)))
-      .WillRepeatedly(DoAll(SetArgReferee<1>(sto_res), Return(true)));
+  run_permitted_res.success = false;
+  EXPECT_CALL(*this, run_permitted_cb(RunPermittedState(false), _))
+      .WillOnce(DoAll(SetArgReferee<1>(run_permitted_res), ACTION_OPEN_BARRIER(BARRIER_NO_SVC_SUCESS)))
+      .WillRepeatedly(DoAll(SetArgReferee<1>(run_permitted_res), Return(true)));
 
   EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_)))
       .WillOnce(Return())

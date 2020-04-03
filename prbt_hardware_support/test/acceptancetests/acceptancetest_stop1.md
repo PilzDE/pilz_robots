@@ -16,7 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 # Acceptance Test for the stop1 feature
-These acceptance tests check that the real robot system reacts to STO messages accordingly.
+These acceptance tests check that the real robot system reacts to RUN_PERMITTED messages accordingly.
 
 ## Prerequisites for each test
   - Properly connect and startup the robot and power cabinet containing the PNoz-Multi.

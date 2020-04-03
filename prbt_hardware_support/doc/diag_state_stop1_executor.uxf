@@ -1,4 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?><diagram program="umlet" version="13.3">
+  <help_text>// Uncomment the following line to change the fontsize and font:
+fontsize=10
+// fontfamily=SansSerif //possible: SansSerif,Serif,Monospaced
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+// Welcome to UMLet!
+//
+// Double-click on elements to add them to the diagram, or to copy them
+// Edit elements by modifying the text in this panel
+// Hold Ctrl to select multiple elements
+// Use Ctrl+mouse to select via lasso
+//
+// Use +/- or Ctrl+mouse wheel to zoom
+// Drag a whole relation at its central square icon
+//
+// Press Ctrl+C to copy the whole diagram to the system clipboard (then just paste it to, eg, Word)
+// Edit the files in the "palettes" directory to create your own element palettes
+//
+// Select "Custom Elements &gt; New..." to create new element types
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// This text will be stored with each diagram;  use it for notes.</help_text>
   <zoom_level>10</zoom_level>
   <element>
     <id>UMLState</id>
@@ -54,8 +78,8 @@
     </coordinates>
     <panel_attributes>lt=-&gt;
 fg=green
-sto_updated
-[sto_true]
+run_permitted_updated
+[run_permitted_true]
 /recover_start</panel_attributes>
     <additional_attributes>10.0;170.0;320.0;10.0</additional_attributes>
   </element>
@@ -94,8 +118,8 @@ halt_done
     </coordinates>
     <panel_attributes>lt=-&gt;
 fg=red
-sto_updated
-[sto_false]
+run_permitted_updated
+[run_permitted_false]
 /hold_start
 </panel_attributes>
     <additional_attributes>240.0;10.0;10.0;180.0</additional_attributes>
@@ -127,16 +151,16 @@ unhold_done
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>770</x>
+      <x>750</x>
       <y>170</y>
-      <w>100</w>
+      <w>140</w>
       <h>80</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
 fg=green
-sto_updated
-[sto_true]</panel_attributes>
-    <additional_attributes>20.0;60.0;20.0;20.0;70.0;20.0;70.0;60.0</additional_attributes>
+run_permitted_updated
+[run_permitted_true]</panel_attributes>
+    <additional_attributes>40.0;60.0;40.0;20.0;90.0;20.0;90.0;60.0</additional_attributes>
   </element>
   <element>
     <id>UMLState</id>
@@ -154,13 +178,13 @@ sto_updated
     <coordinates>
       <x>770</x>
       <y>260</y>
-      <w>110</w>
+      <w>140</w>
       <h>170</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
 fg=red
-sto_updated
-[sto_false]
+run_permitted_updated
+[run_permitted_false]
 
 
 </panel_attributes>
@@ -171,7 +195,7 @@ sto_updated
     <coordinates>
       <x>780</x>
       <y>440</y>
-      <w>120</w>
+      <w>100</w>
       <h>180</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
@@ -184,35 +208,35 @@ recover_done
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>850</x>
+      <x>830</x>
       <y>350</y>
-      <w>100</w>
+      <w>140</w>
       <h>80</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
-sto_updated</panel_attributes>
-    <additional_attributes>20.0;60.0;20.0;20.0;70.0;20.0;70.0;60.0</additional_attributes>
+run_permitted_updated</panel_attributes>
+    <additional_attributes>40.0;60.0;40.0;20.0;90.0;20.0;90.0;60.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>160</x>
+      <x>150</x>
       <y>440</y>
-      <w>110</w>
-      <h>80</h>
+      <w>130</w>
+      <h>70</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
 fg=red
-sto_updated
-[sto_false]</panel_attributes>
-    <additional_attributes>70.0;10.0;70.0;50.0;30.0;50.0;30.0;10.0</additional_attributes>
+run_permitted_updated
+[run_permitted_false]</panel_attributes>
+    <additional_attributes>80.0;10.0;80.0;50.0;40.0;50.0;40.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>860</x>
       <y>440</y>
-      <w>120</w>
+      <w>90</w>
       <h>180</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
@@ -228,16 +252,16 @@ unhold_done
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1180</x>
+      <x>1170</x>
       <y>350</y>
-      <w>110</w>
+      <w>130</w>
       <h>80</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
 fg=green
-sto_updated
-[sto_true]</panel_attributes>
-    <additional_attributes>30.0;60.0;30.0;20.0;70.0;20.0;70.0;60.0</additional_attributes>
+run_permitted_updated
+[run_permitted_true]</panel_attributes>
+    <additional_attributes>40.0;60.0;40.0;20.0;80.0;20.0;80.0;60.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
@@ -245,7 +269,7 @@ sto_updated
       <x>750</x>
       <y>630</y>
       <w>130</w>
-      <h>80</h>
+      <h>70</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
 hold_done
@@ -281,13 +305,13 @@ recover_done
     <coordinates>
       <x>620</x>
       <y>440</y>
-      <w>110</w>
+      <w>140</w>
       <h>180</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
 fg=green
-sto_updated
-[sto_true]
+run_permitted_updated
+[run_permitted_true]
 
 
 
@@ -299,7 +323,7 @@ sto_updated
     <coordinates>
       <x>570</x>
       <y>440</y>
-      <w>110</w>
+      <w>140</w>
       <h>180</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
@@ -307,8 +331,8 @@ fg=red
 
 
 
-sto_updated
-[sto_false]</panel_attributes>
+run_permitted_updated
+[run_permitted_false]</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;160.0</additional_attributes>
   </element>
   <element>
@@ -316,7 +340,7 @@ sto_updated
     <coordinates>
       <x>610</x>
       <y>260</y>
-      <w>130</w>
+      <w>100</w>
       <h>170</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
@@ -328,16 +352,16 @@ halt_done
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>470</x>
+      <x>450</x>
       <y>440</y>
-      <w>100</w>
-      <h>70</h>
+      <w>140</w>
+      <h>60</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
 fg=green
-sto_updated
-[sto_true]</panel_attributes>
-    <additional_attributes>70.0;10.0;70.0;40.0;20.0;40.0;20.0;10.0</additional_attributes>
+run_permitted_updated
+[run_permitted_true]</panel_attributes>
+    <additional_attributes>90.0;10.0;90.0;40.0;40.0;40.0;40.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>

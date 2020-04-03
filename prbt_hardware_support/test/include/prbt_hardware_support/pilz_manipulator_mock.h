@@ -27,7 +27,7 @@
 /**
  * @brief Mocks the ROS Api of the manipulator relevant for stopping and holding.
  *
- * prbt_hardware_support::PilzStoModbusAdapterNode relies on 4 advertised services for its functionality.
+ * prbt_hardware_support::PilzRunPermittedModbusAdapterNode relies on 4 advertised services for its functionality.
  * For easy testing these services are advertised by this Gmock supported Mock class.
  *
  */
