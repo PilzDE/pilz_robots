@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MODBUS_ADAPTER_STO_H
-#define MODBUS_ADAPTER_STO_H
+#ifndef MODBUS_ADAPTER_RUN_PERMITTED_H
+#define MODBUS_ADAPTER_RUN_PERMITTED_H
 
 #include <memory>
 #include <functional>
@@ -29,16 +29,16 @@
 namespace prbt_hardware_support
 {
 
-using UpdateStoFunc = std::function<void(const bool)>;
+using UpdateRunPermittedFunc = std::function<void(const bool)>;
 
 /**
- * @brief Listens to the modbus_read topic and reacts to updated STO states.
+ * @brief Listens to the modbus_read topic and reacts to updated RUN_PERMITTED states.
  */
-class ModbusAdapterSto
+class ModbusAdapterRunPermitted
 {
 public:
-  ModbusAdapterSto(UpdateStoFunc&& update_sto_func,
-                   const ModbusApiSpec& api_spec);
+  ModbusAdapterRunPermitted(UpdateRunPermittedFunc&& update_run_permitted_func,
+                            const ModbusApiSpec& api_spec);
 
 public:
   /**
@@ -51,13 +51,13 @@ public:
    *    - of a disconnect from the modbus server,
    *    - the modbus message does not contain the expected registers,
    *    - the modbus API version is incorrect,
-   *    - the STO state changes to false.
+   *    - the RUN_PERMITTED state changes to false.
    */
   void modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw);
 
 private:
   const ModbusApiSpec api_spec_;
-  UpdateStoFunc update_sto_;
+  UpdateRunPermittedFunc update_run_permitted_;
 
 private:
   static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {2};
@@ -65,4 +65,4 @@ private:
 
 
 } // namespace prbt_hardware_support
-#endif // MODBUS_ADAPTER_STO_H
+#endif // MODBUS_ADAPTER_RUN_PERMITTED_H

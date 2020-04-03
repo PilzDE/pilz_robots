@@ -27,8 +27,8 @@ namespace modbus_api
 {
   namespace v2
   {
-    static constexpr uint16_t MODBUS_STO_CLEAR_VALUE  {1};
-    static constexpr uint16_t MODBUS_STO_ACTIVE_VALUE {0};
+    static constexpr uint16_t MODBUS_RUN_PERMITTED_CLEAR_VALUE  {1};
+    static constexpr uint16_t MODBUS_RUN_PERMITTED_ACTIVE_VALUE {0};
   }
 }
 
