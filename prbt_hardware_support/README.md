@@ -69,6 +69,9 @@ For more on gripper models see also [prbt_grippers](https://github.com/PilzDE/pr
 ### RUN_PERMITTED signal
 The RUN_PERMITTED is a state required in the safety controller for the robot to operate. It is sent to the ROS system to inform it in the case of an upcoming STO of the robot.
 
+**Please note:**
+The ROS nodes only react on changes of the signal, so it may be necessary to retrigger RUN_PERMITTED in order to enable the drives at start.
+
 ### STO
 The STO function (“Safe torque off”) of the robot arm is a safety function to immediately turn off torque of the drives. The behavior triggers the RUN_PERMITTED signal.
 
