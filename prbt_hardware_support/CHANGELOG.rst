@@ -8,7 +8,7 @@ Forthcoming
 * Renaming of STO into RUN_PERMITTED
 * Contributors: Pilz GmbH and Co. KG
 
-0.5.14 (2020-03-11)
+0.4.12 (2020-03-24)
 -------------------
 * Trim firmware string.
 * Rename waitForTopic() -> waitForMessage()
