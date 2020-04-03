@@ -29,21 +29,26 @@
 
 #include <pilz_control/pilz_joint_trajectory_controller.h>
 
-namespace pilz_joint_trajectory_controller
+namespace pilz_joint_trajectory_controller_test
 {
-
-//! @brief Manages a single PilzJointTrajectoryController (PJTC). Intended for usage with simulated time.
+/**
+ * @brief Manages a single PilzJointTrajectoryController (PJTC).
+ *
+ * Allows direct access to a PilzJointTrajectoryController object for testing.
+ * @note Intended for usage with simulated ros::Time.
+ */
 template <class SegmentImpl, class HWInterface>
 class PJTCManagerMock
 {
 public:
-  using Controller = PilzJointTrajectoryController<SegmentImpl, HWInterface>;
+  using Controller = pilz_joint_trajectory_controller::PilzJointTrajectoryController<SegmentImpl, HWInterface>;
 
 public:
   PJTCManagerMock(hardware_interface::RobotHW* hardware, const std::string& controller_ns);
 
   bool loadController();
   void startController();
+  //! Perform controller update at current (simulated) time.
   void update();
 
   /**
@@ -66,6 +71,7 @@ private:
   ros::Time last_update_time_;
   hardware_interface::RobotHW* hardware_;
 };
+
 
 template <class SegmentImpl, class HWInterface>
 PJTCManagerMock<SegmentImpl, HWInterface>::PJTCManagerMock(hardware_interface::RobotHW* hardware,

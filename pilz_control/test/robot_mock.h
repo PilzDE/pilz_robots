@@ -35,8 +35,8 @@ struct JointData
 };
 
 /**
- * @brief The RobotMock used by the integrationtest of the pilz_joint_trajectory_controller
- * Registers NUM_JOINTS JointStateHandles with the interface to allow interaction with the controller_manager
+ * @brief The RobotMock used by the unit- and integrationtest of the pilz_joint_trajectory_controller.
+ * Registers NUM_JOINTS JointStateHandles with the interface to allow interaction with the controller_manager.
  */
 class RobotMock : public hardware_interface::RobotHW
 {
@@ -46,7 +46,7 @@ public:
   void read();
   void write(const ros::Duration& period);
 
-  bool isMoving(const double& eps = JOINT_VELOCITY_EPS);
+  bool isMoving(const double& eps = JOINT_VELOCITY_EPS) const;
 
 private:
   std::array<JointData, NUM_JOINTS> data_ { JointData(), JointData() };
