@@ -2,6 +2,11 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Adopted default configuration for launchfiles
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.14 (2020-03-11)
 -------------------
 

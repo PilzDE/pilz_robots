@@ -66,7 +66,7 @@ const std::string HOLD_SRV_CALLED_EVENT{"hold_srv_called"};
 const std::string HALT_SRV_CALLED_EVENT{"halt_srv_called"};
 
 /**
- * Gives access to protected methods of sto adapter.
+ * Gives access to protected methods of run_permitted adapter.
  */
 class Stop1ExecutorForTests : public Stop1Executor
 {
@@ -111,31 +111,31 @@ inline Stop1ExecutorForTests* Stop1ExecutorTest::createStop1Executor()
  * are called.
  *
  */
-TEST_F(Stop1ExecutorTest, testD0estructor)
+TEST_F(Stop1ExecutorTest, testDestructor)
 {
   {
-    std::shared_ptr<Stop1Executor> adapter_sto {new Stop1Executor( std::bind(&Stop1ExecutorTest::hold_func,    this),
-                                                                   std::bind(&Stop1ExecutorTest::unhold_func,  this),
-                                                                   std::bind(&Stop1ExecutorTest::recover_func, this),
-                                                                   std::bind(&Stop1ExecutorTest::halt_func,    this) ) };
+    std::shared_ptr<Stop1Executor> adapter_run_permitted {new Stop1Executor( std::bind(&Stop1ExecutorTest::hold_func,    this),
+                                                                             std::bind(&Stop1ExecutorTest::unhold_func,  this),
+                                                                             std::bind(&Stop1ExecutorTest::recover_func, this),
+                                                                             std::bind(&Stop1ExecutorTest::halt_func,    this) ) };
   }
 
   {
-    Stop1Executor adapter_sto( std::bind(&Stop1ExecutorTest::hold_func,    this),
-                               std::bind(&Stop1ExecutorTest::unhold_func,  this),
-                               std::bind(&Stop1ExecutorTest::recover_func, this),
-                               std::bind(&Stop1ExecutorTest::halt_func,    this) );
+    Stop1Executor adapter_run_permitted( std::bind(&Stop1ExecutorTest::hold_func,    this),
+                                         std::bind(&Stop1ExecutorTest::unhold_func,  this),
+                                         std::bind(&Stop1ExecutorTest::recover_func, this),
+                                         std::bind(&Stop1ExecutorTest::halt_func,    this) );
   }
 }
 
 /**
  * @tests{release_of_stop1,
  * Tests that driver is recovered and controller no longer holded
- * in case of STO switch: false->true.
+ * in case of RUN_PERMITTED switch: false->true.
  * }
  *
  * Test Sequence:
- *  1. Run the sto adapter and call updateSto(true)),
+ *  1. Run the run_permitted adapter and call updateRunPermitted(true)),
  *     let recover and unhold services return success
  *
  * Expected Results:
@@ -149,8 +149,8 @@ TEST_F(Stop1ExecutorTest, testEnable)
     EXPECT_UNHOLD;
   }
 
-  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
-  adapter_sto->updateSto(true);
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
+  adapter_run_permitted->updateRunPermitted(true);
 
   BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 }
@@ -165,11 +165,11 @@ TEST_F(Stop1ExecutorTest, testEnable)
  * }
  *
  * Test Sequence:
- *  1. Run the sto adapter and call updateSto(true)),
+ *  1. Run the run_permitted adapter and call updateRunPermitted(true)),
  *     let recover and unhold services return success
- *  2. Call updateSto(false)),
+ *  2. Call updateRunPermitted(false)),
  *     let hold and halt services return success
- *  3. Call updateSto(true)) repeatedly,
+ *  3. Call updateRunPermitted(true)) repeatedly,
  *     let recover and unhold service return success
  *
  * Expected Results:
@@ -188,8 +188,8 @@ TEST_F(Stop1ExecutorTest, testEnableStopEnable)
     EXPECT_UNHOLD;
   }
 
-  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
-  adapter_sto->updateSto(true);
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
+  adapter_run_permitted->updateRunPermitted(true);
 
   BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -202,7 +202,7 @@ TEST_F(Stop1ExecutorTest, testEnableStopEnable)
     EXPECT_HALT;
   }
 
-  adapter_sto->updateSto(false);
+  adapter_run_permitted->updateRunPermitted(false);
 
   BARRIER({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 
@@ -216,7 +216,7 @@ TEST_F(Stop1ExecutorTest, testEnableStopEnable)
   }
 
   std::atomic_bool keep_spamming{true};
-  std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto->updateSto(true); } }};
+  std::thread spam_enable{[&adapter_run_permitted, &keep_spamming]() { while (keep_spamming) { adapter_run_permitted->updateRunPermitted(true); } }};
 
   BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -237,10 +237,10 @@ TEST_F(Stop1ExecutorTest, testEnableStopEnable)
  *
  *
  * Test Sequence:
- *  1. Run the sto adapter and call updateSto(true)) repeatedly,
+ *  1. Run the run_permitted adapter and call updateRunPermitted(true)) repeatedly,
  *     let recover and unhold services return success
- *  2. Call updateSto(true) once more (this is certainly after unhold and needed for full coverage)
- *  3. Call updateSto(false)),
+ *  2. Call updateRunPermitted(true) once more (this is certainly after unhold and needed for full coverage)
+ *  3. Call updateRunPermitted(false)),
  *     let hold and halt services return success
  *
  * Expected Results:
@@ -259,10 +259,10 @@ TEST_F(Stop1ExecutorTest, testSpamEnablePlusStop)
     EXPECT_UNHOLD;
   }
 
-  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
 
   std::atomic_bool keep_spamming{true};
-  std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto->updateSto(true); } }};
+  std::thread spam_enable{[&adapter_run_permitted, &keep_spamming]() { while (keep_spamming) { adapter_run_permitted->updateRunPermitted(true); } }};
 
   BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -273,7 +273,7 @@ TEST_F(Stop1ExecutorTest, testSpamEnablePlusStop)
    * Step 2 *
    **********/
 
-  adapter_sto->updateSto(true);
+  adapter_run_permitted->updateRunPermitted(true);
 
   /**********
    * Step 3 *
@@ -284,28 +284,28 @@ TEST_F(Stop1ExecutorTest, testSpamEnablePlusStop)
     EXPECT_HALT;
   }
 
-  adapter_sto->updateSto(false);
+  adapter_run_permitted->updateRunPermitted(false);
 
   BARRIER({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 }
 
 /**
- * @brief Test spamming STO=false plus subsequent enable
+ * @brief Test spamming RUN_PERMITTED=false plus subsequent enable
  *
  * @tests{execution_of_stop1,
- * Test spamming STO=false plus subsequent enable.
+ * Test spamming RUN_PERMITTED=false plus subsequent enable.
  * }
  *
  * @tests{release_of_stop1,
- * Test spamming STO=false plus subsequent enable.
+ * Test spamming RUN_PERMITTED=false plus subsequent enable.
  * }
  *
  * Test Sequence:
- *  1. Run the sto adapter and call updateSto(true)),
+ *  1. Run the run_permitted adapter and call updateRunPermitted(true)),
  *     let recover and unhold services return success
- *  2. Call updateSto(false)) repeatedly,
+ *  2. Call updateRunPermitted(false)) repeatedly,
  *     let hold and halt services return success
- *  3. Call updateSto(true)) repeatedly,
+ *  3. Call updateRunPermitted(true)) repeatedly,
  *     let recover and unhold services return success
  *
  * Expected Results:
@@ -313,7 +313,7 @@ TEST_F(Stop1ExecutorTest, testSpamEnablePlusStop)
  *  2. Hold and halt services are called successively
  *  3. Recover and unhold services are called successively
  */
-TEST_F(Stop1ExecutorTest, testSpamStoActivePlusEnable)
+TEST_F(Stop1ExecutorTest, testSpamRunPermittedActivePlusEnable)
 {
   /**********
    * Step 1 *
@@ -324,9 +324,9 @@ TEST_F(Stop1ExecutorTest, testSpamStoActivePlusEnable)
     EXPECT_UNHOLD;
   }
 
-  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
 
-  adapter_sto->updateSto(true);
+  adapter_run_permitted->updateRunPermitted(true);
 
   BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -340,7 +340,7 @@ TEST_F(Stop1ExecutorTest, testSpamStoActivePlusEnable)
   }
 
   std::atomic_bool keep_spamming{true};
-  std::thread spam_disable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto->updateSto(false); } }};
+  std::thread spam_disable{[&adapter_run_permitted, &keep_spamming]() { while (keep_spamming) { adapter_run_permitted->updateRunPermitted(false); } }};
 
   BARRIER({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 
@@ -357,7 +357,7 @@ TEST_F(Stop1ExecutorTest, testSpamStoActivePlusEnable)
   }
 
   keep_spamming = true;
-  std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto->updateSto(true); } }};
+  std::thread spam_enable{[&adapter_run_permitted, &keep_spamming]() { while (keep_spamming) { adapter_run_permitted->updateRunPermitted(true); } }};
 
   BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -368,21 +368,21 @@ TEST_F(Stop1ExecutorTest, testSpamStoActivePlusEnable)
 /**
  *
  * @tests{execution_of_stop1,
- * Test skipping hold when sto changes to false during recover.
+ * Test skipping hold when run_permitted changes to false during recover.
  * }
  *
  * @tests{release_of_stop1,
- * Test skipping hold when sto changes to false during recover.
+ * Test skipping hold when run_permitted changes to false during recover.
  * }
  *
  * @tests{release_of_stop1_interrupt,
- * Test skipping hold when sto changes to false during recover.
+ * Test skipping hold when run_permitted changes to false during recover.
  * }
  *
  * Test Sequence:
- *  1. Run the sto adapter and call updateSto(true)),
- *     call updateSto(false)) during recover service call and return success, let halt service return success
- *  2. Call updateSto(true)),
+ *  1. Run the run_permitted adapter and call updateRunPermitted(true)),
+ *     call updateRunPermitted(false)) during recover service call and return success, let halt service return success
+ *  2. Call updateRunPermitted(true)),
  *     let recover and unhold services return success
  *
  * Expected Results:
@@ -391,12 +391,12 @@ TEST_F(Stop1ExecutorTest, testSpamStoActivePlusEnable)
  */
 TEST_F(Stop1ExecutorTest, testSkippingHoldPlusEnable)
 {
-  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
 
   // define function for recover-invoke action
-  auto sto_false_during_recover_action = [this, &adapter_sto]() {
+  auto run_permitted_false_during_recover_action = [this, &adapter_run_permitted]() {
     this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT);
-    adapter_sto->updateSto(false);
+    adapter_run_permitted->updateRunPermitted(false);
     return true;
   };
 
@@ -412,13 +412,13 @@ TEST_F(Stop1ExecutorTest, testSkippingHoldPlusEnable)
     InSequence dummy;
 
     EXPECT_CALL(*this, recover_func())
-        .WillOnce(InvokeWithoutArgs(sto_false_during_recover_action));
+        .WillOnce(InvokeWithoutArgs(run_permitted_false_during_recover_action));
 
     EXPECT_CALL(*this, halt_func())
         .WillOnce(InvokeWithoutArgs(halt_action));
   }
 
-  adapter_sto->updateSto(true);
+  adapter_run_permitted->updateRunPermitted(true);
 
   BARRIER({RECOVER_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 
@@ -432,7 +432,7 @@ TEST_F(Stop1ExecutorTest, testSkippingHoldPlusEnable)
   }
 
   std::atomic_bool keep_spamming{true};
-  std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto->updateSto(true); } }};
+  std::thread spam_enable{[&adapter_run_permitted, &keep_spamming]() { while (keep_spamming) { adapter_run_permitted->updateRunPermitted(true); } }};
 
   BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -442,17 +442,17 @@ TEST_F(Stop1ExecutorTest, testSkippingHoldPlusEnable)
 
 /**
  * @tests{execution_of_stop1,
- * Test sending sto change to true while hold call is still pending.
+ * Test sending run_permitted change to true while hold call is still pending.
  * }
  *
  * @tests{release_of_stop1,
- * Test sending sto change to true while hold call is still pending.
+ * Test sending run_permitted change to true while hold call is still pending.
  * }
  *
  * Test Sequence:
- *  1.  Run the sto adapter and call updateSto(true),
+ *  1.  Run the run_permitted adapter and call updateRunPermitted(true),
  *      let recover and unhold service return success.
- *  2.  Call updateSto(false) and updateSto(true) during hold service call,
+ *  2.  Call updateRunPermitted(false) and updateRunPermitted(true) during hold service call,
  *      let hold, halt, recover and unhold service return success.
  *
  * Expected Results:
@@ -461,10 +461,10 @@ TEST_F(Stop1ExecutorTest, testSkippingHoldPlusEnable)
  */
 TEST_F(Stop1ExecutorTest, testEnableDuringHoldService)
 {
-  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
 
-  auto enable_during_hold_action = [this, &adapter_sto]() {
-    adapter_sto->updateSto(true);
+  auto enable_during_hold_action = [this, &adapter_run_permitted]() {
+    adapter_run_permitted->updateRunPermitted(true);
     this->triggerClearEvent(HOLD_SRV_CALLED_EVENT);
     return true;
   };
@@ -479,7 +479,7 @@ TEST_F(Stop1ExecutorTest, testEnableDuringHoldService)
     EXPECT_UNHOLD;
   }
 
-  adapter_sto->updateSto(true);
+  adapter_run_permitted->updateRunPermitted(true);
 
   BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -494,24 +494,24 @@ TEST_F(Stop1ExecutorTest, testEnableDuringHoldService)
     EXPECT_UNHOLD;
   }
 
-  adapter_sto->updateSto(false);
+  adapter_run_permitted->updateRunPermitted(false);
 
   BARRIER({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT, RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 }
 
 /**
  * @tests{execution_of_stop1,
- * Test sending sto change to true while halt call is still pending.
+ * Test sending run_permitted change to true while halt call is still pending.
  * }
  *
  * @tests{release_of_stop1,
- * Test sending sto change to true while halt call is still pending.
+ * Test sending run_permitted change to true while halt call is still pending.
  * }
  *
  * Test Sequence:
- *  1.  Run the sto adapter and call updateSto(true)),
- *      call updateSto(false)) during recover service call and return success.
- *      Before returning success on halt service call updateSto(true)
+ *  1.  Run the run_permitted adapter and call updateRunPermitted(true)),
+ *      call updateRunPermitted(false)) during recover service call and return success.
+ *      Before returning success on halt service call updateRunPermitted(true)
  *
  * Expected Results:
  *  1.  Recover and halt services are called successively.
@@ -519,18 +519,18 @@ TEST_F(Stop1ExecutorTest, testEnableDuringHoldService)
  */
 TEST_F(Stop1ExecutorTest, testEnableDuringHaltService)
 {
-  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
 
   // define function for recover-invoke action
-  auto sto_false_during_recover_action = [this, &adapter_sto]() {
+  auto run_permitted_false_during_recover_action = [this, &adapter_run_permitted]() {
     this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT);
-    adapter_sto->updateSto(false);
+    adapter_run_permitted->updateRunPermitted(false);
     return true;
   };
 
-  auto enable_during_halt_action = [this, &adapter_sto]() {
+  auto enable_during_halt_action = [this, &adapter_run_permitted]() {
     this->triggerClearEvent(HALT_SRV_CALLED_EVENT);
-    adapter_sto->updateSto(true);
+    adapter_run_permitted->updateRunPermitted(true);
     return true;
   };
 
@@ -544,7 +544,7 @@ TEST_F(Stop1ExecutorTest, testEnableDuringHaltService)
     InSequence dummy;
 
     EXPECT_CALL(*this, recover_func())
-        .WillOnce(InvokeWithoutArgs(sto_false_during_recover_action));
+        .WillOnce(InvokeWithoutArgs(run_permitted_false_during_recover_action));
 
     EXPECT_CALL(*this, halt_func())
         .WillOnce(InvokeWithoutArgs(enable_during_halt_action));
@@ -562,45 +562,45 @@ TEST_F(Stop1ExecutorTest, testEnableDuringHaltService)
     }));
   }
 
-  adapter_sto->updateSto(true);
+  adapter_run_permitted->updateRunPermitted(true);
 
   BARRIER({RECOVER_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT, recover_srv_called_event2, unhold_srv_called_event2});
 }
 
 /**
  * @tests{execution_of_stop1,
- * Test sending sto change to true and back to false while halt call
+ * Test sending run_permitted change to true and back to false while halt call
  * is still pending.
  * }
  *
  * @tests{release_of_stop1,
- * Test sending sto change to true and back to false while halt call
+ * Test sending run_permitted change to true and back to false while halt call
  * is still pending.
  * }
  *
  * Test Sequence:
- *  1. Run the sto adapter and call updateSto(true)).
- *     Call updateSto(false)) during recover service call and return success. (This is not essential for the test)
- *     Before returning success on halt service call updateSto(true) and update(false).
+ *  1. Run the run_permitted adapter and call updateRunPermitted(true)).
+ *     Call updateRunPermitted(false)) during recover service call and return success. (This is not essential for the test)
+ *     Before returning success on halt service call updateRunPermitted(true) and update(false).
  *
  * Expected Results:
  *  1. Recover and halt services are called successively. Afterwards recover and unhold are called once.
  */
 TEST_F(Stop1ExecutorTest, testEnableDisableDuringHaltService)
 {
-  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
 
   // define function for recover-invoke action
-  auto sto_false_during_recover_action = [this, &adapter_sto]() {
+  auto run_permitted_false_during_recover_action = [this, &adapter_run_permitted]() {
     this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT);
-    adapter_sto->updateSto(false);
+    adapter_run_permitted->updateRunPermitted(false);
     return true;
   };
 
-  auto enable_during_halt_action = [this, &adapter_sto]() {
+  auto enable_during_halt_action = [this, &adapter_run_permitted]() {
     this->triggerClearEvent(HALT_SRV_CALLED_EVENT);
-    adapter_sto->updateSto(true);
-    adapter_sto->updateSto(false); // Important flip!
+    adapter_run_permitted->updateRunPermitted(true);
+    adapter_run_permitted->updateRunPermitted(false); // Important flip!
     return true;
   };
 
@@ -613,14 +613,14 @@ TEST_F(Stop1ExecutorTest, testEnableDisableDuringHaltService)
 
     EXPECT_CALL(*this, recover_func())
         .Times(1)
-        .WillOnce(InvokeWithoutArgs(sto_false_during_recover_action));
+        .WillOnce(InvokeWithoutArgs(run_permitted_false_during_recover_action));
 
     EXPECT_CALL(*this, halt_func())
         .Times(1)
         .WillOnce(InvokeWithoutArgs(enable_during_halt_action));
   }
 
-  adapter_sto->updateSto(true);
+  adapter_run_permitted->updateRunPermitted(true);
 
   BARRIER({RECOVER_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 }
@@ -637,11 +637,11 @@ TEST_F(Stop1ExecutorTest, testEnableDisableDuringHaltService)
  * }
  *
  * Test Sequence:
- *  1. Run the sto adapter and call updateSto(true)),
+ *  1. Run the run_permitted adapter and call updateRunPermitted(true)),
  *     let recover service fail repeatedly, let unhold service return success
- *  2. Call updateSto(false)),
+ *  2. Call updateRunPermitted(false)),
  *     let hold and halt service return success
- *  3. Call updateSto(true)) repeatedly,
+ *  3. Call updateRunPermitted(true)) repeatedly,
  *     recover and unhold service return success
  *
  * Expected Results:
@@ -662,9 +662,9 @@ TEST_F(Stop1ExecutorTest, testRecoverFailPlusRetry)
   EXPECT_CALL(*this, unhold_func())
       .WillRepeatedly(Return(true));
 
-  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
 
-  adapter_sto->updateSto(true);
+  adapter_run_permitted->updateRunPermitted(true);
 
   BARRIER({RECOVER_SRV_CALLED_EVENT});
 
@@ -681,7 +681,7 @@ TEST_F(Stop1ExecutorTest, testRecoverFailPlusRetry)
     EXPECT_HALT;
   }
 
-  adapter_sto->updateSto(false);
+  adapter_run_permitted->updateRunPermitted(false);
 
   BARRIER({HALT_SRV_CALLED_EVENT});
 
@@ -696,7 +696,7 @@ TEST_F(Stop1ExecutorTest, testRecoverFailPlusRetry)
   }
 
   std::atomic_bool keep_spamming{true};
-  std::thread spam_enable{[&adapter_sto, &keep_spamming]() { while (keep_spamming) { adapter_sto->updateSto(true); } }};
+  std::thread spam_enable{[&adapter_run_permitted, &keep_spamming]() { while (keep_spamming) { adapter_run_permitted->updateRunPermitted(true); } }};
 
   BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -710,9 +710,9 @@ TEST_F(Stop1ExecutorTest, testRecoverFailPlusRetry)
  * }
  *
  * Test Sequence:
- *  1. Run the sto adapter and call updateSto(true)),
+ *  1. Run the run_permitted adapter and call updateRunPermitted(true)),
  *     let recover service return success and unhold service fail repeatedly
- *  2. Call updateSto(false)),
+ *  2. Call updateRunPermitted(false)),
  *     let hold and halt services return success
  *
  * Expected Results:
@@ -734,8 +734,8 @@ TEST_F(Stop1ExecutorTest, testUnholdFail)
         .WillRepeatedly(Return(false));
   }
 
-  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
-  adapter_sto->updateSto(true);
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
+  adapter_run_permitted->updateRunPermitted(true);
 
   BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -749,7 +749,7 @@ TEST_F(Stop1ExecutorTest, testUnholdFail)
     EXPECT_HALT;
   }
 
-  adapter_sto->updateSto(false);
+  adapter_run_permitted->updateRunPermitted(false);
 
   BARRIER({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 }
@@ -760,9 +760,9 @@ TEST_F(Stop1ExecutorTest, testUnholdFail)
  * }
  *
  * Test Sequence:
- *  1. Run the sto adapter and call updateSto(true)),
+ *  1. Run the run_permitted adapter and call updateRunPermitted(true)),
  *     let recover and unhold services return success
- *  2. Call updateSto(false)),
+ *  2. Call updateRunPermitted(false)),
  *     let hold service fail, let is_executing service return "not executing",
  *     let halt service fail (for full coverage)
  *
@@ -781,9 +781,9 @@ TEST_F(Stop1ExecutorTest, testHoldFail)
     EXPECT_UNHOLD;
   }
 
-  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
 
-  adapter_sto->updateSto(true);
+  adapter_run_permitted->updateRunPermitted(true);
 
   BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -802,19 +802,19 @@ TEST_F(Stop1ExecutorTest, testHoldFail)
         .WillRepeatedly(Return(false));
   }
 
-  adapter_sto->updateSto(false);
+  adapter_run_permitted->updateRunPermitted(false);
 
   BARRIER({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 }
 
 /**
- * @brief Test hold immediately when sto changes to false during unhold.
+ * @brief Test hold immediately when run_permitted changes to false during unhold.
  *
  * @note This test exists mainly for full function coverage.
  *
  * Test Sequence:
- *  1. Run the sto adapter and call updateSto(true)),
- *     call updateSto(false)) during unhold service call and return success,
+ *  1. Run the run_permitted adapter and call updateRunPermitted(true)),
+ *     call updateRunPermitted(false)) during unhold service call and return success,
  *     let hold and halt services return success
  *
  * Expected Results:
@@ -822,12 +822,12 @@ TEST_F(Stop1ExecutorTest, testHoldFail)
  */
 TEST_F(Stop1ExecutorTest, testHoldImmediatelyAfterUnhold)
 {
-  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
 
   // define function for unhold-invoke action
-  auto unhold_action = [this, &adapter_sto]() {
+  auto unhold_action = [this, &adapter_run_permitted]() {
     this->triggerClearEvent(UNHOLD_SRV_CALLED_EVENT);
-    adapter_sto->updateSto(false);
+    adapter_run_permitted->updateRunPermitted(false);
     return true;
   };
 
@@ -846,7 +846,7 @@ TEST_F(Stop1ExecutorTest, testHoldImmediatelyAfterUnhold)
     EXPECT_HALT;
   }
 
-  adapter_sto->updateSto(true);
+  adapter_run_permitted->updateRunPermitted(true);
 
   barricade({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT, HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
 }
@@ -857,7 +857,7 @@ TEST_F(Stop1ExecutorTest, testHoldImmediatelyAfterUnhold)
  * @note This test exists mainly for full function coverage.
  *
  * Test Sequence:
- *  1. Run the sto adapter and call updateSto(true),
+ *  1. Run the run_permitted adapter and call updateRunPermitted(true),
  *     call stopStateMachine() during recover service call and return success,
  *     let unhold service return success
  *
@@ -866,11 +866,11 @@ TEST_F(Stop1ExecutorTest, testHoldImmediatelyAfterUnhold)
  */
 TEST_F(Stop1ExecutorTest, testExitInStateEnabling)
 {
-  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
 
   // define function for recover-invoke action
-  auto recover_action = [this, &adapter_sto]() {
-    adapter_sto->stopStateMachine();
+  auto recover_action = [this, &adapter_run_permitted]() {
+    adapter_run_permitted->stopStateMachine();
     this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT);
     return true;
   };
@@ -886,7 +886,7 @@ TEST_F(Stop1ExecutorTest, testExitInStateEnabling)
         .WillRepeatedly(Return(true));
   }
 
-  adapter_sto->updateSto(true);
+  adapter_run_permitted->updateRunPermitted(true);
 
   BARRIER({RECOVER_SRV_CALLED_EVENT});
 }
@@ -897,9 +897,9 @@ TEST_F(Stop1ExecutorTest, testExitInStateEnabling)
  * @note This test exists mainly for full function coverage.
  *
  * Test Sequence:
- *  1. Run the sto adapter and call updateSto(true),
+ *  1. Run the run_permitted adapter and call updateRunPermitted(true),
  *     let recover and unhold services return success.
- *  2. Call updateSto(false) and call stopStateMachine() during hold service call,
+ *  2. Call updateRunPermitted(false) and call stopStateMachine() during hold service call,
  *     let hold and halt services return success.
  *
  * Expected Results:
@@ -908,7 +908,7 @@ TEST_F(Stop1ExecutorTest, testExitInStateEnabling)
  */
 TEST_F(Stop1ExecutorTest, testExitInStateStopping)
 {
-  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
 
   /**********
    * Step 1 *
@@ -920,7 +920,7 @@ TEST_F(Stop1ExecutorTest, testExitInStateStopping)
     EXPECT_UNHOLD;
   }
 
-  adapter_sto->updateSto(true);
+  adapter_run_permitted->updateRunPermitted(true);
 
   BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -928,8 +928,8 @@ TEST_F(Stop1ExecutorTest, testExitInStateStopping)
    * Step 2 *
    **********/
   // define function for hold-invoke action
-  auto hold_action = [this, &adapter_sto]() {
-    adapter_sto->stopStateMachine();
+  auto hold_action = [this, &adapter_run_permitted]() {
+    adapter_run_permitted->stopStateMachine();
     this->triggerClearEvent(HOLD_SRV_CALLED_EVENT);
     return true;
   };
@@ -945,7 +945,7 @@ TEST_F(Stop1ExecutorTest, testExitInStateStopping)
         .WillRepeatedly(Return(true));
   }
 
-  adapter_sto->updateSto(false);
+  adapter_run_permitted->updateRunPermitted(false);
 
   BARRIER({HOLD_SRV_CALLED_EVENT});
 }
@@ -956,8 +956,8 @@ TEST_F(Stop1ExecutorTest, testExitInStateStopping)
  * @note This test exists mainly for full function coverage.
  *
  * Test Sequence:
- *  1. Run the sto adapter and call updateSto(true)),
- *     call updateSto(false)) and stopStateMachine() during recover service call,
+ *  1. Run the run_permitted adapter and call updateRunPermitted(true)),
+ *     call updateRunPermitted(false)) and stopStateMachine() during recover service call,
  *     let recover and halt services return success.
  *
  * Expected Results:
@@ -965,12 +965,12 @@ TEST_F(Stop1ExecutorTest, testExitInStateStopping)
  */
 TEST_F(Stop1ExecutorTest, testExitInStateStopRequestedDuringEnable)
 {
-  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
 
   // define function for recover-invoke action
-  auto recover_action = [this, &adapter_sto]() {
-    adapter_sto->updateSto(false);
-    adapter_sto->stopStateMachine();
+  auto recover_action = [this, &adapter_run_permitted]() {
+    adapter_run_permitted->updateRunPermitted(false);
+    adapter_run_permitted->stopStateMachine();
     this->triggerClearEvent(RECOVER_SRV_CALLED_EVENT);
     return true;
   };
@@ -989,7 +989,7 @@ TEST_F(Stop1ExecutorTest, testExitInStateStopRequestedDuringEnable)
         .WillRepeatedly(Return(true));
   }
 
-  adapter_sto->updateSto(true);
+  adapter_run_permitted->updateRunPermitted(true);
 
   BARRIER(RECOVER_SRV_CALLED_EVENT);
 }
@@ -1000,10 +1000,10 @@ TEST_F(Stop1ExecutorTest, testExitInStateStopRequestedDuringEnable)
  * @note This test exists mainly for full function coverage.
  *
  * Test Sequence:
- *  1. Run the sto adapter and call updateSto(true),
+ *  1. Run the run_permitted adapter and call updateRunPermitted(true),
  *     let recover and unhold services return success
- *  2. Call updateSto(false),
- *     call updateSto(true) and stopStateMachine() during hold service call
+ *  2. Call updateRunPermitted(false),
+ *     call updateRunPermitted(true) and stopStateMachine() during hold service call
  *     and return success, let halt, recover and unhold services also return success
  *
  * Expected Results:
@@ -1012,7 +1012,7 @@ TEST_F(Stop1ExecutorTest, testExitInStateStopRequestedDuringEnable)
  */
 TEST_F(Stop1ExecutorTest, testExitInStateEnableRequestDuringStop)
 {
-  std::unique_ptr<Stop1ExecutorForTests> adapter_sto {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
 
   /**********
    * Step 1 *
@@ -1024,7 +1024,7 @@ TEST_F(Stop1ExecutorTest, testExitInStateEnableRequestDuringStop)
     EXPECT_UNHOLD;
   }
 
-  adapter_sto->updateSto(true);
+  adapter_run_permitted->updateRunPermitted(true);
 
   BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
 
@@ -1032,9 +1032,9 @@ TEST_F(Stop1ExecutorTest, testExitInStateEnableRequestDuringStop)
    * Step 2 *
    **********/
 
-  auto enable_during_hold_action = [this, &adapter_sto]() {
-    adapter_sto->updateSto(true);
-    adapter_sto->stopStateMachine();
+  auto enable_during_hold_action = [this, &adapter_run_permitted]() {
+    adapter_run_permitted->updateRunPermitted(true);
+    adapter_run_permitted->stopStateMachine();
     this->triggerClearEvent(HOLD_SRV_CALLED_EVENT);
     return true;
   };
@@ -1054,7 +1054,7 @@ TEST_F(Stop1ExecutorTest, testExitInStateEnableRequestDuringStop)
         .WillRepeatedly(Return(true));
   }
 
-  adapter_sto->updateSto(false);
+  adapter_run_permitted->updateRunPermitted(false);
 
   BARRIER(HOLD_SRV_CALLED_EVENT);
 }

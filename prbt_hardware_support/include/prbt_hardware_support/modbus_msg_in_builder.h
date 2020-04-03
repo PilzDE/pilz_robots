@@ -32,7 +32,7 @@ namespace prbt_hardware_support
 /**
  * @brief Help on construction for ModbusMsgIn Messages.
  *
- * Mainly intented for usage in tests.
+ * Mainly intended for usage in tests.
  *
  */
 class ModbusMsgInBuilder
@@ -43,7 +43,7 @@ public:
 public:
   void setRegister(const unsigned int register_n, const uint16_t value);
 
-  ModbusMsgInBuilder& setSto(const uint16_t sto);
+  ModbusMsgInBuilder& setRunPermitted(const uint16_t run_permitted);
   ModbusMsgInBuilder& setOperationMode(const uint16_t mode);
   ModbusMsgInBuilder& setApiVersion(const uint16_t version);
 
@@ -68,9 +68,9 @@ private:
 };
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-inline ModbusMsgInBuilder& ModbusMsgInBuilder::setSto(const uint16_t sto)
+inline ModbusMsgInBuilder& ModbusMsgInBuilder::setRunPermitted(const uint16_t run_permitted)
 {
-  setRegister(api_spec_.getRegisterDefinition(modbus_api_spec::STO), sto);
+  setRegister(api_spec_.getRegisterDefinition(modbus_api_spec::RUN_PERMITTED), run_permitted);
   return *this;
 }
 

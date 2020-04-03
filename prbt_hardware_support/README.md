@@ -2,11 +2,13 @@
 - [Introduction](#introduction)
 - [Supported DIN EN ISO 10218-1 safety features](#supported-din-en-iso-10218-1-safety-features)
   - [Needed/supported hardware](#neededsupported-hardware) 
+  - [Configurations supported by hardware](#configurations-supported-by-hardware)
   - [Definitions](#definitions)
   - [Safe stop 1](#safe-stop-1-ss1)
   - [Brake test](#brake-test)
   - [Operation modes](#operation-modes)
   - [Speed monitoring](#speed-monitoring)
+- [Possible error cases and their handling](#possible-error-cases-and-their-handling)
 - [Overview system components](#overview-system-components)
 
 # Introduction
@@ -50,29 +52,35 @@ hardware setup:
 - Enabling switch: PITenable
 - Pushbutton unit (with emergency stop): PITgatebox
 
+## Configurations supported by hardware
+The following table contains the supported configurations. The default configuration is highlighted in _italic_. Most of the functionality is implemented in this package. It can be configured in `prbt_support/robot.launch`.
+
+| Parameter Description| Options | Argument name in <br> `prbt_support/robot.launch`| Option values in <br> `prbt_support/robot.launch`
+| - | - | - | - |
+| Gripper Model | *No gripper*, Schunk PG plus 70 | `gripper` | *`<empty_string>`*, `pg70` |
+| Safety Controller Hardware         | _PSS4000_, PNOZmulti | `safety_hw` | *`pss4000`*, `pnoz` |
+| Brake Test Support | *True*, False | `has_braketest_support` | *`true`*, `false` |
+| Operation Mode Support| *True*, False | `has_operation_mode_support` | *`true`*, `false` |
+| Visual Status Indicator| *True*, False | `visual_status_indicator` | *`true`*, `false` |
+
+For more on gripper models see also [prbt_grippers](https://github.com/PilzDE/prbt_grippers).
+
 ## Definitions
+### RUN_PERMITTED signal
+The RUN_PERMITTED is a state required in the safety controller for the robot to operate. It is sent to the ROS system to inform it in the case of an upcoming STO of the robot.
+
 ### STO
-The STO function (“Safe torque off”) of the robot arm is a safety function to immediately turn off torque of the drives.
+The STO function (“Safe torque off”) of the robot arm is a safety function to immediately turn off torque of the drives. The behavior triggers the RUN_PERMITTED signal.
 
 ### SBC
-The SBC function ("Safe brake control") of the robot arm is a safety function which is used in conjunction with the STO and prevents a motion when the torque of the drives is turned off.
+The SBC function ("Safe brake control") of the robot arm is a safety function which is used in conjunction with the RUN_PERMITTED and prevents a motion when the torque of the drives is turned off.
 
 ## Safe stop 1 (SS1)
 To allow a controlled stop, the safety controller delays the STO signal by several milliseconds. This package opens a
-modbus connection to the safety controller (PNOZmulti or PSS4000). The safety controller sends an emergency
-stop signal via Modbus immediately so that ros_control has a short time interval to stop the drives via a brake ramp.
+modbus connection to the safety controller (PNOZmulti or PSS4000). The safety controller sends a `RUN_PERMITTED=false` 
+signal via Modbus immediately so that ros_control has a short time interval to stop the drives via a brake ramp.
 The TCP could for example brake on the current trajectory. After execution of the brake ramp, the drivers are halted. Even if ROS would fail, the safety controller turns off the motors via STO (that would be a Stop 0 then).
 
-### Possible error cases and their handling
-
-| Error cases                                             | Handling                                                |
-| ------------------------------------------------------- | ------------------------------------------------------- |
-| Modbus client crashes                                   | ROS system is shutdown which leads to an abrupt stop of the robot. |
-| STO Modbus adapter crashes                              | ROS system is shutdown which leads to an abrupt stop of the robot. |
-| Connection loss between PNOZmulti/PSS4000 & Modbus client        | Stop 1 is triggered                                     |
-| System overload (messages don't arrive in time)         | In case a Stop 1 message does not arrive in time, the safety controller will automatically perform a hard stop. In case a Stop 1-release message does not get through, brakes will remain closed. |
-| STO Modbus adapter cannot connect to stop services    | ROS system will not start.                              |
-| STO Modbus adapter cannot connect to recover services | Node does start and robot can be moved until a stop is triggered. Afterwards the brakes will remain closed. |
 
 ## Brake test
 Brake tests are an integral part of the SBC, since they detect misfunctions of the brakes or the brake control in general. Brake tests for each drive have to be executed at a regular interval. When the safety controller requests brake tests, they have to be executed within 1 hour, else the robot cannot be moved anymore.
@@ -108,6 +116,17 @@ Currently, only one of the PILZ controllers, namely the
 `PilzJointTrajectoryController`, can perform the speed monitoring required by
 DIN EN ISO 10218-1.
 
+# Possible error cases and their handling
+
+| Error cases                                             | Handling                                                |
+| ------------------------------------------------------- | ------------------------------------------------------- |
+| Modbus client crashes                                   | ROS system is shutdown which leads to an abrupt stop of the robot. |
+| RUN_PERMITTED Modbus adapter crashes                              | ROS system is shutdown which leads to an abrupt stop of the robot. |
+| Connection loss between PNOZmulti/PSS4000 & Modbus client        | Stop 1 is triggered                                     |
+| System overload (messages don't arrive in time)         | In case a Stop 1 message does not arrive in time, the safety controller will automatically perform a hard stop. In case a Stop 1-release message does not get through, brakes will remain closed. |
+| RUN_PERMITTED Modbus adapter cannot connect to stop services    | ROS system will not start.                              |
+| RUN_PERMITTED Modbus adapter cannot connect to recover services | Node does start and robot can be moved until a stop is triggered. Afterwards the brakes will remain closed. |
+
 # Overview system components
 The following diagram shows all components of the system and the connections
 between them.  
@@ -138,11 +157,11 @@ important for the Safe stop 1 functionality and must NOT be given, if the
 ``pilz_modbus_client_node`` is used as part of the Safe stop 1 functionality.
 If the parameters are not given the default values for these parameters are used.
 
-## ModbusAdapterStoNode
-The ``ModbusAdapterSto`` is noticed via the topic `/pilz_modbus_client_node/modbus_read` if the STO is true or false and reacts as follows calling the corresponding services of the controllers and drivers:
-- **STO true:**
+## ModbusAdapterRunPermittedNode
+The ``ModbusAdapterRunPermitted`` is noticed via the topic `/pilz_modbus_client_node/modbus_read` if the RUN_PERMITTED is true or false and reacts as follows calling the corresponding services of the controllers and drivers:
+- **RUN_PERMITTED true:**
 enable drives, unhold controllers
-- **STO false:**
+- **RUN_PERMITTED false:**
 hold controllers, disable drives
 
 ## ModbusAdapterBrakeTestNode

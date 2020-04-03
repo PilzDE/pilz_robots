@@ -81,7 +81,7 @@ The launch file allows to set optional parameters
        it inside your package folder, set the path and file name here.
 * `gripper` (default: None) <br>
     See [Running the prbt with a gripper](#running-the-prbt-with-a-gripper)
-* `sto` (default: pnoz)<br>
+* `safety_hw` (default: pss4000)<br>
     Connect to the safety controller that handles the safe-torque-off signal.
 	Only relevant for `sim:=False` to issue a Safe stop 1.
 	See [prbt_hardware_support package](prbt_hardware_support/README.md).
