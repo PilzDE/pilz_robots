@@ -114,9 +114,9 @@ static GoalType generateSimpleGoal(const ros::Duration& goal_duration = ros::Dur
  * - Make progress in simulated ros::Time,
  * - Invoke update_func.
  */
-bool waitFor(const std::function<bool()>& is_condition_fulfilled,
-             const std::chrono::milliseconds& timeout,
-             const UpdateFunc& update_func = UpdateFunc())
+static bool waitFor(const std::function<bool()>& is_condition_fulfilled,
+                    const std::chrono::milliseconds& timeout,
+                    const UpdateFunc& update_func = UpdateFunc())
 {
   const std::chrono::system_clock::time_point start {std::chrono::system_clock::now()};
   do
