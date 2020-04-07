@@ -57,6 +57,25 @@ inline void waitForNode(std::string node_name, double loop_frequency = 10.0)
 }
 
 /**
+ * @brief Blocks until the specified number of subscribers is registered on a topic.
+ * @param publisher The publisher of the topic.
+ * @param subsciber_count Number of subscribers to wait for.
+ * @param loop_frequency Frequency at which topic is checked for subscribers.
+ */
+inline void waitForSubscriber(const ros::Publisher& publisher,
+                              unsigned int subscriber_count = 1,
+                              double loop_frequency = 10.0)
+{
+  ROS_INFO_STREAM("Waiting for " << subscriber_count << " subscriber to topic " << publisher.getTopic());
+  ros::Rate rate(loop_frequency);
+  while (publisher.getNumSubscribers() < subscriber_count && ros::ok())
+  {
+    rate.sleep();
+  }
+  ROS_INFO_STREAM("Registered " << subscriber_count << " subscriber to topic " << publisher.getTopic());
+}
+
+/**
  * @brief Blocks until a node defined by node_name can no longer be found.
  * @param node_name
  * @param timeout
