@@ -128,7 +128,7 @@ handleHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response
   HoldModeListener listener;
   if (mode_->stopEvent(&listener))
   {
-    JointTrajectoryController::preemptActiveGoal();
+    triggerCancellingOfActiveGoal();
     triggerMovementToHoldPosition();
   }
 
