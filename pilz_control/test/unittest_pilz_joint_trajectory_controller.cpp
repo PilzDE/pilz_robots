@@ -17,6 +17,7 @@
 #include <chrono>
 #include <functional>
 #include <future>
+#include <thread>
 
 #include <gtest/gtest.h>
 
@@ -344,6 +345,42 @@ TEST_F(PilzJointTrajectoryControllerTest, testHoldDuringGoalExecution)
 
   EXPECT_TRUE(action_client_.waitForActionResult());
   EXPECT_EQ(action_client_.getResult()->error_code, control_msgs::FollowJointTrajectoryResult::INVALID_GOAL);
+}
+
+/**
+ * @brief Cancel a goal after a hold was requested and before the next update is performed.
+ *
+ * This test was written to obtain full line coverage.
+ */
+TEST_F(PilzJointTrajectoryControllerTest, testGoalCancellingDuringHold)
+{
+  ASSERT_TRUE(performFullControllerStartup(&robot_driver_));
+
+  GoalType goal {generateSimpleGoal()};
+  action_client_.sendGoal(goal);
+
+  std::chrono::milliseconds movement_timeout {WAIT_FOR_MOVEMENT_STARTED_MSEC};
+  EXPECT_TRUE(waitFor([this](){ return robot_driver_.isRobotMoving(); },
+                      movement_timeout,
+                      [this](){ robot_driver_.update(); }));
+
+  std_srvs::TriggerRequest req;
+  std_srvs::TriggerResponse resp;
+  // run async such that stop trajectory can be executed in the meantime
+  std::future<bool> hold_future = manager_->triggerHoldAsync(req, resp);
+
+  // Sleep to make sure hold was triggered
+  std::chrono::milliseconds hold_timeout {WAIT_FOR_HOLD_FUTURE_MSEC};
+  std::this_thread::sleep_for(hold_timeout);
+  action_client_.cancelGoal();
+  EXPECT_TRUE(action_client_.waitForActionResult());
+  robot_driver_.update();
+
+  EXPECT_TRUE(waitFor([&hold_future](){ return isFutureReady(hold_future); },
+                      hold_timeout,
+                      [this](){ robot_driver_.update(); }));
+  EXPECT_TRUE(resp.success);
+  EXPECT_TRUE(isControllerInHoldMode());
 }
 
 

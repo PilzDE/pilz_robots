@@ -54,6 +54,9 @@ public:
   //! @brief Only pass through to action client.
   void sendGoal(const Goal& goal);
 
+  //! @brief Only pass through to action client.
+  void cancelGoal();
+
   //! @brief Only pass through from action client.
   ResultConstPtr getResult() const;
 
@@ -82,6 +85,11 @@ TrajectoryActionClientWrapper::TrajectoryActionClientWrapper(const std::string& 
 void TrajectoryActionClientWrapper::sendGoal(const Goal& goal)
 {
   action_client_->sendGoal(goal);
+}
+
+void TrajectoryActionClientWrapper::cancelGoal()
+{
+  action_client_->cancelGoal();
 }
 
 TrajectoryActionClientWrapper::ResultConstPtr TrajectoryActionClientWrapper::getResult() const
