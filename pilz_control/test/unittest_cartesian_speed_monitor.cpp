@@ -234,6 +234,12 @@ TEST_F(CartesianSpeedMonitorTest, testD0Destructor)
   std::shared_ptr<CartesianSpeedMonitor> monitor{ new CartesianSpeedMonitor(joint_names_, model_) };
 }
 
+TEST_F(CartesianSpeedMonitorTest, testD0DestructorException)
+{
+  using pilz_control::RobotModelVariableNamesMismatch;
+  std::shared_ptr<RobotModelVariableNamesMismatch> monitor{ new RobotModelVariableNamesMismatch() };
+}
+
 int main(int argc, char* argv[])
 {
   testing::InitGoogleTest(&argc, argv);
