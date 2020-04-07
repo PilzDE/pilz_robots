@@ -16,6 +16,17 @@ The following table contains the supported configurations. The default configura
 
 For more on gripper models see also [prbt_grippers](https://github.com/PilzDE/prbt_grippers).
 
+# Default Configuration per Safety Controller
+The following values should be set depending on the safety hardware.
+
+| Argument name | Default value with PSS400 | Default value with PNOZmulti |
+| - | - | - |
+| `gripper` | `<empty_string>` | `<empty_string>` |
+| `safety_hw` | `pss4000` | `pnoz` |
+| `has_braketest_support` | `true` | `false` |
+| `has_operation_mode_support` | `true` | `true` |
+| `visual_status_indicator` | `true` | `true` |
+
 # Safety Features
 
 ## Safe torque off function
