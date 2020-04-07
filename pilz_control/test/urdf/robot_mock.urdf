@@ -63,6 +63,23 @@
     <origin xyz="0 0 0.25"/>
   </joint>
 
+  <link name="finger_right_link">
+    <visual>
+      <geometry>
+        <box size="0.05 0.05 0.05"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <material name="white"/>
+    </visual>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+  </link>
+
+  <joint name="hand_right_to_finger_right" type="fixed">
+    <parent link="hand_right_link"/>
+    <child link="finger_right_link"/>
+    <origin xyz="0 0 0.025"/>
+  </joint>
+
   <link name="arm_left_link">
     <visual>
       <geometry>
