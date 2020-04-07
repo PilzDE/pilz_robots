@@ -443,21 +443,6 @@ if(CATKIN_ENABLE_TESTING)
   )
   #----------------------------------
 
-  # --- Operation mode setup integration test ---
-  add_rostest_gmock(integrationtest_operation_mode_setup
-    test/integrationtests/integrationtest_operation_mode_setup.test
-    test/integrationtests/integrationtest_operation_mode_setup.cpp
-  )
-  target_link_libraries(integrationtest_operation_mode_setup
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
-  )
-  add_dependencies(integrationtest_operation_mode_setup
-    modbus_adapter_operation_mode_node
-    operation_mode_setup_executor_node
-    ${catkin_EXPORTED_TARGETS}
-  )
-  #----------------------------------
-
   # --- Execute brake test integration test ---
   add_rostest_gmock(integrationtest_execute_brake_test
     test/integrationtests/integrationtest_execute_brake_test.test
