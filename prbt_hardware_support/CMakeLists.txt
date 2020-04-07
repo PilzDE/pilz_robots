@@ -544,10 +544,6 @@ if(CATKIN_ENABLE_TESTING)
                           "*/SendBrakeTestResult.h"
                           "*/SendBrakeTestResultRequest.h"
                           "*/SendBrakeTestResultResponse.h"
-                          "*/FrameSpeeds.h"
-                          "*/SetSpeedLimit.h"
-                          "*/SetSpeedLimitRequest.h"
-                          "*/SetSpeedLimitResponse.h"
                           "*/FakeSpeedOverrideConfig.h"
                           )
     add_code_coverage(
