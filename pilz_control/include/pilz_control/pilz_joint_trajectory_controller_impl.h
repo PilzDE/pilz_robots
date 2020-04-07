@@ -227,10 +227,10 @@ updateFuncExtensionPoint(const typename JointTrajectoryController::Trajectory& c
   }
   case TrajProcessingMode::hold:
     return;
-  default:
+  default:  // LCOV_EXCL_START
     stopMotion(time_data.uptime);
     return;
-  }
+  }  // LCOV_EXCL_STOP
 }
 
 template <class SegmentImpl, class HardwareInterface>
