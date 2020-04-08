@@ -6,7 +6,7 @@ There is no need to call these launch files directly; they are included from `pr
 # How-to activate and deactivate hardware features
 The following table shows the names and the possible argument values of the features supported by our hardware. The features can be configured via arguments of `prbt_support/launch/robot.launch`.
 
-| Parameter Description| Argument name in `robot.launch`| Possible values in `robot.launch`
+| Parameter Description| Argument name in `robot.launch`| Possible values in `robot.launch` |
 | - | - | - | - |
 | Gripper Model | `gripper` | *`<arg unset>`*, `pg70` |
 | Safety Controller Hardware | `safety_hw` | *`pss4000`*, `pnoz` |
