@@ -1,20 +1,29 @@
 # Overview
 The prbt_hardware_support package contains files supporting the certification of a robot system including the PRBT manipulator according to DIN EN ISO 10218-1. As safety controllers the Pilz hardware PNOZmulti and PSS4000 are supported. A Modbus connection is used for the communication between ROS <-> safety controller.
 
-There is no need to call these launch files directly; they are included from `prbt_support/robot.launch`.
+There is no need to call these launch files directly; they are included from `prbt_support/launch/robot.launch`.
 
-# Supported configurations
-The following table contains the supported configurations. The default configuration is highlighted in _italic_. Most of the functionality is implemented in this package. It can be configured in `prbt_support/robot.launch`.
+# How-to activate and deactivate hardware features
+The following table shows the names and the possible argument values of the features supported by our hardware. The features can be configured via arguments of `prbt_support/launch/robot.launch`.
 
-| Parameter Description| Options | Argument name in <br> `prbt_support/robot.launch`| Option values in <br> `prbt_support/robot.launch`
+| Parameter Description| Argument name in `robot.launch`| Possible values in `robot.launch`
 | - | - | - | - |
-| Gripper Model | *No gripper*, Schunk PG plus 70 | `gripper` | *`<empty_string>`*, `pg70` |
-| Safety Controller Hardware         | _PSS4000_, PNOZmulti | `safety_hw` | *`pss4000`*, `pnoz` |
-| Brake Test Support | *True*, False | `has_braketest_support` | *`true`*, `false` |
-| Operation Mode Support| *True*, False | `has_operation_mode_support` | *`true`*, `false` |
-| Visual Status Indicator| *True*, False | `visual_status_indicator` | *`true`*, `false` |
+| Gripper Model | `gripper` | *`<arg unset>`*, `pg70` |
+| Safety Controller Hardware | `safety_hw` | *`pss4000`*, `pnoz` |
+| Brake Test Support | `has_braketest_support` | *`true`*, `false` |
+| Operation Mode Support | `has_operation_mode_support` | *`true`*, `false` |
+| Visual Status Indicator | `visual_status_indicator` | *`true`*, `false` |
 
-For more on gripper models see also [prbt_grippers](https://github.com/PilzDE/prbt_grippers).
+With `pg70` referring to __Schunk PG plus 70__. For more on gripper models see [prbt_grippers](https://github.com/PilzDE/prbt_grippers).
+
+Currently, we only support the following configurations depending on the safety controller. If the safety controller is changed, please ensure that the arguments are set as shown in the table.
+
+| Argument name | Default value with PSS400 | Default value with PNOZmulti |
+| - | - | - |
+| `safety_hw` | `pss4000` | `pnoz` |
+| `has_braketest_support` | `true` | `false` |
+| `has_operation_mode_support` | `true` | `true` |
+| `visual_status_indicator` | `true` | `true` |
 
 # Safety Features
 
