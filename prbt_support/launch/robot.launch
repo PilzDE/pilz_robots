@@ -70,6 +70,7 @@
   <rosparam ns="/prbt/write_api_spec" command="load" file="$(arg write_api_spec_file)" if="$(arg has_operation_mode_support)" />
 
   <!-- Open modbus connection and required modules -->
+  <group unless="$(eval safety_hw.lower() == 'none')" >
     <!-- Modbus connection -->  
     <include file="$(find prbt_hardware_support)/launch/modbus_client.launch">
       <arg name="modbus_server_ip" value="$(arg modbus_server_ip)" />
@@ -87,11 +88,11 @@
              file="$(find prbt_hardware_support)/launch/operation_mode.launch" />
     <node unless="$(arg has_operation_mode_support)" 
           pkg="prbt_hardware_support" name="fake_speed_override_node" type="fake_speed_override_node"/>
-  <!---->
 
-  <!-- Status Indicator -->
-  <node pkg="pilz_status_indicator_rqt" name="pilz_status_indicator_rqt" type="pilz_status_indicator_rqt" 
-        if="$(arg visual_status_indicator)" />
+    <!-- Status Indicator -->
+    <node pkg="pilz_status_indicator_rqt" name="pilz_status_indicator_rqt" type="pilz_status_indicator_rqt" 
+	  if="$(arg visual_status_indicator)" />
+  </group>
 
   <!-- System info node to output robot firmware version to console -->
   <node ns="prbt" pkg="prbt_hardware_support" name="system_info_node" type="system_info_node" output="screen" />
