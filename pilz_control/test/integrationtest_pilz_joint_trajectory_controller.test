@@ -23,6 +23,7 @@ limitations under the License.
   <!-- send urdf to param server -->
   <param name="controller_ns_string" value="$(arg controller_ns)"/>
   <param name="robot_description" textfile="$(find pilz_control)/test/urdf/robot_mock.urdf"/>
+  <param name="robot_description_semantic" textfile="$(find pilz_control)/test/urdf/robot_mock.srdf"/>
 
   <!-- Start TestRobot -->
   <node name="robot_mock" pkg="pilz_control" type="robot_mock"/>

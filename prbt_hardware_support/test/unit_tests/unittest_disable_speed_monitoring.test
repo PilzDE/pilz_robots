@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2019 Pilz GmbH & Co. KG
+Copyright (c) 2020 Pilz GmbH & Co. KG
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
@@ -16,6 +16,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <launch>
-    <arg name="timeout" default="60" />
-    <test test-name="unittest_speed_observer" pkg="prbt_hardware_support" type="unittest_speed_observer" time-limit="$(arg timeout)"/>
+  <include file="$(find prbt_hardware_support)/launch/fake_operation_mode_setup.launch" />
+
+  <test pkg="prbt_hardware_support" type="unittest_disable_speed_monitoring"
+        test-name="unittest_disable_speed_monitoring">
+  </test>
 </launch>

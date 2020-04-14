@@ -40,7 +40,6 @@
  *    (see also \refspec{hold_service_fail})
  *
  * Please note:
- * - While the controller is holded, the controller rejects all new trajectories.
  * - The stop1 process cannot be interrupted, even if the RUN_PERMITTED changes to TRUE.
  *
  * @definereq{release_of_stop1}
@@ -127,23 +126,10 @@
  *
  * @subsubsection speed_monitoring Speed Monitoring
  *
- * @definereq{Monitor_Speed_of_all_tf_frames_until_TCP}
- *  - The system monitors all tf frames associated
- *    with moving parts of the robot (including the TCP) in order to determine their
- *    translational speed.
- *
- * @definereq{Monitor_Speed_of_user_defined_tf_frames}
- *  - The user can define additional tf frames to be monitored.
- *
- * @definereq{Stop1_on_violation_of_speed_limit}
- *  - If the speed limit for the current operation mode is violated,
- *    the robot performs a Stop 1 (\ref run_permitted_stop1).
- *
- * @definereq{Speed_limits_per_operation_mode}
- *  - The currently allowed speed limit depends on the operation mode.
- *  - In T1 the speed limit is 250mm/s.
- *  - In AUTOMATIC the robot is allowed to move with maximum speed.
- *  - If the operation mode is unknown, the speed limit is set to zero.
+ * @definereq{speed_monitoring_per_operation_mode}
+ *  - The Controller speed monitoring is active dependent on the operation mode.
+ *  - In operation mode T1 it is always active.
+ *  - In operation mode AUTOMATIC it is never active.
  *
  * @subsubsection speed_override Speed Override
  * - The speed override is a global factor in the range [0, 1] which is applied
@@ -168,4 +154,7 @@
  *
  * @definereq{speed_override_without_operation_mode_support}
  * - If the system does not support operation modes, the speed override (\ref speed_override) is 1.0.
+ *
+ * @definereq{speed_monitoring_without_operation_mode_support}
+ * - If the system does not support operation modes, the speed monitoring (\ref speed_monitoring) is deactivated.
  */

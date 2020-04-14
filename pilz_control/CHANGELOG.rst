@@ -2,6 +2,11 @@
 Changelog for package pilz_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add Cartesian speed monitoring to pilz joint trajectory controller
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.16 (2020-05-15)
 -------------------
 * Update and apply clang-format (#387)
@@ -10,7 +15,6 @@ Changelog for package pilz_control
 0.5.15 (2020-05-03)
 -------------------
 * Introduce goal_time_tolerance to PJTC function is_executing
-* Contributors: Pilz GmbH and Co. KG
 
 0.5.14 (2020-03-11)
 -------------------

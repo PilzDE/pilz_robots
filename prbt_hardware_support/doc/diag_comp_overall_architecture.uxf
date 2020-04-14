@@ -23,14 +23,14 @@ fontsize=10
 
 
 // This text will be stored with each diagram;  use it for notes.</help_text>
-  <zoom_level>10</zoom_level>
+  <zoom_level>6</zoom_level>
   <element>
     <id>UMLGeneric</id>
     <coordinates>
-      <x>890</x>
-      <y>1450</y>
-      <w>930</w>
-      <h>100</h>
+      <x>714</x>
+      <y>888</y>
+      <w>558</w>
+      <h>60</h>
     </coordinates>
     <panel_attributes>symbol=component
 transparency=0
@@ -42,10 +42,10 @@ CanOpen Client</panel_attributes>
   <element>
     <id>UMLGeneric</id>
     <coordinates>
-      <x>20</x>
-      <y>1440</y>
-      <w>190</w>
-      <h>100</h>
+      <x>192</x>
+      <y>882</y>
+      <w>114</w>
+      <h>60</h>
     </coordinates>
     <panel_attributes>symbol=component
 bg=#1E90FF
@@ -56,10 +56,10 @@ Modbus Client</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>50</x>
-      <y>1170</y>
-      <w>130</w>
-      <h>290</h>
+      <x>210</x>
+      <y>720</y>
+      <w>78</w>
+      <h>174</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=()-[publish]
@@ -71,10 +71,10 @@ lt=()-[publish]
   <element>
     <id>UMLGeneric</id>
     <coordinates>
-      <x>1310</x>
-      <y>1620</y>
-      <w>180</w>
-      <h>100</h>
+      <x>966</x>
+      <y>990</y>
+      <w>108</w>
+      <h>60</h>
     </coordinates>
     <panel_attributes>symbol=component
 &lt;&lt;Hardware&gt;&gt;
@@ -84,10 +84,10 @@ Robot</panel_attributes>
   <element>
     <id>UMLGeneric</id>
     <coordinates>
-      <x>20</x>
-      <y>1600</y>
-      <w>190</w>
-      <h>100</h>
+      <x>192</x>
+      <y>978</y>
+      <w>114</w>
+      <h>60</h>
     </coordinates>
     <panel_attributes>symbol=component
 bg=yellow
@@ -98,10 +98,10 @@ PSS4000</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1390</x>
-      <y>1540</y>
-      <w>30</w>
-      <h>100</h>
+      <x>1014</x>
+      <y>942</y>
+      <w>18</w>
+      <h>60</h>
     </coordinates>
     <panel_attributes>lt=&lt;..&gt;</panel_attributes>
     <additional_attributes>10.0;80.0;10.0;10.0</additional_attributes>
@@ -109,10 +109,10 @@ PSS4000</panel_attributes>
   <element>
     <id>UMLGeneric</id>
     <coordinates>
-      <x>860</x>
-      <y>1260</y>
-      <w>980</w>
-      <h>330</h>
+      <x>696</x>
+      <y>774</y>
+      <w>588</w>
+      <h>198</h>
     </coordinates>
     <panel_attributes>symbol=component
 bg=#1E90FF
@@ -123,10 +123,10 @@ Controller</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>920</x>
-      <y>420</y>
-      <w>70</w>
-      <h>1050</h>
+      <x>732</x>
+      <y>270</y>
+      <w>42</w>
+      <h>630</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 layer=100
@@ -137,10 +137,10 @@ lt=()-[Service]
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1010</x>
-      <y>420</y>
-      <w>90</w>
-      <h>1050</h>
+      <x>786</x>
+      <y>270</y>
+      <w>54</w>
+      <h>630</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 layer=100
@@ -151,10 +151,10 @@ lt=()-[Service]
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1690</x>
-      <y>1170</y>
-      <w>100</w>
-      <h>300</h>
+      <x>1194</x>
+      <y>720</y>
+      <w>60</w>
+      <h>180</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 layer=100
@@ -168,10 +168,10 @@ lt=()-[publish]
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1160</x>
-      <y>540</y>
-      <w>70</w>
-      <h>740</h>
+      <x>876</x>
+      <y>342</y>
+      <w>42</w>
+      <h>444</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=()-[Service]
@@ -181,10 +181,10 @@ lt=()-[Service]
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1260</x>
-      <y>550</y>
-      <w>90</w>
-      <h>730</h>
+      <x>936</x>
+      <y>348</y>
+      <w>54</w>
+      <h>438</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=()-[Service]
@@ -194,10 +194,10 @@ lt=()-[Service]
   <element>
     <id>UMLGeneric</id>
     <coordinates>
-      <x>30</x>
-      <y>900</y>
-      <w>190</w>
-      <h>100</h>
+      <x>198</x>
+      <y>558</y>
+      <w>114</w>
+      <h>60</h>
     </coordinates>
     <panel_attributes>symbol=component
 bg=#1E90FF
@@ -209,10 +209,10 @@ brake_test</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>40</x>
-      <y>990</y>
-      <w>90</w>
-      <h>100</h>
+      <x>204</x>
+      <y>612</y>
+      <w>54</w>
+      <h>60</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=[subscribe]-(</panel_attributes>
@@ -221,10 +221,10 @@ lt=[subscribe]-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>50</x>
-      <y>620</y>
-      <w>150</w>
-      <h>300</h>
+      <x>210</x>
+      <y>390</y>
+      <w>90</w>
+      <h>180</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=()-[Service]
@@ -235,9 +235,9 @@ lt=()-[Service]
     <id>UMLGeneric</id>
     <coordinates>
       <x>450</x>
-      <y>30</y>
-      <w>1370</w>
-      <h>50</h>
+      <y>36</y>
+      <w>822</w>
+      <h>30</h>
     </coordinates>
     <panel_attributes>symbol=component
 bg=#FFD700
@@ -247,10 +247,10 @@ PythonAPI</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>60</x>
-      <y>70</y>
-      <w>500</w>
-      <h>560</h>
+      <x>216</x>
+      <y>60</y>
+      <w>300</w>
+      <h>336</h>
     </coordinates>
     <panel_attributes>lt=-(</panel_attributes>
     <additional_attributes>480.0;10.0;480.0;150.0;20.0;150.0;20.0;530.0</additional_attributes>
@@ -258,10 +258,10 @@ PythonAPI</panel_attributes>
   <element>
     <id>UMLGeneric</id>
     <coordinates>
-      <x>650</x>
-      <y>900</y>
-      <w>270</w>
-      <h>100</h>
+      <x>516</x>
+      <y>558</y>
+      <w>168</w>
+      <h>60</h>
     </coordinates>
     <panel_attributes>symbol=component
 bg=#1E90FF
@@ -272,10 +272,10 @@ modbus_adapter_run_permitted</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>660</x>
-      <y>990</y>
-      <w>90</w>
-      <h>70</h>
+      <x>552</x>
+      <y>612</y>
+      <w>54</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=[subscribe]-(</panel_attributes>
@@ -284,10 +284,10 @@ lt=[subscribe]-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>840</x>
-      <y>320</y>
-      <w>110</w>
-      <h>600</h>
+      <x>660</x>
+      <y>204</y>
+      <w>60</w>
+      <h>366</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=()-
@@ -298,16 +298,30 @@ lt=()-
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;580.0</additional_attributes>
+    <additional_attributes>10.0;10.0;10.0;590.0</additional_attributes>
   </element>
   <element>
     <id>UMLGeneric</id>
     <coordinates>
-      <x>800</x>
-      <y>160</y>
-      <w>580</w>
-      <h>100</h>
+      <x>630</x>
+      <y>114</y>
+      <w>342</w>
+      <h>60</h>
     </coordinates>
     <panel_attributes>symbol=component
 bg=#1E90FF
@@ -318,10 +332,10 @@ stop1_executor</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1170</x>
-      <y>250</y>
-      <w>50</w>
-      <h>180</h>
+      <x>882</x>
+      <y>168</y>
+      <w>30</w>
+      <h>108</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=-(</panel_attributes>
@@ -330,10 +344,10 @@ lt=-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1270</x>
-      <y>250</y>
-      <w>50</w>
-      <h>180</h>
+      <x>942</x>
+      <y>168</y>
+      <w>30</w>
+      <h>108</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=-(</panel_attributes>
@@ -342,10 +356,10 @@ lt=-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>820</x>
-      <y>250</y>
-      <w>70</w>
-      <h>70</h>
+      <x>648</x>
+      <y>168</y>
+      <w>42</w>
+      <h>42</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=[Service]-(</panel_attributes>
@@ -354,10 +368,10 @@ lt=[Service]-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>70</x>
-      <y>1060</y>
-      <w>30</w>
-      <h>130</h>
+      <x>222</x>
+      <y>654</y>
+      <w>18</w>
+      <h>78</h>
     </coordinates>
     <panel_attributes>lt=&lt;.</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;110.0</additional_attributes>
@@ -365,21 +379,21 @@ lt=[Service]-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>70</x>
-      <y>1040</y>
-      <w>650</w>
-      <h>160</h>
+      <x>222</x>
+      <y>636</y>
+      <w>366</w>
+      <h>102</h>
     </coordinates>
     <panel_attributes>lt=&lt;.</panel_attributes>
-    <additional_attributes>630.0;10.0;630.0;70.0;10.0;140.0</additional_attributes>
+    <additional_attributes>590.0;10.0;590.0;80.0;10.0;150.0</additional_attributes>
   </element>
   <element>
     <id>UMLGeneric</id>
     <coordinates>
-      <x>280</x>
-      <y>900</y>
-      <w>210</w>
-      <h>100</h>
+      <x>348</x>
+      <y>558</y>
+      <w>126</w>
+      <h>60</h>
     </coordinates>
     <panel_attributes>symbol=component
 bg=#1E90FF
@@ -391,10 +405,10 @@ operation_mode</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>330</x>
-      <y>990</y>
-      <w>90</w>
-      <h>80</h>
+      <x>378</x>
+      <y>612</y>
+      <w>54</w>
+      <h>48</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=[subscribe]-(</panel_attributes>
@@ -403,10 +417,10 @@ lt=[subscribe]-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>70</x>
-      <y>1040</y>
-      <w>320</w>
-      <h>160</h>
+      <x>222</x>
+      <y>642</y>
+      <w>192</w>
+      <h>96</h>
     </coordinates>
     <panel_attributes>lt=&lt;.</panel_attributes>
     <additional_attributes>300.0;10.0;300.0;50.0;10.0;140.0</additional_attributes>
@@ -414,10 +428,10 @@ lt=[subscribe]-(</panel_attributes>
   <element>
     <id>UMLGeneric</id>
     <coordinates>
-      <x>1650</x>
-      <y>900</y>
-      <w>240</w>
-      <h>100</h>
+      <x>1170</x>
+      <y>558</y>
+      <w>144</w>
+      <h>60</h>
     </coordinates>
     <panel_attributes>symbol=component
 transparency=0
@@ -429,10 +443,10 @@ canopen_braketest_adapter</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1680</x>
-      <y>990</y>
-      <w>90</w>
-      <h>190</h>
+      <x>1188</x>
+      <y>612</y>
+      <w>54</w>
+      <h>114</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=[subscribe]-(</panel_attributes>
@@ -441,10 +455,10 @@ lt=[subscribe]-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>310</x>
-      <y>530</y>
-      <w>170</w>
-      <h>390</h>
+      <x>366</x>
+      <y>336</y>
+      <w>102</w>
+      <h>234</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=()-[Service]
@@ -454,10 +468,10 @@ lt=()-[Service]
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>320</x>
-      <y>70</y>
-      <w>280</w>
-      <h>480</h>
+      <x>372</x>
+      <y>60</y>
+      <w>168</w>
+      <h>288</h>
     </coordinates>
     <panel_attributes>lt=-(</panel_attributes>
     <additional_attributes>260.0;10.0;260.0;170.0;20.0;170.0;20.0;450.0</additional_attributes>
@@ -465,10 +479,10 @@ lt=()-[Service]
   <element>
     <id>UMLGeneric</id>
     <coordinates>
-      <x>1430</x>
-      <y>240</y>
-      <w>400</w>
-      <h>100</h>
+      <x>1038</x>
+      <y>162</y>
+      <w>240</w>
+      <h>60</h>
     </coordinates>
     <panel_attributes>symbol=component
 bg=#1E90FF
@@ -479,10 +493,10 @@ braketest_executor</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1540</x>
-      <y>180</y>
-      <w>160</w>
-      <h>80</h>
+      <x>1104</x>
+      <y>126</y>
+      <w>96</w>
+      <h>48</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=()-[Service]
@@ -492,10 +506,10 @@ lt=()-[Service]
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1690</x>
-      <y>500</y>
-      <w>150</w>
-      <h>420</h>
+      <x>1194</x>
+      <y>318</y>
+      <w>90</w>
+      <h>252</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=()-[Service]
@@ -505,10 +519,10 @@ lt=()-[Service]
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1470</x>
-      <y>330</y>
-      <w>50</w>
-      <h>160</h>
+      <x>1062</x>
+      <y>216</y>
+      <w>30</w>
+      <h>96</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=-(</panel_attributes>
@@ -517,10 +531,10 @@ lt=-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1570</x>
-      <y>330</y>
-      <w>50</w>
-      <h>160</h>
+      <x>1122</x>
+      <y>216</y>
+      <w>30</w>
+      <h>96</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=-(</panel_attributes>
@@ -529,10 +543,10 @@ lt=-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1700</x>
-      <y>330</y>
-      <w>50</w>
-      <h>180</h>
+      <x>1200</x>
+      <y>216</y>
+      <w>30</w>
+      <h>108</h>
     </coordinates>
     <panel_attributes>lt=-(</panel_attributes>
     <additional_attributes>20.0;10.0;20.0;150.0</additional_attributes>
@@ -540,10 +554,10 @@ lt=-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1200</x>
-      <y>470</y>
-      <w>310</w>
-      <h>100</h>
+      <x>900</x>
+      <y>300</y>
+      <w>186</w>
+      <h>60</h>
     </coordinates>
     <panel_attributes>lt=&lt;.</panel_attributes>
     <additional_attributes>290.0;10.0;10.0;80.0</additional_attributes>
@@ -551,10 +565,10 @@ lt=-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1300</x>
-      <y>470</y>
-      <w>310</w>
-      <h>110</h>
+      <x>960</x>
+      <y>300</y>
+      <w>186</w>
+      <h>66</h>
     </coordinates>
     <panel_attributes>lt=&lt;.</panel_attributes>
     <additional_attributes>290.0;10.0;290.0;90.0;10.0;90.0</additional_attributes>
@@ -562,10 +576,10 @@ lt=-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1550</x>
-      <y>70</y>
-      <w>50</w>
-      <h>110</h>
+      <x>1110</x>
+      <y>60</y>
+      <w>30</w>
+      <h>66</h>
     </coordinates>
     <panel_attributes>lt=-(</panel_attributes>
     <additional_attributes>20.0;10.0;20.0;80.0</additional_attributes>
@@ -573,10 +587,10 @@ lt=-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1180</x>
-      <y>420</y>
-      <w>30</w>
-      <h>130</h>
+      <x>888</x>
+      <y>270</y>
+      <w>18</w>
+      <h>78</h>
     </coordinates>
     <panel_attributes>lt=&lt;.</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;110.0</additional_attributes>
@@ -584,10 +598,10 @@ lt=-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1280</x>
-      <y>420</y>
-      <w>30</w>
-      <h>130</h>
+      <x>948</x>
+      <y>270</y>
+      <w>18</w>
+      <h>78</h>
     </coordinates>
     <panel_attributes>lt=&lt;.</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;110.0</additional_attributes>
@@ -595,10 +609,10 @@ lt=-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>930</x>
-      <y>250</y>
-      <w>50</w>
-      <h>170</h>
+      <x>738</x>
+      <y>168</y>
+      <w>30</w>
+      <h>102</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=-(</panel_attributes>
@@ -607,10 +621,10 @@ lt=-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1020</x>
-      <y>250</y>
-      <w>50</w>
-      <h>170</h>
+      <x>792</x>
+      <y>168</y>
+      <w>30</w>
+      <h>102</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=-(</panel_attributes>
@@ -619,10 +633,10 @@ lt=-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>110</x>
-      <y>1530</y>
-      <w>30</w>
-      <h>90</h>
+      <x>246</x>
+      <y>936</y>
+      <w>18</w>
+      <h>54</h>
     </coordinates>
     <panel_attributes>lt=&lt;..&gt;</panel_attributes>
     <additional_attributes>10.0;70.0;10.0;10.0</additional_attributes>
@@ -630,10 +644,10 @@ lt=-(</panel_attributes>
   <element>
     <id>UMLGeneric</id>
     <coordinates>
-      <x>460</x>
-      <y>490</y>
-      <w>270</w>
-      <h>100</h>
+      <x>456</x>
+      <y>312</y>
+      <w>162</w>
+      <h>60</h>
     </coordinates>
     <panel_attributes>symbol=component
 bg=#1E90FF
@@ -642,64 +656,12 @@ operation_mode_setup_executor</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
-    <id>UMLGeneric</id>
-    <coordinates>
-      <x>450</x>
-      <y>280</y>
-      <w>270</w>
-      <h>90</h>
-    </coordinates>
-    <panel_attributes>symbol=component
-bg=#1E90FF
-&lt;&lt;Node&gt;&gt;
-speed_observer</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>570</x>
-      <y>360</y>
-      <w>160</w>
-      <h>90</h>
-    </coordinates>
-    <panel_attributes>bg=#ADFF2F
-lt=()-[Service]
-/activate_speed_limits</panel_attributes>
-    <additional_attributes>30.0;70.0;30.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>580</x>
-      <y>430</y>
-      <w>50</w>
-      <h>80</h>
-    </coordinates>
-    <panel_attributes>bg=#ADFF2F
-lt=-(</panel_attributes>
-    <additional_attributes>20.0;60.0;20.0;20.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>710</x>
-      <y>310</y>
-      <w>160</w>
-      <h>40</h>
-    </coordinates>
-    <panel_attributes>bg=#ADFF2F
-lt=()-
-/run_permitted</panel_attributes>
-    <additional_attributes>140.0;20.0;10.0;20.0</additional_attributes>
-  </element>
-  <element>
     <id>UMLPackage</id>
     <coordinates>
-      <x>0</x>
-      <y>800</y>
-      <w>1930</w>
-      <h>420</h>
+      <x>180</x>
+      <y>498</y>
+      <w>1158</w>
+      <h>252</h>
     </coordinates>
     <panel_attributes>Hardware abstraction layer
 --
@@ -711,10 +673,10 @@ bg=light_gray</panel_attributes>
   <element>
     <id>UMLPackage</id>
     <coordinates>
-      <x>0</x>
-      <y>110</y>
-      <w>1940</w>
-      <h>630</h>
+      <x>180</x>
+      <y>84</y>
+      <w>1164</w>
+      <h>378</h>
     </coordinates>
     <panel_attributes>Safety logic
 --
@@ -725,10 +687,10 @@ transparency=100</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>130</x>
-      <y>630</y>
-      <w>170</w>
-      <h>290</h>
+      <x>258</x>
+      <y>396</y>
+      <w>102</w>
+      <h>174</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=()-[Service]
@@ -740,10 +702,10 @@ lt=()-[Service]
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>170</x>
-      <y>460</y>
-      <w>1300</w>
-      <h>200</h>
+      <x>282</x>
+      <y>294</y>
+      <w>780</w>
+      <h>120</h>
     </coordinates>
     <panel_attributes>lt=&lt;.</panel_attributes>
     <additional_attributes>1280.0;10.0;620.0;180.0;10.0;180.0</additional_attributes>
@@ -751,10 +713,10 @@ lt=()-[Service]
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1430</x>
-      <y>330</y>
-      <w>50</w>
-      <h>160</h>
+      <x>1038</x>
+      <y>216</y>
+      <w>30</w>
+      <h>96</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=-(</panel_attributes>
@@ -763,10 +725,10 @@ lt=-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>120</x>
-      <y>1190</y>
-      <w>130</w>
-      <h>270</h>
+      <x>252</x>
+      <y>732</y>
+      <w>78</w>
+      <h>162</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=()-[Service]
@@ -776,10 +738,10 @@ lt=()-[Service]
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>140</x>
-      <y>1060</y>
-      <w>30</w>
-      <h>190</h>
+      <x>264</x>
+      <y>654</y>
+      <w>18</w>
+      <h>114</h>
     </coordinates>
     <panel_attributes>lt=&lt;.</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;170.0</additional_attributes>
@@ -787,10 +749,10 @@ lt=()-[Service]
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>130</x>
-      <y>990</y>
-      <w>50</w>
-      <h>100</h>
+      <x>258</x>
+      <y>612</y>
+      <w>30</w>
+      <h>60</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=-(</panel_attributes>
@@ -799,10 +761,10 @@ lt=-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>400</x>
-      <y>650</y>
-      <w>150</w>
-      <h>270</h>
+      <x>420</x>
+      <y>408</y>
+      <w>90</w>
+      <h>162</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=()-[publish]
@@ -814,10 +776,10 @@ lt=()-[publish]
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>410</x>
-      <y>580</y>
-      <w>140</w>
-      <h>80</h>
+      <x>426</x>
+      <y>366</y>
+      <w>84</w>
+      <h>48</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=[subscribe]-(</panel_attributes>
@@ -826,23 +788,23 @@ lt=[subscribe]-(</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>360</x>
-      <y>410</y>
-      <w>180</w>
-      <h>100</h>
+      <x>564</x>
+      <y>204</y>
+      <w>96</w>
+      <h>120</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=()-[Service]
 /.../get_speed_override</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;50.0;140.0;80.0</additional_attributes>
+    <additional_attributes>30.0;10.0;30.0;180.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>430</x>
-      <y>0</y>
-      <w>1500</w>
-      <h>90</h>
+      <x>438</x>
+      <y>18</y>
+      <w>900</w>
+      <h>54</h>
     </coordinates>
     <panel_attributes>template=package: pilz_robot_programming
 lt=.</panel_attributes>
@@ -851,10 +813,10 @@ lt=.</panel_attributes>
   <element>
     <id>UMLGeneric</id>
     <coordinates>
-      <x>20</x>
-      <y>30</y>
-      <w>230</w>
-      <h>50</h>
+      <x>192</x>
+      <y>36</y>
+      <w>138</w>
+      <h>30</h>
     </coordinates>
     <panel_attributes>symbol=component
 bg=#FFD700
@@ -865,10 +827,10 @@ StatusIndicator
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>0</x>
-      <y>0</y>
-      <w>410</w>
-      <h>90</h>
+      <x>180</x>
+      <y>18</y>
+      <w>246</w>
+      <h>54</h>
     </coordinates>
     <panel_attributes>template=package: pilz_status_indicator_rqt
 lt=.</panel_attributes>
@@ -877,10 +839,10 @@ lt=.</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>200</x>
-      <y>70</y>
-      <w>260</w>
-      <h>590</h>
+      <x>300</x>
+      <y>60</y>
+      <w>156</w>
+      <h>354</h>
     </coordinates>
     <panel_attributes>lt=-(</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;490.0;230.0;540.0;230.0;560.0</additional_attributes>
@@ -888,10 +850,10 @@ lt=.</panel_attributes>
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>110</x>
-      <y>290</y>
-      <w>80</w>
-      <h>60</h>
+      <x>246</x>
+      <y>192</y>
+      <w>48</w>
+      <h>36</h>
     </coordinates>
     <panel_attributes>
 Not yet
@@ -902,10 +864,10 @@ bg=red</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>110</x>
-      <y>180</y>
-      <w>180</w>
-      <h>130</h>
+      <x>246</x>
+      <y>126</y>
+      <w>108</w>
+      <h>78</h>
     </coordinates>
     <panel_attributes>bg=#ADFF2F
 lt=()-[Publish]
@@ -917,10 +879,10 @@ lt=()-[Publish]
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>120</x>
-      <y>70</y>
-      <w>50</w>
-      <h>130</h>
+      <x>252</x>
+      <y>60</y>
+      <w>30</w>
+      <h>78</h>
     </coordinates>
     <panel_attributes>lt=-(</panel_attributes>
     <additional_attributes>20.0;10.0;20.0;100.0</additional_attributes>
@@ -928,10 +890,10 @@ lt=()-[Publish]
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>500</x>
-      <y>420</y>
-      <w>80</w>
-      <h>50</h>
+      <x>510</x>
+      <y>222</y>
+      <w>48</w>
+      <h>30</h>
     </coordinates>
     <panel_attributes>
 Not yet
@@ -942,10 +904,10 @@ bg=red</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>410</x>
-      <y>410</y>
-      <w>190</w>
-      <h>100</h>
+      <x>480</x>
+      <y>216</y>
+      <w>84</w>
+      <h>108</h>
     </coordinates>
     <panel_attributes>bg=light_gray
 transparency=100
@@ -953,17 +915,59 @@ lt=()..[publish]
 /.../speed_override
 
 </panel_attributes>
-    <additional_attributes>10.0;10.0;150.0;40.0;150.0;80.0</additional_attributes>
+    <additional_attributes>30.0;10.0;30.0;160.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>220</x>
-      <y>70</y>
-      <w>230</w>
-      <h>350</h>
+      <x>312</x>
+      <y>60</y>
+      <w>192</w>
+      <h>180</h>
     </coordinates>
     <panel_attributes>lt=..(</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;270.0;200.0;300.0;200.0;320.0</additional_attributes>
+    <additional_attributes>10.0;10.0;10.0;270.0;290.0;270.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>570</x>
+      <y>60</y>
+      <w>30</w>
+      <h>150</h>
+    </coordinates>
+    <panel_attributes>bg=#ADFF2F
+lt=-(</panel_attributes>
+    <additional_attributes>20.0;10.0;20.0;220.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>696</x>
+      <y>342</y>
+      <w>108</w>
+      <h>444</h>
+    </coordinates>
+    <panel_attributes>bg=#ADFF2F
+lt=()-[Service]
+/monitor_cartesian_speed
+
+
+
+
+</panel_attributes>
+    <additional_attributes>30.0;10.0;30.0;720.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>612</x>
+      <y>336</y>
+      <w>108</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>bg=#ADFF2F
+lt=-(</panel_attributes>
+    <additional_attributes>10.0;20.0;150.0;20.0</additional_attributes>
   </element>
 </diagram>
