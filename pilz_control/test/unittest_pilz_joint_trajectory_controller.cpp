@@ -46,8 +46,6 @@ static const std::string UNHOLD_SERVICE {"/unhold"};
 static const std::string IS_EXECUTING_SERVICE {"/is_executing"};
 static const std::string TRAJECTORY_COMMAND_TOPIC {"/command"};
 
-static constexpr unsigned int WAIT_FOR_MOVEMENT_STARTED_MSEC {1000};
-
 using namespace pilz_joint_trajectory_controller;
 
 using HWInterface = hardware_interface::PositionJointInterface;
@@ -119,7 +117,6 @@ testing::AssertionResult PilzJointTrajectoryControllerTest::isControllerInUnhold
   }
   return testing::AssertionSuccess();
 }
-
 
 ///////////////////////////////////////
 //    The actual tests start here    //
@@ -220,11 +217,7 @@ TEST_F(PilzJointTrajectoryControllerTest, testHoldSuccessAfterUnhold)
   std_srvs::TriggerResponse resp;
   // run async such that stop trajectory can be executed in the meantime
   std::future<bool> hold_future = manager_->triggerHoldAsync(req, resp);
-
-  std::chrono::milliseconds hold_timeout {WAIT_FOR_HOLD_FUTURE_MSEC};
-  EXPECT_TRUE(waitFor([&hold_future](){ return isFutureReady(hold_future); },
-                      hold_timeout,
-                      [this](){ robot_driver_.update(); }));
+  EXPECT_TRUE(updateUntilHoldMode<RobotDriver>(&robot_driver_, hold_future));
   EXPECT_TRUE(resp.success);
   EXPECT_TRUE(isControllerInHoldMode());
 }
@@ -246,10 +239,7 @@ TEST_F(PilzJointTrajectoryControllerTest, testDoubleHoldSuccess)
   // run async such that stop trajectory can be executed in the meantime
   std::future<bool> hold_future = manager_->triggerHoldAsync(req, resp);
 
-  std::chrono::milliseconds hold_timeout {WAIT_FOR_HOLD_FUTURE_MSEC};
-  EXPECT_TRUE(waitFor([&hold_future](){ return isFutureReady(hold_future); },
-                      hold_timeout,
-                      [this](){ robot_driver_.update(); }));
+  EXPECT_TRUE(updateUntilHoldMode<RobotDriver>(&robot_driver_, hold_future));
   EXPECT_TRUE(resp.success);
   EXPECT_TRUE(isControllerInHoldMode());
 
@@ -297,11 +287,7 @@ TEST_F(PilzJointTrajectoryControllerTest, testRepeatHoldAndUnholdSuccess)
     std_srvs::TriggerResponse resp;
     // run async such that stop trajectory can be executed in the meantime
     std::future<bool> hold_future = manager_->triggerHoldAsync(req, resp);
-
-    std::chrono::milliseconds hold_timeout {WAIT_FOR_HOLD_FUTURE_MSEC};
-    EXPECT_TRUE(waitFor([&hold_future](){ return isFutureReady(hold_future); },
-                        hold_timeout,
-                        [this](){ robot_driver_.update(); }));
+    EXPECT_TRUE(updateUntilHoldMode<RobotDriver>(&robot_driver_, hold_future));
     EXPECT_TRUE(resp.success);
     EXPECT_TRUE(isControllerInHoldMode());
 
@@ -326,20 +312,13 @@ TEST_F(PilzJointTrajectoryControllerTest, testHoldDuringGoalExecution)
   GoalType goal {generateSimpleGoal()};
   action_client_.sendGoal(goal);
 
-  std::chrono::milliseconds movement_timeout {WAIT_FOR_MOVEMENT_STARTED_MSEC};
-  EXPECT_TRUE(waitFor([this](){ return robot_driver_.isRobotMoving(); },
-                      movement_timeout,
-                      [this](){ robot_driver_.update(); }));
+  EXPECT_TRUE(updateUntilRobotMotion<RobotDriver>(&robot_driver_));
 
   std_srvs::TriggerRequest req;
   std_srvs::TriggerResponse resp;
   // run async such that stop trajectory can be executed in the meantime
   std::future<bool> hold_future = manager_->triggerHoldAsync(req, resp);
-
-  std::chrono::milliseconds hold_timeout {WAIT_FOR_HOLD_FUTURE_MSEC};
-  EXPECT_TRUE(waitFor([&hold_future](){ return isFutureReady(hold_future); },
-                      hold_timeout,
-                      [this](){ robot_driver_.update(); }));
+  EXPECT_TRUE(updateUntilHoldMode<RobotDriver>(&robot_driver_, hold_future));
   EXPECT_TRUE(resp.success);
   EXPECT_TRUE(isControllerInHoldMode());
 
@@ -359,10 +338,7 @@ TEST_F(PilzJointTrajectoryControllerTest, testGoalCancellingDuringHold)
   GoalType goal {generateSimpleGoal()};
   action_client_.sendGoal(goal);
 
-  std::chrono::milliseconds movement_timeout {WAIT_FOR_MOVEMENT_STARTED_MSEC};
-  EXPECT_TRUE(waitFor([this](){ return robot_driver_.isRobotMoving(); },
-                      movement_timeout,
-                      [this](){ robot_driver_.update(); }));
+  EXPECT_TRUE(updateUntilRobotMotion<RobotDriver>(&robot_driver_));
 
   std_srvs::TriggerRequest req;
   std_srvs::TriggerResponse resp;
@@ -370,15 +346,11 @@ TEST_F(PilzJointTrajectoryControllerTest, testGoalCancellingDuringHold)
   std::future<bool> hold_future = manager_->triggerHoldAsync(req, resp);
 
   // Sleep to make sure hold was triggered
-  std::chrono::milliseconds hold_timeout {WAIT_FOR_HOLD_FUTURE_MSEC};
-  std::this_thread::sleep_for(hold_timeout);
+  std::this_thread::sleep_for(HOLD_TIMEOUT);
   action_client_.cancelGoal();
   EXPECT_TRUE(action_client_.waitForActionResult());
   robot_driver_.update();
-
-  EXPECT_TRUE(waitFor([&hold_future](){ return isFutureReady(hold_future); },
-                      hold_timeout,
-                      [this](){ robot_driver_.update(); }));
+  EXPECT_TRUE(updateUntilHoldMode<RobotDriver>(&robot_driver_, hold_future));
   EXPECT_TRUE(resp.success);
   EXPECT_TRUE(isControllerInHoldMode());
 }
@@ -415,7 +387,7 @@ static testing::AssertionResult InvokeIsExecutingServiceCallback(const Controlle
  * @brief For testing both the isExecuting method and the is_executing service callback we use parameterized tests.
  */
 class PilzJointTrajectoryControllerIsExecutingTest : public testing::Test,
-                                                     public testing::WithParamInterface<InvokeIsExecuting>
+    public testing::WithParamInterface<InvokeIsExecuting>
 {
 protected:
   void SetUp() override;
@@ -503,10 +475,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testActionGoalExecution)
   GoalType goal {generateSimpleGoal()};
   action_client_.sendGoal(goal);
 
-  std::chrono::milliseconds movement_timeout {WAIT_FOR_MOVEMENT_STARTED_MSEC};
-  EXPECT_TRUE(waitFor([this](){ return robot_driver_.isRobotMoving(); },
-                      movement_timeout,
-                      [this](){ robot_driver_.update(); }));
+  EXPECT_TRUE(updateUntilRobotMotion<RobotDriver>(&robot_driver_));
 
   bool is_executing_result;
   EXPECT_TRUE(invokeIsExecuting(is_executing_result));
@@ -525,15 +494,12 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testTrajCommandExecution)
 
   ros::NodeHandle nh {"~"};
   ros::Publisher trajectory_command_publisher =
-    nh.advertise<trajectory_msgs::JointTrajectory>(CONTROLLER_NAMESPACE + TRAJECTORY_COMMAND_TOPIC, 1);
+      nh.advertise<trajectory_msgs::JointTrajectory>(CONTROLLER_NAMESPACE + TRAJECTORY_COMMAND_TOPIC, 1);
 
   GoalType goal {generateSimpleGoal()};
   trajectory_command_publisher.publish(goal.trajectory);
 
-  std::chrono::milliseconds movement_timeout {WAIT_FOR_MOVEMENT_STARTED_MSEC};
-  EXPECT_TRUE(waitFor([this](){ return robot_driver_.isRobotMoving(); },
-                      movement_timeout,
-                      [this](){ robot_driver_.update(); }));
+  EXPECT_TRUE(updateUntilRobotMotion<RobotDriver>(&robot_driver_));
 
   bool is_executing_result;
   EXPECT_TRUE(invokeIsExecuting(is_executing_result));
@@ -553,10 +519,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStopTrajExecutionAtHold
   GoalType goal {generateSimpleGoal()};
   action_client_.sendGoal(goal);
 
-  std::chrono::milliseconds movement_timeout {WAIT_FOR_MOVEMENT_STARTED_MSEC};
-  EXPECT_TRUE(waitFor([this](){ return robot_driver_.isRobotMoving(); },
-                      movement_timeout,
-                      [this](){ robot_driver_.update(); }));
+  EXPECT_TRUE(updateUntilRobotMotion<RobotDriver>(&robot_driver_));
 
   std_srvs::TriggerRequest req;
   std_srvs::TriggerResponse resp;
@@ -573,10 +536,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStopTrajExecutionAtHold
   EXPECT_TRUE(invokeIsExecuting(is_executing_result));
   EXPECT_TRUE(is_executing_result) << "Failed to detect stop trajectory execution";
 
-  std::chrono::milliseconds hold_timeout {WAIT_FOR_HOLD_FUTURE_MSEC};
-  EXPECT_TRUE(waitFor([&hold_future](){ return isFutureReady(hold_future); },
-                      hold_timeout,
-                      [this](){ robot_driver_.update(); }));
+  EXPECT_TRUE(updateUntilHoldMode<RobotDriver>(&robot_driver_, hold_future));
   EXPECT_TRUE(resp.success);
 
   EXPECT_TRUE(invokeIsExecuting(is_executing_result));

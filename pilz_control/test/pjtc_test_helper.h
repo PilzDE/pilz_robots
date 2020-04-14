@@ -45,7 +45,8 @@ static constexpr double GOAL_TIME_TOLERANCE_SEC {0.01};
 static constexpr double TIME_SIMULATION_START_SEC {0.1};
 static constexpr double DEFAULT_UPDATE_PERIOD_SEC {0.008};
 static constexpr unsigned int SLEEP_TIME_MSEC {5};
-static constexpr unsigned int WAIT_FOR_HOLD_FUTURE_MSEC {1000};
+static constexpr std::chrono::milliseconds HOLD_TIMEOUT {1000};
+static constexpr std::chrono::milliseconds MOVEMENT_TIMEOUT {1000};
 
 using UpdateFunc = std::function<void()>;
 using GoalType = control_msgs::FollowJointTrajectoryGoal;
@@ -140,6 +141,23 @@ static bool waitFor(const std::function<bool()>& is_condition_fulfilled,
   return false;
 }
 
+template<class RobotDriver>
+static bool updateUntilHoldMode(RobotDriver* robot_driver,
+                                const std::future<bool>& hold_future,
+                                const std::chrono::milliseconds hold_timeout = HOLD_TIMEOUT)
+{
+  return waitFor([&hold_future](){ return isFutureReady(hold_future); },
+  hold_timeout, [robot_driver](){ robot_driver->update(); });
+}
+
+template<class RobotDriver>
+static bool updateUntilRobotMotion(RobotDriver* robot_driver,
+                                   const std::chrono::milliseconds movement_timeout = MOVEMENT_TIMEOUT)
+{
+  return waitFor([robot_driver](){ return robot_driver->isRobotMoving(); },
+  movement_timeout, [robot_driver](){ robot_driver->update(); });
+}
+
 /**
  * @brief Perform init, start, unhold and update, such that controller is ready for executing.
  */
@@ -155,16 +173,15 @@ static testing::AssertionResult performFullControllerStartup(RobotDriver* robot_
   manager->startController();
 
   std::function<bool()> is_unhold_successful {[&manager]()
-  {
-    std_srvs::TriggerRequest req;
-    std_srvs::TriggerResponse resp;
-    manager->triggerUnHold(req, resp);
-    return resp.success;
-  }};
+    {
+      std_srvs::TriggerRequest req;
+      std_srvs::TriggerResponse resp;
+      manager->triggerUnHold(req, resp);
+      return resp.success;
+    }};
 
   // unhold will only be successful after hold is reached
-  std::chrono::milliseconds hold_timeout {WAIT_FOR_HOLD_FUTURE_MSEC};
-  if (!waitFor(is_unhold_successful, hold_timeout, [robot_driver](){ robot_driver->update(); }))
+  if (!waitFor(is_unhold_successful, HOLD_TIMEOUT, [robot_driver](){ robot_driver->update(); }))
   {
     return testing::AssertionFailure() << "Unholding the controller failed.";
   }

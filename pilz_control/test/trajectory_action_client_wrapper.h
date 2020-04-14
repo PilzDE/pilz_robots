@@ -77,27 +77,27 @@ private:
 };
 
 
-TrajectoryActionClientWrapper::TrajectoryActionClientWrapper(const std::string& action_name)
+inline TrajectoryActionClientWrapper::TrajectoryActionClientWrapper(const std::string& action_name)
 {
   action_client_.reset( new ActionClient(action_name, true));
 }
 
-void TrajectoryActionClientWrapper::sendGoal(const Goal& goal)
+inline void TrajectoryActionClientWrapper::sendGoal(const Goal& goal)
 {
   action_client_->sendGoal(goal);
 }
 
-void TrajectoryActionClientWrapper::cancelGoal()
+inline void TrajectoryActionClientWrapper::cancelGoal()
 {
   action_client_->cancelGoal();
 }
 
-TrajectoryActionClientWrapper::ResultConstPtr TrajectoryActionClientWrapper::getResult() const
+inline TrajectoryActionClientWrapper::ResultConstPtr TrajectoryActionClientWrapper::getResult() const
 {
   return action_client_->getResult();
 }
 
-bool TrajectoryActionClientWrapper::waitForActionServer(const std::chrono::milliseconds& timeout)
+inline bool TrajectoryActionClientWrapper::waitForActionServer(const std::chrono::milliseconds& timeout)
 {
   return waitFor([this](){ return action_client_->isServerConnected(); }, timeout);
 }

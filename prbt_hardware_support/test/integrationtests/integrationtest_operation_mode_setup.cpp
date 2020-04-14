@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <utility>
+
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
@@ -42,7 +44,26 @@ static constexpr uint32_t DEFAULT_QUEUE_SIZE {10};
 static constexpr double EXPECTED_SPEED_OVERRIDE_AUTO {1.0};
 static constexpr double EXPECTED_SPEED_OVERRIDE_T1 {0.1};
 
-//! @brief Provides the monitor_cartesian_speed service. Redirects service calls to a mock method.
+struct TestData
+{
+  constexpr TestData(const uint8_t op_mode_, const bool expected_request_data_, const double expected_speed_override_)
+    : op_mode(op_mode_)
+    , expected_request_data(expected_request_data_)
+    , expected_speed_override(expected_speed_override_)
+  {
+
+  }
+
+  const uint8_t op_mode;
+
+  const bool expected_request_data;
+  const double expected_speed_override;
+};
+
+static constexpr TestData OP_MODE_T1_TEST_DATA {OperationModes::T1, true, EXPECTED_SPEED_OVERRIDE_T1};
+static constexpr TestData OP_MODE_AUTO_TEST_DATA {OperationModes::AUTO, false, EXPECTED_SPEED_OVERRIDE_AUTO};
+
+//! @brief Provides the monitor_cartesian_speed service.
 class ControllerMock
 {
 public:
@@ -66,17 +87,18 @@ void ControllerMock::advertiseService()
  *
  * Complement the unittest of the operation_mode_setup_executor by covering the respective node.
  */
-class OperationModeSetupTest : public testing::Test, public testing::AsyncTest
+class OperationModeSetupTest : public testing::Test, public testing::AsyncTest,
+    public testing::WithParamInterface<TestData>
 {
+public:
+  void SetUp() override;
+
 protected:
   using OperationModes = prbt_hardware_support::OperationModes;
   using GetSpeedOverride = pilz_msgs::GetSpeedOverride;
 
 protected:
-  //! @brief Setup and wait for all connections.
-  void initialize();
-  void advertiseAll();
-  testing::AssertionResult isSpeedOverride(const double& expected_speed_override);
+  testing::AssertionResult isSpeedOverrideEqualTo(const double& expected_speed_override);
 
 protected:
   ros::NodeHandle nh_;
@@ -85,21 +107,18 @@ protected:
   ros::ServiceClient get_speed_override_client_;
 };
 
-void OperationModeSetupTest::initialize()
-{
-  waitForNode(OPERATON_MODE_SETUP_EXECUTOR_NODE_NAME);
-  advertiseAll();
-  ros::service::waitForService(GET_SPEED_OVERRIDE_SERVICE);
-  waitForSubscriber(operation_mode_pub_);
-}
 
-void OperationModeSetupTest::advertiseAll()
+void OperationModeSetupTest::SetUp()
 {
   controller_mock_.advertiseService();
   operation_mode_pub_ = nh_.advertise<OperationModes>(OPERATION_MODE_TOPIC, DEFAULT_QUEUE_SIZE, true);
+
+  ASSERT_TRUE(waitForNode(OPERATON_MODE_SETUP_EXECUTOR_NODE_NAME));
+  ASSERT_TRUE(ros::service::waitForService(GET_SPEED_OVERRIDE_SERVICE));
+  ASSERT_TRUE(waitForSubscriber(operation_mode_pub_));
 }
 
-testing::AssertionResult OperationModeSetupTest::isSpeedOverride(const double& expected_speed_override)
+testing::AssertionResult OperationModeSetupTest::isSpeedOverrideEqualTo(const double& expected_speed_override)
 {
   if (!get_speed_override_client_.isValid())
   {
@@ -119,55 +138,37 @@ testing::AssertionResult OperationModeSetupTest::isSpeedOverride(const double& e
   return testing::AssertionSuccess();
 }
 
-TEST_F(OperationModeSetupTest, testNodeInitialization)
-{
-  initialize();
-  SUCCEED();
-}
-
 using testing::_;
 using testing::DoAll;
 using testing::Field;
 using testing::Return;
 using testing::SetArgReferee;
 
-TEST_F(OperationModeSetupTest, testOperationModeAuto)
+/**
+ * @brief Tests that the  Cartesian speed monitoring is activated or de-activated depending on the operation mode.
+ */
+TEST_P(OperationModeSetupTest, testSpeedMonitoringActivation)
 {
-  initialize();
+  const auto test_data {GetParam()};
 
   std_srvs::SetBoolResponse response;
   response.success = true;
-  EXPECT_CALL(controller_mock_, monitor_cartesian_speed_callback_(Field(&std_srvs::SetBoolRequest::data, false), _))
-    .WillOnce(DoAll(SetArgReferee<1>(response), ACTION_OPEN_BARRIER(MONITOR_CARTESIAN_SPEED_CALLBACK_EVENT)));
+  EXPECT_CALL(controller_mock_, monitor_cartesian_speed_callback_(Field(&std_srvs::SetBoolRequest::data,
+                                                                        test_data.expected_request_data), _))
+      .WillOnce(DoAll(SetArgReferee<1>(response), ACTION_OPEN_BARRIER(MONITOR_CARTESIAN_SPEED_CALLBACK_EVENT)));
 
   OperationModes msg;
-  msg.value = OperationModes::AUTO;
+  msg.value = test_data.op_mode;
   msg.time_stamp = ros::Time::now();
   operation_mode_pub_.publish(msg);
   
   BARRIER(MONITOR_CARTESIAN_SPEED_CALLBACK_EVENT);
 
-  EXPECT_TRUE(isSpeedOverride(EXPECTED_SPEED_OVERRIDE_AUTO));
+  EXPECT_TRUE(isSpeedOverrideEqualTo(test_data.expected_speed_override));
 }
 
-TEST_F(OperationModeSetupTest, testOperationModeT1)
-{
-  initialize();
-
-  std_srvs::SetBoolResponse response;
-  response.success = true;
-  EXPECT_CALL(controller_mock_, monitor_cartesian_speed_callback_(Field(&std_srvs::SetBoolRequest::data, true), _))
-    .WillOnce(DoAll(SetArgReferee<1>(response), ACTION_OPEN_BARRIER(MONITOR_CARTESIAN_SPEED_CALLBACK_EVENT)));
-
-  OperationModes msg;
-  msg.value = OperationModes::T1;
-  msg.time_stamp = ros::Time::now();
-  operation_mode_pub_.publish(msg);
-  
-  BARRIER(MONITOR_CARTESIAN_SPEED_CALLBACK_EVENT);
-
-  EXPECT_TRUE(isSpeedOverride(EXPECTED_SPEED_OVERRIDE_T1));
-}
+INSTANTIATE_TEST_CASE_P(TestActivationOfSpeedMonitoring, OperationModeSetupTest,
+                        testing::Values(OP_MODE_AUTO_TEST_DATA, OP_MODE_T1_TEST_DATA));
 
 }  // namespace prbt_hardware_support
 
