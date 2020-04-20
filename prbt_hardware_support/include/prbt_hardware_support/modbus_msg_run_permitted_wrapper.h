@@ -15,12 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MODBUS_MSG_STO_WRAPPER_H
-#define MODBUS_MSG_STO_WRAPPER_H
+#ifndef MODBUS_MSG_RUN_PERMITTED_WRAPPER_H
+#define MODBUS_MSG_RUN_PERMITTED_WRAPPER_H
 
 #include <prbt_hardware_support/modbus_api_definitions.h>
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
-#include <prbt_hardware_support/modbus_msg_sto_wrapper_exception.h>
+#include <prbt_hardware_support/modbus_msg_run_permitted_wrapper_exception.h>
 #include <prbt_hardware_support/modbus_msg_wrapper.h>
 
 namespace prbt_hardware_support
@@ -30,49 +30,49 @@ namespace prbt_hardware_support
  * @brief Wrapper class to add semantic to a raw ModbusMsgInStamped
  *
  * Allows to easy access to the content behind a raw modbus message which is assumed to contain
- * data about STO clearance.
+ * data about RUN_PERMITTED clearance.
  */
-class ModbusMsgStoWrapper : public ModbusMsgWrapper
+class ModbusMsgRunPermittedWrapper : public ModbusMsgWrapper
 {
 public:
-  ModbusMsgStoWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw, const ModbusApiSpec& api_spec);
+  ModbusMsgRunPermittedWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw, const ModbusApiSpec& api_spec);
 
   /**
    * @brief Calls ModbusMsgWrapper::checkStructuralIntegrity().
    *
-   * @throw ModbusMsgStoWrapperException if STO register is missing.
+   * @throw ModbusMsgRunPermittedStatusMissing if RUN_PERMITTED register is missing.
    */
   virtual void checkStructuralIntegrity() const override;
 
   /**
-   * @brief Get the STO from the Modbus message
+   * @brief Get the RUN_PERMITTED from the Modbus message
    *
-   * @return true if the STO is active (manipulator should stop)
-   * @return false if the STO is clear (manipulator can move)
+   * @return true if the RUN_PERMITTED is active (manipulator should stop)
+   * @return false if the RUN_PERMITTED is clear (manipulator can move)
    */
-  bool getSTO() const;
+  bool getRunPermitted() const;
 
 private:
   /**
-   * @brief Check if the message contains a STO definition
+   * @brief Check if the message contains a RUN_PERMITTED definition
    *
-   * @return true if a STO is defined
-   * @return false if there is no STO defined in the message
+   * @return true if a RUN_PERMITTED is defined
+   * @return false if there is no RUN_PERMITTED defined in the message
    */
-  bool hasSTO() const;
+  bool hasRunPermitted() const;
 
 };
 
-inline bool ModbusMsgStoWrapper::hasSTO() const
+inline bool ModbusMsgRunPermittedWrapper::hasRunPermitted() const
 {
-  return hasRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::STO));
+  return hasRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::RUN_PERMITTED));
 }
 
-inline bool ModbusMsgStoWrapper::getSTO() const
+inline bool ModbusMsgRunPermittedWrapper::getRunPermitted() const
 {
-  return getRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::STO));
+  return getRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::RUN_PERMITTED));
 }
 
 }
 
-#endif // MODBUS_MSG_STO_WRAPPER_H
+#endif // MODBUS_MSG_RUN_PERMITTED_WRAPPER_H

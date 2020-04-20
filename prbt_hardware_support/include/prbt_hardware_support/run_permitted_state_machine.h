@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PRBT_HARDWARE_SUPPORT_STO_STATE_MACHINE_H
-#define PRBT_HARDWARE_SUPPORT_STO_STATE_MACHINE_H
+#ifndef PRBT_HARDWARE_SUPPORT_RUN_PERMITTED_STATE_MACHINE_H
+#define PRBT_HARDWARE_SUPPORT_RUN_PERMITTED_STATE_MACHINE_H
 
 #include <queue>
 #include <string>
@@ -38,23 +38,23 @@ namespace prbt_hardware_support
 #define COLOR_GREEN "\033[32m"
 #define COLOR_GREEN_BOLD "\033[1;32m"
 
-#define STATE_ENTER_OUTPUT ROS_DEBUG_STREAM_NAMED("STOStateMachine", "Event: " << className(boost::core::demangle(typeid(ev).name())) \
+#define STATE_ENTER_OUTPUT ROS_DEBUG_STREAM_NAMED("RunPermittedStateMachine", "Event: " << className(boost::core::demangle(typeid(ev).name())) \
                                             << " - Entering: " << COLOR_GREEN_BOLD << className(boost::core::demangle(typeid(*this).name())) << COLOR_GREEN);
-#define STATE_EXIT_OUTPUT ROS_DEBUG_STREAM_NAMED("STOStateMachine", "Event: " << className(boost::core::demangle(typeid(ev).name())) \
+#define STATE_EXIT_OUTPUT ROS_DEBUG_STREAM_NAMED("RunPermittedStateMachine", "Event: " << className(boost::core::demangle(typeid(ev).name())) \
                                             << " - Leaving: " << className(boost::core::demangle(typeid(*this).name())));
-#define ACTION_OUTPUT ROS_DEBUG_STREAM_NAMED("STOStateMachine", "Event: " << className(boost::core::demangle(typeid(ev).name())) \
+#define ACTION_OUTPUT ROS_DEBUG_STREAM_NAMED("RunPermittedStateMachine", "Event: " << className(boost::core::demangle(typeid(ev).name())) \
                                         << " - Action: " << className(boost::core::demangle(typeid(*this).name())));
 
 /**
- * @brief An AsyncStoTask is represented by a task execution and a completion signalling.
+ * @brief An AsyncRunPermittedTask is represented by a task execution and a completion signalling.
  *
  * The separation of task execution and the completion signalling allows the task execution to be done asynchronously.
  * Both functions have the signature @code void() @endcode.
  */
-class AsyncStoTask
+class AsyncRunPermittedTask
 {
 public:
-  AsyncStoTask(const TServiceCallFunc &operation, const std::function<void()> &finished_handler)
+  AsyncRunPermittedTask(const TServiceCallFunc &operation, const std::function<void()> &finished_handler)
       : operation_(operation),
         finished_handler_(finished_handler)
   {}
@@ -84,7 +84,7 @@ private:
 };
 
 //! Define the task queue type
-using StoTaskQueue = std::queue<AsyncStoTask>;
+using RunPermittedTaskQueue = std::queue<AsyncRunPermittedTask>;
 
 namespace msm = boost::msm;
 namespace mpl = boost::mpl;
@@ -93,12 +93,12 @@ using namespace msm::front;
 /**
  * @brief Front-end state machine.
  *
- * Defines states, events, guards, actions and transitions. Pushes AsyncStoTask's on a task queue.
+ * Defines states, events, guards, actions and transitions. Pushes AsyncRunPermittedTask's on a task queue.
  *
  * @note
  * This code is not thread-safe.
  */
-class StoStateMachine_ : public msm::front::state_machine_def<StoStateMachine_>  // CRTP
+class RunPermittedStateMachine_ : public msm::front::state_machine_def<RunPermittedStateMachine_>  // CRTP
 {
 public:
   /**
@@ -109,7 +109,7 @@ public:
    * @param hold_operation The execution function of the hold-task.
    * @param unhold_operation The execution function of the unhold-task.
   */
-  StoStateMachine_(const TServiceCallFunc &recover_operation,
+  RunPermittedStateMachine_(const TServiceCallFunc &recover_operation,
                    const TServiceCallFunc &halt_operation,
                    const TServiceCallFunc &hold_operation,
                    const TServiceCallFunc &unhold_operation)
@@ -215,14 +215,14 @@ public:
   ////////////
 
   /**
-   * @brief Holds the updated sto value.
+   * @brief Holds the updated run_permitted value.
    */
-  struct sto_updated
+  struct run_permitted_updated
   {
-    sto_updated(const bool sto)
-        : sto_(sto){}
+    run_permitted_updated(const bool run_permitted)
+        : run_permitted_(run_permitted){}
 
-    bool sto_;
+    bool run_permitted_;
   };
 
   struct recover_done
@@ -241,21 +241,21 @@ public:
   // Guards //
   ////////////
 
-  struct sto_true
+  struct run_permitted_true
   {
     template <class EVT, class FSM, class SourceState, class TargetState>
     bool operator()(EVT const &evt, FSM &, SourceState &, TargetState &)
     {
-      return evt.sto_;
+      return evt.run_permitted_;
     }
   };
 
-  struct sto_false
+  struct run_permitted_false
   {
     template <class EVT, class FSM, class SourceState, class TargetState>
     bool operator()(EVT const &evt, FSM &, SourceState &, TargetState &)
     {
-      return !evt.sto_;
+      return !evt.run_permitted_;
     }
   };
 
@@ -275,7 +275,7 @@ public:
     {
       ACTION_OUTPUT
 
-      fsm.task_queue_.push(AsyncStoTask(fsm.recover_op_, [&fsm]() { fsm.process_event(recover_done()); }));
+      fsm.task_queue_.push(AsyncRunPermittedTask(fsm.recover_op_, [&fsm]() { fsm.process_event(recover_done()); }));
     }
   };
 
@@ -291,7 +291,7 @@ public:
     {
       ACTION_OUTPUT
 
-      fsm.task_queue_.push(AsyncStoTask(fsm.halt_op_, [&fsm]() { fsm.process_event(halt_done()); }));
+      fsm.task_queue_.push(AsyncRunPermittedTask(fsm.halt_op_, [&fsm]() { fsm.process_event(halt_done()); }));
     }
   };
 
@@ -307,7 +307,7 @@ public:
     {
       ACTION_OUTPUT
 
-      fsm.task_queue_.push(AsyncStoTask(fsm.hold_op_, [&fsm]() { fsm.process_event(hold_done()); }));
+      fsm.task_queue_.push(AsyncRunPermittedTask(fsm.hold_op_, [&fsm]() { fsm.process_event(hold_done()); }));
     }
   };
 
@@ -323,7 +323,7 @@ public:
     {
       ACTION_OUTPUT
 
-      fsm.task_queue_.push(AsyncStoTask(fsm.unhold_op_, [&fsm]() { fsm.process_event(unhold_done()); }));
+      fsm.task_queue_.push(AsyncRunPermittedTask(fsm.unhold_op_, [&fsm]() { fsm.process_event(unhold_done()); }));
     }
   };
 
@@ -334,29 +334,29 @@ public:
   struct transition_table : mpl::vector<
   //  Start                       Event          Target                      Action         Guard
   // +---------------------------+--------------+---------------------------+--------------+----------+
-  Row< RobotInactive             , sto_updated  , Enabling                  , recover_start, sto_true >,
-  Row< RobotInactive             , sto_updated  , none                      , none         , sto_false>,
-  Row< Enabling                  , sto_updated  , none                      , none         , sto_true >,
-  Row< Enabling                  , sto_updated  , StopRequestedDuringEnable , none         , sto_false>,
+  Row< RobotInactive             , run_permitted_updated  , Enabling                  , recover_start, run_permitted_true >,
+  Row< RobotInactive             , run_permitted_updated  , none                      , none         , run_permitted_false>,
+  Row< Enabling                  , run_permitted_updated  , none                      , none         , run_permitted_true >,
+  Row< Enabling                  , run_permitted_updated  , StopRequestedDuringEnable , none         , run_permitted_false>,
   Row< Enabling                  , recover_done , none                      , unhold_start , none     >,
   Row< Enabling                  , unhold_done  , RobotActive               , none         , none     >,
-  Row< StopRequestedDuringEnable , sto_updated  , none                      , none         , none     >,
+  Row< StopRequestedDuringEnable , run_permitted_updated  , none                      , none         , none     >,
   Row< StopRequestedDuringEnable , recover_done , Stopping                  , halt_start   , none     >,
   Row< StopRequestedDuringEnable , unhold_done  , Stopping                  , hold_start   , none     >,
-  Row< RobotActive               , sto_updated  , none                      , none         , sto_true >,
-  Row< RobotActive               , sto_updated  , Stopping                  , hold_start   , sto_false>,
-  Row< Stopping                  , sto_updated  , EnableRequestedDuringStop , none         , sto_true >,
+  Row< RobotActive               , run_permitted_updated  , none                      , none         , run_permitted_true >,
+  Row< RobotActive               , run_permitted_updated  , Stopping                  , hold_start   , run_permitted_false>,
+  Row< Stopping                  , run_permitted_updated  , EnableRequestedDuringStop , none         , run_permitted_true >,
   Row< Stopping                  , hold_done    , none                      , halt_start   , none     >,
   Row< Stopping                  , halt_done    , RobotInactive             , none         , none     >,
   Row< EnableRequestedDuringStop , hold_done    , none                      , halt_start   , none     >,
   Row< EnableRequestedDuringStop , halt_done    , Enabling                  , recover_start, none     >,
-  Row< EnableRequestedDuringStop , sto_updated  , Stopping                  , none         , sto_false>,
-  Row< EnableRequestedDuringStop , sto_updated  , none                      , none         , sto_true >
+  Row< EnableRequestedDuringStop , run_permitted_updated  , Stopping                  , none         , run_permitted_false>,
+  Row< EnableRequestedDuringStop , run_permitted_updated  , none                      , none         , run_permitted_true >
   // +---------------------------+--------------+---------------------------+--------------+----------+
   > {};
 
   //! The task queue
-  StoTaskQueue task_queue_;
+  RunPermittedTaskQueue task_queue_;
 
   //! The recover operation
   TServiceCallFunc recover_op_;
@@ -372,8 +372,8 @@ public:
 };
 
 //! The top-level (back-end) state machine
-typedef msm::back::state_machine<StoStateMachine_> StoStateMachine;
+typedef msm::back::state_machine<RunPermittedStateMachine_> RunPermittedStateMachine;
 
 } // namespace prbt_hardware_support
 
-#endif // PRBT_HARDWARE_SUPPORT_STO_STATE_MACHINE_H
+#endif // PRBT_HARDWARE_SUPPORT_RUN_PERMITTED_STATE_MACHINE_H

@@ -143,7 +143,7 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
 
   ModbusApiSpec api_spec {nh_};
 
-  unsigned int modbus_register_size {api_spec.getMaxRegisterDefinition() + 1U};
+  unsigned int const modbus_register_size {api_spec.getMaxRegisterDefinition() + 1U};
 
   /**********
    * Step 1 *
@@ -160,10 +160,10 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
    * Step 2 *
    **********/
   ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::VERSION));
-  unsigned int version_register = api_spec.getRegisterDefinition(modbus_api_spec::VERSION);
+  unsigned int const version_register = api_spec.getRegisterDefinition(modbus_api_spec::VERSION);
 
   ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
-  unsigned int braketest_register = api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST);
+  unsigned int const braketest_register = api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST);
 
   modbus_server.setHoldingRegister({{braketest_register, 1}, {version_register, MODBUS_API_VERSION_VALUE}});
 
@@ -177,10 +177,10 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
   /**********
    * Step 3 *
    **********/
-  ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::STO));
-  unsigned int sto_register = api_spec.getRegisterDefinition(modbus_api_spec::STO);
+  ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::RUN_PERMITTED));
+  unsigned int const run_permitted_register = api_spec.getRegisterDefinition(modbus_api_spec::RUN_PERMITTED);
 
-  modbus_server.setHoldingRegister({{sto_register, 1}});
+  modbus_server.setHoldingRegister({{run_permitted_register, 1}});
 
   EXPECT_TRUE(expectBrakeTestRequiredServiceCallResult(
                 is_brake_test_required_client, pilz_msgs::IsBrakeTestRequiredResult::REQUIRED));

@@ -28,10 +28,13 @@
   <arg name="gripper" default="" />
 
   <!-- add sequence capabilities for pilz_command_planner pipeline -->
-  <arg name="_capabilities" value="$(arg capabilities)" unless="$(eval arg('pipeline')=='pilz_command_planner')" />
+  <arg name="_capabilities" value="$(arg capabilities)" unless="$(eval arg('pipeline')=='pilz_command_planner' or arg('pipeline')=='pilz_industrial_motion_planner')" />
   <arg name="_capabilities"
        value="$(arg capabilities) pilz_trajectory_generation/MoveGroupSequenceAction pilz_trajectory_generation/MoveGroupSequenceService"
        if="$(eval arg('pipeline')=='pilz_command_planner')" />
+  <arg name="_capabilities"
+       value="$(arg capabilities) pilz_industrial_motion_planner/MoveGroupSequenceAction pilz_industrial_motion_planner/MoveGroupSequenceService"
+       if="$(eval arg('pipeline')=='pilz_industrial_motion_planner')" />
 
   <!-- load robot models -->
   <include file="$(find prbt_moveit_config)/launch/planning_context.launch" >

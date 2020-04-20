@@ -1,28 +1,28 @@
 <?xml version="1.0"?>
 <launch>
+  <!-- HW related settings ======================================================================================== -->
   <!-- gripper e.g. pg70. See documentation of meta-package prbt_grippers -->
   <arg name="gripper" default="" />
 
+  <!-- Configure modbus settings depending on the configured safety hardware -->
+  <arg name="safety_hw" default="pss4000"/>
+  <arg name="read_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_read_api_spec_$(arg safety_hw).yaml" />
+  <arg name="write_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_write_api_spec_$(arg safety_hw).yaml" />
+  <arg name="modbus_server_ip" default="$(eval '192.168.0.10' if safety_hw=='pss4000' else '169.254.60.1')" />
+
+  <!-- Options to enable and disable different hardware aspects -->
+  <arg name="has_braketest_support" default="true"/>
+  <arg name="has_operation_mode_support" default="true"/>
+  <arg name="visual_status_indicator" default="true"/>
+
+  <!-- Path to the config file for canopen_motor_node -->
+  <arg name="canopen_config" default="$(find prbt_support)/config/manipulator_driver.yaml" />
+
+
+  <!-- Control related settings =================================================================================== -->
   <!-- load description to the parameter server. If you wrote your own xacro model, you can load it yourself
        and set load_robot_description to false -->
   <arg name="load_robot_description" default="true" />
-
-  <!-- safe-torque-off-input from the safety controller is read to do a stop1 -->
-  <!-- The signal is read via modbus and you can configure the modbus server ip -->
-  <arg name="sto" default="pnoz"/>
-  <arg name="read_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_read_api_spec_$(arg sto).yaml" />
-  <arg name="write_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_write_api_spec_$(arg sto).yaml" />
-  <arg name="sto_modbus_server_ip" default="$(eval '192.168.0.10' if sto=='pss4000' else '169.254.60.1')" />
-
-  <!-- Set braketest usage -->
-  <arg name="has_braketest_support" default="false"/>
-
-  <!-- Set operation mode support -->
-  <arg name="has_operation_mode_support" default="false"/>
-
-  <!-- set the name of the config file for canopen_motor_node. If you want to change settings, copy the yaml
-       file into your package and set canopen_config to your new config file path -->
-  <arg name="canopen_config" default="$(find prbt_support)/config/manipulator_driver.yaml" />
 
   <!-- manipulator_controller.yaml defines different types of controllers and you can select which ones
        are automatically started.
@@ -36,57 +36,64 @@
   <param name="robot_description" if="$(arg load_robot_description)"
     command="$(find xacro)/xacro --inorder '$(find prbt_support)/urdf/prbt.xacro' gripper:=$(arg gripper)" />
 
+
+  <!-- Starting nodes ============================================================================================= -->
   <!-- robot state publisher -->
   <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" />
 
   <!-- relay to /joint_states -->
   <node ns="prbt" name="joint_state_relay" pkg="topic_tools" type="relay" args="/prbt/joint_states /joint_states"/>
 
-  <!-- start the driver -->
+  <!-- Start the driver -->
   <node ns="prbt" name="driver" pkg="canopen_motor_node" type="canopen_motor_node" output="screen" clear_params="true">
     <rosparam command="load" file="$(arg canopen_config)" />
 
-    <!-- allow can grippers to interfere with the canopen_motor_node parameters -->
+    <!-- Allow can grippers to interfere with the canopen_motor_node parameters -->
     <rosparam unless="$(eval not arg('gripper'))" command="load"
               file="$(eval find('prbt_'+ gripper + '_support') + '/config/gripper_driver_canopen_motor_node.yaml')" />
   </node>
 
-  <!-- load controller configuration -->
+  <!-- Load controller configuration -->
   <rosparam ns="prbt" command="load" file="$(find prbt_support)/config/manipulator_controller.yaml" />
   <rosparam unless="$(eval not arg('gripper'))" ns="prbt" command="load"
             file="$(eval find('prbt_'+ gripper + '_support') + '/config/gripper_controller.yaml')" />
 
-  <!-- spawn controllers -->
-  <node ns="prbt" name="controller_spawner" pkg="controller_manager" type="spawner"
-        args="$(arg spawn_controllers)" />
+  <!-- Spawn controllers -->
+  <node ns="prbt" name="controller_spawner" pkg="controller_manager" type="spawner" args="$(arg spawn_controllers)" />
+  <include file="$(find prbt_hardware_support)/launch/stop1_executor_node.launch" />
 
-  <!-- Initialize controllers and start STO-processing (if configured) -->
-  <group unless="$(eval sto.lower() == 'none')" >
-    <!-- Load api spec for all nodes -->
-    <rosparam ns="/prbt/read_api_spec" command="load" file="$(arg read_api_spec_file)" />
-    <rosparam ns="/prbt/write_api_spec" command="load" file="$(arg write_api_spec_file)" if="$(arg has_operation_mode_support)" />
+  <!-- Initialize driver -->
+  <node pkg="rosservice" type="rosservice" name="robot_init" args="call --wait /prbt/driver/init"/>
 
-    <node pkg="rosservice" type="rosservice" name="robot_init" args="call --wait /prbt/driver/init"/>
+  <!-- Read modbus register specifications -->
+  <rosparam ns="/prbt/read_api_spec" command="load" file="$(arg read_api_spec_file)" />
+  <rosparam ns="/prbt/write_api_spec" command="load" file="$(arg write_api_spec_file)" if="$(arg has_operation_mode_support)" />
+
+  <!-- Open modbus connection and required modules -->
+    <!-- Modbus connection -->  
     <include file="$(find prbt_hardware_support)/launch/modbus_client.launch">
-      <arg name="modbus_server_ip" value="$(arg sto_modbus_server_ip)" />
+      <arg name="modbus_server_ip" value="$(arg modbus_server_ip)" />
     </include>
-    <include file="$(find prbt_hardware_support)/launch/modbus_adapter_sto_node.launch" />
-    <include file="$(find prbt_hardware_support)/launch/stop1_executor_node.launch" />
+    <!-- Run permitted -->
+    <include file="$(find prbt_hardware_support)/launch/modbus_adapter_run_permitted_node.launch" />
+
+    <!-- Brake test -->
     <include if="$(arg has_braketest_support)" file="$(find prbt_hardware_support)/launch/brake_test.launch">
       <arg name="write_api_spec_file" value="$(arg write_api_spec_file)" />
     </include>
 
-    <include if="$(arg has_operation_mode_support)" file="$(find prbt_hardware_support)/launch/operation_mode.launch" />
-    <group unless="$(arg has_operation_mode_support)">
-      <node name="fake_speed_override_node" pkg="prbt_hardware_support" type="fake_speed_override_node"/>
-    </group>
-  </group>
+    <!-- Operation Mode -->
+    <include if="$(arg has_operation_mode_support)" 
+             file="$(find prbt_hardware_support)/launch/operation_mode.launch" />
+    <node unless="$(arg has_operation_mode_support)" 
+          pkg="prbt_hardware_support" name="fake_speed_override_node" type="fake_speed_override_node"/>
+  <!---->
 
-  <group if="$(eval sto.lower() == 'none')" >
-    <node pkg="rosservice" type="rosservice" name="robot_init" args="call --wait /prbt/driver/init"/>
-  </group>
+  <!-- Status Indicator -->
+  <node pkg="pilz_status_indicator_rqt" name="pilz_status_indicator_rqt" type="pilz_status_indicator_rqt" 
+        if="$(arg visual_status_indicator)" />
 
-  <node ns="prbt" pkg="prbt_hardware_support" name="system_info_node"
-        type="system_info_node" output="screen" />
+  <!-- System info node to output robot firmware version to console -->
+  <node ns="prbt" pkg="prbt_hardware_support" name="system_info_node" type="system_info_node" output="screen" />
 
 </launch>

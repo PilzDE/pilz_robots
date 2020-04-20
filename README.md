@@ -16,17 +16,17 @@ sudo apt install ros-melodic-pilz-robots
 
 ### Build Status
 
-#### Branching model
-`melodic-devel` is considered to be the active development branch.
-Relevant changes are cherry-picked into `kinetic-devel` on a case-by-case basis.
-
-#### Travis
-
 |   | Kinetic | Melodic |
 | ----| --------|-------- |
 | Travis  | [![Build Status](https://travis-ci.org/PilzDE/pilz_robots.svg?branch=kinetic-devel)](https://travis-ci.org/PilzDE/pilz_robots) | [![Build Status](https://travis-ci.org/PilzDE/pilz_robots.svg?branch=melodic-devel)](https://travis-ci.org/PilzDE/pilz_robots) |
 | Buildfarm src | [![buildfarm](http://build.ros.org/buildStatus/icon?job=Ksrc_uX__pilz_robots__ubuntu_xenial__source)](http://build.ros.org/view/Ksrc_uX/job/Ksrc_uX__pilz_robots__ubuntu_xenial__source/) | [![buildfarm](http://build.ros.org/buildStatus/icon?job=Msrc_uB__pilz_robots__ubuntu_bionic__source)](http://build.ros.org/view/Msrc_uB/job/Msrc_uB__pilz_robots__ubuntu_bionic__source/) |
-| Buildfarm bin | [![buildfarm](http://build.ros.org/buildStatus/icon?job=Kbin_uX64__pilz_robots__ubuntu_xenial_amd64__binary)](http://build.ros.org/view/Kbin_uX64/job/Kbin_uX64__pilz_robots__ubuntu_xenial_amd64__binary/) | [![buildfarm](http://build.ros.org/buildStatus/icon?job=Mbin_uB64__pilz_robots__ubuntu_bionic_amd64__binary)](http://build.ros.org/view/Mbin_uB64/job/Mbin_uB64__pilz_robots__ubuntu_bionic_amd64__binary/)| 
+| Buildfarm bin | [![buildfarm](http://build.ros.org/buildStatus/icon?job=Kbin_uX64__pilz_robots__ubuntu_xenial_amd64__binary)](http://build.ros.org/view/Kbin_uX64/job/Kbin_uX64__pilz_robots__ubuntu_xenial_amd64__binary/) | [![buildfarm](http://build.ros.org/buildStatus/icon?job=Mbin_uB64__pilz_robots__ubuntu_bionic_amd64__binary)](http://build.ros.org/view/Mbin_uB64/job/Mbin_uB64__pilz_robots__ubuntu_bionic_amd64__binary/)|
+
+#### Branching model
+`melodic-devel` is considered to be the active development branch.
+Relevant changes are cherry-picked into `kinetic-devel` on a case-by-case basis.
+
+
 
 ## Package: prbt_support
 The package contains the robot description of the PRBT manipulator.
@@ -81,8 +81,8 @@ The launch file allows to set optional parameters
        it inside your package folder, set the path and file name here.
 * `gripper` (default: None) <br>
     See [Running the prbt with a gripper](#running-the-prbt-with-a-gripper)
-* `sto` (default: pnoz)<br>
-    Connect to the safety controller that handles the safe-torque-off signal. 
+* `safety_hw` (default: pss4000)<br>
+    Connect to the safety controller that handles the safe-torque-off signal.
 	Only relevant for `sim:=False` to issue a Safe stop 1.
 	See [prbt_hardware_support package](prbt_hardware_support/README.md).
 
@@ -118,7 +118,7 @@ then replace the pipeline in the above command by `pipeline:=pilz_command_planne
 If you've created an application package with your own launch file as described in the
 [tutorials](https://wiki.ros.org/pilz_robots/Tutorials/ModelYourApplicationWithPRBT#Create_your_application_ROS_package),
 you can easily adjust many other configuration parameters.
-See the template and comments in the [pilz_tutorials package](https://github.com/PilzDE/pilz_tutorials).
+See the comments in the [pilz_tutorials package](https://github.com/PilzDE/pilz_tutorials) and templates in the [pilz_templates repo](https://github.com/PilzDE/pilz_templates).
 
 ### Running the prbt with a gripper
 Currently only the Schunk pg70 is supported. To run it, first install the package:
@@ -149,7 +149,7 @@ This package provides support for the Pilz hardware PNOZmulti and PSS4000. A con
 Provides a launch file to run the prbt manipulator inside gazebo.
 
 ## Package: pilz_status_indicator_rqt
-This package defines an rqt-plugin to display information about the robots state to the user. 
+This package defines an rqt-plugin to display information about the robots state to the user.
 It will show:
 * Current operation mode
 * Operation state of the robot (PRBT)

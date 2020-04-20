@@ -27,7 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <arg name="modbus_server_ip" default="127.0.0.1"/>
 <arg name="modbus_server_port" default="20704"/>
 
-<arg name="safety_hw" default="pnoz" />
+<arg name="safety_hw" default="pss4000" />
 <rosparam ns="read_api_spec" command="load" file="$(find prbt_hardware_support)/config/modbus_read_api_spec_$(arg safety_hw).yaml" />
 
 <node name="pilz_modbus_client_node" pkg="prbt_hardware_support" type="pilz_modbus_client_node">
@@ -36,7 +36,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   <param name="modbus_response_timeout" value="100"/>
 </node>
 
-<node name="modbus_adapter_sto_node" pkg="prbt_hardware_support" type="modbus_adapter_sto_node">
+<node name="modbus_adapter_run_permitted_node" pkg="prbt_hardware_support" type="modbus_adapter_run_permitted_node">
 </node>
 <node name="stop1_executor_node" pkg="prbt_hardware_support" type="stop1_executor_node">
 </node>

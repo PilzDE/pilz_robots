@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MODBUS_MSG_STO_WRAPPER_EXCEPTION_H
-#define MODBUS_MSG_STO_WRAPPER_EXCEPTION_H
+#ifndef MODBUS_MSG_RUN_PERMITTED_WRAPPER_EXCEPTION_H
+#define MODBUS_MSG_RUN_PERMITTED_WRAPPER_EXCEPTION_H
 
 #include <string>
 #include <stdexcept>
@@ -26,14 +26,14 @@
 namespace prbt_hardware_support
 {
   /**
-   * @brief Expection thrown upon construction of ModbusMsgStoWrapper of the message
+   * @brief Expection thrown upon construction of ModbusMsgRunPermittedWrapper if the message
    * does not contain the required information.
    *
    */
-  class ModbusMsgStoWrapperException : public ModbusMsgWrapperException
+  class ModbusMsgRunPermittedStatusMissing : public ModbusMsgWrapperException
   {
     public:
-      ModbusMsgStoWrapperException( const std::string& what_arg ):
+      ModbusMsgRunPermittedStatusMissing( const std::string& what_arg ):
         ModbusMsgWrapperException(what_arg)
       {
       }
@@ -41,4 +41,4 @@ namespace prbt_hardware_support
 
 }
 
-#endif // MODBUS_MSG_STO_WRAPPER_EXCEPTION_H
+#endif // MODBUS_MSG_RUN_PERMITTED_WRAPPER_EXCEPTION_H

@@ -2009,7 +2009,7 @@ ObjectType=0x9
 SubNumber=8
 
 [20A0sub7]
-ParameterName=sto_status
+ParameterName=run_permitted_status
 ObjectType=0x7
 DataType=0x0005
 AccessType=ro

@@ -25,10 +25,10 @@
  *
  *
  *
- * @subsubsection sto_stop1 Safe torque off (STO) and  Stop 1
+ * @subsubsection run_permitted_stop1 Run permitted and Stop 1
  *
- * @note STO == 1/TRUE  <-> manipulator is allowed to move freely
- * @note STO == 0/FALSE <-> manipulator is NOT allowed to move (except for stop motion)
+ * @note RUN_PERMITTED == 1/TRUE  <-> manipulator is allowed to move freely
+ * @note RUN_PERMITTED == 0/FALSE <-> manipulator is NOT allowed to move (except for stop motion)
  *
  * @definereq{execution_of_stop1}
  * - The execution of a Stop1 consists of the following steps:
@@ -41,7 +41,7 @@
  *
  * Please note:
  * - While the controller is holded, the controller rejects all new trajectories.
- * - The stop1 process cannot be interrupted, even if the STO changes to TRUE.
+ * - The stop1 process cannot be interrupted, even if the RUN_PERMITTED changes to TRUE.
  *
  * @definereq{release_of_stop1}
  * - The release of a Stop1 consists of the following steps:
@@ -56,14 +56,14 @@
  *
  * @definereq{Stop1_Trigger}
  *  - The execution of a Stop 1 is triggered, if at least one of the following cases is true:
- *    - the state of the STO changes from TRUE -> FALSE
+ *    - the state of the RUN_PERMITTED changes from TRUE -> FALSE
  *    - connection to safety controller is lost,
- *    - the messages informing about the STO (coming from the
+ *    - the messages informing about the RUN_PERMITTED (coming from the
  *      safety controller) is incomplete or in any way corrupted,
  *    - the communication protocol used by the safety controller
  *      does not fulfill the expected specification
  *      (defined by the version of the protocol).
- *  - The release of a Stop 1 is triggered, if the state of the STO changes from FALSE -> TRUE
+ *  - The release of a Stop 1 is triggered, if the state of the RUN_PERMITTED changes from FALSE -> TRUE
  *
  *
  * @definereq{unhold_service_fails}
@@ -137,7 +137,7 @@
  *
  * @definereq{Stop1_on_violation_of_speed_limit}
  *  - If the speed limit for the current operation mode is violated,
- *    the robot performs a Stop 1 (\ref sto_stop1).
+ *    the robot performs a Stop 1 (\ref run_permitted_stop1).
  *
  * @definereq{Speed_limits_per_operation_mode}
  *  - The currently allowed speed limit depends on the operation mode.

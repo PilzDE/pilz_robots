@@ -48,7 +48,7 @@ static const std::string BARRIER_LIMIT{ "BARRIER_LIMIT" };
 static const std::string BARRIER_LIMIT_LOW{ "BARRIER_LIMIT_LOW" };
 
 static const std::string FRAME_SPEEDS_TOPIC_NAME{ "/frame_speeds" };
-static const std::string STOP_TOPIC_NAME{ "/safe_torque_off" };
+static const std::string RUN_PERMITTED_SERVICE_NAME{ "/run_permitted" };
 static const std::string TEST_BASE_FRAME{ "test_base" };
 static const std::string TEST_FRAME_A{ "a" };
 static const std::string TEST_FRAME_B{ "b" };
@@ -84,9 +84,9 @@ void SpeedObserverUnitTest::SetUp()
 {
   speed_subscriber_ =
       nh_.subscribe<FrameSpeeds>(FRAME_SPEEDS_TOPIC_NAME, 1, &SpeedObserverUnitTest::frame_speeds_cb_mock, this);
-  stop_subscriber_ = nh_.advertiseService(STOP_TOPIC_NAME, &SpeedObserverUnitTest::stop_cb_mock, this);
+  stop_subscriber_ = nh_.advertiseService(RUN_PERMITTED_SERVICE_NAME, &SpeedObserverUnitTest::stop_cb_mock, this);
 
-  pilz_utils::waitForService(STOP_TOPIC_NAME);
+  pilz_utils::waitForService(RUN_PERMITTED_SERVICE_NAME);
 }
 
 void SpeedObserverUnitTest::publishTfAtSpeed(const double speed, const double publish_frequency)
@@ -133,7 +133,7 @@ void SpeedObserverUnitTest::stopTfPublisher()
 }
 
 using ::testing::PrintToString;
-MATCHER_P(StoState, x, "Sto state " + std::string(negation ? "is not" : "is") + ": " + PrintToString(x) + ".")
+MATCHER_P(RunPermittedState, x, "RunPermitted state " + std::string(negation ? "is not" : "is") + ": " + PrintToString(x) + ".")
 {
   return arg.data == x;
 }
@@ -253,11 +253,11 @@ TEST_F(SpeedObserverUnitTest, testTooHighSpeed)
                                                 SpeedAtILe(0, .1), SpeedAtILe(1, .32),
                                                 SpeedAtIGe(0, 0), SpeedAtIGe(1, .28))));
 
-  std_srvs::SetBool::Response sto_srv_resp;
-  sto_srv_resp.success = true;
+  std_srvs::SetBool::Response run_permitted_srv_resp;
+  run_permitted_srv_resp.success = true;
 
-  EXPECT_CALL(*this, stop_cb_mock(StoState(false), _))
-      .WillRepeatedly(DoAll(SetArgReferee<1>(sto_srv_resp), ACTION_OPEN_BARRIER(BARRIER_FAST)));
+  EXPECT_CALL(*this, stop_cb_mock(RunPermittedState(false), _))
+      .WillRepeatedly(DoAll(SetArgReferee<1>(run_permitted_srv_resp), ACTION_OPEN_BARRIER(BARRIER_FAST)));
 
   std::string reference_frame{ TEST_BASE_FRAME };
   std::vector<std::string> frames_to_observe{ TEST_FRAME_A, TEST_FRAME_B };
@@ -348,10 +348,10 @@ TEST_F(SpeedObserverUnitTest, testSetSpeedLimit)
    * Step 3 *
    **********/
   ROS_DEBUG_STREAM("Step 3");
-  std_srvs::SetBool::Response sto_srv_resp;
-  sto_srv_resp.success = true;
-  EXPECT_CALL(*this, stop_cb_mock(StoState(false), _))
-      .WillRepeatedly(DoAll(SetArgReferee<1>(sto_srv_resp), ACTION_OPEN_BARRIER(BARRIER_LIMIT_LOW)));
+  std_srvs::SetBool::Response run_permitted_srv_resp;
+  run_permitted_srv_resp.success = true;
+  EXPECT_CALL(*this, stop_cb_mock(RunPermittedState(false), _))
+      .WillRepeatedly(DoAll(SetArgReferee<1>(run_permitted_srv_resp), ACTION_OPEN_BARRIER(BARRIER_LIMIT_LOW)));
 
   req.speed_limit = .2;
   observer.setSpeedLimitCb(req, res);
@@ -396,7 +396,7 @@ TEST_F(SpeedObserverUnitTest, testTimeout)
 }
 
 /**
- * Test case in which STO service call fails (needed for line coverage).
+ * Test case in which RUN_PERMITTED service call fails (needed for line coverage).
  *
  * Test Sequence:
  *    1. Publish tf movements that have a too high speed
@@ -404,9 +404,9 @@ TEST_F(SpeedObserverUnitTest, testTimeout)
  *
  * Expected Results:
  *    1. -
- *    2. Sto service is called
+ *    2. RunPermitted service is called
  */
-TEST_F(SpeedObserverUnitTest, testFailingStoServiceCase)
+TEST_F(SpeedObserverUnitTest, testFailingRunPermittedServiceCase)
 {
   // ++++++++++++++++++++++++
   ROS_DEBUG_STREAM("Step 1");
@@ -416,7 +416,7 @@ TEST_F(SpeedObserverUnitTest, testFailingStoServiceCase)
   // ++++++++++++++++++++++++
   ROS_DEBUG_STREAM("Step 2");
   // ++++++++++++++++++++++++
-  EXPECT_CALL(*this, stop_cb_mock(StoState(false), _))
+  EXPECT_CALL(*this, stop_cb_mock(RunPermittedState(false), _))
       .Times(1)
       .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(BARRIER_FAST), Return(false)));
 
@@ -462,7 +462,7 @@ TEST_F(SpeedObserverUnitTest, testSlowTfPublishing)
   // ++++++++++++++++++++++++
   ROS_DEBUG_STREAM("Step 2");
   // ++++++++++++++++++++++++
-  EXPECT_CALL(*this, stop_cb_mock(StoState(false), _))
+  EXPECT_CALL(*this, stop_cb_mock(RunPermittedState(false), _))
       .Times(AtLeast(1))
       .WillRepeatedly(DoAll(ACTION_OPEN_BARRIER_VOID(BARRIER_FAST), Return(true)));
 

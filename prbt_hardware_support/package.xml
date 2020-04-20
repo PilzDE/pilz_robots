@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
   <name>prbt_hardware_support</name>
-  <version>0.5.13</version>
-  <description>Control hardware functions of the PRBT manipulator like STO for Stop1 functionality.</description>
+  <version>0.5.14</version>
+  <description>Control hardware functions of the PRBT manipulator like RUN_PERMITTED for Stop1 functionality.</description>
 
   <maintainer email="a.gutenkunst@pilz.de">Alexander Gutenkunst</maintainer>
   <maintainer email="c.henkel@pilz.de">Christian Henkel</maintainer>
