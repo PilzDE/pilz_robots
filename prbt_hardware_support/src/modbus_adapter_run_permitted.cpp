@@ -15,30 +15,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <prbt_hardware_support/modbus_adapter_sto.h>
+#include <prbt_hardware_support/modbus_adapter_run_permitted.h>
 
 #include <sstream>
 
-#include <prbt_hardware_support/modbus_msg_sto_wrapper.h>
+#include <prbt_hardware_support/modbus_msg_run_permitted_wrapper.h>
 
 namespace prbt_hardware_support
 {
 
-ModbusAdapterSto::ModbusAdapterSto(UpdateStoFunc&& update_sto_func,
-                                   const ModbusApiSpec& api_spec)
+ModbusAdapterRunPermitted::ModbusAdapterRunPermitted(UpdateRunPermittedFunc&& update_run_permitted_func,
+                                                     const ModbusApiSpec& api_spec)
   : api_spec_(api_spec)
-  , update_sto_(std::move(update_sto_func))
+  , update_run_permitted_(std::move(update_run_permitted_func))
 {
 }
 
-void ModbusAdapterSto::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw)
+void ModbusAdapterRunPermitted::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw)
 {
-  ModbusMsgStoWrapper msg(msg_raw, api_spec_);
+  ModbusMsgRunPermittedWrapper msg(msg_raw, api_spec_);
 
   if(msg.isDisconnect())
   {
     ROS_ERROR("A disconnect from the modbus server happend.");
-    update_sto_(false);
+    update_run_permitted_(false);
     return;
   }
 
@@ -49,7 +49,7 @@ void ModbusAdapterSto::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_r
   catch(const ModbusMsgWrapperException &e)
   {
     ROS_ERROR_STREAM(e.what());
-    update_sto_(false);
+    update_run_permitted_(false);
     return;
   }
 
@@ -60,11 +60,11 @@ void ModbusAdapterSto::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_r
        << msg.getVersion()
        << ", required Version: " << MODBUS_API_VERSION_REQUIRED;
     ROS_ERROR_STREAM(os.str());
-    update_sto_(false);
+    update_run_permitted_(false);
     return;
   }
 
-  update_sto_(msg.getSTO());
+  update_run_permitted_(msg.getRunPermitted());
 }
 
 
