@@ -3,7 +3,7 @@
 RUN_PERMITTED: 512 # robot is only allowed to move when the signal is 1
 VERSION: 513 # version of modbus register specification, actual one is: 2
 
-# Braketest: Disabled per default, can be enabled in robot.launch with parameter "has_braketest_support"
+# Braketest: This is used to signalize that a brake test is requested by the safety controller
 BRAKETEST_REQUEST: 514 # 0 = Test not required, 1 = Test required
 
 # Operation mode: Disabled per default, can be enabled in robot.launch with parameter "has_operation_mode_support"
