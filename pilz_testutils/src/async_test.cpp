@@ -45,24 +45,19 @@ bool AsyncTest::barricade(std::initializer_list<std::string> clear_events, const
   waitlist_.clear();
 
   auto end_time_point = std::chrono::system_clock::now() + std::chrono::milliseconds(timeout_ms);
-  bool timeout_reached {false};
 
-  while(!timeout_reached)
+  while(!clear_events_.empty())
   {
     if (timeout_ms < 0)
     {
       cv_.wait(lk);
     }
-    else
+    else if (cv_.wait_for(lk, end_time_point - std::chrono::system_clock::now()) == std::cv_status::timeout)
     {
-      timeout_reached = (cv_.wait_for(lk, end_time_point - std::chrono::system_clock::now()) == std::cv_status::timeout);
-    }
-    if (clear_events_.empty())
-    {
-      return true;
+      return clear_events_.empty();
     }
   }
-  return false;
+  return true;
 }
 
 void AsyncTest::triggerClearEvent(const std::string& event)
