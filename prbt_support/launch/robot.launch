@@ -4,17 +4,6 @@
   <!-- gripper e.g. pg70. See documentation of meta-package prbt_grippers -->
   <arg name="gripper" default="" />
 
-  <!-- Configure modbus settings depending on the configured safety hardware -->
-  <arg name="safety_hw" default="pss4000"/>
-  <arg name="read_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_read_api_spec_$(arg safety_hw).yaml" />
-  <arg name="write_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_write_api_spec_$(arg safety_hw).yaml" />
-  <arg name="modbus_server_ip" default="$(eval '192.168.0.10' if safety_hw=='pss4000' else '169.254.60.1')" />
-
-  <!-- Options to enable and disable different hardware aspects -->
-  <arg name="has_braketest_support" default="true"/>
-  <arg name="has_operation_mode_support" default="true"/>
-  <arg name="visual_status_indicator" default="true"/>
-
   <!-- Path to the config file for canopen_motor_node -->
   <arg name="canopen_config" default="$(find prbt_support)/config/manipulator_driver.yaml" />
 
@@ -64,34 +53,6 @@
 
   <!-- Initialize driver -->
   <node pkg="rosservice" type="rosservice" name="robot_init" args="call --wait /prbt/driver/init"/>
-
-  <!-- Read modbus register specifications -->
-  <rosparam ns="/prbt/read_api_spec" command="load" file="$(arg read_api_spec_file)" />
-  <rosparam ns="/prbt/write_api_spec" command="load" file="$(arg write_api_spec_file)" if="$(arg has_operation_mode_support)" />
-
-  <!-- Open modbus connection and required modules -->
-    <!-- Modbus connection -->  
-    <include file="$(find prbt_hardware_support)/launch/modbus_client.launch">
-      <arg name="modbus_server_ip" value="$(arg modbus_server_ip)" />
-    </include>
-    <!-- Run permitted -->
-    <include file="$(find prbt_hardware_support)/launch/modbus_adapter_run_permitted_node.launch" />
-
-    <!-- Brake test -->
-    <include if="$(arg has_braketest_support)" file="$(find prbt_hardware_support)/launch/brake_test.launch">
-      <arg name="write_api_spec_file" value="$(arg write_api_spec_file)" />
-    </include>
-
-    <!-- Operation Mode -->
-    <include if="$(arg has_operation_mode_support)" 
-             file="$(find prbt_hardware_support)/launch/operation_mode.launch" />
-    <node unless="$(arg has_operation_mode_support)" 
-          pkg="prbt_hardware_support" name="fake_speed_override_node" type="fake_speed_override_node"/>
-  <!---->
-
-  <!-- Status Indicator -->
-  <node pkg="pilz_status_indicator_rqt" name="pilz_status_indicator_rqt" type="pilz_status_indicator_rqt" 
-        if="$(arg visual_status_indicator)" />
 
   <!-- System info node to output robot firmware version to console -->
   <node ns="prbt" pkg="prbt_hardware_support" name="system_info_node" type="system_info_node" output="screen" />
