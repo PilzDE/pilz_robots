@@ -75,20 +75,20 @@ class AsyncTest
 
     /**
      * @brief Will block until the event given by clear_event is triggered or a timeout is reached.
-     * Unblocks immediately, if the event was triggered in advance.
+     * Unblocks immediately, if the event was on the waitlist.
      *
      * @param clear_event Event that allows the test to pass on
-     * @param timeout_ms Timeout [ms]. If negative, no timeout is used.
+     * @param timeout_ms Timeout [ms] (optional).
      * @return True if the event was triggered, false otherwise.
      */
     bool barricade(const std::string &clear_event, const int timeout_ms = -1);
 
     /**
      * @brief Will block until all events given by clear_events are triggered or a timeout is reached.
-     * Events triggered in advance take effect, too.
+     * Events on the waitlist are taken into account, too.
      *
      * @param clear_events List of events that allow the test to pass on
-     * @param timeout_ms Timeout [ms]. If negative, no timeout is used.
+     * @param timeout_ms Timeout [ms] (optional).
      * @return True if all events were triggered, false otherwise.
      */
     bool barricade(std::initializer_list<std::string> clear_events, const int timeout_ms = -1);
