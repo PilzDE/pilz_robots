@@ -7,6 +7,7 @@ Forthcoming
 * Moved system_info_node here from prbt_hardware_support
 * Adopted default configuration for launchfiles
 * Add README
+* Enable starting ROS without connecting to safety controller
 * Contributors: Pilz GmbH and Co. KG
 
 0.5.14 (2020-03-11)
