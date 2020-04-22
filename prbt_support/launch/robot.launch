@@ -77,6 +77,15 @@
     <arg name="has_operation_mode_support" value="$(arg has_operation_mode_support)"/>
     <arg name="visual_status_indicator" value="$(arg visual_status_indicator)"/>
   </include>
+  <!-- If no safety controller is connected, further initialization steps are required -->
+  <group unless="$(arg enable_safety_interface)">
+    <node name="robot_recover" pkg="rosservice" type="rosservice"
+          args="call --wait /prbt/driver/recover"/>
+    <node name="controller_unhold" pkg="rosservice" type="rosservice"
+          args="call --wait /prbt/manipulator_joint_trajectory_controller/unhold"/>
+    <!-- The following provides a fake speed override -->
+    <include file="$(find prbt_hardware_support)/launch/fake_safety_interface.launch" />
+  </group>
 
   <!-- System info node to output robot firmware version to console -->
   <include file="$(find prbt_hardware_support)/launch/system_info.launch" />
