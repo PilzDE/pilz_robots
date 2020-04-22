@@ -16,6 +16,8 @@ The following table shows the names and the possible argument values of the feat
 
 With `pg70` referring to __Schunk PG plus 70__. For more on gripper models see [prbt_grippers](https://github.com/PilzDE/prbt_grippers).
 
+The optional argument `enable_safety_interface` can be used to start ROS without connecting to a safety controller. Keep in mind that this disables all safety features, so it should only be used for debugging purposes.
+
 Currently, we only support the following configurations depending on the safety controller. If the safety controller is changed, please ensure that the arguments are set as shown in the table.
 
 | Argument name | Default value with PSS400 | Default value with PNOZmulti |
