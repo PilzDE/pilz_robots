@@ -52,9 +52,13 @@ bool AsyncTest::barricade(std::initializer_list<std::string> clear_events, const
     {
       cv_.wait(lk);
     }
-    else if (cv_.wait_for(lk, end_time_point - std::chrono::system_clock::now()) == std::cv_status::timeout)
+    else
     {
-      return clear_events_.empty();
+      std::cv_status status = cv_.wait_for(lk, end_time_point - std::chrono::system_clock::now());
+      if (status == std::cv_status::timeout)
+      {
+        return clear_events_.empty();
+      }
     }
   }
   return true;
