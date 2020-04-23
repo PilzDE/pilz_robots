@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <prbt_hardware_support/system_info.h>
+#include <prbt_support/system_info.h>
 
 #include <XmlRpcValue.h>
 #include <XmlRpcException.h>
@@ -23,9 +23,9 @@
 #include <pilz_utils/wait_for_service.h>
 #include <pilz_utils/wait_for_message.h>
 #include <canopen_chain_node/GetObject.h>
-#include <prbt_hardware_support/system_info_exception.h>
+#include <prbt_support/system_info_exception.h>
 
-namespace prbt_hardware_support
+namespace prbt_support
 {
 
 static const std::string CANOPEN_GETOBJECT_SERVICE_NAME{"/prbt/driver/get_object"};
@@ -100,4 +100,4 @@ std::vector<std::string> SystemInfo::getNodeNames(const ros::NodeHandle& nh)
   return node_names;
 }
 
-} // namespace prbt_hardware_support
+} // namespace prbt_support

@@ -94,6 +94,6 @@
         if="$(arg visual_status_indicator)" />
 
   <!-- System info node to output robot firmware version to console -->
-  <node ns="prbt" pkg="prbt_hardware_support" name="system_info_node" type="system_info_node" output="screen" />
+  <node ns="prbt" pkg="prbt_support" name="system_info_node" type="system_info_node" output="screen" />
 
 </launch>

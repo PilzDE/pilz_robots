@@ -18,6 +18,9 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>roscpp</build_depend>
+  <build_depend>canopen_chain_node</build_depend>
+  <build_depend>pilz_utils</build_depend>
+  <build_depend>sensor_msgs</build_depend>
 
   <exec_depend>roscpp</exec_depend>
   <exec_depend>canopen_motor_node</exec_depend>
@@ -40,4 +43,7 @@
   <test_depend>rviz</test_depend> <!-- test_urdf.launch for acceptance test -->
   <test_depend>joint_state_publisher</test_depend> <!-- test_urdf.launch -->
   <test_depend>prbt_hardware_support</test_depend>
+  <test_depend>rosunit</test_depend>
+  <test_depend>code_coverage</test_depend>
+  <test_depend>pilz_testutils</test_depend>
 </package>

@@ -4,6 +4,7 @@ Changelog for package prbt_hardware_support
 
 Forthcoming
 -----------
+* Moved system_info_node to prbt_support
 * Adopted default configuration for launchfiles
 * Renaming of STO into RUN_PERMITTED
 * Contributors: Pilz GmbH and Co. KG
