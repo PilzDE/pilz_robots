@@ -56,8 +56,9 @@ namespace testing
  * TEST_F(MyTest, testCase)
  * {
  *     EXPECT_CALL(*this, myMethod()).Times(1).WillOnce(ACTION_OPEN_BARRIER_VOID("myMethod"));
+ *     const int timeout_ms {100};
  *     asyncCall(std::bind(&MyTest::myMethod, this));
- *     BARRIER("myMethod");
+ *     BARRIER("myMethod", timeout_ms) << "Timed-out waiting for myMethod call.";
  * }
  * \endcode
  */
@@ -73,20 +74,24 @@ class AsyncTest
     void triggerClearEvent(const std::string &event);
 
     /**
-     * @brief Will block until the event given by clear_event is triggered. Unblocks immediately, if the event was
-     * triggered in advance.
+     * @brief Will block until the event given by clear_event is triggered or a timeout is reached.
+     * Unblocks immediately, if the event was on the waitlist.
      *
      * @param clear_event Event that allows the test to pass on
+     * @param timeout_ms Timeout [ms] (optional).
+     * @return True if the event was triggered, false otherwise.
      */
-    void barricade(const std::string &clear_event);
+    bool barricade(const std::string &clear_event, const int timeout_ms = -1);
 
     /**
-     * @brief Will block until all events given by clear_events are triggered. Events triggered in advance take effect,
-     * too.
+     * @brief Will block until all events given by clear_events are triggered or a timeout is reached.
+     * Events on the waitlist are taken into account, too.
      *
      * @param clear_events List of events that allow the test to pass on
+     * @param timeout_ms Timeout [ms] (optional).
+     * @return True if all events were triggered, false otherwise.
      */
-    void barricade(std::initializer_list<std::string> clear_events);
+    bool barricade(std::initializer_list<std::string> clear_events, const int timeout_ms = -1);
 
   protected:
     std::mutex m_;
@@ -96,7 +101,8 @@ class AsyncTest
 };
 
 // for better readability in tests
-#define BARRIER(...) barricade(__VA_ARGS__)
+#define BARRIER(...) EXPECT_TRUE(barricade(__VA_ARGS__))
+#define BARRIER_FATAL(...) ASSERT_TRUE(barricade(__VA_ARGS__))
 
 #define ACTION_OPEN_BARRIER(str) ::testing::InvokeWithoutArgs([this](void){this->triggerClearEvent(str); return true;})
 #define ACTION_OPEN_BARRIER_VOID(str) ::testing::InvokeWithoutArgs([this](void){this->triggerClearEvent(str);})
