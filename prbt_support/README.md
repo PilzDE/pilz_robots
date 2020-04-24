@@ -11,4 +11,4 @@ Logs important system information.
 ### Used Services
 
 - /prbt/driver/get_object (canopen_chain_node/GetObject)
-  - Holds information about joint firmware.
+  - Read CANOpen object holding firmware information.
