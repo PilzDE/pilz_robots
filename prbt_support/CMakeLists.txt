@@ -8,14 +8,14 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
 )
 
-#add_definitions(-Wall)
-#add_definitions(-Wextra)
-#add_definitions(-Wno-unused-parameter)
-#add_definitions(-Werror)
-#add_definitions(-std=c++11)
-#add_definitions(-Wconversion) # At least this line needs to be below find_package to keep
+add_definitions(-Wall)
+add_definitions(-Wextra)
+add_definitions(-Wno-unused-parameter)
+add_definitions(-Werror)
+add_definitions(-std=c++11)
+add_definitions(-Wconversion) # At least this line needs to be below find_package to keep
                               #  the flag away from the gmock build
-#add_definitions(-Wpedantic)
+add_definitions(-Wpedantic)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -95,10 +95,12 @@ if(CATKIN_ENABLE_TESTING)
     APPEND_COVERAGE_COMPILER_FLAGS()
   endif()
 
+  #Declare system to supress strict compiler errors in external library headers
   include_directories(
-    ${catkin_INCLUDE_DIRS}
-    ${EIGEN3_INCLUDE_DIR}
+    SYSTEM ${catkin_INCLUDE_DIRS}
+    SYSTEM ${EIGEN3_INCLUDE_DIR}
     ${pilz_testutils_INCLUDE_DIRS}
+    SYSTEM ${gmock_SOURCE_DIR}/include/
   )
 
   #--- SystemInfo unit test ---
