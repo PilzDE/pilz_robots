@@ -18,6 +18,7 @@ add_definitions(-Wconversion) # At least this line needs to be below find_packag
 add_definitions(-Wpedantic)
 
 catkin_package(
+  CATKIN_DEPENDS roscpp
   INCLUDE_DIRS include
 )
 
@@ -43,7 +44,7 @@ endif()
 ###########
 
 include_directories(
-  include
+  include ${catkin_INCLUDE_DIRS}
 )
 
 # SYSTEM_INFO_NODE
@@ -95,6 +96,7 @@ if(CATKIN_ENABLE_TESTING)
     APPEND_COVERAGE_COMPILER_FLAGS()
   endif()
 
+  #catkin_lint: ignore_once missing_directory <-- needed for successful catkin_linting
   #Declare system to supress strict compiler errors in external library headers
   include_directories(
     SYSTEM ${catkin_INCLUDE_DIRS}
