@@ -151,15 +151,6 @@ add_executable(canopen_braketest_adapter_node
 add_dependencies(canopen_braketest_adapter_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
 target_link_libraries(canopen_braketest_adapter_node ${catkin_LIBRARIES})
 
-# SYSTEM_INFO_NODE
-add_executable(system_info_node
-  src/system_info_node.cpp
-  src/system_info.cpp
-  src/system_info_exception.cpp
-)
-add_dependencies(system_info_node ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
-target_link_libraries(system_info_node ${catkin_LIBRARIES})
-
 add_executable(fake_speed_override_node
   src/fake_speed_override_node.cpp
 )
@@ -217,7 +208,6 @@ install(TARGETS
   pilz_modbus_client_node
   speed_observer_node
   stop1_executor_node
-  system_info_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -489,18 +479,6 @@ if(CATKIN_ENABLE_TESTING)
     speed_observer_node
     operation_mode_setup_executor_node
     ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  )
-  #----------------------------------------
-
-  #--- SystemInfo unit test ---
-  add_rostest_gmock(unittest_system_info
-      test/unittests/unittest_system_info.test
-      test/unittests/unittest_system_info.cpp
-      src/system_info.cpp
-      src/system_info_exception.cpp
-  )
-  target_link_libraries(unittest_system_info
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
   )
   #----------------------------------------
 

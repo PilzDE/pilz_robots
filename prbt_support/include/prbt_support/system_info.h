@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PRBT_HARDWARE_SUPPORT_SYSTEM_INFO_H
-#define PRBT_HARDWARE_SUPPORT_SYSTEM_INFO_H
+#ifndef PRBT_SUPPORT_SYSTEM_INFO_H
+#define PRBT_SUPPORT_SYSTEM_INFO_H
 
 #include <ros/ros.h>
 
@@ -26,7 +26,7 @@
 
 #include <canopen_chain_node/GetObject.h>
 
-namespace prbt_hardware_support
+namespace prbt_support
 {
 
 //! key = joint_name
@@ -64,5 +64,5 @@ private:
   ros::ServiceClient canopen_srv_get_client_;
 };
 
-} // namespace prbt_hardware_support
-#endif // PRBT_HARDWARE_SUPPORT_SYSTEM_INFO_H
+} // namespace prbt_support
+#endif // PRBT_SUPPORT_SYSTEM_INFO_H

@@ -4,7 +4,9 @@ Changelog for package prbt_support
 
 Forthcoming
 -----------
+* Moved system_info_node here from prbt_hardware_support
 * Adopted default configuration for launchfiles
+* Add README
 * Contributors: Pilz GmbH and Co. KG
 
 0.5.14 (2020-03-11)
