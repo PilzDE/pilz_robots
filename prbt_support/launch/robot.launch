@@ -5,7 +5,7 @@
   <arg name="gripper" default="" />
 
   <!-- Enable safety interface -->
-  <arg name="enable_safety_interface" default="true" />
+  <arg name="iso10218_support" default="true" />
 
   <!-- Configure modbus settings depending on the configured safety hardware -->
   <arg name="safety_hw" default="pss4000"/>
@@ -68,7 +68,7 @@
   <node pkg="rosservice" type="rosservice" name="robot_init" args="call --wait /prbt/driver/init"/>
 
   <!-- Open modbus connection and required modules -->
-  <include file="$(find prbt_hardware_support)/launch/safety_interface.launch" if="$(arg enable_safety_interface)">
+  <include file="$(find prbt_hardware_support)/launch/safety_interface.launch" if="$(arg iso10218_support)">
     <arg name="safety_hw" value="$(arg safety_hw)"/>
     <arg name="read_api_spec_file" value="$(arg read_api_spec_file)" />
     <arg name="write_api_spec_file" value="$(arg write_api_spec_file)" />
@@ -78,7 +78,7 @@
     <arg name="visual_status_indicator" value="$(arg visual_status_indicator)"/>
   </include>
   <!-- If no safety controller is connected, further initialization steps are required -->
-  <group unless="$(arg enable_safety_interface)">
+  <group unless="$(arg iso10218_support)">
     <node name="robot_recover" pkg="rosservice" type="rosservice"
           args="call --wait /prbt/driver/recover"/>
     <node name="controller_unhold" pkg="rosservice" type="rosservice"
