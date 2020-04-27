@@ -4,13 +4,18 @@
   <!-- gripper e.g. pg70. See documentation of meta-package prbt_grippers -->
   <arg name="gripper" default="" />
 
+  <!-- Enable safety interface -->
+  <arg name="iso10218_support" default="true" />
+
   <!-- Configure modbus settings depending on the configured safety hardware -->
+  <!-- These arguments have no effect if iso10218_support is false -->
   <arg name="safety_hw" default="pss4000"/>
   <arg name="read_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_read_api_spec_$(arg safety_hw).yaml" />
   <arg name="write_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_write_api_spec_$(arg safety_hw).yaml" />
   <arg name="modbus_server_ip" default="$(eval '192.168.0.10' if safety_hw=='pss4000' else '169.254.60.1')" />
 
   <!-- Options to enable and disable different hardware aspects -->
+  <!-- These arguments have no effect if iso10218_support is false -->
   <arg name="has_braketest_support" default="true"/>
   <arg name="has_operation_mode_support" default="true"/>
   <arg name="visual_status_indicator" default="true"/>
@@ -60,40 +65,31 @@
 
   <!-- Spawn controllers -->
   <node ns="prbt" name="controller_spawner" pkg="controller_manager" type="spawner" args="$(arg spawn_controllers)" />
-  <include file="$(find prbt_hardware_support)/launch/stop1_executor_node.launch" />
 
   <!-- Initialize driver -->
   <node pkg="rosservice" type="rosservice" name="robot_init" args="call --wait /prbt/driver/init"/>
 
-  <!-- Read modbus register specifications -->
-  <rosparam ns="/prbt/read_api_spec" command="load" file="$(arg read_api_spec_file)" />
-  <rosparam ns="/prbt/write_api_spec" command="load" file="$(arg write_api_spec_file)" if="$(arg has_operation_mode_support)" />
-
   <!-- Open modbus connection and required modules -->
-    <!-- Modbus connection -->  
-    <include file="$(find prbt_hardware_support)/launch/modbus_client.launch">
-      <arg name="modbus_server_ip" value="$(arg modbus_server_ip)" />
-    </include>
-    <!-- Run permitted -->
-    <include file="$(find prbt_hardware_support)/launch/modbus_adapter_run_permitted_node.launch" />
-
-    <!-- Brake test -->
-    <include if="$(arg has_braketest_support)" file="$(find prbt_hardware_support)/launch/brake_test.launch">
-      <arg name="write_api_spec_file" value="$(arg write_api_spec_file)" />
-    </include>
-
-    <!-- Operation Mode -->
-    <include if="$(arg has_operation_mode_support)" 
-             file="$(find prbt_hardware_support)/launch/operation_mode.launch" />
-    <node unless="$(arg has_operation_mode_support)" 
-          pkg="prbt_hardware_support" name="fake_speed_override_node" type="fake_speed_override_node"/>
-  <!---->
-
-  <!-- Status Indicator -->
-  <node pkg="pilz_status_indicator_rqt" name="pilz_status_indicator_rqt" type="pilz_status_indicator_rqt" 
-        if="$(arg visual_status_indicator)" />
+  <include file="$(find prbt_hardware_support)/launch/safety_interface.launch" if="$(arg iso10218_support)">
+    <arg name="safety_hw" value="$(arg safety_hw)"/>
+    <arg name="read_api_spec_file" value="$(arg read_api_spec_file)" />
+    <arg name="write_api_spec_file" value="$(arg write_api_spec_file)" />
+    <arg name="modbus_server_ip" value="$(arg modbus_server_ip)" />
+    <arg name="has_braketest_support" value="$(arg has_braketest_support)"/>
+    <arg name="has_operation_mode_support" value="$(arg has_operation_mode_support)"/>
+    <arg name="visual_status_indicator" value="$(arg visual_status_indicator)"/>
+  </include>
+  <!-- If no safety controller is connected, further initialization steps are required -->
+  <group unless="$(arg iso10218_support)">
+    <node name="robot_recover" pkg="rosservice" type="rosservice"
+          args="call --wait /prbt/driver/recover"/>
+    <node name="controller_unhold" pkg="rosservice" type="rosservice"
+          args="call --wait /prbt/manipulator_joint_trajectory_controller/unhold"/>
+    <!-- The following provides a fake speed override -->
+    <include file="$(find prbt_hardware_support)/launch/fake_safety_interface.launch" />
+  </group>
 
   <!-- System info node to output robot firmware version to console -->
-  <node ns="prbt" pkg="prbt_support" name="system_info_node" type="system_info_node" output="screen" />
+  <include file="$(find prbt_support)/launch/system_info.launch" />
 
 </launch>
