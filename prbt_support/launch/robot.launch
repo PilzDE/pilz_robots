@@ -88,6 +88,6 @@
   </group>
 
   <!-- System info node to output robot firmware version to console -->
-  <include file="$(find prbt_hardware_support)/launch/system_info.launch" />
+  <include file="$(find prbt_support)/launch/system_info.launch" />
 
 </launch>
