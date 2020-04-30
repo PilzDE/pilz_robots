@@ -37,3 +37,4 @@ install:
   - git clone --depth=1 --branch master https://github.com/ros-industrial/industrial_ci.git .industrial_ci
 script:
   - .industrial_ci/travis.sh
+  - if [[ $TRAVIS_PULL_REQUEST != 'false' ]]; then git fetch origin "$TRAVIS_BRANCH" -aqf && ./.check_changelog.sh; fi
