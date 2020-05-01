@@ -51,9 +51,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
              file="$(find prbt_hardware_support)/launch/operation_mode.launch" />
     <node unless="$(arg has_operation_mode_support)"
           pkg="prbt_hardware_support" name="fake_speed_override_node" type="fake_speed_override_node"/>
-  <!---->
-
-  <!-- Status Indicator -->
-  <node pkg="pilz_status_indicator_rqt" name="pilz_status_indicator_rqt" type="pilz_status_indicator_rqt"
-        if="$(arg visual_status_indicator)" />
 </launch>
