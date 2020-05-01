@@ -33,22 +33,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   <rosparam ns="/prbt/write_api_spec" command="load" file="$(arg write_api_spec_file)" if="$(arg has_operation_mode_support)" />
 
   <!-- Open modbus connection and required modules -->
-    <!-- Modbus connection -->
-    <include file="$(find prbt_hardware_support)/launch/modbus_client.launch">
-      <arg name="modbus_server_ip" value="$(arg modbus_server_ip)" />
-    </include>
-    <!-- Run permitted -->
-    <include file="$(find prbt_hardware_support)/launch/modbus_adapter_run_permitted_node.launch" />
-    <include file="$(find prbt_hardware_support)/launch/stop1_executor_node.launch" />
+  <!-- Modbus connection -->
+  <include file="$(find prbt_hardware_support)/launch/modbus_client.launch">
+    <arg name="modbus_server_ip" value="$(arg modbus_server_ip)" />
+  </include>
+  <!-- Run permitted -->
+  <include file="$(find prbt_hardware_support)/launch/modbus_adapter_run_permitted_node.launch" />
+  <include file="$(find prbt_hardware_support)/launch/stop1_executor_node.launch" />
 
-    <!-- Brake test -->
-    <include if="$(arg has_braketest_support)" file="$(find prbt_hardware_support)/launch/brake_test.launch">
-      <arg name="write_api_spec_file" value="$(arg write_api_spec_file)" />
-    </include>
+  <!-- Brake test -->
+  <include if="$(arg has_braketest_support)" file="$(find prbt_hardware_support)/launch/brake_test.launch">
+    <arg name="write_api_spec_file" value="$(arg write_api_spec_file)" />
+  </include>
 
-    <!-- Operation Mode -->
-    <include if="$(arg has_operation_mode_support)"
-             file="$(find prbt_hardware_support)/launch/operation_mode.launch" />
-    <node unless="$(arg has_operation_mode_support)"
-          pkg="prbt_hardware_support" name="fake_speed_override_node" type="fake_speed_override_node"/>
+  <!-- Operation Mode -->
+  <include if="$(arg has_operation_mode_support)"
+           file="$(find prbt_hardware_support)/launch/operation_mode.launch" />
+  <node unless="$(arg has_operation_mode_support)"
+        pkg="prbt_hardware_support" name="fake_speed_override_node" type="fake_speed_override_node"/>
 </launch>
