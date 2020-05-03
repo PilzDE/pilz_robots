@@ -4,6 +4,8 @@ Changelog for package prbt_support
 
 Forthcoming
 -----------
+* Add support for starting the robot without modbus
+* Rename argument enable_safety_interface to iso10218_support.
 * Moved system_info_node here from prbt_hardware_support
 * Adopted default configuration for launchfiles
 * Add README

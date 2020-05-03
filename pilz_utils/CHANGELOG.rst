@@ -2,6 +2,11 @@
 Changelog for package pilz_utils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix coverage generation for pilz_utils
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.14 (2020-03-11)
 -------------------
 * Rename waitForTopic() -> waitForMessage()

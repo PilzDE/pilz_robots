@@ -2,6 +2,11 @@
 Changelog for package prbt_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Use default hardware setup in moveit_planning_execution.launch
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.14 (2020-03-11)
 -------------------
 * add pipeline for merging the planner into moveit (old pipeline still available)

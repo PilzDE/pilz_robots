@@ -4,6 +4,8 @@ Changelog for package prbt_hardware_support
 
 Forthcoming
 -----------
+* Add support for starting the robot without modbus
+* sto for hw definition is now called safety_hw everywhere
 * Moved system_info_node to prbt_support
 * Adopted default configuration for launchfiles
 * Renaming of STO into RUN_PERMITTED
