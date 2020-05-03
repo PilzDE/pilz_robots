@@ -2,8 +2,8 @@
 Changelog for package prbt_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.15 (2020-05-03)
+-------------------
 * Use default hardware setup in moveit_planning_execution.launch
 * Contributors: Pilz GmbH and Co. KG
 

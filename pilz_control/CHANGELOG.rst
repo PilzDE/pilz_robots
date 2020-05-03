@@ -2,8 +2,8 @@
 Changelog for package pilz_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.15 (2020-05-03)
+-------------------
 * Introduce goal_time_tolerance to PJTC function is_executing
 * Contributors: Pilz GmbH and Co. KG
 

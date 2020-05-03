@@ -2,8 +2,8 @@
 Changelog for package pilz_utils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.15 (2020-05-03)
+-------------------
 * Fix coverage generation for pilz_utils
 * Contributors: Pilz GmbH and Co. KG
 

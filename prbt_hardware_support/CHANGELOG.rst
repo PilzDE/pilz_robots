@@ -2,8 +2,8 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.15 (2020-05-03)
+-------------------
 * Add support for starting the robot without modbus
 * sto for hw definition is now called safety_hw everywhere
 * Moved system_info_node to prbt_support
