@@ -218,6 +218,7 @@ install(TARGETS
 #############
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
+  roslaunch_add_file_check(launch)
 
   if(ENABLE_COVERAGE_TESTING)
     find_package(code_coverage REQUIRED)

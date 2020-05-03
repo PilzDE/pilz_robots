@@ -39,6 +39,7 @@ install(DIRECTORY config DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 if(CATKIN_ENABLE_TESTING)
 
   find_package(rostest REQUIRED)
+  roslaunch_add_file_check(launch)
 
   include_directories(${catkin_INCLUDE_DIRS})
 
