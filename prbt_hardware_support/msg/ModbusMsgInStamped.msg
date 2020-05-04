@@ -1,3 +1,0 @@
-std_msgs/Header header
-std_msgs/UInt16MultiArray holding_registers
-std_msgs/Bool disconnect
