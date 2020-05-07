@@ -2,8 +2,8 @@
 Changelog for package pilz_testutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.15 (2020-05-03)
+-------------------
 * add timeout to AsyncTest::barricade()
 * Contributors: Pilz GmbH and Co. KG
 

@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <launch>
 
 <test test-name="unittest_system_info"
-    pkg="prbt_hardware_support" type="unittest_system_info">
+    pkg="prbt_support" type="unittest_system_info">
 </test>
 
 </launch>
