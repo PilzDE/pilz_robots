@@ -42,6 +42,7 @@ _JOINT_LIMITS_DEGREE = {
 _JOINT_POSITIONS_TOLERANCE = 0.001
 _VELOCITY_SCALE = 0.2
 _JOINT_LIMIT_OVERSTEP = 0.1
+_SELF_COLLISION_JOINT_NAME = 'prbt_joint_5'
 
 
 class AcceptanceTestJointLimits(unittest.TestCase):
@@ -229,15 +230,17 @@ class AcceptanceTestJointLimits(unittest.TestCase):
         """ Perform all reaching tests. Before each test ask the user if he wants to skip it.
         """
         for name in self.joint_names:
-            if self._ask_for_permission('joint_limit_reaching_test for ' + name):
-                self._joint_limit_reaching_test(name)
+            if not name == _SELF_COLLISION_JOINT_NAME:
+                if self._ask_for_permission('joint_limit_reaching_test for ' + name):
+                    self._joint_limit_reaching_test(name)
 
     def test_joint_limits_overstepping(self):
         """ Perform all overstepping tests. Before each test ask the user if he wants to skip it.
         """
         for name in self.joint_names:
-            if self._ask_for_permission('joint_limit_overstepping_test for ' + name):
-                self._joint_limit_overstepping_test(name)
+            if not name == _SELF_COLLISION_JOINT_NAME:
+                if self._ask_for_permission('joint_limit_overstepping_test for ' + name):
+                    self._joint_limit_overstepping_test(name)
 
 
 if __name__ == "__main__":
