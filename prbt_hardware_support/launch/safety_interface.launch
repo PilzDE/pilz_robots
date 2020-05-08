@@ -29,7 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
   <!-- Read modbus register specifications -->
   <rosparam ns="/prbt/read_api_spec" command="load" file="$(arg read_api_spec_file)" />
-  <rosparam ns="/prbt/write_api_spec" command="load" file="$(arg write_api_spec_file)" if="$(arg has_breaktest_support)" />
+  <rosparam ns="/prbt/write_api_spec" command="load" file="$(arg write_api_spec_file)" if="$(arg has_braketest_support)" />
 
   <!-- Open modbus connection and required modules -->
   <!-- Modbus connection -->
