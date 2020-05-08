@@ -41,9 +41,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   <include file="$(find prbt_hardware_support)/launch/stop1_executor_node.launch" />
 
   <!-- Brake test -->
-  <include if="$(arg has_braketest_support)" file="$(find prbt_hardware_support)/launch/brake_test.launch">
-    <arg name="write_api_spec_file" value="$(arg write_api_spec_file)" />
-  </include>
+  <include if="$(arg has_braketest_support)" file="$(find prbt_hardware_support)/launch/brake_test.launch" />
 
   <!-- Operation Mode -->
   <include if="$(arg has_operation_mode_support)"
