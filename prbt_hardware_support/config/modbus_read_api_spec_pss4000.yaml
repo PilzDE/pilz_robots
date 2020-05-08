@@ -6,4 +6,4 @@ BRAKETEST_REQUEST: 973 # 0 = Test not required, 1 = Test required
 
 # Generic: Enabled the whole time
 RUN_PERMITTED: 974 # robot is only allowed to move when the signal is 1
-VERSION: 977 # version of modbus register specification, actual one is: 2
+VERSION: 977 # version of modbus register specification
