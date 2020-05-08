@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <prbt_hardware_support/system_info_exception.h>
+#include <prbt_support/system_info_exception.h>
 
-namespace prbt_hardware_support
+namespace prbt_support
 {
 
 SystemInfoException::SystemInfoException(const std::string &what_arg)
@@ -25,4 +25,4 @@ SystemInfoException::SystemInfoException(const std::string &what_arg)
 {
 }
 
-} // prbt_hardware_support
+} // prbt_support

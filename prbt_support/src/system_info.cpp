@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <prbt_hardware_support/system_info.h>
+#include <prbt_support/system_info.h>
 
 #include <XmlRpcValue.h>
 #include <XmlRpcException.h>
@@ -23,16 +23,16 @@
 #include <pilz_utils/wait_for_service.h>
 #include <pilz_utils/wait_for_message.h>
 #include <canopen_chain_node/GetObject.h>
-#include <prbt_hardware_support/system_info_exception.h>
+#include <prbt_support/system_info_exception.h>
 
-namespace prbt_hardware_support
+namespace prbt_support
 {
 
 static const std::string CANOPEN_GETOBJECT_SERVICE_NAME{"/prbt/driver/get_object"};
 static const std::string CANOPEN_NODES_PARAMETER_NAME{"/prbt/driver/nodes"};
 static const std::string JOINT_STATE_TOPIC {"/joint_states"};
 
-static const std::string GET_FIRMWARE_VERION_OBJECT{"100A"};
+static const std::string GET_FIRMWARE_VERSION_OBJECT{"100A"};
 
 // Currently the string is defined to be 41 characters long, but the last character can be omitted.
 // This is currently under investigation. See https://github.com/PilzDE/pilz_robots/issues/299.
@@ -54,7 +54,7 @@ std::string SystemInfo::getFirmwareVersionOfJoint(const std::string& joint_name)
 {
   canopen_chain_node::GetObject srv;
   srv.request.node = joint_name;
-  srv.request.object = GET_FIRMWARE_VERION_OBJECT;
+  srv.request.object = GET_FIRMWARE_VERSION_OBJECT;
   srv.request.cached = false;
 
   ROS_INFO_STREAM("Call \"get firmware\" service for \"" << joint_name << "\"");
@@ -100,4 +100,4 @@ std::vector<std::string> SystemInfo::getNodeNames(const ros::NodeHandle& nh)
   return node_names;
 }
 
-} // namespace prbt_hardware_support
+} // namespace prbt_support

@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2018 Pilz GmbH & Co. KG
+Copyright (c) 2020 Pilz GmbH & Co. KG
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
@@ -14,11 +14,7 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
-
 <launch>
-
-  <node required="true" ns="prbt" pkg="prbt_hardware_support" type="modbus_adapter_run_permitted_node"
-        name="modbus_adapter_run_permitted_node" output="screen">
-  </node>
-
+  <!-- System info node to output robot firmware version to console -->
+  <node ns="prbt" pkg="prbt_support" name="system_info_node" type="system_info_node" output="screen" />
 </launch>
