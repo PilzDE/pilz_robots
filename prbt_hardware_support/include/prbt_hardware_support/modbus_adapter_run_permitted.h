@@ -60,7 +60,7 @@ private:
   UpdateRunPermittedFunc update_run_permitted_;
 
 private:
-  static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {2};
+  static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {3};
 };
 
 

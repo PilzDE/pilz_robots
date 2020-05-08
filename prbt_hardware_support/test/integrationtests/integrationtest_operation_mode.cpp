@@ -34,7 +34,7 @@
 namespace prbt_hardware_support
 {
 
-static constexpr uint16_t MODBUS_API_VERSION_VALUE {2};
+static constexpr uint16_t MODBUS_API_VERSION_VALUE {3};
 
 static const std::string TOPIC_OPERATION_MODE{"/prbt/operation_mode"};
 static constexpr int OPERATION_MODE_QUEUE_SIZE{1};

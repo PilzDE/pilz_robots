@@ -37,7 +37,7 @@ static constexpr int OPERATION_MODE_QUEUE_SIZE{1};
 
 static const std::string OPERATION_MODE_CALLBACK_EVENT{"operation_mode_callback_event"};
 
-static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{2};
+static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{3};
 
 static const ModbusApiSpec TEST_API_SPEC{ {modbus_api_spec::VERSION, 1},
                                           {modbus_api_spec::OPERATION_MODE, 11} };

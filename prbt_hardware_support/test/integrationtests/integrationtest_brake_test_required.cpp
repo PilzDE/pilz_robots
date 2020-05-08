@@ -56,7 +56,7 @@ using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 
-static constexpr uint16_t MODBUS_API_VERSION_VALUE {2};
+static constexpr uint16_t MODBUS_API_VERSION_VALUE {3};
 static const std::string SERVICE_BRAKETEST_REQUIRED = "/prbt/brake_test_required";
 static const std::string MODBUS_SERVICE_NAME{"/pilz_modbus_client_node/modbus_write"};
 

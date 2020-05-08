@@ -57,7 +57,7 @@ using ::testing::Return;
 using ::testing::DoAll;
 using ::testing::SetArgReferee;
 
-static constexpr uint16_t MODBUS_API_VERSION_VALUE {2};
+static constexpr uint16_t MODBUS_API_VERSION_VALUE {3};
 static const std::string RECOVER_SERVICE_NAME {"recover"};
 static const std::string HALT_SERVICE_NAME {"halt"};
 static const std::string HOLD_SERVICE_NAME {"hold"};

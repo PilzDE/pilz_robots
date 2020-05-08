@@ -63,7 +63,7 @@ private:
   std::unique_ptr<FilterPipeline> filter_pipeline_;
 
 private:
-  static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {2};
+  static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {3};
 };
 
 } // namespace prbt_hardware_support

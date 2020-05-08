@@ -41,7 +41,7 @@ static constexpr bool RUN_PERMITTED_ACTIVE {false};
 static const ModbusApiSpec TEST_API_SPEC{ {modbus_api_spec::VERSION, 513},
                                           {modbus_api_spec::RUN_PERMITTED, 512} };
 
-static constexpr int MODBUS_API_VERSION_FOR_TESTING {2};
+static constexpr int MODBUS_API_VERSION_FOR_TESTING {3};
 
 using namespace prbt_hardware_support;
 
