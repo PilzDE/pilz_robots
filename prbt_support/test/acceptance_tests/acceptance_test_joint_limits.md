@@ -22,7 +22,7 @@ limitations under the License.
     skip the test for certain joints.
 
 ## Starting the joint limit acceptance tests
-  - Run `roslaunch prbt_support robot.launch`
+  - Press the enabling switch and run `roslaunch prbt_support robot.launch`.
   - Run `rosrun prbt_support acceptance_test_joint_limits.py`.
   - Please note: Each test must be confirmed before it is executed. Confirm by entering `y` or `n` to skip test.
 
