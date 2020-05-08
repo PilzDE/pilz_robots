@@ -35,6 +35,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   <!-- Modbus connection -->
   <include file="$(find prbt_hardware_support)/launch/modbus_client.launch">
     <arg name="modbus_server_ip" value="$(arg modbus_server_ip)" />
+    <arg name="read_api_spec_file" value="$(arg read_api_spec_file)" />
+    <arg name="safety_hw" value="$(arg safety_hw)" />
   </include>
   <!-- Run permitted -->
   <include file="$(find prbt_hardware_support)/launch/modbus_adapter_run_permitted_node.launch" />
