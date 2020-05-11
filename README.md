@@ -26,6 +26,10 @@ sudo apt install ros-melodic-pilz-robots
 `melodic-devel` is considered to be the active development branch.
 Relevant changes are cherry-picked into `kinetic-devel` on a case-by-case basis.
 
+### Supported hardware versions
+PRBT firmware version 1.1.0
+
+If you want to update your PRBT firmware please contact our customer support at ros@pilz.de.
 
 
 ## Package: prbt_support
