@@ -54,3 +54,14 @@ These acceptance tests check that the real robot system reacts to RUN_PERMITTED 
 ### Expected Results
   1. Same as Test 1
   2. Robot should stop immediatly and smoothly.
+
+## 4. Fast RUN_PERMITTED switching
+### Test Sequence
+  1. Same as Test 1
+  2. Perform the sequence "Release acknowledge button - press acknowledge button" very quickly. Repeat this test multiple times.
+  3. Perform the sequence "Press acknowledge button - release acknowledge button" very quickly. Repeat this test multiple times.
+
+### Expected Results
+  1. Same as Test 1
+  2. The robot never reaches a state where its drives can not be enabled again through the acknowledge button.
+  3. The robot never reaches a state where its drives can not be enabled again through the acknowledge button.
