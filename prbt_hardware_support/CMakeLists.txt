@@ -232,15 +232,15 @@ if(CATKIN_ENABLE_TESTING)
   include_directories(SYSTEM ${gmock_SOURCE_DIR}/include/) #Declare system to supress strict conversion errors in gmock
 
   add_rostest_gmock(unittest_update_filter
-                    test/unittests/unittest_update_filter.test
-                    test/unittests/unittest_update_filter.cpp
+                    test/unit_tests/unittest_update_filter.test
+                    test/unit_tests/unittest_update_filter.cpp
   )
   target_link_libraries(unittest_update_filter ${catkin_LIBRARIES})
   add_dependencies(unittest_update_filter ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
   catkin_add_gtest(unittest_libmodbus_client
-      test/unittests/unittest_libmodbus_client.cpp
-      test/unittests/pilz_modbus_server_mock.cpp
+      test/unit_tests/unittest_libmodbus_client.cpp
+      test/unit_tests/pilz_modbus_server_mock.cpp
       src/libmodbus_client.cpp
   )
   target_link_libraries(unittest_libmodbus_client
@@ -249,16 +249,16 @@ if(CATKIN_ENABLE_TESTING)
   )
 
   catkin_add_gmock(unittest_modbus_api_spec
-    test/unittests/unittest_modbus_api_spec.cpp
+    test/unit_tests/unittest_modbus_api_spec.cpp
   )
   target_link_libraries(unittest_modbus_api_spec ${catkin_LIBRARIES})
 
   catkin_add_gtest(unittest_pilz_modbus_exception
-                   test/unittests/unittest_pilz_modbus_exception.cpp)
+                   test/unit_tests/unittest_pilz_modbus_exception.cpp)
 
   #--- ModbusMsgWrapper unit test ---
   catkin_add_gtest(unittest_modbus_msg_wrapper
-                   test/unittests/unittest_modbus_msg_wrapper.cpp
+                   test/unit_tests/unittest_modbus_msg_wrapper.cpp
                    src/modbus_msg_in_builder.cpp
                    )
   target_link_libraries(unittest_update_filter ${catkin_LIBRARIES})
@@ -266,12 +266,12 @@ if(CATKIN_ENABLE_TESTING)
   #----------------------------------
 
   catkin_add_gtest(unittest_pilz_modbus_client_exception
-    test/unittests/unittest_pilz_modbus_client_exception.cpp)
+    test/unit_tests/unittest_pilz_modbus_client_exception.cpp)
 
   #--- PilzModbusClient unit test ---
   add_rostest_gmock(unittest_pilz_modbus_client
-      test/unittests/unittest_pilz_modbus_client.test
-      test/unittests/unittest_pilz_modbus_client.cpp
+      test/unit_tests/unittest_pilz_modbus_client.test
+      test/unit_tests/unittest_pilz_modbus_client.cpp
       src/pilz_modbus_client.cpp
       src/modbus_msg_in_builder.cpp
   )
@@ -282,7 +282,7 @@ if(CATKIN_ENABLE_TESTING)
 
   # --- ModbusAdapterBrakeTest unit test ---
   catkin_add_gmock(unittest_modbus_adapter_brake_test
-    test/unittests/unittest_modbus_adapter_brake_test.cpp
+    test/unit_tests/unittest_modbus_adapter_brake_test.cpp
     src/modbus_adapter_brake_test.cpp
     src/modbus_msg_in_builder.cpp
   )
@@ -294,8 +294,8 @@ if(CATKIN_ENABLE_TESTING)
 
   # --- ModbusAdapterOperationMode unit test ---
   add_rostest_gmock(unittest_modbus_adapter_operation_mode
-    test/unittests/unittest_modbus_adapter_operation_mode.test
-    test/unittests/unittest_modbus_adapter_operation_mode.cpp
+    test/unit_tests/unittest_modbus_adapter_operation_mode.test
+    test/unit_tests/unittest_modbus_adapter_operation_mode.cpp
     src/modbus_adapter_operation_mode.cpp
     src/adapter_operation_mode.cpp
     src/modbus_msg_in_builder.cpp
@@ -308,18 +308,18 @@ if(CATKIN_ENABLE_TESTING)
 
   # --- BrakeTestUtils unit test ---
   add_rostest_gtest(unittest_brake_test_utils
-    test/unittests/unittest_brake_test_utils.test
-    test/unittests/unittest_brake_test_utils.cpp
-    test/unittests/joint_states_publisher_mock.cpp
+    test/unit_tests/unittest_brake_test_utils.test
+    test/unit_tests/unittest_brake_test_utils.cpp
+    test/unit_tests/joint_states_publisher_mock.cpp
   )
   target_link_libraries(unittest_brake_test_utils ${catkin_LIBRARIES})
   #----------------------------------
 
   # --- CanOpenBraketestAdapter unit test ---
   add_rostest_gmock(unittest_canopen_braketest_adapter
-    test/unittests/unittest_canopen_braketest_adapter.test
-    test/unittests/unittest_canopen_braketest_adapter.cpp
-    test/unittests/canopen_chain_node_mock.cpp
+    test/unit_tests/unittest_canopen_braketest_adapter.test
+    test/unit_tests/unittest_canopen_braketest_adapter.cpp
+    test/unit_tests/canopen_chain_node_mock.cpp
     src/canopen_braketest_adapter.cpp
     src/canopen_braketest_adapter_exception.cpp
   )
@@ -329,7 +329,7 @@ if(CATKIN_ENABLE_TESTING)
 
   # --- BraketestExecutor unit test ---
   catkin_add_gmock(unittest_brake_test_executor
-    test/unittests/unittest_brake_test_executor.cpp
+    test/unit_tests/unittest_brake_test_executor.cpp
     src/brake_test_executor.cpp
   )
   target_link_libraries(unittest_brake_test_executor ${catkin_LIBRARIES})
@@ -340,7 +340,7 @@ if(CATKIN_ENABLE_TESTING)
   # --- Stop1Executor unit test ---
   catkin_add_gmock(unittest_stop1_executor
     src/stop1_executor.cpp
-    test/unittests/unittest_stop1_executor.cpp
+    test/unit_tests/unittest_stop1_executor.cpp
   )
   target_link_libraries(unittest_stop1_executor
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
@@ -349,7 +349,7 @@ if(CATKIN_ENABLE_TESTING)
 
   #--- StoModbusAdapter intrgration test ---
   catkin_add_gmock(unittest_modbus_adapter_run_permitted
-    test/unittests/unittest_modbus_adapter_run_permitted.cpp
+    test/unit_tests/unittest_modbus_adapter_run_permitted.cpp
     src/modbus_adapter_run_permitted.cpp
     src/modbus_msg_run_permitted_wrapper.cpp
     src/modbus_msg_in_builder.cpp
@@ -360,9 +360,9 @@ if(CATKIN_ENABLE_TESTING)
 
   # --- Stop integration test ---
   add_rostest_gmock(integrationtest_stop1
-     test/integrationtests/integrationtest_stop1.test
-     test/integrationtests/integrationtest_stop1.cpp
-     test/unittests/pilz_modbus_server_mock.cpp
+     test/integration_tests/integrationtest_stop1.test
+     test/integration_tests/integrationtest_stop1.cpp
+     test/unit_tests/pilz_modbus_server_mock.cpp
      src/libmodbus_client.cpp
   )
   target_link_libraries(integrationtest_stop1
@@ -379,8 +379,8 @@ if(CATKIN_ENABLE_TESTING)
 
   # --- Stop1 missing service integration tests ---
   add_rostest_gtest(integrationtest_stop1_service_missing
-     test/integrationtests/integrationtest_stop1_service_missing.test
-     test/integrationtests/integrationtest_stop1_service_missing.cpp
+     test/integration_tests/integrationtest_stop1_service_missing.test
+     test/integration_tests/integrationtest_stop1_service_missing.cpp
   )
   target_link_libraries(integrationtest_stop1_service_missing
     ${catkin_LIBRARIES}
@@ -391,7 +391,7 @@ if(CATKIN_ENABLE_TESTING)
   )
 
   foreach(service_name halt hold unhold)
-    add_rostest(test/integrationtests/integrationtest_stop1_service_missing.test
+    add_rostest(test/integration_tests/integrationtest_stop1_service_missing.test
       ARGS omit_service:=${service_name}
       DEPENDENCIES integrationtest_stop1_service_missing)
   endforeach(service_name)
@@ -399,9 +399,9 @@ if(CATKIN_ENABLE_TESTING)
 
   # --- Brake test required integration test ---
   add_rostest_gmock(integrationtest_brake_test_required
-    test/integrationtests/integrationtest_brake_test_required.test
-    test/integrationtests/integrationtest_brake_test_required.cpp
-    test/unittests/pilz_modbus_server_mock.cpp
+    test/integration_tests/integrationtest_brake_test_required.test
+    test/integration_tests/integrationtest_brake_test_required.cpp
+    test/unit_tests/pilz_modbus_server_mock.cpp
     src/libmodbus_client.cpp
   )
   target_link_libraries(integrationtest_brake_test_required
@@ -417,9 +417,9 @@ if(CATKIN_ENABLE_TESTING)
 
   # --- Operation mode integration test ---
   add_rostest_gmock(integrationtest_operation_mode
-    test/integrationtests/integrationtest_operation_mode.test
-    test/integrationtests/integrationtest_operation_mode.cpp
-    test/unittests/pilz_modbus_server_mock.cpp
+    test/integration_tests/integrationtest_operation_mode.test
+    test/integration_tests/integrationtest_operation_mode.cpp
+    test/unit_tests/pilz_modbus_server_mock.cpp
     src/libmodbus_client.cpp
   )
   target_link_libraries(integrationtest_operation_mode
@@ -435,11 +435,11 @@ if(CATKIN_ENABLE_TESTING)
 
   # --- Execute brake test integration test ---
   add_rostest_gmock(integrationtest_execute_brake_test
-    test/integrationtests/integrationtest_execute_brake_test.test
-    test/integrationtests/integrationtest_execute_brake_test.cpp
-    test/unittests/joint_states_publisher_mock.cpp
-    test/unittests/pilz_modbus_server_mock.cpp
-    test/unittests/canopen_chain_node_mock.cpp
+    test/integration_tests/integrationtest_execute_brake_test.test
+    test/integration_tests/integrationtest_execute_brake_test.cpp
+    test/unit_tests/joint_states_publisher_mock.cpp
+    test/unit_tests/pilz_modbus_server_mock.cpp
+    test/unit_tests/canopen_chain_node_mock.cpp
     src/libmodbus_client.cpp
   )
   target_link_libraries(integrationtest_execute_brake_test
@@ -457,8 +457,8 @@ if(CATKIN_ENABLE_TESTING)
 
   # --- Speed Observer unit test ---
   add_rostest_gmock(unittest_speed_observer
-      test/unittests/unittest_speed_observer.test
-      test/unittests/unittest_speed_observer.cpp
+      test/unit_tests/unittest_speed_observer.test
+      test/unit_tests/unittest_speed_observer.cpp
       src/speed_observer.cpp
   )
   target_link_libraries(unittest_speed_observer
@@ -469,8 +469,8 @@ if(CATKIN_ENABLE_TESTING)
 
   # --- Speed Observer and Operation Mode integration test ---
   add_rostest_gmock(integrationtest_speed_observer_and_operation_mode
-      test/integrationtests/integrationtest_speed_observer_and_operation_mode.test
-      test/integrationtests/integrationtest_speed_observer_and_operation_mode.cpp
+      test/integration_tests/integrationtest_speed_observer_and_operation_mode.test
+      test/integration_tests/integrationtest_speed_observer_and_operation_mode.cpp
   )
   target_link_libraries(integrationtest_speed_observer_and_operation_mode
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
@@ -484,8 +484,8 @@ if(CATKIN_ENABLE_TESTING)
 
   # --- FilterPipeline unit test ---
   add_rostest_gtest(unittest_filter_pipeline
-    test/unittests/unittest_filter_pipeline.test
-    test/unittests/unittest_filter_pipeline.cpp
+    test/unit_tests/unittest_filter_pipeline.test
+    test/unit_tests/unittest_filter_pipeline.cpp
   )
   target_link_libraries(unittest_filter_pipeline ${catkin_LIBRARIES})
   add_dependencies(unittest_filter_pipeline ${${PROJECT_NAME}_EXPORTED_TARGETS})
@@ -493,7 +493,7 @@ if(CATKIN_ENABLE_TESTING)
 
   #--- ModbusMsgInUtils unit test ---
   catkin_add_gtest(unittest_modbus_msg_in_builder
-      test/unittests/unittest_modbus_msg_in_builder.cpp
+      test/unit_tests/unittest_modbus_msg_in_builder.cpp
       src/modbus_msg_in_builder.cpp
   )
   target_link_libraries(unittest_modbus_msg_in_builder ${catkin_LIBRARIES})
@@ -502,7 +502,7 @@ if(CATKIN_ENABLE_TESTING)
 
   #--- OperationModeSetupExecutor unit test ---
   catkin_add_gmock(unittest_operation_mode_setup_executor
-      test/unittests/unittest_operation_mode_setup_executor.cpp
+      test/unit_tests/unittest_operation_mode_setup_executor.cpp
       src/operation_mode_setup_executor.cpp
   )
   target_link_libraries(unittest_operation_mode_setup_executor ${catkin_LIBRARIES})
@@ -511,8 +511,8 @@ if(CATKIN_ENABLE_TESTING)
 
   #--- OperationModeSetupExecutor unit test ---
   add_rostest_gtest(unittest_fake_speed_override
-      test/unittests/unittest_fake_speed_override.test
-      test/unittests/unittest_fake_speed_override.cpp
+      test/unit_tests/unittest_fake_speed_override.test
+      test/unit_tests/unittest_fake_speed_override.cpp
   )
   target_link_libraries(unittest_fake_speed_override
     ${catkin_LIBRARIES}
@@ -525,7 +525,7 @@ if(CATKIN_ENABLE_TESTING)
 
   #--- utils unittest ---
   catkin_add_gtest(unittest_utils
-    test/unittests/unittest_utils.cpp
+    test/unit_tests/unittest_utils.cpp
   )
   #----------------------------------------
 

@@ -107,8 +107,8 @@ if(CATKIN_ENABLE_TESTING)
 
   #--- SystemInfo unit test ---
   add_rostest_gmock(unittest_system_info
-      test/unittests/unittest_system_info.test
-      test/unittests/unittest_system_info.cpp
+      test/unit_tests/unittest_system_info.test
+      test/unit_tests/unittest_system_info.cpp
       src/system_info.cpp
       src/system_info_exception.cpp
   )
