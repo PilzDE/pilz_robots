@@ -23,20 +23,19 @@
 
 namespace pilz_modbus_exception_test
 {
-
 /**
  * @brief Test message setting
  */
 TEST(PilzModbusExceptionTests, testMsgWhat)
 {
-  const std::string test_string{"TEST_STRING"};
+  const std::string test_string{ "TEST_STRING" };
   std::shared_ptr<ModbusExceptionDisconnect> exception(new ModbusExceptionDisconnect(test_string));
   EXPECT_EQ(test_string, exception->what());
 }
 
 }  // namespace pilz_modbus_exception_test
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

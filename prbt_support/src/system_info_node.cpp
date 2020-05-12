@@ -24,18 +24,16 @@ using namespace prbt_support;
  * @brief Logs important system information.
  */
 // LCOV_EXCL_START
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "system_info");
-  ros::NodeHandle nh{"~"};
+  ros::NodeHandle nh{ "~" };
 
   prbt_support::SystemInfo system_info(nh);
-  FirmwareCont versions {system_info.getFirmwareVersions()};
+  FirmwareCont versions{ system_info.getFirmwareVersions() };
   for (const auto& curr_elem : versions)
   {
-    ROS_INFO("Firmware version [%s]: %s",
-             curr_elem.first.c_str(),
-             curr_elem.second.c_str());
+    ROS_INFO("Firmware version [%s]: %s", curr_elem.first.c_str(), curr_elem.second.c_str());
   }
   return EXIT_SUCCESS;
 }

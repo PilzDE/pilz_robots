@@ -23,22 +23,22 @@
 #include <pilz_msgs/GetSpeedOverride.h>
 #include <prbt_hardware_support/FakeSpeedOverrideConfig.h>
 
-std::atomic<double> SPEED_OVERRIDE{1.0};
+std::atomic<double> SPEED_OVERRIDE{ 1.0 };
 
-void dynamic_set_speed_override(prbt_hardware_support::FakeSpeedOverrideConfig &config, uint32_t level) {
-  ROS_INFO("Reconfigure Request: %f",
-            config.speed_override);
+void dynamic_set_speed_override(prbt_hardware_support::FakeSpeedOverrideConfig& config, uint32_t level)
+{
+  ROS_INFO("Reconfigure Request: %f", config.speed_override);
   SPEED_OVERRIDE = config.speed_override;
 }
 
-bool getSpeedOverride(pilz_msgs::GetSpeedOverride::Request  &/*req*/,
-                      pilz_msgs::GetSpeedOverride::Response &res)
+bool getSpeedOverride(pilz_msgs::GetSpeedOverride::Request& /*req*/, pilz_msgs::GetSpeedOverride::Response& res)
 {
   res.speed_override = SPEED_OVERRIDE;
   return true;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv)
+{
   ros::init(argc, argv, "fake_speed_override");
   ros::NodeHandle n;
 

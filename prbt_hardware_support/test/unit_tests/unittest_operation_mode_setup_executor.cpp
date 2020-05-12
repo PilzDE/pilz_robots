@@ -33,12 +33,10 @@ namespace operation_mode_setup_executor_tests
 using namespace prbt_hardware_support;
 
 using ::testing::_;
+using ::testing::DoAll;
 using ::testing::Le;
 using ::testing::Return;
 using ::testing::SetArgReferee;
-using ::testing::DoAll;
-
-
 
 class OperationModeSetupExecutorTest : public ::testing::Test
 {
@@ -46,7 +44,7 @@ public:
   void SetUp() override;
   void TearDown() override;
 
-  MOCK_METHOD1(setSpeedLimit, bool(const double &));
+  MOCK_METHOD1(setSpeedLimit, bool(const double&));
 
 public:
   double t1_limit_{ 0.1 };
@@ -65,9 +63,7 @@ void OperationModeSetupExecutorTest::SetUp()
   ON_CALL(*this, setSpeedLimit(_)).WillByDefault(Return(true));
 
   executor_ = std::unique_ptr<OperationModeSetupExecutor>(new OperationModeSetupExecutor(
-                                                            t1_limit_,
-                                                            auto_limit_,
-                                                            std::bind(&OperationModeSetupExecutorTest::setSpeedLimit, this, std::placeholders::_1)));
+      t1_limit_, auto_limit_, std::bind(&OperationModeSetupExecutorTest::setSpeedLimit, this, std::placeholders::_1)));
 }
 
 void OperationModeSetupExecutorTest::TearDown()
@@ -221,7 +217,10 @@ public:
   MOCK_METHOD0(getService, std::string());
 };
 
-MATCHER_P(IsCorrectSpeedLimitSet, speed_limit, "") { return arg.request.speed_limit == speed_limit; }
+MATCHER_P(IsCorrectSpeedLimitSet, speed_limit, "")
+{
+  return arg.request.speed_limit == speed_limit;
+}
 
 /**
  * @brief Tests the correct behavior in case the SetSpeedLimit service
@@ -229,7 +228,7 @@ MATCHER_P(IsCorrectSpeedLimitSet, speed_limit, "") { return arg.request.speed_li
  */
 TEST_F(OperationModeSetupExecutorTest, testSetSpeedLimitSrvSuccess)
 {
-  const double exp_limit {7.7};
+  const double exp_limit{ 7.7 };
   SetSpeedLimit exp_srv;
   exp_srv.request.speed_limit = exp_limit;
 
@@ -249,12 +248,13 @@ TEST_F(OperationModeSetupExecutorTest, testSetSpeedLimitSrvFailure)
   EXPECT_CALL(mock, getService()).WillRepeatedly(Return("TestServiceName"));
   EXPECT_CALL(mock, call(_)).Times(1).WillOnce(Return(false));
 
-  const double exp_limit {7.7};
+  const double exp_limit{ 7.7 };
   EXPECT_FALSE(setSpeedLimitSrv<SetSpeedLimitServiceMock>(mock, exp_limit));
 }
 
-class OperationModeSetupExecutorTestSpeedOverride : public OperationModeSetupExecutorTest,
-                                  public ::testing::WithParamInterface<std::pair<OperationModes::_value_type, double>>
+class OperationModeSetupExecutorTestSpeedOverride
+  : public OperationModeSetupExecutorTest,
+    public ::testing::WithParamInterface<std::pair<OperationModes::_value_type, double>>
 {
   OperationModes::_value_type getMode()
   {
@@ -269,7 +269,7 @@ class OperationModeSetupExecutorTestSpeedOverride : public OperationModeSetupExe
 
 // Usage: If you don't care about uninteresting calls the the MOCK_METHOD but want to suppress the warning
 typedef ::testing::NiceMock<OperationModeSetupExecutorTestSpeedOverride>
-  OperationModeSetupExecutorTestSpeedOverrideNice;
+    OperationModeSetupExecutorTestSpeedOverrideNice;
 
 /**
  * @tests{speed_override_per_operation_mode,
@@ -294,19 +294,14 @@ TEST_P(OperationModeSetupExecutorTestSpeedOverrideNice, testSpeedOverride)
   EXPECT_EQ(res.speed_override, GetParam().second);
 }
 
-INSTANTIATE_TEST_CASE_P(
-  SpeedOverrideModeTests,
-  OperationModeSetupExecutorTestSpeedOverrideNice,
-  ::testing::Values(
-    std::pair<OperationModes::_value_type, double>(OperationModes::UNKNOWN, 0.0),
-    std::pair<OperationModes::_value_type, double>(OperationModes::T1,      0.1),
-    std::pair<OperationModes::_value_type, double>(OperationModes::AUTO,    1.0)
-  ),
-);
+INSTANTIATE_TEST_CASE_P(SpeedOverrideModeTests, OperationModeSetupExecutorTestSpeedOverrideNice,
+                        ::testing::Values(std::pair<OperationModes::_value_type, double>(OperationModes::UNKNOWN, 0.0),
+                                          std::pair<OperationModes::_value_type, double>(OperationModes::T1, 0.1),
+                                          std::pair<OperationModes::_value_type, double>(OperationModes::AUTO, 1.0)), );
 
 }  // namespace operation_mode_setup_executor_tests
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

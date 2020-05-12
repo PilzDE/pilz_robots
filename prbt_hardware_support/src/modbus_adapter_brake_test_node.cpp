@@ -30,18 +30,18 @@
 static const std::string API_SPEC_WRITE_PARAM_NAME("write_api_spec/");
 static const std::string SERVICE_NAME_IS_BRAKE_TEST_REQUIRED = "/prbt/brake_test_required";
 static const std::string SERVICE_SEND_BRAKE_TEST_RESULT = "/prbt/send_brake_test_result";
-static const std::string MODBUS_WRITE_SERVICE_NAME{"/pilz_modbus_client_node/modbus_write"};
+static const std::string MODBUS_WRITE_SERVICE_NAME{ "/pilz_modbus_client_node/modbus_write" };
 
 using namespace prbt_hardware_support;
 
 /**
  * @brief Starts a modbus brake test announcer and runs it until a failure occurs.
  */
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "modbus_adapter_brake_test");
   ros::NodeHandle nh{};
-  ros::NodeHandle pnh{"~"};
+  ros::NodeHandle pnh{ "~" };
 
   ModbusApiSpec read_api_spec(nh);
   ModbusApiSpec write_api_spec(nh, API_SPEC_WRITE_PARAM_NAME);
@@ -53,18 +53,16 @@ int main(int argc, char **argv)
   using std::placeholders::_1;
   using std::placeholders::_2;
   ModbusAdapterBrakeTest adapter_brake_test(
-        std::bind(writeModbusRegisterCall<ros::ServiceClient>, modbus_write_client, _1, _2),
-        read_api_spec, write_api_spec);
+      std::bind(writeModbusRegisterCall<ros::ServiceClient>, modbus_write_client, _1, _2), read_api_spec,
+      write_api_spec);
 
-  FilterPipeline filter_pipeline(pnh, std::bind(&ModbusAdapterBrakeTest::modbusMsgCallback, &adapter_brake_test, _1) );
+  FilterPipeline filter_pipeline(pnh, std::bind(&ModbusAdapterBrakeTest::modbusMsgCallback, &adapter_brake_test, _1));
 
-  ros::ServiceServer is_brake_test_required_server = pnh.advertiseService(SERVICE_NAME_IS_BRAKE_TEST_REQUIRED,
-                                                                           &ModbusAdapterBrakeTest::isBrakeTestRequired,
-                                                                           &adapter_brake_test);
+  ros::ServiceServer is_brake_test_required_server = pnh.advertiseService(
+      SERVICE_NAME_IS_BRAKE_TEST_REQUIRED, &ModbusAdapterBrakeTest::isBrakeTestRequired, &adapter_brake_test);
 
-  ros::ServiceServer send_brake_test_result = pnh.advertiseService(SERVICE_SEND_BRAKE_TEST_RESULT,
-                                                                    &ModbusAdapterBrakeTest::sendBrakeTestResult,
-                                                                    &adapter_brake_test);
+  ros::ServiceServer send_brake_test_result = pnh.advertiseService(
+      SERVICE_SEND_BRAKE_TEST_RESULT, &ModbusAdapterBrakeTest::sendBrakeTestResult, &adapter_brake_test);
 
   ros::spin();
 

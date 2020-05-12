@@ -29,18 +29,17 @@
 
 namespace prbt_hardware_support
 {
+static const std::string RECOVER_SERVICE_NAME{ "recover" };
+static const std::string HALT_SERVICE_NAME{ "halt" };
+static const std::string HOLD_SERVICE_NAME{ "hold" };
+static const std::string UNHOLD_SERVICE_NAME{ "unhold" };
 
-static const std::string RECOVER_SERVICE_NAME {"recover"};
-static const std::string HALT_SERVICE_NAME {"halt"};
-static const std::string HOLD_SERVICE_NAME {"hold"};
-static const std::string UNHOLD_SERVICE_NAME {"unhold"};
+static const std::string OMIT_SERVICE_PARAM_NAME{ "omit_service" };
+static const std::string STOP1_EXECUTOR_NODE_NAME{ "/stop1_executor_node" };
 
-static const std::string OMIT_SERVICE_PARAM_NAME {"omit_service"};
-static const std::string STOP1_EXECUTOR_NODE_NAME {"/stop1_executor_node"};
+static constexpr double WAIT_FOR_NODE_SLEEPTIME_S{ 5.0 };
 
-static constexpr double WAIT_FOR_NODE_SLEEPTIME_S {5.0};
-
-bool triggerCallbackDummy(std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &resp)
+bool triggerCallbackDummy(std_srvs::TriggerRequest& req, std_srvs::TriggerResponse& resp)
 {
   return true;
 }
@@ -58,7 +57,7 @@ public:
 
 protected:
   ros::NodeHandle nh_;
-  ros::NodeHandle nh_priv_ {"~"};
+  ros::NodeHandle nh_priv_{ "~" };
 
   ros::ServiceServer hold_server_;
   ros::ServiceServer unhold_server_;
@@ -74,19 +73,23 @@ void Stop1ServiceMissingIntegrationTest::SetUp()
 {
   ROS_DEBUG("SetUp()");
 
-  advertise_funcs_[RECOVER_SERVICE_NAME] = [this](){
-    this->recover_server_ = this->nh_.advertiseService(RECOVER_SERVICE_NAME, triggerCallbackDummy); };
-  advertise_funcs_[HALT_SERVICE_NAME] = [this](){
-    this->halt_server_ = this->nh_.advertiseService(HALT_SERVICE_NAME, triggerCallbackDummy); };
-  advertise_funcs_[UNHOLD_SERVICE_NAME] = [this](){
-    this->unhold_server_ = this->nh_.advertiseService(UNHOLD_SERVICE_NAME, triggerCallbackDummy); };
-  advertise_funcs_[HOLD_SERVICE_NAME] = [this](){
-    this->hold_server_ = this->nh_.advertiseService(HOLD_SERVICE_NAME, triggerCallbackDummy); };
+  advertise_funcs_[RECOVER_SERVICE_NAME] = [this]() {
+    this->recover_server_ = this->nh_.advertiseService(RECOVER_SERVICE_NAME, triggerCallbackDummy);
+  };
+  advertise_funcs_[HALT_SERVICE_NAME] = [this]() {
+    this->halt_server_ = this->nh_.advertiseService(HALT_SERVICE_NAME, triggerCallbackDummy);
+  };
+  advertise_funcs_[UNHOLD_SERVICE_NAME] = [this]() {
+    this->unhold_server_ = this->nh_.advertiseService(UNHOLD_SERVICE_NAME, triggerCallbackDummy);
+  };
+  advertise_funcs_[HOLD_SERVICE_NAME] = [this]() {
+    this->hold_server_ = this->nh_.advertiseService(HOLD_SERVICE_NAME, triggerCallbackDummy);
+  };
 
   std::string omit_service;
   ASSERT_TRUE(nh_priv_.getParam(OMIT_SERVICE_PARAM_NAME, omit_service));
 
-  const auto &it = advertise_funcs_.find(omit_service);
+  const auto& it = advertise_funcs_.find(omit_service);
   ASSERT_TRUE(it != advertise_funcs_.end()) << "Invalid service name: " << omit_service;
 
   omit_advertise_func_ = it->second;
@@ -115,9 +118,8 @@ TEST_F(Stop1ServiceMissingIntegrationTest, testMissingService)
    **********/
   ROS_DEBUG("Step 1");
 
-  std::for_each(advertise_funcs_.begin(),
-                advertise_funcs_.end(),
-                [](const std::pair<std::string, std::function<void()>> &el){ el.second(); });
+  std::for_each(advertise_funcs_.begin(), advertise_funcs_.end(),
+                [](const std::pair<std::string, std::function<void()>>& el) { el.second(); });
 
   ros::Duration(WAIT_FOR_NODE_SLEEPTIME_S).sleep();
   EXPECT_FALSE(checkForNode(STOP1_EXECUTOR_NODE_NAME));
@@ -131,15 +133,14 @@ TEST_F(Stop1ServiceMissingIntegrationTest, testMissingService)
   waitForNode(STOP1_EXECUTOR_NODE_NAME);
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support
 
-
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "integrationtest_stop1_service_missing");
   ros::NodeHandle nh;
 
-  ros::AsyncSpinner spinner{1};
+  ros::AsyncSpinner spinner{ 1 };
   spinner.start();
 
   testing::InitGoogleTest(&argc, argv);

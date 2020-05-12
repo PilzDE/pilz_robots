@@ -26,15 +26,14 @@
 
 #include <prbt_hardware_support/brake_test_utils_exception.h>
 
-static const std::string TOPIC_NAME{"/prbt/joint_states"};
-static constexpr double JOINT_STATES_COMPARISON_FREQUENCY{10.0};
-static constexpr double JOINT_STATES_TOPIC_TIMEOUT{1.0};
-static constexpr double DEFAULT_JOINT_STATES_COMPARISON_TOLERANCE{0.001};
-static constexpr double DEFAULT_ROBOT_MOTION_TIMEOUT_S{1.0};
+static const std::string TOPIC_NAME{ "/prbt/joint_states" };
+static constexpr double JOINT_STATES_COMPARISON_FREQUENCY{ 10.0 };
+static constexpr double JOINT_STATES_TOPIC_TIMEOUT{ 1.0 };
+static constexpr double DEFAULT_JOINT_STATES_COMPARISON_TOLERANCE{ 0.001 };
+static constexpr double DEFAULT_ROBOT_MOTION_TIMEOUT_S{ 1.0 };
 
 namespace prbt_hardware_support
 {
-
 class BrakeTestUtils
 {
 public:
@@ -56,20 +55,20 @@ public:
   /**
    * @brief return true if the joint state positions are equal up to a given tolerance, false otherwise.
    */
-  inline static bool compareJointStatePositions(const sensor_msgs::JointStateConstPtr &msg1,
-                                                const sensor_msgs::JointStateConstPtr &msg2,
+  inline static bool compareJointStatePositions(const sensor_msgs::JointStateConstPtr& msg1,
+                                                const sensor_msgs::JointStateConstPtr& msg2,
                                                 const double tol = DEFAULT_JOINT_STATES_COMPARISON_TOLERANCE);
 };
 
 bool BrakeTestUtils::detectRobotMotion(double timeout_s)
 {
-  auto msg_start{getCurrentJointStates()};
+  auto msg_start{ getCurrentJointStates() };
 
   ros::Time start = ros::Time::now();
   ros::Rate r(JOINT_STATES_COMPARISON_FREQUENCY);
   while ((ros::Time::now() - start).toSec() < timeout_s && ros::ok())
   {
-    auto msg_current{getCurrentJointStates()};
+    auto msg_current{ getCurrentJointStates() };
     if (!compareJointStatePositions(msg_start, msg_current))
     {
       return true;
@@ -82,7 +81,8 @@ bool BrakeTestUtils::detectRobotMotion(double timeout_s)
 
 sensor_msgs::JointStateConstPtr BrakeTestUtils::getCurrentJointStates()
 {
-  auto msg{ros::topic::waitForMessage<sensor_msgs::JointState>(TOPIC_NAME, ros::Duration(JOINT_STATES_TOPIC_TIMEOUT))};
+  auto msg{ ros::topic::waitForMessage<sensor_msgs::JointState>(TOPIC_NAME,
+                                                                ros::Duration(JOINT_STATES_TOPIC_TIMEOUT)) };
   if (msg == nullptr)
   {
     throw GetCurrentJointStatesException("Could not obtain message from joint_states topic.");
@@ -90,14 +90,13 @@ sensor_msgs::JointStateConstPtr BrakeTestUtils::getCurrentJointStates()
   return msg;
 }
 
-bool BrakeTestUtils::compareJointStatePositions(const sensor_msgs::JointStateConstPtr &msg1,
-                                                const sensor_msgs::JointStateConstPtr &msg2,
-                                                const double tol)
+bool BrakeTestUtils::compareJointStatePositions(const sensor_msgs::JointStateConstPtr& msg1,
+                                                const sensor_msgs::JointStateConstPtr& msg2, const double tol)
 {
   return std::equal(msg1->position.begin(), msg1->position.end(), msg2->position.begin(),
                     [tol](double pos1, double pos2) { return (fabs(pos1 - pos2) < tol); });
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support
 
-#endif // PRBT_HARDWARE_SUPPORT_BRAKE_TEST_UTILS_H
+#endif  // PRBT_HARDWARE_SUPPORT_BRAKE_TEST_UTILS_H

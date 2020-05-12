@@ -28,9 +28,9 @@ using namespace ::testing;
 
 class NodeHandleMock
 {
-  public:
-    MOCK_CONST_METHOD0(getNamespace, std::string(void));
-    MOCK_CONST_METHOD2(getParam, bool(const std::string& key, XmlRpc::XmlRpcValue& v));
+public:
+  MOCK_CONST_METHOD0(getNamespace, std::string(void));
+  MOCK_CONST_METHOD2(getParam, bool(const std::string& key, XmlRpc::XmlRpcValue& v));
 };
 
 /**
@@ -39,12 +39,12 @@ class NodeHandleMock
  */
 TEST(ModbusApiSpecTest, testModbusApiSpecExceptionDtor)
 {
-  std::shared_ptr<ModbusApiSpecException> ex {new ModbusApiSpecException("Test msg")};
+  std::shared_ptr<ModbusApiSpecException> ex{ new ModbusApiSpecException("Test msg") };
 }
 
 TEST(ModbusApiSpecTest, ConstructionViaInitilizerListRead)
 {
-  ModbusApiSpec api_spec{{"test", 123}};
+  ModbusApiSpec api_spec{ { "test", 123 } };
   ASSERT_TRUE(api_spec.hasRegisterDefinition("test"));
   EXPECT_EQ(123u, api_spec.getRegisterDefinition("test"));
 
@@ -62,7 +62,7 @@ TEST(ModbusApiSpecTest, ConstructionViaInitilizerListReadNonExistent)
 
 TEST(ModbusApiSpecTest, ConstructionViaInitilizerListOverwrite)
 {
-  ModbusApiSpec api_spec{{"test", 123}, {"dummy", 234}};
+  ModbusApiSpec api_spec{ { "test", 123 }, { "dummy", 234 } };
 
   EXPECT_EQ(123u, api_spec.getMinRegisterDefinition());
   EXPECT_EQ(234u, api_spec.getMaxRegisterDefinition());
@@ -81,15 +81,13 @@ TEST(ModbusApiSpecTest, NodeHandleConstructionSimpleRead)
   rpc_value["A"] = 123;
 
   NodeHandleMock nh;
-  EXPECT_CALL(nh, getParam("read_api_spec/",_))
-  .WillOnce(DoAll(SetArgReferee<1>(rpc_value), Return(true)));
+  EXPECT_CALL(nh, getParam("read_api_spec/", _)).WillOnce(DoAll(SetArgReferee<1>(rpc_value), Return(true)));
 
-  ModbusApiSpecTemplated<NodeHandleMock> api_spec{nh};
+  ModbusApiSpecTemplated<NodeHandleMock> api_spec{ nh };
 
   ASSERT_TRUE(api_spec.hasRegisterDefinition("A"));
   EXPECT_EQ(123u, api_spec.getRegisterDefinition("A"));
 }
-
 
 TEST(ModbusApiSpecTest, NodeHandleConstructionMissingApiSpec)
 {
@@ -97,19 +95,16 @@ TEST(ModbusApiSpecTest, NodeHandleConstructionMissingApiSpec)
   rpc_value["A"] = 123;
 
   NodeHandleMock nh;
-  EXPECT_CALL(nh, getParam("read_api_spec/",_))
-   .Times(1)
-   .WillOnce(Return(false));
+  EXPECT_CALL(nh, getParam("read_api_spec/", _)).Times(1).WillOnce(Return(false));
 
   // Just for the error message in the exception
-  EXPECT_CALL(nh, getNamespace())
-    .Times(1)
-    .WillOnce(Return("testnamespace"));
+  EXPECT_CALL(nh, getNamespace()).Times(1).WillOnce(Return("testnamespace"));
 
-  EXPECT_THROW(ModbusApiSpecTemplated<NodeHandleMock>{nh}, ModbusApiSpecException);
+  EXPECT_THROW(ModbusApiSpecTemplated<NodeHandleMock>{ nh }, ModbusApiSpecException);
 }
 
-int main(int argc, char **argv){
+int main(int argc, char** argv)
+{
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

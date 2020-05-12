@@ -19,10 +19,9 @@
 
 namespace pilz_utils
 {
+static constexpr double DEFAULT_RETRY_TIMEOUT{ 0.2 };
+static constexpr double DEFAULT_MSG_OUTPUT_PERIOD{ 5.0 };
 
-static constexpr double DEFAULT_RETRY_TIMEOUT {0.2};
-static constexpr double DEFAULT_MSG_OUTPUT_PERIOD {5.0};
+}  // namespace pilz_utils
 
-}
-
-#endif // PILZ_UTILS_WAIT_FOR_TIMEOUTS_H
+#endif  // PILZ_UTILS_WAIT_FOR_TIMEOUTS_H

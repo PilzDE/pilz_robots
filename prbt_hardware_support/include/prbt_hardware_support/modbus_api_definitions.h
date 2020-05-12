@@ -22,15 +22,14 @@
 
 namespace prbt_hardware_support
 {
-
 namespace modbus_api
 {
-  namespace v2
-  {
-    static constexpr uint16_t MODBUS_RUN_PERMITTED_CLEAR_VALUE  {1};
-    static constexpr uint16_t MODBUS_RUN_PERMITTED_ACTIVE_VALUE {0};
-  }
-}
+namespace v2
+{
+static constexpr uint16_t MODBUS_RUN_PERMITTED_CLEAR_VALUE{ 1 };
+static constexpr uint16_t MODBUS_RUN_PERMITTED_ACTIVE_VALUE{ 0 };
+}  // namespace v2
+}  // namespace modbus_api
 
-}
-#endif // MODBUS_API_DEFINITIONS_H
+}  // namespace prbt_hardware_support
+#endif  // MODBUS_API_DEFINITIONS_H

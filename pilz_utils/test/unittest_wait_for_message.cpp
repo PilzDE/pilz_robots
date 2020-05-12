@@ -26,8 +26,8 @@
 
 #include <pilz_utils/wait_for_message.h>
 
-static constexpr int WAITING_TIME_S{1};
-static constexpr int DEFAULT_QUEUE_SIZE{1};
+static constexpr int WAITING_TIME_S{ 1 };
+static constexpr int DEFAULT_QUEUE_SIZE{ 1 };
 
 /**
  * @brief Tests that an asynchronous call to waitForMessage waits until someone publishes on the topic.
@@ -35,9 +35,12 @@ static constexpr int DEFAULT_QUEUE_SIZE{1};
 TEST(WaitForMessageTests, testAsyncCall)
 {
   using namespace pilz_utils;
-  std::string topic_name{"/test_topic"};
+  std::string topic_name{ "/test_topic" };
 
-  auto wait_future = std::async([topic_name](){ waitForMessage<std_msgs::Empty>(topic_name); return true; });
+  auto wait_future = std::async([topic_name]() {
+    waitForMessage<std_msgs::Empty>(topic_name);
+    return true;
+  });
 
   EXPECT_EQ(std::future_status::timeout, wait_future.wait_for(std::chrono::seconds(WAITING_TIME_S)));
 
@@ -53,7 +56,7 @@ TEST(WaitForMessageTests, testAsyncCall)
   publisher.shutdown();
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "unittest_wait_for_message");
   ros::NodeHandle nh;

@@ -23,14 +23,13 @@
 
 namespace position_controllers
 {
-
-  /**
-   * \brief Joint trajectory controller that represents trajectory segments as <b>quintic splines</b> and sends
-   * commands to a \b position interface.
-   */
-  typedef pilz_joint_trajectory_controller::PilzJointTrajectoryController
-                        <trajectory_interface::QuinticSplineSegment<double>, hardware_interface::PositionJointInterface>
-          PilzJointTrajectoryController;
+/**
+ * \brief Joint trajectory controller that represents trajectory segments as <b>quintic splines</b> and sends
+ * commands to a \b position interface.
+ */
+typedef pilz_joint_trajectory_controller::PilzJointTrajectoryController<
+    trajectory_interface::QuinticSplineSegment<double>, hardware_interface::PositionJointInterface>
+    PilzJointTrajectoryController;
 
 }  // namespace position_controllers
 

@@ -28,7 +28,6 @@
 
 namespace prbt_support
 {
-
 //! key = joint_name
 //! value = firmware version of joint
 using FirmwareCont = std::map<std::string, std::string>;
@@ -57,12 +56,12 @@ private:
   /**
    * @returns the names of all joints/nodes.
    */
-  static std::vector<std::string> getNodeNames(const ros::NodeHandle &nh);
+  static std::vector<std::string> getNodeNames(const ros::NodeHandle& nh);
 
 private:
   const std::vector<std::string> joint_names_;
   ros::ServiceClient canopen_srv_get_client_;
 };
 
-} // namespace prbt_support
-#endif // PRBT_SUPPORT_SYSTEM_INFO_H
+}  // namespace prbt_support
+#endif  // PRBT_SUPPORT_SYSTEM_INFO_H

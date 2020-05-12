@@ -21,11 +21,9 @@
 
 namespace prbt_hardware_support
 {
-
 BrakeTestExecutor::BrakeTestExecutor(DetectRobotMotionFunc&& detect_robot_motion_func,
                                      ControllerHoldFunc&& controller_hold_func,
-                                     TriggerBrakeTestFunc&& trigger_brake_test_func,
-                                     ControllerUnholdFunc&& unhold_func,
+                                     TriggerBrakeTestFunc&& trigger_brake_test_func, ControllerUnholdFunc&& unhold_func,
                                      BrakeTestResultFunc&& brake_test_result_func)
   : detect_robot_motion_func_(detect_robot_motion_func)
   , hold_controller_func_(controller_hold_func)
@@ -59,8 +57,7 @@ BrakeTestExecutor::BrakeTestExecutor(DetectRobotMotionFunc&& detect_robot_motion
   }
 }
 
-bool BrakeTestExecutor::executeBrakeTest(pilz_msgs::BrakeTest::Request& /*req*/,
-                                         pilz_msgs::BrakeTest::Response& res)
+bool BrakeTestExecutor::executeBrakeTest(pilz_msgs::BrakeTest::Request& /*req*/, pilz_msgs::BrakeTest::Response& res)
 {
   if (detect_robot_motion_func_())
   {
@@ -86,8 +83,7 @@ bool BrakeTestExecutor::executeBrakeTest(pilz_msgs::BrakeTest::Request& /*req*/,
 
   unhold_controller_func_();
 
-
-  if(!brake_test_result_func_(adapter_result.success))
+  if (!brake_test_result_func_(adapter_result.success))
   {
     res.success = false;
     res.error_msg = "Failed to send brake test result";
@@ -97,9 +93,8 @@ bool BrakeTestExecutor::executeBrakeTest(pilz_msgs::BrakeTest::Request& /*req*/,
     res.success = adapter_result.success;
     res.error_msg = adapter_result.error_msg;
   }
-  
 
   return true;
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support

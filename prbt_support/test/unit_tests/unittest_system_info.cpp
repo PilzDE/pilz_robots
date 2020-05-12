@@ -36,14 +36,13 @@
 
 namespace system_info_tests
 {
-
 using canopen_chain_node::GetObject;
 using namespace prbt_support;
 using namespace testing;
 
-static const std::string GET_OBJECT_TOPIC_NAME{"get_object"};
-static const std::string JOINT_STATES_TOPIC_NAME{"joint_states"};
-static constexpr unsigned int JOINT_STATES_TOPIC_QUEUE_SIZE{1};
+static const std::string GET_OBJECT_TOPIC_NAME{ "get_object" };
+static const std::string JOINT_STATES_TOPIC_NAME{ "joint_states" };
+static constexpr unsigned int JOINT_STATES_TOPIC_QUEUE_SIZE{ 1 };
 
 /**
  * @brief Collection of tests checking the functionality of the SystemInfo
@@ -59,28 +58,25 @@ public:
   void publishJointState();
 
 protected:
-  MOCK_METHOD2(executeGetObject,  bool(GetObject::Request&, GetObject::Response&));
+  MOCK_METHOD2(executeGetObject, bool(GetObject::Request&, GetObject::Response&));
 
   void advertiseGetObjectService();
 
 protected:
   // Needed so that service callback are proecessed. Otherwise test in which
   // service are calls will hang.
-  ros::AsyncSpinner spinner_ {2};
+  ros::AsyncSpinner spinner_{ 2 };
 
-  const std::vector<std::string> joint_names_ {"joint1", "joint2"};
+  const std::vector<std::string> joint_names_{ "joint1", "joint2" };
   ros::ServiceServer get_obj_service_;
   std::thread publisher_thread_;
-  std::atomic_bool terminate_ {false};
-
+  std::atomic_bool terminate_{ false };
 };
 
 void SystemInfoTests::advertiseGetObjectService()
 {
-  ros::NodeHandle driver_nh {"/prbt/driver/"};
-  get_obj_service_ = driver_nh.advertiseService(GET_OBJECT_TOPIC_NAME,
-                                                &SystemInfoTests::executeGetObject,
-                                                this);
+  ros::NodeHandle driver_nh{ "/prbt/driver/" };
+  get_obj_service_ = driver_nh.advertiseService(GET_OBJECT_TOPIC_NAME, &SystemInfoTests::executeGetObject, this);
 }
 
 void SystemInfoTests::SetUp()
@@ -88,8 +84,8 @@ void SystemInfoTests::SetUp()
   spinner_.start();
 
   // Set joint names on parameter server
-  ros::NodeHandle driver_nh {"/prbt/driver/"};
-  for(unsigned int i = 0; i < joint_names_.size(); ++i)
+  ros::NodeHandle driver_nh{ "/prbt/driver/" };
+  for (unsigned int i = 0; i < joint_names_.size(); ++i)
   {
     driver_nh.setParam("nodes/" + joint_names_.at(i) + "/id", static_cast<int>(i));
   }
@@ -109,12 +105,11 @@ void SystemInfoTests::TearDown()
 
 void SystemInfoTests::publishJointState()
 {
-  ros::NodeHandle global_nh {"/"};
-  ros::Publisher joint_state_pub = global_nh.advertise<sensor_msgs::JointState>(
-        JOINT_STATES_TOPIC_NAME,
-        JOINT_STATES_TOPIC_QUEUE_SIZE);
+  ros::NodeHandle global_nh{ "/" };
+  ros::Publisher joint_state_pub =
+      global_nh.advertise<sensor_msgs::JointState>(JOINT_STATES_TOPIC_NAME, JOINT_STATES_TOPIC_QUEUE_SIZE);
 
-  while(!terminate_ && ros::ok())
+  while (!terminate_ && ros::ok())
   {
     joint_state_pub.publish(sensor_msgs::JointState());
     ros::Duration(0.5).sleep();
@@ -126,8 +121,8 @@ void SystemInfoTests::publishJointState()
  */
 TEST_F(SystemInfoTests, TestExceptions)
 {
-  const std::string exp_msg {"Test-Msg"};
-  std::shared_ptr<SystemInfoException> ex {new SystemInfoException(exp_msg)};
+  const std::string exp_msg{ "Test-Msg" };
+  std::shared_ptr<SystemInfoException> ex{ new SystemInfoException(exp_msg) };
   EXPECT_TRUE(std::string(ex->what()) == exp_msg);
 }
 
@@ -137,9 +132,9 @@ TEST_F(SystemInfoTests, TestExceptions)
  */
 TEST_F(SystemInfoTests, testNodeNamesMissing)
 {
-  ros::NodeHandle nh{"~"};
+  ros::NodeHandle nh{ "~" };
   nh.deleteParam("/prbt/driver/nodes");
-  EXPECT_THROW(SystemInfo{nh}, SystemInfoException);
+  EXPECT_THROW(SystemInfo{ nh }, SystemInfoException);
 }
 
 /**
@@ -153,10 +148,10 @@ TEST_F(SystemInfoTests, testCANUpAndRunning)
   publisher_thread_.join();
 
   // Variable stating if the constructor is finished or not.
-  std::atomic_bool ctor_called {false};
+  std::atomic_bool ctor_called{ false };
   // Start thread which allows us to asynchronously call the constructor
-  std::thread async_ctor_call_thread = std::thread([this, &ctor_called] () {
-    ros::NodeHandle nh{"~"};
+  std::thread async_ctor_call_thread = std::thread([this, &ctor_called]() {
+    ros::NodeHandle nh{ "~" };
     SystemInfo info(nh);
     ctor_called = true;
     this->triggerClearEvent("ctor_called");
@@ -189,10 +184,10 @@ TEST_F(SystemInfoTests, testCANServiceUpAndRunning)
   get_obj_service_.shutdown();
 
   // Variable stating if the constructor is finished or not.
-  std::atomic_bool ctor_called {false};
+  std::atomic_bool ctor_called{ false };
   // Start thread which allows us to asynchronously call the constructor
-  std::thread async_ctor_call_thread = std::thread([this, &ctor_called] () {
-    ros::NodeHandle nh{"~"};
+  std::thread async_ctor_call_thread = std::thread([this, &ctor_called]() {
+    ros::NodeHandle nh{ "~" };
     SystemInfo info(nh);
     ctor_called = true;
     this->triggerClearEvent("ctor_called");
@@ -219,17 +214,15 @@ TEST_F(SystemInfoTests, testCANServiceUpAndRunning)
  */
 TEST_F(SystemInfoTests, testServiceResponseFalse)
 {
-  EXPECT_CALL(*this, executeGetObject(_,_))
+  EXPECT_CALL(*this, executeGetObject(_, _))
       .Times(1)
-      .WillRepeatedly(testing::Invoke(
-                        [](GetObject::Request&, GetObject::Response& res){
-                        res.success = false;
-                        return true;
-                      }
-                      ));
+      .WillRepeatedly(testing::Invoke([](GetObject::Request&, GetObject::Response& res) {
+        res.success = false;
+        return true;
+      }));
 
-  ros::NodeHandle nh{"~"};
-  SystemInfo info {nh};
+  ros::NodeHandle nh{ "~" };
+  SystemInfo info{ nh };
   EXPECT_THROW(info.getFirmwareVersions(), SystemInfoException);
 }
 
@@ -238,16 +231,12 @@ TEST_F(SystemInfoTests, testServiceResponseFalse)
  */
 TEST_F(SystemInfoTests, testServiceFail)
 {
-  EXPECT_CALL(*this, executeGetObject(_,_))
+  EXPECT_CALL(*this, executeGetObject(_, _))
       .Times(1)
-      .WillRepeatedly(testing::Invoke(
-                        [](GetObject::Request&, GetObject::Response&){
-                        return false;
-                      }
-                      ));
+      .WillRepeatedly(testing::Invoke([](GetObject::Request&, GetObject::Response&) { return false; }));
 
-  ros::NodeHandle nh{"~"};
-  SystemInfo info {nh};
+  ros::NodeHandle nh{ "~" };
+  SystemInfo info{ nh };
   EXPECT_THROW(info.getFirmwareVersions(), SystemInfoException);
 }
 
@@ -257,29 +246,29 @@ TEST_F(SystemInfoTests, testServiceFail)
  */
 TEST_F(SystemInfoTests, testGetFirmwareVersions)
 {
-  ASSERT_EQ(2u, joint_names_.size()) << "Number of joints in test set-up have changed => Change expected version container in test accordingly.";
+  ASSERT_EQ(2u, joint_names_.size()) << "Number of joints in test set-up have changed => Change expected version "
+                                        "container in test accordingly.";
 
-  const FirmwareCont exp_versions { {joint_names_.at(0), "100 Build:11158 Date:2018-06-07 16:49:55"},
-                                    {joint_names_.at(1), "101 Build:11158 Date:2018-06-07 16:49:55"}};
+  const FirmwareCont exp_versions{ { joint_names_.at(0), "100 Build:11158 Date:2018-06-07 16:49:55" },
+                                   { joint_names_.at(1), "101 Build:11158 Date:2018-06-07 16:49:55" } };
 
-  EXPECT_CALL(*this, executeGetObject(_,_))
+  EXPECT_CALL(*this, executeGetObject(_, _))
       .Times(2)
-      .WillRepeatedly(testing::Invoke(
-                        [exp_versions](GetObject::Request& req, GetObject::Response& res){
-                        res.value = exp_versions.at(req.node);
-                        res.success = true;
-                        return true;
-                      }
-                      ));
+      .WillRepeatedly(testing::Invoke([exp_versions](GetObject::Request& req, GetObject::Response& res) {
+        res.value = exp_versions.at(req.node);
+        res.success = true;
+        return true;
+      }));
 
   // Check that returned versions from service are correct
-  ros::NodeHandle nh{"~"};
-  SystemInfo info {nh};
-  FirmwareCont actual_version_cont {info.getFirmwareVersions()};
-  for(const auto& joint : joint_names_)
+  ros::NodeHandle nh{ "~" };
+  SystemInfo info{ nh };
+  FirmwareCont actual_version_cont{ info.getFirmwareVersions() };
+  for (const auto& joint : joint_names_)
   {
     EXPECT_TRUE(actual_version_cont.find(joint) != actual_version_cont.cend()) << "No version for joint found";
-    EXPECT_EQ(exp_versions.at(joint), actual_version_cont.at(joint)) << "Expected and actual firmware version do not match";
+    EXPECT_EQ(exp_versions.at(joint), actual_version_cont.at(joint)) << "Expected and actual firmware version do not "
+                                                                        "match";
   }
 }
 
@@ -289,37 +278,35 @@ TEST_F(SystemInfoTests, testGetFirmwareVersions)
  */
 TEST_F(SystemInfoTests, testGetFirmwareVersionsResizeTo40Chars)
 {
-  ASSERT_EQ(2u, joint_names_.size()) << "Number of joints in test set-up have changed => Change expected version container in test accordingly.";
+  ASSERT_EQ(2u, joint_names_.size()) << "Number of joints in test set-up have changed => Change expected version "
+                                        "container in test accordingly.";
 
-  const FirmwareCont exp_versions { {joint_names_.at(0), "100 Build:11158 Date:2018-06-07 16:49:55"},
-                                    {joint_names_.at(1), "101 Build:11158 Date:2018-06-07 16:49:55"}};
+  const FirmwareCont exp_versions{ { joint_names_.at(0), "100 Build:11158 Date:2018-06-07 16:49:55" },
+                                   { joint_names_.at(1), "101 Build:11158 Date:2018-06-07 16:49:55" } };
 
-  EXPECT_CALL(*this, executeGetObject(_,_))
+  EXPECT_CALL(*this, executeGetObject(_, _))
       .Times(2)
-      .WillRepeatedly(testing::Invoke(
-                        [exp_versions](GetObject::Request& req, GetObject::Response& res){
-                        res.value = exp_versions.at(req.node) + "AdditionalStuffWhichNeedsToBeRemoved";
-                        res.success = true;
-                        return true;
-                      }
-                      ));
+      .WillRepeatedly(testing::Invoke([exp_versions](GetObject::Request& req, GetObject::Response& res) {
+        res.value = exp_versions.at(req.node) + "AdditionalStuffWhichNeedsToBeRemoved";
+        res.success = true;
+        return true;
+      }));
 
   // Check that returned versions from service are correct
-  ros::NodeHandle nh{"~"};
-  SystemInfo info {nh};
-  FirmwareCont actual_version_cont {info.getFirmwareVersions()};
-  for(const auto& joint : joint_names_)
+  ros::NodeHandle nh{ "~" };
+  SystemInfo info{ nh };
+  FirmwareCont actual_version_cont{ info.getFirmwareVersions() };
+  for (const auto& joint : joint_names_)
   {
     EXPECT_TRUE(actual_version_cont.find(joint) != actual_version_cont.cend()) << "No version for joint found";
-    EXPECT_EQ(exp_versions.at(joint), actual_version_cont.at(joint)) << "Expected and actual firmware version do not match";
+    EXPECT_EQ(exp_versions.at(joint), actual_version_cont.at(joint)) << "Expected and actual firmware version do not "
+                                                                        "match";
   }
 }
 
-
 }  // namespace system_info_tests
 
-
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "system_info_test");
   ros::NodeHandle nh;

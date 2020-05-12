@@ -24,8 +24,10 @@ using namespace prbt_hardware_support;
 
 namespace test_namespace
 {
-  class TestClass {};
-}
+class TestClass
+{
+};
+}  // namespace test_namespace
 
 /**
  * @brief Test the function turning a given instance into a string of its classname
@@ -37,7 +39,7 @@ TEST(ClassNameTest, testGettingClassName)
   EXPECT_EQ("TestClass", className(full_name));
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

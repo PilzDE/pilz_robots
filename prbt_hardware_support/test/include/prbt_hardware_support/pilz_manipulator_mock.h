@@ -33,36 +33,30 @@
  */
 class ManipulatorMock
 {
-  public:
+public:
+  void advertiseHoldService(ros::NodeHandle nh, std::string hold_service_name);
+  void advertiseUnholdService(ros::NodeHandle nh, std::string unhold_service_name);
+  void advertiseHaltService(ros::NodeHandle nh, std::string halt_service_name);
+  void advertiseRecoverService(ros::NodeHandle nh, std::string recover_service_name);
 
-    void advertiseHoldService(ros::NodeHandle nh, std::string hold_service_name);
-    void advertiseUnholdService(ros::NodeHandle nh, std::string unhold_service_name);
-    void advertiseHaltService(ros::NodeHandle nh, std::string halt_service_name);
-    void advertiseRecoverService(ros::NodeHandle nh, std::string recover_service_name);
+  void advertiseServices(ros::NodeHandle nh, std::string hold_service_name, std::string unhold_service_name,
+                         std::string halt_service_name, std::string recover_service_name);
 
-    void advertiseServices(ros::NodeHandle nh,
-                           std::string hold_service_name,
-                           std::string unhold_service_name,
-                           std::string halt_service_name,
-                           std::string recover_service_name);
+  MOCK_METHOD2(holdCb, bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
+  MOCK_METHOD2(unholdCb, bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
+  MOCK_METHOD2(haltCb, bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
+  MOCK_METHOD2(recoverCb, bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
 
+private:
+  bool holdCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp);
+  bool unholdCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp);
+  bool haltCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp);
+  bool recoverCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp);
 
-    MOCK_METHOD2(holdCb,        bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
-    MOCK_METHOD2(unholdCb,      bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
-    MOCK_METHOD2(haltCb,        bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
-    MOCK_METHOD2(recoverCb,     bool(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp));
-
-  private:
-    bool holdCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp);
-    bool unholdCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp);
-    bool haltCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp);
-    bool recoverCb_internal(std_srvs::Trigger::Request& req, std_srvs::Trigger::Response& resp);
-
-    ros::ServiceServer hold_srv_;
-    ros::ServiceServer unhold_srv_;
-    ros::ServiceServer halt_srv_;
-    ros::ServiceServer recover_srv_;
-
+  ros::ServiceServer hold_srv_;
+  ros::ServiceServer unhold_srv_;
+  ros::ServiceServer halt_srv_;
+  ros::ServiceServer recover_srv_;
 };
 
 void ManipulatorMock::advertiseHoldService(ros::NodeHandle nh, std::string hold_service_name)
@@ -113,10 +107,8 @@ bool ManipulatorMock::recoverCb_internal(std_srvs::Trigger::Request& req, std_sr
   return recoverCb(req, resp);
 }
 
-void ManipulatorMock::advertiseServices(ros::NodeHandle nh,
-                                        std::string hold_service_name,
-                                        std::string unhold_service_name,
-                                        std::string halt_service_name,
+void ManipulatorMock::advertiseServices(ros::NodeHandle nh, std::string hold_service_name,
+                                        std::string unhold_service_name, std::string halt_service_name,
                                         std::string recover_service_name)
 {
   advertiseHoldService(nh, hold_service_name);
@@ -125,4 +117,4 @@ void ManipulatorMock::advertiseServices(ros::NodeHandle nh,
   advertiseRecoverService(nh, recover_service_name);
 }
 
-#endif // PRBT_HARDWARE_SUPPORT_PILZ_MANIPULATOR_MOCK_H
+#endif  // PRBT_HARDWARE_SUPPORT_PILZ_MANIPULATOR_MOCK_H

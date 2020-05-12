@@ -33,7 +33,6 @@
 
 namespace prbt_hardware_support
 {
-
 /**
  * @brief Connects to a modbus server and publishes the received data into ROS.
  */
@@ -52,13 +51,11 @@ public:
    * @param modbus_write_service_name Name under which the modbus write service is advertised.
    * @param read_frequency_hz Defines how often Modbus registers are read in.
    */
-  PilzModbusClient(ros::NodeHandle& nh,
-                   const std::vector<unsigned short>& registers_to_read,
-                   ModbusClientUniquePtr modbus_client,
-                   unsigned int response_timeout_ms,
-                   const std::string& modbus_read_topic_name,
-                   const std::string& modbus_write_service_name,
+  PilzModbusClient(ros::NodeHandle& nh, const std::vector<unsigned short>& registers_to_read,
+                   ModbusClientUniquePtr modbus_client, unsigned int response_timeout_ms,
+                   const std::string& modbus_read_topic_name, const std::string& modbus_write_service_name,
                    double read_frequency_hz = DEFAULT_MODBUS_READ_FREQUENCY_HZ);
+
 public:
   /**
    * @brief Tries to connect to a modbus server.
@@ -76,7 +73,7 @@ public:
    * @param timeout_ms between retries
    * @return True if a connection is established, false otherwise.
    */
-  bool init(const char* ip, unsigned int port, unsigned int retries, const ros::Duration &timeout_ms);
+  bool init(const char* ip, unsigned int port, unsigned int retries, const ros::Duration& timeout_ms);
 
   /**
    * @brief Publishes the register values as messages.
@@ -103,7 +100,7 @@ public:
   /**
    * @brief Splits a vector of integers into a vector of vectors with consecutive groups
    */
-  std::vector<std::vector<unsigned short>> static splitIntoBlocks(std::vector<unsigned short> &in);
+  std::vector<std::vector<unsigned short>> static splitIntoBlocks(std::vector<unsigned short>& in);
 
 private:
   void sendDisconnectMsg();
@@ -112,13 +109,12 @@ private:
    * @brief Stores the register which have to be send to the modbus server
    * in a local buffer for further processing by the modbus thread.
    */
-  bool modbus_write_service_cb(WriteModbusRegister::Request& req,
-                               WriteModbusRegister::Response& res);
+  bool modbus_write_service_cb(WriteModbusRegister::Request& req, WriteModbusRegister::Response& res);
 
 private:
   /**
-     * @brief States of the Modbus-client.
-     */
+   * @brief States of the Modbus-client.
+   */
   enum State
   {
     not_initialized,
@@ -136,12 +132,12 @@ private:
   const double READ_FREQUENCY_HZ;
 
 private:
-  static constexpr double DEFAULT_MODBUS_READ_FREQUENCY_HZ {500};
-  static constexpr int DEFAULT_QUEUE_SIZE_MODBUS {1};
+  static constexpr double DEFAULT_MODBUS_READ_FREQUENCY_HZ{ 500 };
+  static constexpr int DEFAULT_QUEUE_SIZE_MODBUS{ 1 };
 
 private:
-  std::atomic<State> state_ {State::not_initialized};
-  std::atomic_bool stop_run_ {false};
+  std::atomic<State> state_{ State::not_initialized };
+  std::atomic_bool stop_run_{ false };
   ModbusClientUniquePtr modbus_client_;
   ros::Publisher modbus_read_pub_;
   ros::Subscriber modbus_write_sub_;
@@ -170,6 +166,6 @@ inline bool PilzModbusClient::modbus_write_service_cb(WriteModbusRegister::Reque
   return true;
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support
 
-#endif // PRBT_HARDWARE_SUPPORT_CLIENT_NODE_H
+#endif  // PRBT_HARDWARE_SUPPORT_CLIENT_NODE_H

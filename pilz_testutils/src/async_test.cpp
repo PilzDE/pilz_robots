@@ -23,10 +23,9 @@
 
 namespace testing
 {
-
 bool AsyncTest::barricade(const std::string& clear_event, const int timeout_ms)
 {
-  return barricade({clear_event}, timeout_ms);
+  return barricade({ clear_event }, timeout_ms);
 }
 
 bool AsyncTest::barricade(std::initializer_list<std::string> clear_events, const int timeout_ms)
@@ -41,12 +40,12 @@ bool AsyncTest::barricade(std::initializer_list<std::string> clear_events, const
   ROS_DEBUG_NAMED("Test", "Adding Barricade[%s]", events_stringstream.str().c_str());
 
   std::copy_if(clear_events.begin(), clear_events.end(), std::inserter(clear_events_, clear_events_.end()),
-               [this](std::string event){ return this->waitlist_.count(event) == 0; });
+               [this](std::string event) { return this->waitlist_.count(event) == 0; });
   waitlist_.clear();
 
   auto end_time_point = std::chrono::system_clock::now() + std::chrono::milliseconds(timeout_ms);
 
-  while(!clear_events_.empty())
+  while (!clear_events_.empty())
   {
     if (timeout_ms < 0)
     {
@@ -80,4 +79,4 @@ void AsyncTest::triggerClearEvent(const std::string& event)
   cv_.notify_one();
 }
 
-} // namespace testing
+}  // namespace testing

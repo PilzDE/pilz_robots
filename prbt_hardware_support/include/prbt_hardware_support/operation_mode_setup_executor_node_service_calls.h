@@ -25,8 +25,7 @@
 
 namespace prbt_hardware_support
 {
-
-template<class T>
+template <class T>
 static bool setSpeedLimitSrv(T& srv_client, const double& speed_limit)
 {
   SetSpeedLimit srv_msg;
@@ -39,6 +38,6 @@ static bool setSpeedLimitSrv(T& srv_client, const double& speed_limit)
   return call_success;
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support
 
-#endif // OPERATION_MODE_SETUP_EXECUTOR_NODE_SERVICE_CALLS_H
+#endif  // OPERATION_MODE_SETUP_EXECUTOR_NODE_SERVICE_CALLS_H

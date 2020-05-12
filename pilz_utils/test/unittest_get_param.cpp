@@ -24,10 +24,9 @@
 
 namespace pilz_utils
 {
-
-static const std::string DUMMY_PARAM_NAME{"dummy_parameter"};
-static const std::string FALSE_PARAM_NAME{"false_name"};
-static const std::string DUMMY_PARAM_VALUE{"parameter value"};
+static const std::string DUMMY_PARAM_NAME{ "dummy_parameter" };
+static const std::string FALSE_PARAM_NAME{ "false_name" };
+static const std::string DUMMY_PARAM_VALUE{ "parameter value" };
 
 /**
  * @brief Test increases function coverage by ensuring that all Dtor variants
@@ -36,7 +35,7 @@ static const std::string DUMMY_PARAM_VALUE{"parameter value"};
 TEST(GetParamTest, testGetParamExceptionDtor)
 {
   {
-    std::shared_ptr<GetParamException> ex {new GetParamException("Test msg")};
+    std::shared_ptr<GetParamException> ex{ new GetParamException("Test msg") };
   }
 }
 
@@ -56,7 +55,7 @@ TEST(GetParamTest, testGetParamExceptionDtor)
 TEST(GetParamTest, testAll)
 {
   std::string param_value;
-  ros::NodeHandle nh{"~"};
+  ros::NodeHandle nh{ "~" };
 
   // STEP 1
   try
@@ -64,7 +63,7 @@ TEST(GetParamTest, testAll)
     param_value = getParam<std::string>(nh, DUMMY_PARAM_NAME);
     EXPECT_EQ(DUMMY_PARAM_VALUE, param_value) << "Unexpected pararmeter value read from parameter server.";
   }
-  catch(const GetParamException& e)
+  catch (const GetParamException& e)
   {
     ADD_FAILURE() << e.what();
   }
@@ -76,9 +75,9 @@ TEST(GetParamTest, testAll)
   EXPECT_THROW(getParam<std::string>(nh, FALSE_PARAM_NAME), GetParamException);
 }
 
-} // namespace pilz_utils
+}  // namespace pilz_utils
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "unittest_get_param");
   ros::NodeHandle nh;

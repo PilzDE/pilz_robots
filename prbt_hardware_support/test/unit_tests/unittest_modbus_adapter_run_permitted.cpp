@@ -34,19 +34,16 @@
 
 namespace prbt_hardware_support
 {
+static constexpr bool RUN_PERMITTED_CLEAR{ true };
+static constexpr bool RUN_PERMITTED_ACTIVE{ false };
 
-static constexpr bool RUN_PERMITTED_CLEAR {true};
-static constexpr bool RUN_PERMITTED_ACTIVE {false};
+static const ModbusApiSpec TEST_API_SPEC{ { modbus_api_spec::VERSION, 513 }, { modbus_api_spec::RUN_PERMITTED, 512 } };
 
-static const ModbusApiSpec TEST_API_SPEC{ {modbus_api_spec::VERSION, 513},
-                                          {modbus_api_spec::RUN_PERMITTED, 512} };
-
-static constexpr int MODBUS_API_VERSION_FOR_TESTING {2};
+static constexpr int MODBUS_API_VERSION_FOR_TESTING{ 2 };
 
 using namespace prbt_hardware_support;
 
 using std::placeholders::_1;
-
 
 class ModbusAdapterRunPermittedTest : public ::testing::Test
 {
@@ -55,16 +52,16 @@ public:
 
 public:
   MOCK_METHOD1(sendRunPermittedUpdate, void(const bool run_permitted));
-
 };
 
 ModbusMsgInStampedPtr ModbusAdapterRunPermittedTest::createDefaultRunPermittedModbusMsg(bool run_permitted)
 {
-  static int msg_time_counter {1};
+  static int msg_time_counter{ 1 };
   RegCont tab_reg(TEST_API_SPEC.size());
   tab_reg[0] = run_permitted;
   tab_reg[1] = MODBUS_API_VERSION_FOR_TESTING;
-  ModbusMsgInStampedPtr msg {ModbusMsgInBuilder::createDefaultModbusMsgIn(TEST_API_SPEC.getMinRegisterDefinition(), tab_reg)};
+  ModbusMsgInStampedPtr msg{ ModbusMsgInBuilder::createDefaultModbusMsgIn(TEST_API_SPEC.getMinRegisterDefinition(),
+                                                                          tab_reg) };
   msg->header.stamp = ros::Time(msg_time_counter++);
   return msg;
 }
@@ -75,7 +72,7 @@ ModbusMsgInStampedPtr ModbusAdapterRunPermittedTest::createDefaultRunPermittedMo
  */
 TEST_F(ModbusAdapterRunPermittedTest, testModbusMsgWrapperExceptionDtor)
 {
-  std::shared_ptr<ModbusMsgWrapperException> es{new ModbusMsgWrapperException("Test msg")};
+  std::shared_ptr<ModbusMsgWrapperException> es{ new ModbusMsgWrapperException("Test msg") };
 }
 
 /**
@@ -84,8 +81,8 @@ TEST_F(ModbusAdapterRunPermittedTest, testModbusMsgWrapperExceptionDtor)
  */
 TEST_F(ModbusAdapterRunPermittedTest, testModbusMsgRunPermittedWrapperDtor)
 {
-  ModbusMsgInStampedConstPtr msg_const_ptr {createDefaultRunPermittedModbusMsg(RUN_PERMITTED_CLEAR)};
-  std::shared_ptr<ModbusMsgRunPermittedWrapper> ex {new ModbusMsgRunPermittedWrapper(msg_const_ptr, TEST_API_SPEC)};
+  ModbusMsgInStampedConstPtr msg_const_ptr{ createDefaultRunPermittedModbusMsg(RUN_PERMITTED_CLEAR) };
+  std::shared_ptr<ModbusMsgRunPermittedWrapper> ex{ new ModbusMsgRunPermittedWrapper(msg_const_ptr, TEST_API_SPEC) };
 }
 
 /**
@@ -97,8 +94,9 @@ TEST_F(ModbusAdapterRunPermittedTest, testRunPermittedClearMsg)
 {
   EXPECT_CALL(*this, sendRunPermittedUpdate(RUN_PERMITTED_CLEAR)).Times(1);
 
-  ModbusAdapterRunPermitted run_permitted_adapter {ModbusAdapterRunPermitted(std::bind(&ModbusAdapterRunPermittedTest::sendRunPermittedUpdate, this, _1), TEST_API_SPEC)};
-  run_permitted_adapter.modbusMsgCallback( createDefaultRunPermittedModbusMsg(RUN_PERMITTED_CLEAR) );
+  ModbusAdapterRunPermitted run_permitted_adapter{ ModbusAdapterRunPermitted(
+      std::bind(&ModbusAdapterRunPermittedTest::sendRunPermittedUpdate, this, _1), TEST_API_SPEC) };
+  run_permitted_adapter.modbusMsgCallback(createDefaultRunPermittedModbusMsg(RUN_PERMITTED_CLEAR));
 }
 
 /**
@@ -109,8 +107,9 @@ TEST_F(ModbusAdapterRunPermittedTest, testRunPermittedActiveMsg)
 {
   EXPECT_CALL(*this, sendRunPermittedUpdate(RUN_PERMITTED_ACTIVE)).Times(1);
 
-  ModbusAdapterRunPermitted run_permitted_adapter {ModbusAdapterRunPermitted(std::bind(&ModbusAdapterRunPermittedTest::sendRunPermittedUpdate, this, _1), TEST_API_SPEC)};
-  run_permitted_adapter.modbusMsgCallback( createDefaultRunPermittedModbusMsg(RUN_PERMITTED_ACTIVE) );
+  ModbusAdapterRunPermitted run_permitted_adapter{ ModbusAdapterRunPermitted(
+      std::bind(&ModbusAdapterRunPermittedTest::sendRunPermittedUpdate, this, _1), TEST_API_SPEC) };
+  run_permitted_adapter.modbusMsgCallback(createDefaultRunPermittedModbusMsg(RUN_PERMITTED_ACTIVE));
 }
 
 /**
@@ -124,11 +123,12 @@ TEST_F(ModbusAdapterRunPermittedTest, testDisconnectNoRunPermittedMsg)
 {
   EXPECT_CALL(*this, sendRunPermittedUpdate(RUN_PERMITTED_ACTIVE)).Times(1);
 
-  ModbusAdapterRunPermitted run_permitted_adapter {ModbusAdapterRunPermitted(std::bind(&ModbusAdapterRunPermittedTest::sendRunPermittedUpdate, this, _1), TEST_API_SPEC)};
+  ModbusAdapterRunPermitted run_permitted_adapter{ ModbusAdapterRunPermitted(
+      std::bind(&ModbusAdapterRunPermittedTest::sendRunPermittedUpdate, this, _1), TEST_API_SPEC) };
 
   ModbusMsgInStampedPtr msg = createDefaultRunPermittedModbusMsg(RUN_PERMITTED_CLEAR);
   msg->disconnect.data = true;
-  run_permitted_adapter.modbusMsgCallback( msg );
+  run_permitted_adapter.modbusMsgCallback(msg);
 }
 
 /**
@@ -143,11 +143,12 @@ TEST_F(ModbusAdapterRunPermittedTest, testDisconnectWithRunPermittedMsg)
 {
   EXPECT_CALL(*this, sendRunPermittedUpdate(RUN_PERMITTED_ACTIVE)).Times(1);
 
-  ModbusAdapterRunPermitted run_permitted_adapter {ModbusAdapterRunPermitted(std::bind(&ModbusAdapterRunPermittedTest::sendRunPermittedUpdate, this, _1), TEST_API_SPEC)};
+  ModbusAdapterRunPermitted run_permitted_adapter{ ModbusAdapterRunPermitted(
+      std::bind(&ModbusAdapterRunPermittedTest::sendRunPermittedUpdate, this, _1), TEST_API_SPEC) };
 
   ModbusMsgInStampedPtr msg = createDefaultRunPermittedModbusMsg(RUN_PERMITTED_ACTIVE);
   msg->disconnect.data = true;
-  run_permitted_adapter.modbusMsgCallback( msg );
+  run_permitted_adapter.modbusMsgCallback(msg);
 }
 
 /**
@@ -160,13 +161,14 @@ TEST_F(ModbusAdapterRunPermittedTest, testDisconnectPure)
 {
   EXPECT_CALL(*this, sendRunPermittedUpdate(RUN_PERMITTED_ACTIVE)).Times(1);
 
-  ModbusAdapterRunPermitted run_permitted_adapter {ModbusAdapterRunPermitted(std::bind(&ModbusAdapterRunPermittedTest::sendRunPermittedUpdate, this, _1), TEST_API_SPEC)};
+  ModbusAdapterRunPermitted run_permitted_adapter{ ModbusAdapterRunPermitted(
+      std::bind(&ModbusAdapterRunPermittedTest::sendRunPermittedUpdate, this, _1), TEST_API_SPEC) };
 
-  ModbusMsgInStampedPtr msg (new ModbusMsgInStamped());
+  ModbusMsgInStampedPtr msg(new ModbusMsgInStamped());
   ros::Time::init();
   msg->header.stamp = ros::Time::now();
   msg->disconnect.data = true;
-  run_permitted_adapter.modbusMsgCallback( msg );
+  run_permitted_adapter.modbusMsgCallback(msg);
 }
 
 /**
@@ -179,11 +181,12 @@ TEST_F(ModbusAdapterRunPermittedTest, testNoVersion)
 {
   EXPECT_CALL(*this, sendRunPermittedUpdate(RUN_PERMITTED_ACTIVE)).Times(1);
 
-  ModbusAdapterRunPermitted run_permitted_adapter {ModbusAdapterRunPermitted(std::bind(&ModbusAdapterRunPermittedTest::sendRunPermittedUpdate, this, _1), TEST_API_SPEC)};
+  ModbusAdapterRunPermitted run_permitted_adapter{ ModbusAdapterRunPermitted(
+      std::bind(&ModbusAdapterRunPermittedTest::sendRunPermittedUpdate, this, _1), TEST_API_SPEC) };
 
   ModbusMsgInStampedPtr msg = createDefaultRunPermittedModbusMsg(RUN_PERMITTED_ACTIVE);
   msg->holding_registers.data.pop_back();
-  run_permitted_adapter.modbusMsgCallback( msg );
+  run_permitted_adapter.modbusMsgCallback(msg);
 }
 
 /**
@@ -196,13 +199,13 @@ TEST_F(ModbusAdapterRunPermittedTest, testWrongVersion)
 {
   EXPECT_CALL(*this, sendRunPermittedUpdate(RUN_PERMITTED_ACTIVE)).Times(1);
 
-  ModbusAdapterRunPermitted run_permitted_adapter {ModbusAdapterRunPermitted(std::bind(&ModbusAdapterRunPermittedTest::sendRunPermittedUpdate, this, _1), TEST_API_SPEC)};
+  ModbusAdapterRunPermitted run_permitted_adapter{ ModbusAdapterRunPermitted(
+      std::bind(&ModbusAdapterRunPermittedTest::sendRunPermittedUpdate, this, _1), TEST_API_SPEC) };
 
   ModbusMsgInStampedPtr msg = createDefaultRunPermittedModbusMsg(RUN_PERMITTED_ACTIVE);
   msg->holding_registers.data[1] = 0;
-  run_permitted_adapter.modbusMsgCallback( msg );
+  run_permitted_adapter.modbusMsgCallback(msg);
 }
-
 
 /**
  * @tests{Stop1_Trigger,
@@ -217,13 +220,13 @@ TEST_F(ModbusAdapterRunPermittedTest, testVersion1)
 {
   EXPECT_CALL(*this, sendRunPermittedUpdate(RUN_PERMITTED_ACTIVE)).Times(1);
 
-  ModbusAdapterRunPermitted run_permitted_adapter {ModbusAdapterRunPermitted(std::bind(&ModbusAdapterRunPermittedTest::sendRunPermittedUpdate, this, _1), TEST_API_SPEC)};
+  ModbusAdapterRunPermitted run_permitted_adapter{ ModbusAdapterRunPermitted(
+      std::bind(&ModbusAdapterRunPermittedTest::sendRunPermittedUpdate, this, _1), TEST_API_SPEC) };
 
   ModbusMsgInStampedPtr msg = createDefaultRunPermittedModbusMsg(RUN_PERMITTED_ACTIVE);
   msg->holding_registers.data[1] = 1;
-  run_permitted_adapter.modbusMsgCallback( msg );
+  run_permitted_adapter.modbusMsgCallback(msg);
 }
-
 
 /**
  * @tests{Stop1_Trigger,
@@ -235,12 +238,13 @@ TEST_F(ModbusAdapterRunPermittedTest, testNoRunPermitted)
 {
   EXPECT_CALL(*this, sendRunPermittedUpdate(RUN_PERMITTED_ACTIVE)).Times(1);
 
-  ModbusAdapterRunPermitted run_permitted_adapter {ModbusAdapterRunPermitted(std::bind(&ModbusAdapterRunPermittedTest::sendRunPermittedUpdate, this, _1), TEST_API_SPEC)};
+  ModbusAdapterRunPermitted run_permitted_adapter{ ModbusAdapterRunPermitted(
+      std::bind(&ModbusAdapterRunPermittedTest::sendRunPermittedUpdate, this, _1), TEST_API_SPEC) };
 
   ModbusMsgInStampedPtr msg = createDefaultRunPermittedModbusMsg(RUN_PERMITTED_ACTIVE);
   msg->holding_registers.data.erase(msg->holding_registers.data.begin());
   msg->holding_registers.layout.data_offset = TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION);
-  run_permitted_adapter.modbusMsgCallback( msg );
+  run_permitted_adapter.modbusMsgCallback(msg);
 }
 
 /**
@@ -248,10 +252,10 @@ TEST_F(ModbusAdapterRunPermittedTest, testNoRunPermitted)
  */
 TEST_F(ModbusAdapterRunPermittedTest, ModbusMsgExceptionCTOR)
 {
-  std::shared_ptr<ModbusMsgRunPermittedStatusMissing> exception_ptr{new ModbusMsgRunPermittedStatusMissing("test")};
+  std::shared_ptr<ModbusMsgRunPermittedStatusMissing> exception_ptr{ new ModbusMsgRunPermittedStatusMissing("test") };
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support
 
 int main(int argc, char** argv)
 {

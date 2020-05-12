@@ -19,14 +19,11 @@
 
 namespace prbt_hardware_support
 {
-
-Stop1Executor::Stop1Executor(const TServiceCallFunc& hold_func,
-                             const TServiceCallFunc& unhold_func,
-                             const TServiceCallFunc& recover_func,
-                             const TServiceCallFunc& halt_func)
+Stop1Executor::Stop1Executor(const TServiceCallFunc& hold_func, const TServiceCallFunc& unhold_func,
+                             const TServiceCallFunc& recover_func, const TServiceCallFunc& halt_func)
 {
   state_machine_ = std::unique_ptr<RunPermittedStateMachine>(
-        new RunPermittedStateMachine(recover_func, halt_func, hold_func, unhold_func) );
+      new RunPermittedStateMachine(recover_func, halt_func, hold_func, unhold_func));
 
   state_machine_->start();
 
@@ -58,8 +55,7 @@ void Stop1Executor::updateRunPermitted(const bool run_permitted)
   worker_cv_.notify_one();
 }
 
-bool Stop1Executor::updateRunPermittedCallback(std_srvs::SetBool::Request &req,
-                                               std_srvs::SetBool::Response &res)
+bool Stop1Executor::updateRunPermittedCallback(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res)
 {
   updateRunPermitted(req.data);
   res.success = true;
@@ -80,14 +76,13 @@ void Stop1Executor::workerThreadFun()
     AsyncRunPermittedTask task = state_machine_->task_queue_.front();
     state_machine_->task_queue_.pop();
 
-    sm_lock.unlock();               // | This part is executed async from
-    task.execute();                 // | the state machine since new run_permitted updates need to be handled
+    sm_lock.unlock();  // | This part is executed async from
+    task.execute();    // | the state machine since new run_permitted updates need to be handled
     // | during service calls.
-    sm_lock.lock();                 // |
+    sm_lock.lock();  // |
 
-    task.signalCompletion();  //Could add Task to Queue and does process_event on the state machine. Needs lock.
+    task.signalCompletion();  // Could add Task to Queue and does process_event on the state machine. Needs lock.
   }
 }
 
-
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support

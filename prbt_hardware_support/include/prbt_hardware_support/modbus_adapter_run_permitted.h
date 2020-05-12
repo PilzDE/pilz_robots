@@ -28,7 +28,6 @@
 
 namespace prbt_hardware_support
 {
-
 using UpdateRunPermittedFunc = std::function<void(const bool)>;
 
 /**
@@ -37,8 +36,7 @@ using UpdateRunPermittedFunc = std::function<void(const bool)>;
 class ModbusAdapterRunPermitted
 {
 public:
-  ModbusAdapterRunPermitted(UpdateRunPermittedFunc&& update_run_permitted_func,
-                            const ModbusApiSpec& api_spec);
+  ModbusAdapterRunPermitted(UpdateRunPermittedFunc&& update_run_permitted_func, const ModbusApiSpec& api_spec);
 
 public:
   /**
@@ -60,9 +58,8 @@ private:
   UpdateRunPermittedFunc update_run_permitted_;
 
 private:
-  static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {2};
+  static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{ 2 };
 };
 
-
-} // namespace prbt_hardware_support
-#endif // MODBUS_ADAPTER_RUN_PERMITTED_H
+}  // namespace prbt_hardware_support
+#endif  // MODBUS_ADAPTER_RUN_PERMITTED_H

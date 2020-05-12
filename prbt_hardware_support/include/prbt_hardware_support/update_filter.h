@@ -24,7 +24,6 @@
 
 namespace message_filters
 {
-
 /**
  * @brief Filters consecutive messages with the same timestamp. Only the first message passes, all consecutive
  * are dropped. It is templated on the message type to be filtered.
@@ -37,7 +36,7 @@ namespace message_filters
  *   filter.registerCallback(&filteredCallback);
  * \endcode
  */
-template<typename M>
+template <typename M>
 class UpdateFilter : public SimpleFilter<M>
 {
 public:
@@ -47,7 +46,7 @@ public:
   /**
    * @brief Construct the filter and connect to the output of another filter
    */
-  template<typename F>
+  template <typename F>
   UpdateFilter(F& f)
   {
     connectInput(f);
@@ -56,17 +55,18 @@ public:
   /**
    * @brief Connect to the output of another filter
    */
-  template<class F>
+  template <class F>
   void connectInput(F& f)
   {
     incoming_connection_.disconnect();
-    incoming_connection_ = f.registerCallback(typename UpdateFilter<M>::EventCallback(boost::bind(&UpdateFilter::cb, this, _1)));
+    incoming_connection_ =
+        f.registerCallback(typename UpdateFilter<M>::EventCallback(boost::bind(&UpdateFilter::cb, this, _1)));
   }
 
 private:
   void cb(const EventType& evt)
   {
-    if(evt.getMessage()->header.stamp == last_message_time_)
+    if (evt.getMessage()->header.stamp == last_message_time_)
     {
       return;
     }
@@ -81,7 +81,6 @@ private:
   ros::Time last_message_time_;
 };
 
+}  // namespace message_filters
 
-} // namespace message_filters
-
-#endif // UPDATE_FILTER_H
+#endif  // UPDATE_FILTER_H

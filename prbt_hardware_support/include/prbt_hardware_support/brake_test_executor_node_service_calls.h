@@ -26,13 +26,12 @@
 
 namespace prbt_hardware_support
 {
-
-template<class T>
+template <class T>
 static void triggerServiceCall(T& client)
 {
   ROS_DEBUG_STREAM("Calling service: " << client.getService() << ")");
   std_srvs::Trigger srv;
-  if ( !client.call(srv) )
+  if (!client.call(srv))
   {
     ROS_WARN_STREAM("Calling service " << client.getService() << " failed.");
     return;
@@ -41,17 +40,16 @@ static void triggerServiceCall(T& client)
   if (!srv.response.success)
   {
     ROS_WARN_STREAM("Execution of service " << client.getService()
-                    << " failed with error message\n:"
-                    << srv.response.message);
+                                            << " failed with error message\n:" << srv.response.message);
   }
 }
 
-template<class T>
+template <class T>
 static BrakeTest::Response executeBrakeTestCall(T& client)
 {
   ROS_DEBUG_STREAM("Calling service: " << client.getService() << ")");
   BrakeTest srv;
-  if ( !client.call(srv) )
+  if (!client.call(srv))
   {
     ROS_WARN_STREAM("Calling service " << client.getService() << " failed.");
     BrakeTest::Response res;
@@ -63,9 +61,8 @@ static BrakeTest::Response executeBrakeTestCall(T& client)
   return srv.response;
 }
 
-template<class T>
-static bool sendBrakeTestResultCall(T& client,
-                                    const bool brake_test_result)
+template <class T>
+static bool sendBrakeTestResultCall(T& client, const bool brake_test_result)
 {
   ROS_DEBUG_STREAM("Calling service: " << client.getService());
   SendBrakeTestResult srv;
@@ -73,6 +70,6 @@ static bool sendBrakeTestResultCall(T& client,
   return client.call(srv);
 }
 
-}
+}  // namespace prbt_hardware_support
 
-#endif // BRAKE_TEST_EXECUTOR_NODE_SERVICE_CALLS_H
+#endif  // BRAKE_TEST_EXECUTOR_NODE_SERVICE_CALLS_H

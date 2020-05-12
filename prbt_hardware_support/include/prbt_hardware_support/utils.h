@@ -18,17 +18,14 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-
 namespace prbt_hardware_support
 {
-
 // Extract pure class name from full class name (foo::Foo -> Foo)
 inline std::string className(std::string full_name)
 {
   return full_name.substr(full_name.rfind("::") + 2);
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support
 
-
-#endif // UTILS_H
+#endif  // UTILS_H
