@@ -27,7 +27,6 @@
 
 namespace prbt_hardware_support
 {
-
 /**
  * @brief Publishes information on the active operation mode. Also offers a service for querying the operation mode.
  */
@@ -49,8 +48,7 @@ private:
    */
   void initOperationModeService();
 
-  bool getOperationMode(GetOperationMode::Request& req,
-                        GetOperationMode::Response& res);
+  bool getOperationMode(GetOperationMode::Request& req, GetOperationMode::Response& res);
 
 private:
   //! Store the current operation mode according to OperationModes.msg
@@ -69,5 +67,5 @@ private:
   ros::ServiceServer operation_mode_server_;
 };
 
-} // namespace prbt_hardware_support
-#endif // ADAPTER_OPERATION_MODE_H
+}  // namespace prbt_hardware_support
+#endif  // ADAPTER_OPERATION_MODE_H

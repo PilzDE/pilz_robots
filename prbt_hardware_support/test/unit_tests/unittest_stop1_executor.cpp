@@ -31,39 +31,34 @@
 #include <prbt_hardware_support/stop1_executor.h>
 #include <prbt_hardware_support/service_function_decl.h>
 
-#define EXPECT_RECOVER                                       \
-  EXPECT_CALL(*this, recover_func()) \
-  .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(RECOVER_SRV_CALLED_EVENT), Return(true)))
+#define EXPECT_RECOVER                                                                                                 \
+  EXPECT_CALL(*this, recover_func()).WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(RECOVER_SRV_CALLED_EVENT), Return(true)))
 
-#define EXPECT_UNHOLD                                       \
-  EXPECT_CALL(*this, unhold_func()) \
-  .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(UNHOLD_SRV_CALLED_EVENT), Return(true)))
+#define EXPECT_UNHOLD                                                                                                  \
+  EXPECT_CALL(*this, unhold_func()).WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(UNHOLD_SRV_CALLED_EVENT), Return(true)))
 
-#define EXPECT_HOLD                                       \
-  EXPECT_CALL(*this, hold_func()) \
-  .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(HOLD_SRV_CALLED_EVENT), Return(true)))
+#define EXPECT_HOLD                                                                                                    \
+  EXPECT_CALL(*this, hold_func()).WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(HOLD_SRV_CALLED_EVENT), Return(true)))
 
-#define EXPECT_HALT                                       \
-  EXPECT_CALL(*this, halt_func()) \
-  .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(HALT_SRV_CALLED_EVENT), Return(true)))
+#define EXPECT_HALT                                                                                                    \
+  EXPECT_CALL(*this, halt_func()).WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID(HALT_SRV_CALLED_EVENT), Return(true)))
 
 namespace prbt_hardware_support_tests
 {
-
 using namespace prbt_hardware_support;
 
 using ::testing::_;
+using ::testing::AtLeast;
 using ::testing::DoAll;
 using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
-using ::testing::AtLeast;
 
-const std::string RECOVER_SRV_CALLED_EVENT{"recover_srv_called"};
-const std::string UNHOLD_SRV_CALLED_EVENT{"unhold_srv_called"};
-const std::string HOLD_SRV_CALLED_EVENT{"hold_srv_called"};
-const std::string HALT_SRV_CALLED_EVENT{"halt_srv_called"};
+const std::string RECOVER_SRV_CALLED_EVENT{ "recover_srv_called" };
+const std::string UNHOLD_SRV_CALLED_EVENT{ "unhold_srv_called" };
+const std::string HOLD_SRV_CALLED_EVENT{ "hold_srv_called" };
+const std::string HALT_SRV_CALLED_EVENT{ "halt_srv_called" };
 
 /**
  * Gives access to protected methods of run_permitted adapter.
@@ -71,10 +66,8 @@ const std::string HALT_SRV_CALLED_EVENT{"halt_srv_called"};
 class Stop1ExecutorForTests : public Stop1Executor
 {
 public:
-  Stop1ExecutorForTests(const TServiceCallFunc& hold_func,
-                        const TServiceCallFunc& unhold_func,
-                        const TServiceCallFunc& recover_func,
-                        const TServiceCallFunc& halt_func)
+  Stop1ExecutorForTests(const TServiceCallFunc& hold_func, const TServiceCallFunc& unhold_func,
+                        const TServiceCallFunc& recover_func, const TServiceCallFunc& halt_func)
     : Stop1Executor(hold_func, unhold_func, recover_func, halt_func)
   {
   }
@@ -91,19 +84,17 @@ protected:
   Stop1ExecutorForTests* createStop1Executor();
 
 public:
-  MOCK_METHOD0(hold_func,     bool());
-  MOCK_METHOD0(unhold_func,   bool());
-  MOCK_METHOD0(recover_func,  bool());
-  MOCK_METHOD0(halt_func,     bool());
-
+  MOCK_METHOD0(hold_func, bool());
+  MOCK_METHOD0(unhold_func, bool());
+  MOCK_METHOD0(recover_func, bool());
+  MOCK_METHOD0(halt_func, bool());
 };
 
 inline Stop1ExecutorForTests* Stop1ExecutorTest::createStop1Executor()
 {
-  return new Stop1ExecutorForTests( std::bind(&Stop1ExecutorTest::hold_func,    this),
-                                    std::bind(&Stop1ExecutorTest::unhold_func,  this),
-                                    std::bind(&Stop1ExecutorTest::recover_func, this),
-                                    std::bind(&Stop1ExecutorTest::halt_func,    this) );
+  return new Stop1ExecutorForTests(
+      std::bind(&Stop1ExecutorTest::hold_func, this), std::bind(&Stop1ExecutorTest::unhold_func, this),
+      std::bind(&Stop1ExecutorTest::recover_func, this), std::bind(&Stop1ExecutorTest::halt_func, this));
 }
 
 /**
@@ -114,17 +105,15 @@ inline Stop1ExecutorForTests* Stop1ExecutorTest::createStop1Executor()
 TEST_F(Stop1ExecutorTest, testDestructor)
 {
   {
-    std::shared_ptr<Stop1Executor> adapter_run_permitted {new Stop1Executor( std::bind(&Stop1ExecutorTest::hold_func,    this),
-                                                                             std::bind(&Stop1ExecutorTest::unhold_func,  this),
-                                                                             std::bind(&Stop1ExecutorTest::recover_func, this),
-                                                                             std::bind(&Stop1ExecutorTest::halt_func,    this) ) };
+    std::shared_ptr<Stop1Executor> adapter_run_permitted{ new Stop1Executor(
+        std::bind(&Stop1ExecutorTest::hold_func, this), std::bind(&Stop1ExecutorTest::unhold_func, this),
+        std::bind(&Stop1ExecutorTest::recover_func, this), std::bind(&Stop1ExecutorTest::halt_func, this)) };
   }
 
   {
-    Stop1Executor adapter_run_permitted( std::bind(&Stop1ExecutorTest::hold_func,    this),
-                                         std::bind(&Stop1ExecutorTest::unhold_func,  this),
-                                         std::bind(&Stop1ExecutorTest::recover_func, this),
-                                         std::bind(&Stop1ExecutorTest::halt_func,    this) );
+    Stop1Executor adapter_run_permitted(
+        std::bind(&Stop1ExecutorTest::hold_func, this), std::bind(&Stop1ExecutorTest::unhold_func, this),
+        std::bind(&Stop1ExecutorTest::recover_func, this), std::bind(&Stop1ExecutorTest::halt_func, this));
   }
 }
 
@@ -149,10 +138,10 @@ TEST_F(Stop1ExecutorTest, testEnable)
     EXPECT_UNHOLD;
   }
 
-  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted{ createStop1Executor() };
   adapter_run_permitted->updateRunPermitted(true);
 
-  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER({ RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT });
 }
 
 /**
@@ -188,10 +177,10 @@ TEST_F(Stop1ExecutorTest, testEnableStopEnable)
     EXPECT_UNHOLD;
   }
 
-  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted{ createStop1Executor() };
   adapter_run_permitted->updateRunPermitted(true);
 
-  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER({ RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT });
 
   /**********
    * Step 2 *
@@ -204,7 +193,7 @@ TEST_F(Stop1ExecutorTest, testEnableStopEnable)
 
   adapter_run_permitted->updateRunPermitted(false);
 
-  BARRIER({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
+  BARRIER({ HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT });
 
   /**********
    * Step 3 *
@@ -215,10 +204,15 @@ TEST_F(Stop1ExecutorTest, testEnableStopEnable)
     EXPECT_UNHOLD;
   }
 
-  std::atomic_bool keep_spamming{true};
-  std::thread spam_enable{[&adapter_run_permitted, &keep_spamming]() { while (keep_spamming) { adapter_run_permitted->updateRunPermitted(true); } }};
+  std::atomic_bool keep_spamming{ true };
+  std::thread spam_enable{ [&adapter_run_permitted, &keep_spamming]() {
+    while (keep_spamming)
+    {
+      adapter_run_permitted->updateRunPermitted(true);
+    }
+  } };
 
-  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER({ RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT });
 
   keep_spamming = false;
   spam_enable.join();
@@ -259,12 +253,17 @@ TEST_F(Stop1ExecutorTest, testSpamEnablePlusStop)
     EXPECT_UNHOLD;
   }
 
-  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted{ createStop1Executor() };
 
-  std::atomic_bool keep_spamming{true};
-  std::thread spam_enable{[&adapter_run_permitted, &keep_spamming]() { while (keep_spamming) { adapter_run_permitted->updateRunPermitted(true); } }};
+  std::atomic_bool keep_spamming{ true };
+  std::thread spam_enable{ [&adapter_run_permitted, &keep_spamming]() {
+    while (keep_spamming)
+    {
+      adapter_run_permitted->updateRunPermitted(true);
+    }
+  } };
 
-  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER({ RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT });
 
   keep_spamming = false;
   spam_enable.join();
@@ -286,7 +285,7 @@ TEST_F(Stop1ExecutorTest, testSpamEnablePlusStop)
 
   adapter_run_permitted->updateRunPermitted(false);
 
-  BARRIER({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
+  BARRIER({ HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT });
 }
 
 /**
@@ -324,11 +323,11 @@ TEST_F(Stop1ExecutorTest, testSpamRunPermittedActivePlusEnable)
     EXPECT_UNHOLD;
   }
 
-  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted{ createStop1Executor() };
 
   adapter_run_permitted->updateRunPermitted(true);
 
-  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER({ RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT });
 
   /**********
    * Step 2 *
@@ -339,10 +338,15 @@ TEST_F(Stop1ExecutorTest, testSpamRunPermittedActivePlusEnable)
     EXPECT_HALT;
   }
 
-  std::atomic_bool keep_spamming{true};
-  std::thread spam_disable{[&adapter_run_permitted, &keep_spamming]() { while (keep_spamming) { adapter_run_permitted->updateRunPermitted(false); } }};
+  std::atomic_bool keep_spamming{ true };
+  std::thread spam_disable{ [&adapter_run_permitted, &keep_spamming]() {
+    while (keep_spamming)
+    {
+      adapter_run_permitted->updateRunPermitted(false);
+    }
+  } };
 
-  BARRIER({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
+  BARRIER({ HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT });
 
   keep_spamming = false;
   spam_disable.join();
@@ -357,9 +361,14 @@ TEST_F(Stop1ExecutorTest, testSpamRunPermittedActivePlusEnable)
   }
 
   keep_spamming = true;
-  std::thread spam_enable{[&adapter_run_permitted, &keep_spamming]() { while (keep_spamming) { adapter_run_permitted->updateRunPermitted(true); } }};
+  std::thread spam_enable{ [&adapter_run_permitted, &keep_spamming]() {
+    while (keep_spamming)
+    {
+      adapter_run_permitted->updateRunPermitted(true);
+    }
+  } };
 
-  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER({ RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT });
 
   keep_spamming = false;
   spam_enable.join();
@@ -391,7 +400,7 @@ TEST_F(Stop1ExecutorTest, testSpamRunPermittedActivePlusEnable)
  */
 TEST_F(Stop1ExecutorTest, testSkippingHoldPlusEnable)
 {
-  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted{ createStop1Executor() };
 
   // define function for recover-invoke action
   auto run_permitted_false_during_recover_action = [this, &adapter_run_permitted]() {
@@ -411,16 +420,14 @@ TEST_F(Stop1ExecutorTest, testSkippingHoldPlusEnable)
   {
     InSequence dummy;
 
-    EXPECT_CALL(*this, recover_func())
-        .WillOnce(InvokeWithoutArgs(run_permitted_false_during_recover_action));
+    EXPECT_CALL(*this, recover_func()).WillOnce(InvokeWithoutArgs(run_permitted_false_during_recover_action));
 
-    EXPECT_CALL(*this, halt_func())
-        .WillOnce(InvokeWithoutArgs(halt_action));
+    EXPECT_CALL(*this, halt_func()).WillOnce(InvokeWithoutArgs(halt_action));
   }
 
   adapter_run_permitted->updateRunPermitted(true);
 
-  BARRIER({RECOVER_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
+  BARRIER({ RECOVER_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT });
 
   /**********
    * Step 2 *
@@ -431,10 +438,15 @@ TEST_F(Stop1ExecutorTest, testSkippingHoldPlusEnable)
     EXPECT_UNHOLD;
   }
 
-  std::atomic_bool keep_spamming{true};
-  std::thread spam_enable{[&adapter_run_permitted, &keep_spamming]() { while (keep_spamming) { adapter_run_permitted->updateRunPermitted(true); } }};
+  std::atomic_bool keep_spamming{ true };
+  std::thread spam_enable{ [&adapter_run_permitted, &keep_spamming]() {
+    while (keep_spamming)
+    {
+      adapter_run_permitted->updateRunPermitted(true);
+    }
+  } };
 
-  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER({ RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT });
 
   keep_spamming = false;
   spam_enable.join();
@@ -461,7 +473,7 @@ TEST_F(Stop1ExecutorTest, testSkippingHoldPlusEnable)
  */
 TEST_F(Stop1ExecutorTest, testEnableDuringHoldService)
 {
-  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted{ createStop1Executor() };
 
   auto enable_during_hold_action = [this, &adapter_run_permitted]() {
     adapter_run_permitted->updateRunPermitted(true);
@@ -481,13 +493,12 @@ TEST_F(Stop1ExecutorTest, testEnableDuringHoldService)
 
   adapter_run_permitted->updateRunPermitted(true);
 
-  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER({ RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT });
 
   {
     InSequence dummy;
 
-    EXPECT_CALL(*this, hold_func())
-        .WillOnce(InvokeWithoutArgs(enable_during_hold_action));
+    EXPECT_CALL(*this, hold_func()).WillOnce(InvokeWithoutArgs(enable_during_hold_action));
 
     EXPECT_HALT;
     EXPECT_RECOVER;
@@ -496,7 +507,7 @@ TEST_F(Stop1ExecutorTest, testEnableDuringHoldService)
 
   adapter_run_permitted->updateRunPermitted(false);
 
-  BARRIER({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT, RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER({ HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT, RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT });
 }
 
 /**
@@ -519,7 +530,7 @@ TEST_F(Stop1ExecutorTest, testEnableDuringHoldService)
  */
 TEST_F(Stop1ExecutorTest, testEnableDuringHaltService)
 {
-  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted{ createStop1Executor() };
 
   // define function for recover-invoke action
   auto run_permitted_false_during_recover_action = [this, &adapter_run_permitted]() {
@@ -538,25 +549,21 @@ TEST_F(Stop1ExecutorTest, testEnableDuringHaltService)
    * Step 1 *
    **********/
 
-  const std::string recover_srv_called_event2{"recover_srv_called2"};
-  const std::string unhold_srv_called_event2{"unhold_srv_called2"};
+  const std::string recover_srv_called_event2{ "recover_srv_called2" };
+  const std::string unhold_srv_called_event2{ "unhold_srv_called2" };
   {
     InSequence dummy;
 
-    EXPECT_CALL(*this, recover_func())
-        .WillOnce(InvokeWithoutArgs(run_permitted_false_during_recover_action));
+    EXPECT_CALL(*this, recover_func()).WillOnce(InvokeWithoutArgs(run_permitted_false_during_recover_action));
 
-    EXPECT_CALL(*this, halt_func())
-        .WillOnce(InvokeWithoutArgs(enable_during_halt_action));
+    EXPECT_CALL(*this, halt_func()).WillOnce(InvokeWithoutArgs(enable_during_halt_action));
 
-    EXPECT_CALL(*this, recover_func())
-        .WillOnce(InvokeWithoutArgs([this, recover_srv_called_event2]() {
+    EXPECT_CALL(*this, recover_func()).WillOnce(InvokeWithoutArgs([this, recover_srv_called_event2]() {
       this->triggerClearEvent(recover_srv_called_event2);
       return true;
     }));
 
-    EXPECT_CALL(*this, unhold_func())
-        .WillOnce(InvokeWithoutArgs([this, unhold_srv_called_event2]() {
+    EXPECT_CALL(*this, unhold_func()).WillOnce(InvokeWithoutArgs([this, unhold_srv_called_event2]() {
       this->triggerClearEvent(unhold_srv_called_event2);
       return true;
     }));
@@ -564,7 +571,7 @@ TEST_F(Stop1ExecutorTest, testEnableDuringHaltService)
 
   adapter_run_permitted->updateRunPermitted(true);
 
-  BARRIER({RECOVER_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT, recover_srv_called_event2, unhold_srv_called_event2});
+  BARRIER({ RECOVER_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT, recover_srv_called_event2, unhold_srv_called_event2 });
 }
 
 /**
@@ -580,15 +587,15 @@ TEST_F(Stop1ExecutorTest, testEnableDuringHaltService)
  *
  * Test Sequence:
  *  1. Run the run_permitted adapter and call updateRunPermitted(true)).
- *     Call updateRunPermitted(false)) during recover service call and return success. (This is not essential for the test)
- *     Before returning success on halt service call updateRunPermitted(true) and update(false).
+ *     Call updateRunPermitted(false)) during recover service call and return success. (This is not essential for the
+ * test) Before returning success on halt service call updateRunPermitted(true) and update(false).
  *
  * Expected Results:
  *  1. Recover and halt services are called successively. Afterwards recover and unhold are called once.
  */
 TEST_F(Stop1ExecutorTest, testEnableDisableDuringHaltService)
 {
-  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted{ createStop1Executor() };
 
   // define function for recover-invoke action
   auto run_permitted_false_during_recover_action = [this, &adapter_run_permitted]() {
@@ -600,7 +607,7 @@ TEST_F(Stop1ExecutorTest, testEnableDisableDuringHaltService)
   auto enable_during_halt_action = [this, &adapter_run_permitted]() {
     this->triggerClearEvent(HALT_SRV_CALLED_EVENT);
     adapter_run_permitted->updateRunPermitted(true);
-    adapter_run_permitted->updateRunPermitted(false); // Important flip!
+    adapter_run_permitted->updateRunPermitted(false);  // Important flip!
     return true;
   };
 
@@ -611,18 +618,14 @@ TEST_F(Stop1ExecutorTest, testEnableDisableDuringHaltService)
   {
     InSequence dummy;
 
-    EXPECT_CALL(*this, recover_func())
-        .Times(1)
-        .WillOnce(InvokeWithoutArgs(run_permitted_false_during_recover_action));
+    EXPECT_CALL(*this, recover_func()).Times(1).WillOnce(InvokeWithoutArgs(run_permitted_false_during_recover_action));
 
-    EXPECT_CALL(*this, halt_func())
-        .Times(1)
-        .WillOnce(InvokeWithoutArgs(enable_during_halt_action));
+    EXPECT_CALL(*this, halt_func()).Times(1).WillOnce(InvokeWithoutArgs(enable_during_halt_action));
   }
 
   adapter_run_permitted->updateRunPermitted(true);
 
-  BARRIER({RECOVER_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
+  BARRIER({ RECOVER_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT });
 }
 
 /**
@@ -659,14 +662,13 @@ TEST_F(Stop1ExecutorTest, testRecoverFailPlusRetry)
       .WillRepeatedly(Return(false));
 
   // unhold is optional here
-  EXPECT_CALL(*this, unhold_func())
-      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*this, unhold_func()).WillRepeatedly(Return(true));
 
-  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted{ createStop1Executor() };
 
   adapter_run_permitted->updateRunPermitted(true);
 
-  BARRIER({RECOVER_SRV_CALLED_EVENT});
+  BARRIER({ RECOVER_SRV_CALLED_EVENT });
 
   /**********
    * Step 2 *
@@ -675,15 +677,14 @@ TEST_F(Stop1ExecutorTest, testRecoverFailPlusRetry)
     InSequence dummy;
 
     // hold and is_executing and is optional here
-    EXPECT_CALL(*this, hold_func())
-        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*this, hold_func()).WillRepeatedly(Return(true));
 
     EXPECT_HALT;
   }
 
   adapter_run_permitted->updateRunPermitted(false);
 
-  BARRIER({HALT_SRV_CALLED_EVENT});
+  BARRIER({ HALT_SRV_CALLED_EVENT });
 
   /**********
    * Step 3 *
@@ -695,10 +696,15 @@ TEST_F(Stop1ExecutorTest, testRecoverFailPlusRetry)
     EXPECT_UNHOLD;
   }
 
-  std::atomic_bool keep_spamming{true};
-  std::thread spam_enable{[&adapter_run_permitted, &keep_spamming]() { while (keep_spamming) { adapter_run_permitted->updateRunPermitted(true); } }};
+  std::atomic_bool keep_spamming{ true };
+  std::thread spam_enable{ [&adapter_run_permitted, &keep_spamming]() {
+    while (keep_spamming)
+    {
+      adapter_run_permitted->updateRunPermitted(true);
+    }
+  } };
 
-  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER({ RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT });
 
   keep_spamming = false;
   spam_enable.join();
@@ -734,10 +740,10 @@ TEST_F(Stop1ExecutorTest, testUnholdFail)
         .WillRepeatedly(Return(false));
   }
 
-  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted{ createStop1Executor() };
   adapter_run_permitted->updateRunPermitted(true);
 
-  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER({ RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT });
 
   /**********
    * Step 2 *
@@ -751,7 +757,7 @@ TEST_F(Stop1ExecutorTest, testUnholdFail)
 
   adapter_run_permitted->updateRunPermitted(false);
 
-  BARRIER({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
+  BARRIER({ HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT });
 }
 
 /**
@@ -781,11 +787,11 @@ TEST_F(Stop1ExecutorTest, testHoldFail)
     EXPECT_UNHOLD;
   }
 
-  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted{ createStop1Executor() };
 
   adapter_run_permitted->updateRunPermitted(true);
 
-  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER({ RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT });
 
   /**********
    * Step 2 *
@@ -804,7 +810,7 @@ TEST_F(Stop1ExecutorTest, testHoldFail)
 
   adapter_run_permitted->updateRunPermitted(false);
 
-  BARRIER({HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
+  BARRIER({ HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT });
 }
 
 /**
@@ -822,7 +828,7 @@ TEST_F(Stop1ExecutorTest, testHoldFail)
  */
 TEST_F(Stop1ExecutorTest, testHoldImmediatelyAfterUnhold)
 {
-  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted{ createStop1Executor() };
 
   // define function for unhold-invoke action
   auto unhold_action = [this, &adapter_run_permitted]() {
@@ -839,8 +845,7 @@ TEST_F(Stop1ExecutorTest, testHoldImmediatelyAfterUnhold)
 
     EXPECT_RECOVER;
 
-    EXPECT_CALL(*this, unhold_func())
-        .WillOnce(InvokeWithoutArgs(unhold_action));
+    EXPECT_CALL(*this, unhold_func()).WillOnce(InvokeWithoutArgs(unhold_action));
 
     EXPECT_HOLD;
     EXPECT_HALT;
@@ -848,7 +853,7 @@ TEST_F(Stop1ExecutorTest, testHoldImmediatelyAfterUnhold)
 
   adapter_run_permitted->updateRunPermitted(true);
 
-  barricade({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT, HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT});
+  barricade({ RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT, HOLD_SRV_CALLED_EVENT, HALT_SRV_CALLED_EVENT });
 }
 
 /**
@@ -866,7 +871,7 @@ TEST_F(Stop1ExecutorTest, testHoldImmediatelyAfterUnhold)
  */
 TEST_F(Stop1ExecutorTest, testExitInStateEnabling)
 {
-  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted{ createStop1Executor() };
 
   // define function for recover-invoke action
   auto recover_action = [this, &adapter_run_permitted]() {
@@ -878,17 +883,15 @@ TEST_F(Stop1ExecutorTest, testExitInStateEnabling)
   {
     InSequence dummy;
 
-    EXPECT_CALL(*this, recover_func())
-        .WillOnce(InvokeWithoutArgs(recover_action));
+    EXPECT_CALL(*this, recover_func()).WillOnce(InvokeWithoutArgs(recover_action));
 
     // do not exclude other service calls as stopping the state machine does not prevent further actions
-    EXPECT_CALL(*this, unhold_func())
-        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*this, unhold_func()).WillRepeatedly(Return(true));
   }
 
   adapter_run_permitted->updateRunPermitted(true);
 
-  BARRIER({RECOVER_SRV_CALLED_EVENT});
+  BARRIER({ RECOVER_SRV_CALLED_EVENT });
 }
 
 /**
@@ -908,7 +911,7 @@ TEST_F(Stop1ExecutorTest, testExitInStateEnabling)
  */
 TEST_F(Stop1ExecutorTest, testExitInStateStopping)
 {
-  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted{ createStop1Executor() };
 
   /**********
    * Step 1 *
@@ -922,7 +925,7 @@ TEST_F(Stop1ExecutorTest, testExitInStateStopping)
 
   adapter_run_permitted->updateRunPermitted(true);
 
-  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER({ RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT });
 
   /**********
    * Step 2 *
@@ -937,17 +940,15 @@ TEST_F(Stop1ExecutorTest, testExitInStateStopping)
   {
     InSequence dummy;
 
-    EXPECT_CALL(*this, hold_func())
-        .WillOnce(InvokeWithoutArgs(hold_action));
+    EXPECT_CALL(*this, hold_func()).WillOnce(InvokeWithoutArgs(hold_action));
 
     // do not exclude other service calls as stopping the state machine does not prevent further actions
-    EXPECT_CALL(*this, halt_func())
-        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*this, halt_func()).WillRepeatedly(Return(true));
   }
 
   adapter_run_permitted->updateRunPermitted(false);
 
-  BARRIER({HOLD_SRV_CALLED_EVENT});
+  BARRIER({ HOLD_SRV_CALLED_EVENT });
 }
 
 /**
@@ -965,7 +966,7 @@ TEST_F(Stop1ExecutorTest, testExitInStateStopping)
  */
 TEST_F(Stop1ExecutorTest, testExitInStateStopRequestedDuringEnable)
 {
-  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted{ createStop1Executor() };
 
   // define function for recover-invoke action
   auto recover_action = [this, &adapter_run_permitted]() {
@@ -981,12 +982,10 @@ TEST_F(Stop1ExecutorTest, testExitInStateStopRequestedDuringEnable)
   {
     InSequence dummy;
 
-    EXPECT_CALL(*this, recover_func())
-        .WillOnce(InvokeWithoutArgs(recover_action));
+    EXPECT_CALL(*this, recover_func()).WillOnce(InvokeWithoutArgs(recover_action));
 
     // do not exclude other service calls as stopping the state machine does not prevent further actions
-    EXPECT_CALL(*this, halt_func())
-        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*this, halt_func()).WillRepeatedly(Return(true));
   }
 
   adapter_run_permitted->updateRunPermitted(true);
@@ -1012,7 +1011,7 @@ TEST_F(Stop1ExecutorTest, testExitInStateStopRequestedDuringEnable)
  */
 TEST_F(Stop1ExecutorTest, testExitInStateEnableRequestDuringStop)
 {
-  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted {createStop1Executor()};
+  std::unique_ptr<Stop1ExecutorForTests> adapter_run_permitted{ createStop1Executor() };
 
   /**********
    * Step 1 *
@@ -1026,7 +1025,7 @@ TEST_F(Stop1ExecutorTest, testExitInStateEnableRequestDuringStop)
 
   adapter_run_permitted->updateRunPermitted(true);
 
-  BARRIER({RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT});
+  BARRIER({ RECOVER_SRV_CALLED_EVENT, UNHOLD_SRV_CALLED_EVENT });
 
   /**********
    * Step 2 *
@@ -1042,16 +1041,12 @@ TEST_F(Stop1ExecutorTest, testExitInStateEnableRequestDuringStop)
   {
     InSequence dummy;
 
-    EXPECT_CALL(*this, hold_func())
-        .WillOnce(InvokeWithoutArgs(enable_during_hold_action));
+    EXPECT_CALL(*this, hold_func()).WillOnce(InvokeWithoutArgs(enable_during_hold_action));
 
     // do not exclude other service calls as stopping the state machine does not prevent further actions
-    EXPECT_CALL(*this, halt_func())
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(*this, recover_func())
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(*this, unhold_func())
-        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*this, halt_func()).WillRepeatedly(Return(true));
+    EXPECT_CALL(*this, recover_func()).WillRepeatedly(Return(true));
+    EXPECT_CALL(*this, unhold_func()).WillRepeatedly(Return(true));
   }
 
   adapter_run_permitted->updateRunPermitted(false);
@@ -1059,10 +1054,9 @@ TEST_F(Stop1ExecutorTest, testExitInStateEnableRequestDuringStop)
   BARRIER(HOLD_SRV_CALLED_EVENT);
 }
 
+}  // namespace prbt_hardware_support_tests
 
-} // namespace prbt_hardware_support_tests
-
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   // for (limited) ros::Time functionality, no ROS communication
   ros::Time::init();

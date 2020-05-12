@@ -57,7 +57,8 @@ static const double SQRT_2_HALF{ 1 / sqrt(2) };
 static const double TEST_FREQUENCY{ 10 };
 static const std::string TEST_WORLD_FRAME{ "world" };
 
-MATCHER_P(RunPermittedState, x, "RunPermitted state " + std::string(negation ? "is not" : "is") + ": " + PrintToString(x) + ".")
+MATCHER_P(RunPermittedState, x,
+          "RunPermitted state " + std::string(negation ? "is not" : "is") + ": " + PrintToString(x) + ".")
 {
   return arg.data == x;
 }
@@ -102,7 +103,7 @@ public:
 protected:
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_{ "~" };
-  ros::AsyncSpinner spinner_{2};
+  ros::AsyncSpinner spinner_{ 2 };
   ros::Subscriber subscriber_;
   ros::ServiceServer run_permitted_srv_;
   ros::Publisher fake_controller_joint_states_pub_;
@@ -134,7 +135,8 @@ void SpeedObserverIntegrationTest::SetUp()
     ROS_DEBUG_STREAM("- " << frame);
   }
 
-  run_permitted_srv_ = nh_.advertiseService(RUN_PERMITTED_SERVICE, &SpeedObserverIntegrationTest::run_permitted_cb, this);
+  run_permitted_srv_ =
+      nh_.advertiseService(RUN_PERMITTED_SERVICE, &SpeedObserverIntegrationTest::run_permitted_cb, this);
 
   run_permitted_res.success = true;
   run_permitted_res.message = "testing ...";
@@ -153,7 +155,7 @@ void SpeedObserverIntegrationTest::TearDown()
 void SpeedObserverIntegrationTest::publishTfAtSpeed(double speed, const std::string& frame)
 {
   static tf2_ros::TransformBroadcaster br;
-  ros::Rate r = ros::Rate(TEST_FREQUENCY * 3); // publishing definitely faster then observing
+  ros::Rate r = ros::Rate(TEST_FREQUENCY * 3);  // publishing definitely faster then observing
   ros::Time start = ros::Time::now();
   double t = 0;
   tf_publisher_running_ = true;
@@ -162,7 +164,7 @@ void SpeedObserverIntegrationTest::publishTfAtSpeed(double speed, const std::str
     ros::Time current = ros::Time::now();
     t = (current - start).toSec();
     geometry_msgs::TransformStamped tranform_stamped_b;
-    tranform_stamped_b.header.stamp = current + ros::Duration(0.1); // avoid override by static_transform_publisher
+    tranform_stamped_b.header.stamp = current + ros::Duration(0.1);  // avoid override by static_transform_publisher
     tranform_stamped_b.header.frame_id = TEST_WORLD_FRAME;
     tranform_stamped_b.child_frame_id = frame;
     // rotation in a tilted circle to cover all axes
@@ -189,13 +191,13 @@ void SpeedObserverIntegrationTest::publishJointStatesAtSpeed(double speed)
 {
   sensor_msgs::JointState js;
   js.name = { "testing_world-a" };
-  ros::Rate r = ros::Rate(TEST_FREQUENCY * 3); // publishing definitely faster
-                                               // then observing
+  ros::Rate r = ros::Rate(TEST_FREQUENCY * 3);  // publishing definitely faster
+                                                // then observing
   ros::Time start = ros::Time::now();
   double t = 0;
   double t_zero = 0;
   joint_publisher_running_ = true;
-  bool first_round{true};
+  bool first_round{ true };
   while (joint_publisher_running_ & nh_.ok())
   {
     ros::Time current = ros::Time::now();
@@ -207,7 +209,7 @@ void SpeedObserverIntegrationTest::publishJointStatesAtSpeed(double speed)
     }
     // Starting with max speed abruptly is not a relevant scenario and makes the test instable
     // The following realizes half the speed in the first round and later constant full speed
-    js.position = { (t - 0.5*t_zero) * speed };
+    js.position = { (t - 0.5 * t_zero) * speed };
 
     fake_controller_joint_states_pub_.publish(js);
     if (joint_publisher_running_ & nh_.ok())  // ending faster
@@ -279,8 +281,8 @@ TEST_F(SpeedObserverIntegrationTest, testOperationModeT1)
       .WillOnce(DoAll(SetArgReferee<1>(run_permitted_res), ACTION_OPEN_BARRIER(BARRIER_STOP_HAPPENED)))
       .WillRepeatedly(DoAll(SetArgReferee<1>(run_permitted_res), Return(true)));
 
-  std::thread pubisher_thread = std::thread(&SpeedObserverIntegrationTest::publishJointStatesAtSpeed, this,
-                                            speed_limit_t1_ + 0.01);
+  std::thread pubisher_thread =
+      std::thread(&SpeedObserverIntegrationTest::publishJointStatesAtSpeed, this, speed_limit_t1_ + 0.01);
   BARRIER({ BARRIER_STOP_HAPPENED });
   stopJointStatePublisher();
   pubisher_thread.join();
@@ -353,8 +355,8 @@ TEST_F(SpeedObserverIntegrationTest, testOperationModeAuto)
       .WillOnce(ACTION_OPEN_BARRIER_VOID(BARRIER_NO_STOP_HAPPENED))
       .WillRepeatedly(Return());
 
-  std::thread pubisher_thread = std::thread(&SpeedObserverIntegrationTest::publishJointStatesAtSpeed, this,
-                                            speed_limit_automatic_ - 0.01);
+  std::thread pubisher_thread =
+      std::thread(&SpeedObserverIntegrationTest::publishJointStatesAtSpeed, this, speed_limit_automatic_ - 0.01);
   BARRIER({ BARRIER_NO_STOP_HAPPENED });
 
   /**********
@@ -408,8 +410,7 @@ TEST_F(SpeedObserverIntegrationTest, testAdditionalTFTree)
 {
   ROS_DEBUG("Step 1");
 
-  EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_)))
-      .WillRepeatedly(Return());
+  EXPECT_CALL(*this, frame_speeds_cb(ContainsAllNames(additional_frames_))).WillRepeatedly(Return());
 
   EXPECT_CALL(*this, run_permitted_cb(RunPermittedState(false), _))
       .WillOnce(DoAll(SetArgReferee<1>(run_permitted_res), ACTION_OPEN_BARRIER(BARRIER_STOP_HAPPENED)))
@@ -417,10 +418,8 @@ TEST_F(SpeedObserverIntegrationTest, testAdditionalTFTree)
 
   publishOperationMode(OperationModes::T1);
 
-  std::thread pubisher_thread = std::thread(&SpeedObserverIntegrationTest::publishTfAtSpeed,
-                                            this,
-                                            speed_limit_t1_ + 0.01,
-                                            additional_frames_[0]);
+  std::thread pubisher_thread =
+      std::thread(&SpeedObserverIntegrationTest::publishTfAtSpeed, this, speed_limit_t1_ + 0.01, additional_frames_[0]);
   BARRIER({ BARRIER_STOP_HAPPENED });
   stopTfPublisher();
   pubisher_thread.join();
@@ -479,8 +478,8 @@ TEST_F(SpeedObserverIntegrationTest, testRunPermittedServiceNoSuccess)
   // Set OM to T1
   publishOperationMode(OperationModes::T1);
 
-  std::thread pubisher_thread = std::thread(&SpeedObserverIntegrationTest::publishJointStatesAtSpeed, this,
-                                            speed_limit_t1_ + 0.01);
+  std::thread pubisher_thread =
+      std::thread(&SpeedObserverIntegrationTest::publishJointStatesAtSpeed, this, speed_limit_t1_ + 0.01);
   BARRIER({ BARRIER_NO_SVC_SUCESS });
   stopJointStatePublisher();
   pubisher_thread.join();

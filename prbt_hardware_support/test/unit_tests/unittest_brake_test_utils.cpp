@@ -32,16 +32,16 @@
 
 namespace brake_test_utils_test
 {
-
 using namespace prbt_hardware_support;
 using sensor_msgs::JointState;
-using sensor_msgs::JointStatePtr;
 using sensor_msgs::JointStateConstPtr;
+using sensor_msgs::JointStatePtr;
 
 /**
  * @brief Checks for identical names and positions in joint state messages.
  */
-static ::testing::AssertionResult compareJointStateMessages(const JointStateConstPtr &msg1, const JointStateConstPtr &msg2)
+static ::testing::AssertionResult compareJointStateMessages(const JointStateConstPtr& msg1,
+                                                            const JointStateConstPtr& msg2)
 {
   if (msg1->name.size() != msg2->name.size())
   {
@@ -71,11 +71,11 @@ static ::testing::AssertionResult compareJointStateMessages(const JointStateCons
 TEST(BrakeTestUtilsTest, testExceptionDtor)
 {
   {
-    std::shared_ptr<BrakeTestUtilsException> ex {new BrakeTestUtilsException("Test msg")};
+    std::shared_ptr<BrakeTestUtilsException> ex{ new BrakeTestUtilsException("Test msg") };
   }
 
   {
-    std::shared_ptr<GetCurrentJointStatesException> ex {new GetCurrentJointStatesException("Test msg")};
+    std::shared_ptr<GetCurrentJointStatesException> ex{ new GetCurrentJointStatesException("Test msg") };
   }
 }
 
@@ -98,13 +98,13 @@ TEST(BrakeTestUtilsTest, testCompareJointStatePositions)
   /**********
    * Step 1 *
    **********/
-  JointStatePtr msg1{boost::make_shared<JointState>()};
-  msg1->name = {"joint1", "joint2"};
-  msg1->position = {0.1, 0.11};
+  JointStatePtr msg1{ boost::make_shared<JointState>() };
+  msg1->name = { "joint1", "joint2" };
+  msg1->position = { 0.1, 0.11 };
 
-  JointStatePtr msg2{boost::make_shared<JointState>()};
-  msg2->name = {"joint1", "joint2"};
-  msg2->position = {0.1, 0.11};
+  JointStatePtr msg2{ boost::make_shared<JointState>() };
+  msg2->name = { "joint1", "joint2" };
+  msg2->position = { 0.1, 0.11 };
 
   EXPECT_TRUE(BrakeTestUtils::compareJointStatePositions(msg1, msg2));
 
@@ -112,7 +112,7 @@ TEST(BrakeTestUtilsTest, testCompareJointStatePositions)
    * Step 2 *
    **********/
   double tolerance = 0.0001;
-  for (double & pos : msg2->position)
+  for (double& pos : msg2->position)
   {
     pos += 0.9 * tolerance;
   }
@@ -164,7 +164,7 @@ TEST(BrakeTestUtilsTest, testGetCurrentJointStates)
     auto msg = BrakeTestUtils::getCurrentJointStates();
     EXPECT_TRUE(compareJointStateMessages(msg, expected_msg));
   }
-  catch (const std::exception &e)
+  catch (const std::exception& e)
   {
     ADD_FAILURE() << e.what();
   }
@@ -203,9 +203,9 @@ TEST(BrakeTestUtilsTest, testDetectRobotMotion)
   EXPECT_TRUE(BrakeTestUtils::detectRobotMotion());
 }
 
-} // namespace brake_test_utils_test
+}  // namespace brake_test_utils_test
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "unittest_brake_test_utils");
   ros::NodeHandle nh;

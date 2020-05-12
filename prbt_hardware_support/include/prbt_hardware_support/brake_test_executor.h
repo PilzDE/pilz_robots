@@ -30,7 +30,6 @@
 
 namespace prbt_hardware_support
 {
-
 using DetectRobotMotionFunc = std::function<bool()>;
 using ControllerHoldFunc = std::function<void()>;
 using TriggerBrakeTestFunc = std::function<BrakeTest::Response()>;
@@ -40,7 +39,7 @@ using BrakeTestResultFunc = std::function<bool(const bool)>;
 class BrakeTestExecutorException : public std::runtime_error
 {
 public:
-  BrakeTestExecutorException(const std::string &what_arg) : std::runtime_error(what_arg)
+  BrakeTestExecutorException(const std::string& what_arg) : std::runtime_error(what_arg)
   {
   }
 };
@@ -53,10 +52,8 @@ public:
 class BrakeTestExecutor
 {
 public:
-  BrakeTestExecutor(DetectRobotMotionFunc&& detect_robot_motion_func,
-                    ControllerHoldFunc&& controller_hold_func,
-                    TriggerBrakeTestFunc&& trigger_brake_test_func,
-                    ControllerUnholdFunc&& unhold_func,
+  BrakeTestExecutor(DetectRobotMotionFunc&& detect_robot_motion_func, ControllerHoldFunc&& controller_hold_func,
+                    TriggerBrakeTestFunc&& trigger_brake_test_func, ControllerUnholdFunc&& unhold_func,
                     BrakeTestResultFunc&& brake_test_result_fun);
 
 public:
@@ -70,5 +67,5 @@ private:
   BrakeTestResultFunc brake_test_result_func_;
 };
 
-} // namespace prbt_hardware_support
-#endif // PRBT_HARDWARE_SUPPORT_BRAKE_TEST_EXECUTOR_H
+}  // namespace prbt_hardware_support
+#endif  // PRBT_HARDWARE_SUPPORT_BRAKE_TEST_EXECUTOR_H

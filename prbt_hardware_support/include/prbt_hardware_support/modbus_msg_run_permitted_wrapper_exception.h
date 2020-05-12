@@ -25,20 +25,19 @@
 
 namespace prbt_hardware_support
 {
-  /**
-   * @brief Expection thrown upon construction of ModbusMsgRunPermittedWrapper if the message
-   * does not contain the required information.
-   *
-   */
-  class ModbusMsgRunPermittedStatusMissing : public ModbusMsgWrapperException
+/**
+ * @brief Expection thrown upon construction of ModbusMsgRunPermittedWrapper if the message
+ * does not contain the required information.
+ *
+ */
+class ModbusMsgRunPermittedStatusMissing : public ModbusMsgWrapperException
+{
+public:
+  ModbusMsgRunPermittedStatusMissing(const std::string& what_arg) : ModbusMsgWrapperException(what_arg)
   {
-    public:
-      ModbusMsgRunPermittedStatusMissing( const std::string& what_arg ):
-        ModbusMsgWrapperException(what_arg)
-      {
-      }
-  };
+  }
+};
 
-}
+}  // namespace prbt_hardware_support
 
-#endif // MODBUS_MSG_RUN_PERMITTED_WRAPPER_EXCEPTION_H
+#endif  // MODBUS_MSG_RUN_PERMITTED_WRAPPER_EXCEPTION_H

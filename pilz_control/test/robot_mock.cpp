@@ -18,8 +18,8 @@
 #include <hardware_interface/joint_command_interface.h>
 #include <controller_manager/controller_manager.h>
 
-static const std::string CONTROLLER_NS_PARAM_NAME {"controller_ns_string"};
-static const std::string JOINT_NAME {"joint1"};
+static const std::string CONTROLLER_NS_PARAM_NAME{ "controller_ns_string" };
+static const std::string JOINT_NAME{ "joint1" };
 
 /**
  * @brief The RobotMock used by the integrationtest of the pilz_joint_trajectory_controller
@@ -34,9 +34,9 @@ public:
     pos_ = new double();
     vel_ = new double();
     eff_ = new double();
-    hardware_interface::JointStateHandle jnt_state_handle {JOINT_NAME, pos_, vel_, eff_};
+    hardware_interface::JointStateHandle jnt_state_handle{ JOINT_NAME, pos_, vel_, eff_ };
     cmd_ = new double();
-    hardware_interface::JointHandle jnt_handle {jnt_state_handle, cmd_};
+    hardware_interface::JointHandle jnt_handle{ jnt_state_handle, cmd_ };
 
     pos_jnt_interface.registerHandle(jnt_handle);
 
@@ -72,17 +72,16 @@ private:
 };
 
 // Runs as node
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "robot_mock");
 
   std::string controller_ns;
   ros::param::get(CONTROLLER_NS_PARAM_NAME, controller_ns);
-  ros::NodeHandle nh {controller_ns};
+  ros::NodeHandle nh{ controller_ns };
 
   RobotMock robot;
   controller_manager::ControllerManager cm(&robot, nh);
-
 
   ros::Rate rate(1.0 / robot.getPeriod().toSec());
   ros::AsyncSpinner spinner(1);

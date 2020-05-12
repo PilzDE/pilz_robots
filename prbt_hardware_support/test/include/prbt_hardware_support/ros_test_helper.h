@@ -26,7 +26,6 @@
 
 namespace prbt_hardware_support
 {
-
 /**
  * @brief Checks if a node is up and running.
  * @param node_name
@@ -62,7 +61,8 @@ inline void waitForNode(std::string node_name, double loop_frequency = 10.0)
  * @param timeout
  * @param loop_frequency Frequency at which the system is checked for the node.
  */
-inline ::testing::AssertionResult waitForNodeShutdown(std::string node_name, double timeout = 1.0, double loop_frequency = 10.0)
+inline ::testing::AssertionResult waitForNodeShutdown(std::string node_name, double timeout = 1.0,
+                                                      double loop_frequency = 10.0)
 {
   std::vector<std::string> node_names;
   auto start_time = ros::Time::now();
@@ -79,10 +79,10 @@ inline ::testing::AssertionResult waitForNodeShutdown(std::string node_name, dou
   return ::testing::AssertionSuccess();
 }
 
-template<class T>
-static void initalizeAndRun(T& obj, const char *ip, unsigned int port)
+template <class T>
+static void initalizeAndRun(T& obj, const char* ip, unsigned int port)
 {
-  if ( !obj.init(ip, port) )
+  if (!obj.init(ip, port))
   {
     ROS_ERROR("Initialization failed.");
     return;
@@ -94,5 +94,4 @@ static void initalizeAndRun(T& obj, const char *ip, unsigned int port)
 
 }  // namespace prbt_hardware_support
 
-
-#endif // PRBT_HARDWARE_SUPPORT_ROS_TEST_HELPER_H
+#endif  // PRBT_HARDWARE_SUPPORT_ROS_TEST_HELPER_H

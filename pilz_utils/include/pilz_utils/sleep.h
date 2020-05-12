@@ -23,7 +23,6 @@
 
 namespace pilz_utils
 {
-
 /**
  * \brief Replace the sim-time part of ros::Duration::sleep() by a progressing in time.
  *
@@ -47,7 +46,7 @@ static bool sleep(const ros::Duration& sleep_duration)
     ros::Time::setNow(ros::Time::now() + sleep_duration);
     return true;
   }
-  
+
   return false;
 }
 

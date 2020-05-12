@@ -33,13 +33,12 @@
 
 namespace prbt_hardware_support
 {
+static constexpr uint16_t MODBUS_API_VERSION_VALUE{ 2 };
 
-static constexpr uint16_t MODBUS_API_VERSION_VALUE {2};
+static const std::string TOPIC_OPERATION_MODE{ "/prbt/operation_mode" };
+static constexpr int OPERATION_MODE_QUEUE_SIZE{ 1 };
 
-static const std::string TOPIC_OPERATION_MODE{"/prbt/operation_mode"};
-static constexpr int OPERATION_MODE_QUEUE_SIZE{1};
-
-static const std::string OPERATION_MODE_CALLBACK_EVENT{"operation_mode_callback_event"};
+static const std::string OPERATION_MODE_CALLBACK_EVENT{ "operation_mode_callback_event" };
 
 /**
  * @brief Redirects callbacks of a ros::Subscriber to a mock method.
@@ -61,10 +60,8 @@ protected:
 
 void OperationModeSubscriberMock::initialize()
 {
-  subscriber_ = nh_.subscribe(TOPIC_OPERATION_MODE,
-                              OPERATION_MODE_QUEUE_SIZE,
-                              &OperationModeSubscriberMock::callback,
-                              this);
+  subscriber_ =
+      nh_.subscribe(TOPIC_OPERATION_MODE, OPERATION_MODE_QUEUE_SIZE, &OperationModeSubscriberMock::callback, this);
 }
 
 /**
@@ -75,10 +72,13 @@ class OperationModeIntegrationTest : public testing::Test, public testing::Async
 {
 protected:
   ros::NodeHandle nh_;
-  ros::NodeHandle nh_priv_{"~"};
+  ros::NodeHandle nh_priv_{ "~" };
 };
 
-MATCHER_P(IsExpectedOperationMode, exp_mode, "unexpected operation mode"){ return arg->value == exp_mode; }
+MATCHER_P(IsExpectedOperationMode, exp_mode, "unexpected operation mode")
+{
+  return arg->value == exp_mode;
+}
 
 /**
  * @tests{Get_OperationMode_mechanism,
@@ -119,17 +119,17 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
   ASSERT_TRUE(nh_priv_.getParam("modbus_server_ip", ip));
   ASSERT_TRUE(nh_priv_.getParam("modbus_server_port", port));
 
-  ModbusApiSpec api_spec {nh_};
+  ModbusApiSpec api_spec{ nh_ };
 
-  unsigned int modbus_register_size {api_spec.getMaxRegisterDefinition() + 1U};
+  unsigned int modbus_register_size{ api_spec.getMaxRegisterDefinition() + 1U };
 
   /**********
    * Step 1 *
    **********/
   prbt_hardware_support::PilzModbusServerMock modbus_server(modbus_register_size);
 
-  std::thread modbus_server_thread( &initalizeAndRun<prbt_hardware_support::PilzModbusServerMock>,
-                                    std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port) );
+  std::thread modbus_server_thread(&initalizeAndRun<prbt_hardware_support::PilzModbusServerMock>,
+                                   std::ref(modbus_server), ip.c_str(), static_cast<unsigned int>(port));
 
   waitForNode("/pilz_modbus_client_node");
   waitForNode("/modbus_adapter_operation_mode_node");
@@ -138,7 +138,7 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
   StrictMock<OperationModeSubscriberMock> subscriber;
 
   EXPECT_CALL(subscriber, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
-    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
   subscriber.initialize();
 
@@ -150,15 +150,15 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
   ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::VERSION));
   unsigned int version_register = api_spec.getRegisterDefinition(modbus_api_spec::VERSION);
 
-  modbus_server.setHoldingRegister({{version_register, MODBUS_API_VERSION_VALUE}});
+  modbus_server.setHoldingRegister({ { version_register, MODBUS_API_VERSION_VALUE } });
 
   EXPECT_CALL(subscriber, callback(IsExpectedOperationMode(OperationModes::T1)))
-    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
   ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::OPERATION_MODE));
   unsigned int op_mode_register = api_spec.getRegisterDefinition(modbus_api_spec::OPERATION_MODE);
 
-  modbus_server.setHoldingRegister({{op_mode_register, 1}});
+  modbus_server.setHoldingRegister({ { op_mode_register, 1 } });
 
   BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 
@@ -166,9 +166,9 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
    * Step 3 *
    **********/
   EXPECT_CALL(subscriber, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
-    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
-  modbus_server.setHoldingRegister({{op_mode_register, 0}});
+  modbus_server.setHoldingRegister({ { op_mode_register, 0 } });
 
   BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 
@@ -176,9 +176,9 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
    * Step 4 *
    **********/
   EXPECT_CALL(subscriber, callback(IsExpectedOperationMode(OperationModes::T2)))
-    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
-  
-  modbus_server.setHoldingRegister({{op_mode_register, 2}});
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+
+  modbus_server.setHoldingRegister({ { op_mode_register, 2 } });
 
   BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 
@@ -186,9 +186,9 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
    * Step 5 *
    **********/
   EXPECT_CALL(subscriber, callback(IsExpectedOperationMode(OperationModes::AUTO)))
-    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
-  modbus_server.setHoldingRegister({{op_mode_register, 3}});
+  modbus_server.setHoldingRegister({ { op_mode_register, 3 } });
 
   BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 
@@ -196,9 +196,9 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
    * Step 6 *
    **********/
   EXPECT_CALL(subscriber, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
-    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
-  modbus_server.setHoldingRegister({{op_mode_register, 99}});
+  modbus_server.setHoldingRegister({ { op_mode_register, 99 } });
 
   BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 
@@ -209,15 +209,14 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
   modbus_server_thread.join();
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support
 
-
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "integrationtest_operation_mode");
   ros::NodeHandle nh;
 
-  ros::AsyncSpinner spinner{1};
+  ros::AsyncSpinner spinner{ 1 };
   spinner.start();
 
   testing::InitGoogleTest(&argc, argv);

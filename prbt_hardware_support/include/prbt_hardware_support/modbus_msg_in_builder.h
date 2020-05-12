@@ -28,7 +28,6 @@
 
 namespace prbt_hardware_support
 {
-
 /**
  * @brief Help on construction for ModbusMsgIn Messages.
  *
@@ -38,7 +37,7 @@ namespace prbt_hardware_support
 class ModbusMsgInBuilder
 {
 public:
-  ModbusMsgInBuilder(const ModbusApiSpec &api_spec);
+  ModbusMsgInBuilder(const ModbusApiSpec& api_spec);
 
 public:
   void setRegister(const unsigned int register_n, const uint16_t value);
@@ -47,7 +46,7 @@ public:
   ModbusMsgInBuilder& setOperationMode(const uint16_t mode);
   ModbusMsgInBuilder& setApiVersion(const uint16_t version);
 
-  ModbusMsgInStampedPtr build(const ros::Time &time) const;
+  ModbusMsgInStampedPtr build(const ros::Time& time) const;
 
 public:
   /**
@@ -60,7 +59,6 @@ public:
   static void setDefaultLayout(std_msgs::MultiArrayLayout* layout,
                                const std_msgs::MultiArrayLayout::_data_offset_type& offset,
                                const RegCont::size_type& size);
-
 
 private:
   const ModbusApiSpec api_spec_;
@@ -86,12 +84,11 @@ inline ModbusMsgInBuilder& ModbusMsgInBuilder::setApiVersion(const uint16_t vers
   return *this;
 }
 
-inline void ModbusMsgInBuilder::setRegister(const unsigned int register_n,
-                                            const uint16_t value)
+inline void ModbusMsgInBuilder::setRegister(const unsigned int register_n, const uint16_t value)
 {
   register_values_[register_n] = value;
 }
 
-}
+}  // namespace prbt_hardware_support
 
-#endif // MODBUS_MSG_IN_BUILDER_H
+#endif  // MODBUS_MSG_IN_BUILDER_H

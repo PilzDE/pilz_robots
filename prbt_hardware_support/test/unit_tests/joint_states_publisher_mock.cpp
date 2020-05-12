@@ -26,15 +26,14 @@
 
 namespace prbt_hardware_support
 {
-
-static const std::string JOINT_STATES_TOPIC_NAME{"/prbt/joint_states"};
-static constexpr unsigned int JOINT_STATES_TOPIC_QUEUE_SIZE{1};
+static const std::string JOINT_STATES_TOPIC_NAME{ "/prbt/joint_states" };
+static constexpr unsigned int JOINT_STATES_TOPIC_QUEUE_SIZE{ 1 };
 
 JointStatesPublisherMock::JointStatesPublisherMock()
 {
   joint_states_pub_ = nh_.advertise<sensor_msgs::JointState>(JOINT_STATES_TOPIC_NAME, JOINT_STATES_TOPIC_QUEUE_SIZE);
-  msg_.name = {"joint1", "joint2"};
-  msg_.position = {0.1, -0.11};
+  msg_.name = { "joint1", "joint2" };
+  msg_.position = { 0.1, -0.11 };
 }
 
 JointStatesPublisherMock::~JointStatesPublisherMock()
@@ -45,7 +44,7 @@ JointStatesPublisherMock::~JointStatesPublisherMock()
 void JointStatesPublisherMock::startAsync(bool move)
 {
   terminate_ = false;
-  thread_ = std::thread{ [this, move]{ this->start(move); } };
+  thread_ = std::thread{ [this, move] { this->start(move); } };
 }
 
 void JointStatesPublisherMock::terminate()
@@ -75,11 +74,11 @@ void JointStatesPublisherMock::start(bool move)
       if (move)
       {
         // change positions; reaches limit after > 100 seconds
-        msg_.position.at(0) = std::min(1000.0, msg_.position.at(0)+0.1);
+        msg_.position.at(0) = std::min(1000.0, msg_.position.at(0) + 0.1);
       }
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support

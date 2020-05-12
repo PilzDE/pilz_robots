@@ -23,20 +23,20 @@
 
 namespace prbt_hardware_support
 {
-
 /**
  * @brief Tests that exception is thrown if empty callback function is
  * specified.
  */
-TEST(FilterPipelineTest, testEmptyCallbackFunction){
+TEST(FilterPipelineTest, testEmptyCallbackFunction)
+{
   {
-    ros::NodeHandle nh{"~"};
+    ros::NodeHandle nh{ "~" };
     FilterPipeline::TCallbackFunc cb;
     EXPECT_THROW(FilterPipeline(nh, cb), std::invalid_argument);
   }
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support
 
 int main(int argc, char** argv)
 {

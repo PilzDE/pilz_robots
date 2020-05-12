@@ -25,28 +25,28 @@
 
 namespace prbt_hardware_support
 {
-
-static constexpr double EXPECTED_DEFAULT_SPEED_OVERRIDE{1.0};
+static constexpr double EXPECTED_DEFAULT_SPEED_OVERRIDE{ 1.0 };
 
 class FakeSpeedOverrideTest : public testing::Test
 {
-  protected:
-    void SetUp() override;
+protected:
+  void SetUp() override;
 
-    bool setSpeedOverrideParameter(double speed_override);
+  bool setSpeedOverrideParameter(double speed_override);
 
-    ros::ServiceClient client;
-    ros::ServiceClient dynamic_parameter_client;
-    pilz_msgs::GetSpeedOverride srv;
+  ros::ServiceClient client;
+  ros::ServiceClient dynamic_parameter_client;
+  pilz_msgs::GetSpeedOverride srv;
 
-    FakeSpeedOverrideConfig conf;
+  FakeSpeedOverrideConfig conf;
 };
 
 void FakeSpeedOverrideTest::SetUp()
 {
   ros::NodeHandle n;
   client = n.serviceClient<pilz_msgs::GetSpeedOverride>("/prbt/get_speed_override");
-  dynamic_parameter_client = n.serviceClient<dynamic_reconfigure::Reconfigure>("/fake_speed_override_node/set_parameters");
+  dynamic_parameter_client = n.serviceClient<dynamic_reconfigure::Reconfigure>("/fake_speed_override_node/"
+                                                                               "set_parameters");
 }
 
 bool FakeSpeedOverrideTest::setSpeedOverrideParameter(double speed_override)
@@ -102,7 +102,7 @@ TEST_F(FakeSpeedOverrideTest, testSettingSpeedOverrideToHigh)
   EXPECT_EQ(srv.response.speed_override, conf.__getMax__().speed_override);
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support
 
 int main(int argc, char** argv)
 {

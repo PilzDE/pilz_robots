@@ -36,20 +36,20 @@
 
 namespace prbt_hardware_support
 {
-static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{2};
+static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{ 2 };
 
-static const ModbusApiSpec TEST_API_SPEC{ {modbus_api_spec::VERSION, 969},
-                                          {modbus_api_spec::BRAKETEST_REQUEST,973} };
+static const ModbusApiSpec TEST_API_SPEC{ { modbus_api_spec::VERSION, 969 },
+                                          { modbus_api_spec::BRAKETEST_REQUEST, 973 } };
 
-static const ModbusApiSpec TEST_API_WRITE_SPEC{ {modbus_api_spec::BRAKETEST_PERFORMED, 77},
-                                                {modbus_api_spec::BRAKETEST_RESULT, 78} };
+static const ModbusApiSpec TEST_API_WRITE_SPEC{ { modbus_api_spec::BRAKETEST_PERFORMED, 77 },
+                                                { modbus_api_spec::BRAKETEST_RESULT, 78 } };
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 
 using ::testing::_;
-using ::testing::Return;
 using ::testing::DoAll;
+using ::testing::Return;
 using ::testing::SetArgReferee;
 
 class ModbusMock
@@ -59,18 +59,16 @@ public:
 };
 
 static ModbusMsgInStampedPtr createDefaultBrakeTestModbusMsg(
-    const uint16_t brake_test_required_value,
-    const unsigned int modbus_api_version = MODBUS_API_VERSION_REQUIRED,
-    const uint32_t brake_test_required_index = TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST)
-    )
+    const uint16_t brake_test_required_value, const unsigned int modbus_api_version = MODBUS_API_VERSION_REQUIRED,
+    const uint32_t brake_test_required_index = TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST))
 {
-  const uint32_t first_index_to_read{TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION)};
-  const uint32_t last_index_to_read{brake_test_required_index};
-  static int msg_time_counter{1};
+  const uint32_t first_index_to_read{ TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION) };
+  const uint32_t last_index_to_read{ brake_test_required_index };
+  static int msg_time_counter{ 1 };
   RegCont tab_reg(last_index_to_read - first_index_to_read + 1);
   tab_reg[0] = static_cast<uint16_t>(modbus_api_version);
   tab_reg[last_index_to_read - first_index_to_read] = brake_test_required_value;
-  ModbusMsgInStampedPtr msg{ModbusMsgInBuilder::createDefaultModbusMsgIn(first_index_to_read, tab_reg)};
+  ModbusMsgInStampedPtr msg{ ModbusMsgInBuilder::createDefaultModbusMsgIn(first_index_to_read, tab_reg) };
   msg->header.stamp = ros::Time(msg_time_counter++);
   return msg;
 }
@@ -81,7 +79,7 @@ static ModbusMsgInStampedPtr createDefaultBrakeTestModbusMsg(
  */
 TEST(ModbusAdapterBrakeTestTest, testModbusMsgBrakeTestWrapperExceptionDtor)
 {
-  std::shared_ptr<ModbusMsgBrakeTestWrapperException> msg_wrapper{new ModbusMsgBrakeTestWrapperException("Test msg")};
+  std::shared_ptr<ModbusMsgBrakeTestWrapperException> msg_wrapper{ new ModbusMsgBrakeTestWrapperException("Test msg") };
 }
 
 /**
@@ -91,8 +89,8 @@ TEST(ModbusAdapterBrakeTestTest, testModbusMsgBrakeTestWrapperExceptionDtor)
 TEST(ModbusAdapterBrakeTestTest, testModbusMsgBrakeTestWrapperDtor)
 {
   {
-    std::shared_ptr<ModbusMsgBrakeTestWrapper> msg_wrapper{
-      new ModbusMsgBrakeTestWrapper(createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_REQUIRED), TEST_API_SPEC)};
+    std::shared_ptr<ModbusMsgBrakeTestWrapper> msg_wrapper{ new ModbusMsgBrakeTestWrapper(
+        createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_REQUIRED), TEST_API_SPEC) };
   }
 }
 
@@ -112,7 +110,6 @@ TEST(ModbusAdapterBrakeTestTest, testNoMessageReceived)
   ModbusMock mock;
   ModbusAdapterBrakeTest brake_test_adapter(std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
                                             TEST_API_SPEC, TEST_API_WRITE_SPEC);
-
 
   pilz_msgs::IsBrakeTestRequired srv;
   EXPECT_TRUE(brake_test_adapter.isBrakeTestRequired(srv.request, srv.response));
@@ -183,9 +180,9 @@ TEST(ModbusAdapterBrakeTestTest, testBrakeTestNotRequired)
  */
 TEST(ModbusAdapterBrakeTestTest, testDisconnect)
 {
-  constexpr uint32_t offset{0};
+  constexpr uint32_t offset{ 0 };
   const RegCont holding_register;
-  ModbusMsgInStampedPtr msg{ModbusMsgInBuilder::createDefaultModbusMsgIn(offset, holding_register)};
+  ModbusMsgInStampedPtr msg{ ModbusMsgInBuilder::createDefaultModbusMsgIn(offset, holding_register) };
   msg->disconnect.data = true;
 
   ModbusMock mock;
@@ -237,9 +234,9 @@ TEST(ModbusAdapterBrakeTestTest, testModbusIncorrectApiVersion)
  */
 TEST(ModbusAdapterBrakeTestTest, testModbusWithoutApiVersion)
 {
-  auto msg{createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_REQUIRED,
-                                           TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION),
-                                           TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST))};
+  auto msg{ createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_REQUIRED,
+                                            TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION),
+                                            TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST)) };
   msg->holding_registers.data.clear();
 
   ModbusMock mock;
@@ -271,9 +268,9 @@ TEST(ModbusAdapterBrakeTestTest, testBrakeTestRequiredRegisterMissing)
   ModbusAdapterBrakeTest brake_test_adapter(std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
                                             TEST_API_SPEC, TEST_API_WRITE_SPEC);
 
-  brake_test_adapter.modbusMsgCallback(createDefaultBrakeTestModbusMsg(REGISTER_VALUE_BRAKETEST_REQUIRED,
-                                                                       TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION),
-                                                                       TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST) - 1));
+  brake_test_adapter.modbusMsgCallback(createDefaultBrakeTestModbusMsg(
+      REGISTER_VALUE_BRAKETEST_REQUIRED, TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION),
+      TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST) - 1));
 
   pilz_msgs::IsBrakeTestRequired srv;
   EXPECT_TRUE(brake_test_adapter.isBrakeTestRequired(srv.request, srv.response));
@@ -310,7 +307,7 @@ TEST(ModbusAdapterBrakeTestTest, testBrakeTestRequiredRegisterUndefinedValue)
  */
 TEST(ModbusAdapterBrakeTestTest, testModbusApiSpecExceptionDtor)
 {
-  std::shared_ptr<ModbusAdapterBrakeTestException> ex {new ModbusAdapterBrakeTestException("Test msg")};
+  std::shared_ptr<ModbusAdapterBrakeTestException> ex{ new ModbusAdapterBrakeTestException("Test msg") };
 }
 
 /**
@@ -335,48 +332,46 @@ TEST(ModbusAdapterBrakeTestTest, testBrakeTestTriggeringWrongApiDef)
    * Step 1 *
    **********/
   {
-    ModbusApiSpec api_write_spec { {modbus_api_spec::BRAKETEST_RESULT, 78} };
+    ModbusApiSpec api_write_spec{ { modbus_api_spec::BRAKETEST_RESULT, 78 } };
     ModbusMock mock;
-    ASSERT_THROW(ModbusAdapterBrakeTest bte_no_perf(
-                   std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
-                   TEST_API_SPEC, api_write_spec), ModbusAdapterBrakeTestException);
+    ASSERT_THROW(ModbusAdapterBrakeTest bte_no_perf(std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
+                                                    TEST_API_SPEC, api_write_spec),
+                 ModbusAdapterBrakeTestException);
   }
 
   /**********
    * Step 2 *
    **********/
   {
-    ModbusApiSpec api_write_spec{ {modbus_api_spec::BRAKETEST_PERFORMED, 77} };
+    ModbusApiSpec api_write_spec{ { modbus_api_spec::BRAKETEST_PERFORMED, 77 } };
     ModbusMock mock;
-    ASSERT_THROW(ModbusAdapterBrakeTest bte_no_res(
-                   std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
-                   TEST_API_SPEC, api_write_spec), ModbusAdapterBrakeTestException);
+    ASSERT_THROW(ModbusAdapterBrakeTest bte_no_res(std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
+                                                   TEST_API_SPEC, api_write_spec),
+                 ModbusAdapterBrakeTestException);
   }
 
   /**********
    * Step 3 *
    **********/
   {
-    ModbusApiSpec api_write_spec{ {modbus_api_spec::BRAKETEST_PERFORMED, 100},
-                                  {modbus_api_spec::BRAKETEST_RESULT, 99} };
+    ModbusApiSpec api_write_spec{ { modbus_api_spec::BRAKETEST_PERFORMED, 100 },
+                                  { modbus_api_spec::BRAKETEST_RESULT, 99 } };
     ModbusMock mock;
-    ASSERT_NO_THROW(ModbusAdapterBrakeTest bte_one_apart(
-                      std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
-                      TEST_API_SPEC, api_write_spec));
+    ASSERT_NO_THROW(ModbusAdapterBrakeTest bte_one_apart(std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
+                                                         TEST_API_SPEC, api_write_spec));
   }
 
   /**********
    * Step 4 *
    **********/
   {
-    ModbusApiSpec api_write_spec{ {modbus_api_spec::BRAKETEST_PERFORMED, 100},
-                                  {modbus_api_spec::BRAKETEST_RESULT, 98} };
+    ModbusApiSpec api_write_spec{ { modbus_api_spec::BRAKETEST_PERFORMED, 100 },
+                                  { modbus_api_spec::BRAKETEST_RESULT, 98 } };
     ModbusMock mock;
-    ASSERT_THROW(ModbusAdapterBrakeTest bte_two_apart(
-                   std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
-                   TEST_API_SPEC, api_write_spec), ModbusAdapterBrakeTestException);
+    ASSERT_THROW(ModbusAdapterBrakeTest bte_two_apart(std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
+                                                      TEST_API_SPEC, api_write_spec),
+                 ModbusAdapterBrakeTestException);
   }
-
 }
 
 /**
@@ -386,8 +381,7 @@ TEST(ModbusAdapterBrakeTestTest, testBrakeTestTriggeringWrongApiDef)
 TEST(ModbusAdapterBrakeTestTest, testMissingModbusWriteFunc)
 {
   ModbusMock mock;
-  ModbusAdapterBrakeTest brake_test_adapter(nullptr,
-                                            TEST_API_SPEC, TEST_API_WRITE_SPEC);
+  ModbusAdapterBrakeTest brake_test_adapter(nullptr, TEST_API_SPEC, TEST_API_WRITE_SPEC);
 
   SendBrakeTestResult srv;
   EXPECT_TRUE(brake_test_adapter.sendBrakeTestResult(srv.request, srv.response));
@@ -401,7 +395,7 @@ TEST(ModbusAdapterBrakeTestTest, testMissingModbusWriteFunc)
 TEST(ModbusAdapterBrakeTestTest, testFailingModbusWriteFunc)
 {
   ModbusMock mock;
-  EXPECT_CALL(mock, modbsWriteRegisterFunc(_,_)).Times(1).WillOnce(Return(false));
+  EXPECT_CALL(mock, modbsWriteRegisterFunc(_, _)).Times(1).WillOnce(Return(false));
   ModbusAdapterBrakeTest brake_test_adapter(std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
                                             TEST_API_SPEC, TEST_API_WRITE_SPEC);
 
@@ -417,7 +411,7 @@ TEST(ModbusAdapterBrakeTestTest, testFailingModbusWriteFunc)
 TEST(ModbusAdapterBrakeTestTest, testSecondTimeFailingModbusWriteFunc)
 {
   ModbusMock mock;
-  EXPECT_CALL(mock, modbsWriteRegisterFunc(_,_)).Times(2).WillOnce(Return(true)).WillOnce(Return(false));
+  EXPECT_CALL(mock, modbsWriteRegisterFunc(_, _)).Times(2).WillOnce(Return(true)).WillOnce(Return(false));
   ModbusAdapterBrakeTest brake_test_adapter(std::bind(&ModbusMock::modbsWriteRegisterFunc, &mock, _1, _2),
                                             TEST_API_SPEC, TEST_API_WRITE_SPEC);
 
@@ -463,9 +457,9 @@ TEST(ModbusAdapterBrakeTestTest, testWriteModbusRegisterCallFailure)
   EXPECT_FALSE(writeModbusRegisterCall<ServiceMock>(mock, 0, {}));
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   testing::InitGoogleMock(&argc, argv);
   return RUN_ALL_TESTS();

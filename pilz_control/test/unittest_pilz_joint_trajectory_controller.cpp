@@ -37,25 +37,24 @@ typedef control_msgs::FollowJointTrajectoryGoal GoalType;
 
 namespace pilz_joint_trajectory_controller
 {
+static const std::string CONTROLLER_NAMESPACE{ "/controller_ns" };
+static const std::string TRAJECTORY_ACTION{ "/follow_joint_trajectory" };
+static const std::string HOLD_SERVICE{ "/hold" };
+static const std::string UNHOLD_SERVICE{ "/unhold" };
+static const std::string IS_EXECUTING_SERVICE{ "/is_executing" };
+static const std::string TRAJECTORY_COMMAND_TOPIC{ "/command" };
+static const std::string STOP_TRAJECTORY_DURATION_PARAMETER{ "stop_trajectory_duration" };
 
-static const std::string CONTROLLER_NAMESPACE{"/controller_ns"};
-static const std::string TRAJECTORY_ACTION{"/follow_joint_trajectory"};
-static const std::string HOLD_SERVICE{"/hold"};
-static const std::string UNHOLD_SERVICE{"/unhold"};
-static const std::string IS_EXECUTING_SERVICE{"/is_executing"};
-static const std::string TRAJECTORY_COMMAND_TOPIC{"/command"};
-static const std::string STOP_TRAJECTORY_DURATION_PARAMETER{"stop_trajectory_duration"};
+static constexpr double TIME_COMPARISON_TOLERANCE_SEC{ 0.000001 };
+static constexpr double STOP_TRAJECTORY_DURATION{ 0.2 };
+static constexpr double TIME_SIMULATION_START_SEC{ 0.1 };
+static constexpr double DEFAULT_UPDATE_PERIOD_SEC{ 0.008 };
 
-static constexpr double TIME_COMPARISON_TOLERANCE_SEC{0.000001};
-static constexpr double STOP_TRAJECTORY_DURATION{0.2};
-static constexpr double TIME_SIMULATION_START_SEC{0.1};
-static constexpr double DEFAULT_UPDATE_PERIOD_SEC{0.008};
-
-static constexpr unsigned int SLEEP_TIME_MSEC{10};
+static constexpr unsigned int SLEEP_TIME_MSEC{ 10 };
 
 static void progressInTime(const ros::Duration& period)
 {
-  ros::Time current_time{ros::Time::now()};
+  ros::Time current_time{ ros::Time::now() };
   ros::Time::setNow(current_time + period);
 }
 
@@ -75,18 +74,19 @@ protected:
 
   void updateController();
 
-  GoalType generateSimpleGoal(const ros::Duration &goal_duration);
+  GoalType generateSimpleGoal(const ros::Duration& goal_duration);
 
 protected:
   ControllerPtr controller_;
-  HWInterface* hardware_ {new HWInterface()};
-  ros::NodeHandle nh_ {"~"};
-  ros::NodeHandle controller_nh_ {CONTROLLER_NAMESPACE};
-  ros::AsyncSpinner spinner_ {2};
-  actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>
-        trajectory_action_client_ {CONTROLLER_NAMESPACE + TRAJECTORY_ACTION, true};
+  HWInterface* hardware_{ new HWInterface() };
+  ros::NodeHandle nh_{ "~" };
+  ros::NodeHandle controller_nh_{ CONTROLLER_NAMESPACE };
+  ros::AsyncSpinner spinner_{ 2 };
+  actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> trajectory_action_client_{
+    CONTROLLER_NAMESPACE + TRAJECTORY_ACTION, true
+  };
   std::shared_ptr<ros::Publisher> trajectory_command_publisher_;
-  ros::Time last_update_time_{TIME_SIMULATION_START_SEC};
+  ros::Time last_update_time_{ TIME_SIMULATION_START_SEC };
 };
 
 void PilzJointTrajectoryControllerTest::SetUp()
@@ -97,49 +97,49 @@ void PilzJointTrajectoryControllerTest::SetUp()
   double* pos = new double();
   double* vel = new double();
   double* eff = new double();
-  hardware_interface::JointStateHandle jsh {"joint1", pos, vel, eff};
+  hardware_interface::JointStateHandle jsh{ "joint1", pos, vel, eff };
   double* cmd = new double();
-  hardware_interface::JointHandle jh {jsh, cmd};
+  hardware_interface::JointHandle jh{ jsh, cmd };
   hardware_->registerHandle(jh);
 
   // set joints parameter
-  controller_nh_.setParam("joints", std::vector<std::string>( {"joint1"} ));
+  controller_nh_.setParam("joints", std::vector<std::string>({ "joint1" }));
 
   // Setup controller
   controller_ = std::make_shared<Controller>();
 
   trajectory_command_publisher_ = std::make_shared<ros::Publisher>(
-          nh_.advertise<trajectory_msgs::JointTrajectory>(CONTROLLER_NAMESPACE + TRAJECTORY_COMMAND_TOPIC, 1));
+      nh_.advertise<trajectory_msgs::JointTrajectory>(CONTROLLER_NAMESPACE + TRAJECTORY_COMMAND_TOPIC, 1));
 
   // Set stop trajectory duration on parameter server (will be read in controller_->init())
   controller_nh_.setParam(STOP_TRAJECTORY_DURATION_PARAMETER, STOP_TRAJECTORY_DURATION);
 
   // Set up simulated time
-  ros::Time start_time{TIME_SIMULATION_START_SEC};
+  ros::Time start_time{ TIME_SIMULATION_START_SEC };
   ros::Time::setNow(start_time);
 }
 
 void PilzJointTrajectoryControllerTest::startController()
 {
-  ros::Time current_time{ros::Time::now()};
+  ros::Time current_time{ ros::Time::now() };
   controller_->starting(current_time);
   last_update_time_ = current_time;
 }
 
 void PilzJointTrajectoryControllerTest::updateController()
 {
-  ros::Time current_time{ros::Time::now()};
+  ros::Time current_time{ ros::Time::now() };
   controller_->update(current_time, current_time - last_update_time_);
   last_update_time_ = current_time;
 }
 
-GoalType PilzJointTrajectoryControllerTest::generateSimpleGoal(const ros::Duration &goal_duration)
+GoalType PilzJointTrajectoryControllerTest::generateSimpleGoal(const ros::Duration& goal_duration)
 {
   GoalType goal;
   goal.trajectory.joint_names = hardware_->getNames();
   goal.trajectory.points.resize(1);
   goal.trajectory.points[0].time_from_start = goal_duration;
-  goal.trajectory.points[0].positions = {0.1};
+  goal.trajectory.points[0].positions = { 0.1 };
 
   return goal;
 }
@@ -212,12 +212,12 @@ TEST_F(PilzJointTrajectoryControllerTest, testUpdateWhileHolding)
   /**********
    * Step 2 *
    **********/
-  ros::Duration goal_duration{2.0};
-  GoalType goal {generateSimpleGoal(goal_duration)};
+  ros::Duration goal_duration{ 2.0 };
+  GoalType goal{ generateSimpleGoal(goal_duration) };
 
   trajectory_action_client_.sendGoal(goal);
 
-  ros::Duration period{DEFAULT_UPDATE_PERIOD_SEC};
+  ros::Duration period{ DEFAULT_UPDATE_PERIOD_SEC };
   progressInTime(period);
   updateController();
 
@@ -225,7 +225,6 @@ TEST_F(PilzJointTrajectoryControllerTest, testUpdateWhileHolding)
   EXPECT_EQ(control_msgs::FollowJointTrajectoryResult::INVALID_GOAL, trajectory_action_client_.getResult()->error_code)
       << "Obtained error code " << trajectory_action_client_.getResult()->error_code << " for goal while in HOLD mode.";
 }
-
 
 /**
  * @brief Test for correct return values and elapsed times in case of subsequent calls to hold/unhold function.
@@ -260,10 +259,11 @@ TEST_F(PilzJointTrajectoryControllerTest, testDoubleRequest)
   ASSERT_TRUE(controller_->handleUnHoldRequest(req, resp));
   EXPECT_TRUE(resp.success);
 
-  ros::Time start_hold_time{ros::Time::now()};
+  ros::Time start_hold_time{ ros::Time::now() };
   ASSERT_TRUE(controller_->handleHoldRequest(req, resp));
   EXPECT_TRUE(resp.success);
-  EXPECT_NEAR(ros::Time::now().toSec(), start_hold_time.toSec() + STOP_TRAJECTORY_DURATION, TIME_COMPARISON_TOLERANCE_SEC);
+  EXPECT_NEAR(ros::Time::now().toSec(), start_hold_time.toSec() + STOP_TRAJECTORY_DURATION,
+              TIME_COMPARISON_TOLERANCE_SEC);
 
   updateController();
 
@@ -274,7 +274,7 @@ TEST_F(PilzJointTrajectoryControllerTest, testDoubleRequest)
   EXPECT_NEAR(ros::Time::now().toSec(), start_hold_time.toSec(), TIME_COMPARISON_TOLERANCE_SEC);
 
   // Now we should have stopped
-  ros::Duration period{DEFAULT_UPDATE_PERIOD_SEC};
+  ros::Duration period{ DEFAULT_UPDATE_PERIOD_SEC };
   progressInTime(period);
   updateController();
   EXPECT_FALSE(controller_->is_executing());
@@ -296,9 +296,8 @@ TEST_F(PilzJointTrajectoryControllerTest, testFakeStart)
  */
 TEST_F(PilzJointTrajectoryControllerTest, testD0Destructor)
 {
-  ControllerPtr controller {new Controller()};
+  ControllerPtr controller{ new Controller() };
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 //    Parameterized tests for the "is-executing-check" functionality    //
@@ -314,11 +313,11 @@ static testing::AssertionResult InvokeIsExecutingMethod(const ControllerPtr& con
   return testing::AssertionSuccess();
 }
 
-static testing::AssertionResult InvokeIsExecutingServiceCallback(const ControllerPtr& controller, bool &result)
+static testing::AssertionResult InvokeIsExecutingServiceCallback(const ControllerPtr& controller, bool& result)
 {
   std_srvs::TriggerRequest req;
   std_srvs::TriggerResponse resp;
-  if(!controller->handleIsExecutingRequest(req, resp))
+  if (!controller->handleIsExecutingRequest(req, resp))
   {
     return testing::AssertionFailure() << "Callback of is_executing returned false unexpectedly.";
   }
@@ -345,22 +344,23 @@ protected:
 
 testing::AssertionResult PilzJointTrajectoryControllerIsExecutingTest::invokeIsExecuting(bool& result)
 {
-  auto invoke_is_executing {GetParam()};
+  auto invoke_is_executing{ GetParam() };
   return invoke_is_executing(controller_, result);
 }
 
-testing::AssertionResult PilzJointTrajectoryControllerIsExecutingTest::waitForIsExecutingResult(bool expectation, bool& result)
+testing::AssertionResult PilzJointTrajectoryControllerIsExecutingTest::waitForIsExecutingResult(bool expectation,
+                                                                                                bool& result)
 {
-  auto invoke_is_executing {GetParam()};
-  ros::Duration update_period{DEFAULT_UPDATE_PERIOD_SEC};
+  auto invoke_is_executing{ GetParam() };
+  ros::Duration update_period{ DEFAULT_UPDATE_PERIOD_SEC };
 
   while (ros::ok())
   {
     progressInTime(update_period);
     updateController();
 
-    auto assertion_result {invoke_is_executing(controller_, result)};
-    if(assertion_result == testing::AssertionFailure())
+    auto assertion_result{ invoke_is_executing(controller_, result) };
+    if (assertion_result == testing::AssertionFailure())
     {
       return assertion_result;
     }
@@ -372,8 +372,8 @@ testing::AssertionResult PilzJointTrajectoryControllerIsExecutingTest::waitForIs
     usleep(SLEEP_TIME_MSEC);
   }
 
-  return testing::AssertionFailure()
-      << "Controller did not " << (expectation ? "start" : "stop") << " executing as expected.";
+  return testing::AssertionFailure() << "Controller did not " << (expectation ? "start" : "stop")
+                                     << " executing as expected.";
 }
 
 testing::AssertionResult PilzJointTrajectoryControllerIsExecutingTest::performFullControllerStartup()
@@ -394,7 +394,7 @@ testing::AssertionResult PilzJointTrajectoryControllerIsExecutingTest::performFu
     return testing::AssertionFailure() << "Unholding the controller failed.";
   }
 
-  ros::Duration stop_duration{STOP_TRAJECTORY_DURATION + DEFAULT_UPDATE_PERIOD_SEC};
+  ros::Duration stop_duration{ STOP_TRAJECTORY_DURATION + DEFAULT_UPDATE_PERIOD_SEC };
   progressInTime(stop_duration);
   updateController();
 
@@ -439,7 +439,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testHoldAtStart)
   /**********
    * Step 2 *
    **********/
-  ros::Duration stop_duration{STOP_TRAJECTORY_DURATION + DEFAULT_UPDATE_PERIOD_SEC};
+  ros::Duration stop_duration{ STOP_TRAJECTORY_DURATION + DEFAULT_UPDATE_PERIOD_SEC };
   progressInTime(stop_duration);
   updateController();
 
@@ -468,8 +468,8 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testSingleActionGoal)
   /**********
    * Step 1 *
    **********/
-  ros::Duration goal_duration{2.0};
-  GoalType goal {generateSimpleGoal(goal_duration)};
+  ros::Duration goal_duration{ 2.0 };
+  GoalType goal{ generateSimpleGoal(goal_duration) };
 
   trajectory_action_client_.sendGoal(goal);
   bool is_executing_result;
@@ -478,7 +478,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testSingleActionGoal)
   /**********
    * Step 2 *
    **********/
-  ros::Duration default_update_period {DEFAULT_UPDATE_PERIOD_SEC};
+  ros::Duration default_update_period{ DEFAULT_UPDATE_PERIOD_SEC };
   progressInTime(goal_duration + default_update_period);
   updateController();
 
@@ -496,8 +496,8 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testSingleCommandMessage)
   /**********
    * Step 1 *
    **********/
-  ros::Duration goal_duration{2.0};
-  GoalType goal {generateSimpleGoal(goal_duration)};
+  ros::Duration goal_duration{ 2.0 };
+  GoalType goal{ generateSimpleGoal(goal_duration) };
 
   trajectory_command_publisher_->publish(goal.trajectory);
   bool is_executing_result;
@@ -506,7 +506,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testSingleCommandMessage)
   /**********
    * Step 2 *
    **********/
-  ros::Duration default_update_period {DEFAULT_UPDATE_PERIOD_SEC};
+  ros::Duration default_update_period{ DEFAULT_UPDATE_PERIOD_SEC };
   progressInTime(goal_duration + default_update_period);
   updateController();
   EXPECT_TRUE(invokeIsExecuting(is_executing_result));
@@ -524,8 +524,8 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStoppingAnExecution)
   /**********
    * Step 1 *
    **********/
-  ros::Duration goal_duration{2.0};
-  GoalType goal {generateSimpleGoal(goal_duration)};
+  ros::Duration goal_duration{ 2.0 };
+  GoalType goal{ generateSimpleGoal(goal_duration) };
 
   trajectory_command_publisher_->publish(goal.trajectory);
   bool is_executing_result;
@@ -539,8 +539,8 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStoppingAnExecution)
   EXPECT_TRUE(controller_->handleHoldRequest(req, resp));
   EXPECT_TRUE(resp.success);
 
-  ros::Duration stop_duration{STOP_TRAJECTORY_DURATION};
-  progressInTime(-stop_duration*0.5);
+  ros::Duration stop_duration{ STOP_TRAJECTORY_DURATION };
+  progressInTime(-stop_duration * 0.5);
   updateController();
 
   EXPECT_TRUE(invokeIsExecuting(is_executing_result));
@@ -549,8 +549,8 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStoppingAnExecution)
   /**********
    * Step 3 *
    **********/
-  ros::Duration default_update_period {DEFAULT_UPDATE_PERIOD_SEC};
-  progressInTime(stop_duration*0.5 + default_update_period);
+  ros::Duration default_update_period{ DEFAULT_UPDATE_PERIOD_SEC };
+  progressInTime(stop_duration * 0.5 + default_update_period);
   updateController();
 
   EXPECT_TRUE(invokeIsExecuting(is_executing_result));
@@ -562,8 +562,7 @@ INSTANTIATE_TEST_CASE_P(MethodAndServiceCallback, PilzJointTrajectoryControllerI
 
 }  // namespace pilz_joint_trajectory_controller
 
-
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "unittest_pilz_joint_trajectory_controller");
   ros::NodeHandle nh;

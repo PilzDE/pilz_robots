@@ -29,10 +29,8 @@
 #include <prbt_hardware_support/BrakeTestErrorCodes.h>
 #include <prbt_hardware_support/brake_test_executor_node_service_calls.h>
 
-
 namespace brake_test_executor_test
 {
-
 using namespace prbt_hardware_support;
 using namespace testing;
 
@@ -46,7 +44,6 @@ public:
   MOCK_METHOD0(executeBrakeTest, BrakeTest::Response());
   MOCK_METHOD0(unholdController, void());
   MOCK_METHOD1(sendBrakeTestResult, bool(const bool brake_test_result));
-
 };
 
 /**
@@ -66,21 +63,17 @@ public:
 TEST(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
 {
   SystemMock mock;
-  BrakeTestExecutor brake_test_executor(std::bind(&SystemMock::detectMotion, &mock),
-                                        std::bind(&SystemMock::holdController, &mock),
-                                        std::bind(&SystemMock::executeBrakeTest, &mock),
-                                        std::bind(&SystemMock::unholdController, &mock),
-                                        std::bind(&SystemMock::sendBrakeTestResult, &mock, _1));
+  BrakeTestExecutor brake_test_executor(
+      std::bind(&SystemMock::detectMotion, &mock), std::bind(&SystemMock::holdController, &mock),
+      std::bind(&SystemMock::executeBrakeTest, &mock), std::bind(&SystemMock::unholdController, &mock),
+      std::bind(&SystemMock::sendBrakeTestResult, &mock, _1));
 
   {
     InSequence dummy;
 
     EXPECT_CALL(mock, detectMotion()).Times(1).WillOnce(Return(false));
     EXPECT_CALL(mock, holdController()).Times(1);
-    EXPECT_CALL(mock, executeBrakeTest())
-        .Times(1)
-        .WillOnce(testing::Invoke(
-                    []() {
+    EXPECT_CALL(mock, executeBrakeTest()).Times(1).WillOnce(testing::Invoke([]() {
       BrakeTest::Response res;
       res.success = true;
       return res;
@@ -90,8 +83,11 @@ TEST(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
   }
 
   pilz_msgs::BrakeTest brake_test_srv;
-  EXPECT_TRUE(brake_test_executor.executeBrakeTest(brake_test_srv.request, brake_test_srv.response)) << "Failed to call brake test service.";
-  EXPECT_TRUE(brake_test_srv.response.success) << "Brake tests failed unexpectedly. Message: " << brake_test_srv.response.error_msg;
+  EXPECT_TRUE(brake_test_executor.executeBrakeTest(brake_test_srv.request, brake_test_srv.response)) << "Failed to "
+                                                                                                        "call brake "
+                                                                                                        "test service.";
+  EXPECT_TRUE(brake_test_srv.response.success)
+      << "Brake tests failed unexpectedly. Message: " << brake_test_srv.response.error_msg;
 }
 
 /**
@@ -109,18 +105,16 @@ TEST(BrakeTestExecutorTest, testBrakeTestTriggeringRobotNotMoving)
 TEST(BrakeTestExecutorTest, testBrakeTestServiceWithRobotMotion)
 {
   SystemMock mock;
-  BrakeTestExecutor brake_test_executor(std::bind(&SystemMock::detectMotion, &mock),
-                                        std::bind(&SystemMock::holdController, &mock),
-                                        std::bind(&SystemMock::executeBrakeTest, &mock),
-                                        std::bind(&SystemMock::unholdController, &mock),
-                                        std::bind(&SystemMock::sendBrakeTestResult, &mock, _1));
+  BrakeTestExecutor brake_test_executor(
+      std::bind(&SystemMock::detectMotion, &mock), std::bind(&SystemMock::holdController, &mock),
+      std::bind(&SystemMock::executeBrakeTest, &mock), std::bind(&SystemMock::unholdController, &mock),
+      std::bind(&SystemMock::sendBrakeTestResult, &mock, _1));
 
   EXPECT_CALL(mock, detectMotion()).Times(1).WillOnce(Return(true));
   EXPECT_CALL(mock, holdController()).Times(0);
   EXPECT_CALL(mock, executeBrakeTest()).Times(0);
   EXPECT_CALL(mock, unholdController()).Times(0);
   EXPECT_CALL(mock, sendBrakeTestResult(_)).Times(0);
-
 
   pilz_msgs::BrakeTest brake_test_srv;
   EXPECT_TRUE(brake_test_executor.executeBrakeTest(brake_test_srv.request, brake_test_srv.response));
@@ -145,21 +139,17 @@ TEST(BrakeTestExecutorTest, testBrakeTestServiceWithRobotMotion)
 TEST(BrakeTestExecutorTest, testBrakeTestServiceTriggerFails)
 {
   SystemMock mock;
-  BrakeTestExecutor brake_test_executor(std::bind(&SystemMock::detectMotion, &mock),
-                                        std::bind(&SystemMock::holdController, &mock),
-                                        std::bind(&SystemMock::executeBrakeTest, &mock),
-                                        std::bind(&SystemMock::unholdController, &mock),
-                                        std::bind(&SystemMock::sendBrakeTestResult, &mock, _1));
+  BrakeTestExecutor brake_test_executor(
+      std::bind(&SystemMock::detectMotion, &mock), std::bind(&SystemMock::holdController, &mock),
+      std::bind(&SystemMock::executeBrakeTest, &mock), std::bind(&SystemMock::unholdController, &mock),
+      std::bind(&SystemMock::sendBrakeTestResult, &mock, _1));
 
   {
     InSequence dummy;
 
     EXPECT_CALL(mock, detectMotion()).Times(1).WillOnce(Return(false));
     EXPECT_CALL(mock, holdController()).Times(1);
-    EXPECT_CALL(mock, executeBrakeTest())
-        .Times(1)
-        .WillOnce(testing::Invoke([]()
-    {
+    EXPECT_CALL(mock, executeBrakeTest()).Times(1).WillOnce(testing::Invoke([]() {
       BrakeTest::Response res;
       res.success = false;
       res.error_msg = "Test error message";
@@ -189,21 +179,17 @@ TEST(BrakeTestExecutorTest, testBrakeTestServiceTriggerFails)
 TEST(BrakeTestExecutorTest, testBrakeTestResultServiceFails)
 {
   SystemMock mock;
-  BrakeTestExecutor brake_test_executor(std::bind(&SystemMock::detectMotion, &mock),
-                                        std::bind(&SystemMock::holdController, &mock),
-                                        std::bind(&SystemMock::executeBrakeTest, &mock),
-                                        std::bind(&SystemMock::unholdController, &mock),
-                                        std::bind(&SystemMock::sendBrakeTestResult, &mock, _1));
+  BrakeTestExecutor brake_test_executor(
+      std::bind(&SystemMock::detectMotion, &mock), std::bind(&SystemMock::holdController, &mock),
+      std::bind(&SystemMock::executeBrakeTest, &mock), std::bind(&SystemMock::unholdController, &mock),
+      std::bind(&SystemMock::sendBrakeTestResult, &mock, _1));
 
   {
     InSequence dummy;
 
     EXPECT_CALL(mock, detectMotion()).Times(1).WillOnce(Return(false));
     EXPECT_CALL(mock, holdController()).Times(1);
-    EXPECT_CALL(mock, executeBrakeTest())
-        .Times(1)
-        .WillOnce(testing::Invoke([]()
-    {
+    EXPECT_CALL(mock, executeBrakeTest()).Times(1).WillOnce(testing::Invoke([]() {
       BrakeTest::Response res;
       res.success = true;
       return res;
@@ -224,8 +210,7 @@ TEST(BrakeTestExecutorTest, testBrakeTestResultServiceFails)
 TEST(BrakeTestExecutorTest, testMissingHoldFunc)
 {
   SystemMock mock;
-  EXPECT_THROW(BrakeTestExecutor(std::bind(&SystemMock::detectMotion, &mock),
-                                 nullptr,
+  EXPECT_THROW(BrakeTestExecutor(std::bind(&SystemMock::detectMotion, &mock), nullptr,
                                  std::bind(&SystemMock::executeBrakeTest, &mock),
                                  std::bind(&SystemMock::unholdController, &mock),
                                  std::bind(&SystemMock::sendBrakeTestResult, &mock, _1)),
@@ -241,8 +226,7 @@ TEST(BrakeTestExecutorTest, testMissingUnholdFunc)
   SystemMock mock;
   EXPECT_THROW(BrakeTestExecutor(std::bind(&SystemMock::detectMotion, &mock),
                                  std::bind(&SystemMock::holdController, &mock),
-                                 std::bind(&SystemMock::executeBrakeTest, &mock),
-                                 nullptr,
+                                 std::bind(&SystemMock::executeBrakeTest, &mock), nullptr,
                                  std::bind(&SystemMock::sendBrakeTestResult, &mock, _1)),
                BrakeTestExecutorException);
 }
@@ -254,8 +238,7 @@ TEST(BrakeTestExecutorTest, testMissingUnholdFunc)
 TEST(BrakeTestExecutorTest, testMissingDetectMotionFunc)
 {
   SystemMock mock;
-  EXPECT_THROW(BrakeTestExecutor(nullptr,
-                                 std::bind(&SystemMock::holdController, &mock),
+  EXPECT_THROW(BrakeTestExecutor(nullptr, std::bind(&SystemMock::holdController, &mock),
                                  std::bind(&SystemMock::executeBrakeTest, &mock),
                                  std::bind(&SystemMock::unholdController, &mock),
                                  std::bind(&SystemMock::sendBrakeTestResult, &mock, _1)),
@@ -270,8 +253,7 @@ TEST(BrakeTestExecutorTest, testMissingExecuteBrakeTestFunc)
 {
   SystemMock mock;
   EXPECT_THROW(BrakeTestExecutor(std::bind(&SystemMock::detectMotion, &mock),
-                                 std::bind(&SystemMock::holdController, &mock),
-                                 nullptr,
+                                 std::bind(&SystemMock::holdController, &mock), nullptr,
                                  std::bind(&SystemMock::unholdController, &mock),
                                  std::bind(&SystemMock::sendBrakeTestResult, &mock, _1)),
                BrakeTestExecutorException);
@@ -287,8 +269,7 @@ TEST(BrakeTestExecutorTest, testMissingSendBrakeTestResultFunc)
   EXPECT_THROW(BrakeTestExecutor(std::bind(&SystemMock::detectMotion, &mock),
                                  std::bind(&SystemMock::holdController, &mock),
                                  std::bind(&SystemMock::executeBrakeTest, &mock),
-                                 std::bind(&SystemMock::unholdController, &mock),
-                                 nullptr),
+                                 std::bind(&SystemMock::unholdController, &mock), nullptr),
                BrakeTestExecutorException);
 }
 
@@ -298,7 +279,7 @@ TEST(BrakeTestExecutorTest, testMissingSendBrakeTestResultFunc)
  */
 TEST(BrakeTestExecutorTest, testDtorBrakeTestExecutorException)
 {
-  std::unique_ptr<BrakeTestExecutorException> ex {new BrakeTestExecutorException("TestException")};
+  std::unique_ptr<BrakeTestExecutorException> ex{ new BrakeTestExecutorException("TestException") };
 }
 
 class TriggerServiceMock
@@ -353,7 +334,7 @@ TEST(BrakeTestExecutorTest, testExecuteBrakeTestCallFailure)
   EXPECT_CALL(mock, getService()).WillRepeatedly(Return("TestServiceName"));
   EXPECT_CALL(mock, call(_)).Times(1).WillOnce(Return(false));
 
-  BrakeTest::Response res {executeBrakeTestCall<BrakeTestServiceMock>(mock)};
+  BrakeTest::Response res{ executeBrakeTestCall<BrakeTestServiceMock>(mock) };
   EXPECT_FALSE(res.success);
   EXPECT_EQ(res.error_code.value, BrakeTestErrorCodes::TRIGGER_BRAKETEST_SERVICE_FAILURE);
 }
@@ -377,7 +358,10 @@ TEST(BrakeTestExecutorTest, testSendBrakeTestResultCallFailure)
   EXPECT_FALSE(sendBrakeTestResultCall<SendBrakeTestResltServiceMock>(mock, true));
 }
 
-MATCHER(IsRequestResultFalse, "") { return !arg.request.result; }
+MATCHER(IsRequestResultFalse, "")
+{
+  return !arg.request.result;
+}
 
 /**
  * @brief Tests that SendBrakeTestResult service is called with correct value.
@@ -391,9 +375,9 @@ TEST(BrakeTestExecutorTest, testSendBrakeTestResultCallSuccess)
   EXPECT_TRUE(sendBrakeTestResultCall<SendBrakeTestResltServiceMock>(mock, false));
 }
 
-} // namespace brake_test_executor_test
+}  // namespace brake_test_executor_test
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   testing::InitGoogleMock(&argc, argv);
   return RUN_ALL_TESTS();

@@ -30,19 +30,18 @@
 
 namespace prbt_hardware_support
 {
-static constexpr int DEFAULT_QUEUE_SIZE_MODBUS{1};
+static constexpr int DEFAULT_QUEUE_SIZE_MODBUS{ 1 };
 static const std::string SERVICE_NAME_OPERATION_MODE = "/prbt/get_operation_mode";
-static const std::string TOPIC_OPERATION_MODE{"/prbt/operation_mode"};
-static constexpr int OPERATION_MODE_QUEUE_SIZE{1};
+static const std::string TOPIC_OPERATION_MODE{ "/prbt/operation_mode" };
+static constexpr int OPERATION_MODE_QUEUE_SIZE{ 1 };
 
-static const std::string OPERATION_MODE_CALLBACK_EVENT{"operation_mode_callback_event"};
+static const std::string OPERATION_MODE_CALLBACK_EVENT{ "operation_mode_callback_event" };
 
-static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{2};
+static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{ 2 };
 
-static const ModbusApiSpec TEST_API_SPEC{ {modbus_api_spec::VERSION, 1},
-                                          {modbus_api_spec::OPERATION_MODE, 11} };
+static const ModbusApiSpec TEST_API_SPEC{ { modbus_api_spec::VERSION, 1 }, { modbus_api_spec::OPERATION_MODE, 11 } };
 
-static const std::vector<uint16_t> OPERATION_MODES{1, 2, 3};
+static const std::vector<uint16_t> OPERATION_MODES{ 1, 2, 3 };
 
 /**
  * @brief Redirects callbacks of a ros::Subscriber to a mock method.
@@ -64,10 +63,8 @@ protected:
 
 void OperationModeSubscriberMock::initialize()
 {
-  subscriber_ = nh_.subscribe(TOPIC_OPERATION_MODE,
-                              OPERATION_MODE_QUEUE_SIZE,
-                              &OperationModeSubscriberMock::callback,
-                              this);
+  subscriber_ =
+      nh_.subscribe(TOPIC_OPERATION_MODE, OPERATION_MODE_QUEUE_SIZE, &OperationModeSubscriberMock::callback, this);
 }
 
 using ::testing::StrictMock;
@@ -85,7 +82,7 @@ public:
   ~ModbusAdapterOperationModeTest() override;
 
 protected:
-  ros::AsyncSpinner spinner_{2};
+  ros::AsyncSpinner spinner_{ 2 };
   ros::NodeHandle nh_;
   std::shared_ptr<ModbusAdapterOperationMode> adapter_operation_mode_;
   ros::Publisher modbus_topic_pub_;
@@ -96,7 +93,7 @@ protected:
 ModbusAdapterOperationModeTest::ModbusAdapterOperationModeTest()
 {
   // Initialize for ROS time if not already initialized
-  if(!ros::Time::isValid())
+  if (!ros::Time::isValid())
   {
     ros::Time::init();
   }
@@ -124,7 +121,7 @@ ModbusAdapterOperationModeTest::~ModbusAdapterOperationModeTest()
  */
 TEST_F(ModbusAdapterOperationModeTest, testAdapterOperationModeDtor)
 {
-  std::shared_ptr<AdapterOperationMode> adapter_op_mode (new AdapterOperationMode(nh_));
+  std::shared_ptr<AdapterOperationMode> adapter_op_mode(new AdapterOperationMode(nh_));
 }
 
 /**
@@ -133,7 +130,8 @@ TEST_F(ModbusAdapterOperationModeTest, testAdapterOperationModeDtor)
  */
 TEST_F(ModbusAdapterOperationModeTest, testModbusMsgOperationModeWrapperExceptionDtor)
 {
-  std::shared_ptr<ModbusMsgOperationModeWrapperException> ex (new ModbusMsgOperationModeWrapperException("Test message"));
+  std::shared_ptr<ModbusMsgOperationModeWrapperException> ex(new ModbusMsgOperationModeWrapperException("Test "
+                                                                                                        "message"));
 }
 
 /**
@@ -144,20 +142,24 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusMsgOperationModeWrapperDtor)
 {
   ModbusMsgInBuilder builder(TEST_API_SPEC);
   builder.setApiVersion(MODBUS_API_VERSION_REQUIRED).setOperationMode(OperationModes::T1);
-  std::shared_ptr<ModbusMsgOperationModeWrapper> wrapper (new ModbusMsgOperationModeWrapper(builder.build(ros::Time::now()), TEST_API_SPEC));
+  std::shared_ptr<ModbusMsgOperationModeWrapper> wrapper(
+      new ModbusMsgOperationModeWrapper(builder.build(ros::Time::now()), TEST_API_SPEC));
 }
 
-MATCHER_P(IsExpectedOperationMode, exp_mode, "unexpected operation mode"){ return arg->value == exp_mode; }
+MATCHER_P(IsExpectedOperationMode, exp_mode, "unexpected operation mode")
+{
+  return arg->value == exp_mode;
+}
 
 /**
  * @brief Tests that initial operation mode is UNKNOWN.
- * 
+ *
  * Waits for callback and calls service.
  */
 TEST_F(ModbusAdapterOperationModeTest, testInitialOperationMode)
 {
   EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
-    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
   subscriber_.initialize();
 
@@ -191,7 +193,7 @@ TEST_F(ModbusAdapterOperationModeTest, testMissingOperationModeRegister)
    **********/
   ROS_DEBUG("+++  Step 1 +++");
   EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
-    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
   subscriber_.initialize();
 
@@ -201,7 +203,7 @@ TEST_F(ModbusAdapterOperationModeTest, testMissingOperationModeRegister)
    * Step 2 *
    **********/
   EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::T1)))
-    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
   ModbusMsgInBuilder builder(TEST_API_SPEC);
   builder.setApiVersion(MODBUS_API_VERSION_REQUIRED);
@@ -215,18 +217,20 @@ TEST_F(ModbusAdapterOperationModeTest, testMissingOperationModeRegister)
    * Step 3 *
    **********/
   EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
-    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
-  ModbusMsgInStampedPtr msg {builder.setOperationMode(OperationModes::T1).build(ros::Time::now())};
+  ModbusMsgInStampedPtr msg{ builder.setOperationMode(OperationModes::T1).build(ros::Time::now()) };
 
   ROS_DEBUG("+++  Step 3 +++");
   // Remove operation mode from modbus message
-  ASSERT_GT(TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::OPERATION_MODE), TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION))
+  ASSERT_GT(TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::OPERATION_MODE),
+            TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION))
       << "For the test to work correctly, the operation mode register has to be stored in the last register.";
   msg->holding_registers.data.erase(--msg->holding_registers.data.end());
   const uint32_t new_offset = TEST_API_SPEC.getRegisterDefinition(modbus_api_spec::VERSION);
   msg->holding_registers.layout.data_offset = new_offset;
-  ModbusMsgInBuilder::setDefaultLayout(&(msg->holding_registers.layout), new_offset, static_cast<uint32_t>(msg->holding_registers.data.size()));
+  ModbusMsgInBuilder::setDefaultLayout(&(msg->holding_registers.layout), new_offset,
+                                       static_cast<uint32_t>(msg->holding_registers.data.size()));
 
   modbus_topic_pub_.publish(msg);
 
@@ -255,7 +259,7 @@ TEST_F(ModbusAdapterOperationModeTest, testOperationModeChange)
    **********/
   ROS_DEBUG("+++  Step 1 +++");
   EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
-    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
   subscriber_.initialize();
 
@@ -269,7 +273,7 @@ TEST_F(ModbusAdapterOperationModeTest, testOperationModeChange)
   for (const auto& mode : OPERATION_MODES)
   {
     EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(mode)))
-      .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+        .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
     modbus_topic_pub_.publish(builder.setOperationMode(mode).build(ros::Time::now()));
 
@@ -303,7 +307,7 @@ TEST_F(ModbusAdapterOperationModeTest, testDisconnect)
    * Step 1 *
    **********/
   EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
-    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
   subscriber_.initialize();
 
@@ -313,7 +317,7 @@ TEST_F(ModbusAdapterOperationModeTest, testDisconnect)
    * Step 2 *
    **********/
   EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::T1)))
-    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
   ModbusMsgInBuilder builder(TEST_API_SPEC);
   builder.setApiVersion(MODBUS_API_VERSION_REQUIRED).setOperationMode(OperationModes::T1);
@@ -326,11 +330,11 @@ TEST_F(ModbusAdapterOperationModeTest, testDisconnect)
    * Step 3 *
    **********/
   EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
-    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
-  uint32_t offset{0};
+  uint32_t offset{ 0 };
   RegCont holding_register;
-  ModbusMsgInStampedPtr msg{ModbusMsgInBuilder::createDefaultModbusMsgIn(offset, holding_register)};
+  ModbusMsgInStampedPtr msg{ ModbusMsgInBuilder::createDefaultModbusMsgIn(offset, holding_register) };
   msg->disconnect.data = true;
   modbus_topic_pub_.publish(msg);
 
@@ -359,7 +363,7 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusUnexpectedOperationMode)
    * Step 1 *
    **********/
   EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
-    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
   subscriber_.initialize();
 
@@ -369,7 +373,7 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusUnexpectedOperationMode)
    * Step 2 *
    **********/
   EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::T1)))
-    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
   ModbusMsgInBuilder builder(TEST_API_SPEC);
   builder.setApiVersion(MODBUS_API_VERSION_REQUIRED).setOperationMode(OperationModes::T1);
@@ -382,7 +386,7 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusUnexpectedOperationMode)
    * Step 3 *
    **********/
   EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
-    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
   builder.setApiVersion(MODBUS_API_VERSION_REQUIRED).setOperationMode(1234 /* stupid value */);
   modbus_topic_pub_.publish(builder.build(ros::Time::now()));
@@ -409,7 +413,7 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusIncorrectApiVersion)
    * Step 0 *
    **********/
   EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
-    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
   subscriber_.initialize();
 
@@ -419,7 +423,7 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusIncorrectApiVersion)
    * Step 1 *
    **********/
   EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::T1)))
-    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
   ModbusMsgInBuilder builder(TEST_API_SPEC);
   builder.setApiVersion(MODBUS_API_VERSION_REQUIRED).setOperationMode(OperationModes::T1);
@@ -432,7 +436,7 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusIncorrectApiVersion)
    * Step 2 *
    **********/
   EXPECT_CALL(subscriber_, callback(IsExpectedOperationMode(OperationModes::UNKNOWN)))
-    .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
 
   builder.setApiVersion(0 /* wrong version */).setOperationMode(OperationModes::T2);
   modbus_topic_pub_.publish(builder.build(ros::Time::now()));
@@ -440,9 +444,9 @@ TEST_F(ModbusAdapterOperationModeTest, testModbusIncorrectApiVersion)
   BARRIER(OPERATION_MODE_CALLBACK_EVENT);
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "unittest_modbus_adapter_operation_mode");
   ros::NodeHandle nh;

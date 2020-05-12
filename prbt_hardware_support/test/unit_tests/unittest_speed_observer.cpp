@@ -54,7 +54,7 @@ static const std::string TEST_FRAME_A{ "a" };
 static const std::string TEST_FRAME_B{ "b" };
 static constexpr double TEST_FREQUENCY{ 20 };
 // Publishing definitely faster then observing
-static constexpr double OBSERVER_FREQUENCY {3.0 * TEST_FREQUENCY};
+static constexpr double OBSERVER_FREQUENCY{ 3.0 * TEST_FREQUENCY };
 static const double SQRT_2_HALF{ 1 / sqrt(2) };
 
 using ::testing::AllOf;
@@ -133,7 +133,8 @@ void SpeedObserverUnitTest::stopTfPublisher()
 }
 
 using ::testing::PrintToString;
-MATCHER_P(RunPermittedState, x, "RunPermitted state " + std::string(negation ? "is not" : "is") + ": " + PrintToString(x) + ".")
+MATCHER_P(RunPermittedState, x,
+          "RunPermitted state " + std::string(negation ? "is not" : "is") + ": " + PrintToString(x) + ".")
 {
   return arg.data == x;
 }
@@ -146,14 +147,14 @@ MATCHER_P2(NameAtI, i, name,
 
 MATCHER_P2(SpeedAtIGe, i, x,
            "Speed at index " + PrintToString(i) + std::string(negation ? "is not" : "is") + " greater or equal to" +
-           PrintToString(x) + ".")
+               PrintToString(x) + ".")
 {
   return static_cast<size_t>(i) < arg->name.size() && arg->speed.at(static_cast<size_t>(i)) >= x;
 }
 
 MATCHER_P2(SpeedAtILe, i, x,
            "Speed at index " + PrintToString(i) + std::string(negation ? "is not" : "is") + " less or equal to" +
-           PrintToString(x) + ".")
+               PrintToString(x) + ".")
 {
   return static_cast<size_t>(i) < arg->name.size() && arg->speed.at(static_cast<size_t>(i)) <= x;
 }
@@ -178,15 +179,15 @@ TEST_F(SpeedObserverUnitTest, testStartupAndTopic)
    * Step 1 *
    **********/
   ROS_DEBUG_STREAM("Step 1");
-  std::thread pubisher_thread_slow = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.24, OBSERVER_FREQUENCY);
+  std::thread pubisher_thread_slow =
+      std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.24, OBSERVER_FREQUENCY);
 
   /**********
    * Step 2 *
    **********/
   ROS_DEBUG_STREAM("Step 2");
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
-                                                SpeedAtILe(0, .1), SpeedAtILe(1, .26),
-                                                SpeedAtIGe(0, 0), SpeedAtIGe(1, 0))))
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B), SpeedAtILe(0, .1),
+                                                SpeedAtILe(1, .26), SpeedAtIGe(0, 0), SpeedAtIGe(1, 0))))
       .WillOnce(Return())
       .WillOnce(Return())
       .WillOnce(ACTION_OPEN_BARRIER_VOID(BARRIER_SLOW))
@@ -197,10 +198,8 @@ TEST_F(SpeedObserverUnitTest, testStartupAndTopic)
   std::string reference_frame{ TEST_BASE_FRAME };
   std::vector<std::string> frames_to_observe{ TEST_FRAME_A, TEST_FRAME_B };
   prbt_hardware_support::SpeedObserver observer(nh_, reference_frame, frames_to_observe);
-  std::thread observer_thread = std::thread(&SpeedObserver::startObserving,
-                                            &observer,
-                                            TEST_FREQUENCY,
-                                            DEFAULT_ALLOWED_MISSED_CALCULATIONS);
+  std::thread observer_thread =
+      std::thread(&SpeedObserver::startObserving, &observer, TEST_FREQUENCY, DEFAULT_ALLOWED_MISSED_CALCULATIONS);
   ROS_DEBUG_STREAM("thread started");
 
   BARRIER({ BARRIER_SLOW });
@@ -238,20 +237,19 @@ TEST_F(SpeedObserverUnitTest, testTooHighSpeed)
    * Step 1 *
    **********/
   ROS_DEBUG_STREAM("Step 1");
-  std::thread pubisher_thread_fast = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.3, OBSERVER_FREQUENCY);
+  std::thread pubisher_thread_fast =
+      std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.3, OBSERVER_FREQUENCY);
 
   /**********
    * Step 2 *
    **********/
   ROS_DEBUG_STREAM("Step 2");
   // we can once have a slow speed, when the observer starts:
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
-                                                SpeedAtILe(0, .1), SpeedAtILe(1, .32),
-                                                SpeedAtIGe(0, 0), SpeedAtIGe(1, 0))))
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B), SpeedAtILe(0, .1),
+                                                SpeedAtILe(1, .32), SpeedAtIGe(0, 0), SpeedAtIGe(1, 0))))
       .Times(AtMost(1));
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
-                                                SpeedAtILe(0, .1), SpeedAtILe(1, .32),
-                                                SpeedAtIGe(0, 0), SpeedAtIGe(1, .28))));
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B), SpeedAtILe(0, .1),
+                                                SpeedAtILe(1, .32), SpeedAtIGe(0, 0), SpeedAtIGe(1, .28))));
 
   std_srvs::SetBool::Response run_permitted_srv_resp;
   run_permitted_srv_resp.success = true;
@@ -262,10 +260,8 @@ TEST_F(SpeedObserverUnitTest, testTooHighSpeed)
   std::string reference_frame{ TEST_BASE_FRAME };
   std::vector<std::string> frames_to_observe{ TEST_FRAME_A, TEST_FRAME_B };
   prbt_hardware_support::SpeedObserver observer(nh_, reference_frame, frames_to_observe);
-  std::thread observer_thread = std::thread(&SpeedObserver::startObserving,
-                                            &observer,
-                                            TEST_FREQUENCY,
-                                            DEFAULT_ALLOWED_MISSED_CALCULATIONS);
+  std::thread observer_thread =
+      std::thread(&SpeedObserver::startObserving, &observer, TEST_FREQUENCY, DEFAULT_ALLOWED_MISSED_CALCULATIONS);
   ROS_DEBUG_STREAM("thread started");
 
   BARRIER({ BARRIER_FAST });
@@ -308,7 +304,8 @@ TEST_F(SpeedObserverUnitTest, testSetSpeedLimit)
    * Step 1 *
    **********/
   ROS_DEBUG_STREAM("Step 1");
-  std::thread pubisher_thread_fast = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.3, OBSERVER_FREQUENCY);
+  std::thread pubisher_thread_fast =
+      std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.3, OBSERVER_FREQUENCY);
 
   /**********
    * Step 2 *
@@ -316,13 +313,11 @@ TEST_F(SpeedObserverUnitTest, testSetSpeedLimit)
   ROS_DEBUG_STREAM("Step 2");
 
   // we can once have a slow speed, when the observer starts:
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
-                                                SpeedAtILe(0, .1), SpeedAtILe(1, .32),
-                                                SpeedAtIGe(0, 0), SpeedAtIGe(1, 0))))
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B), SpeedAtILe(0, .1),
+                                                SpeedAtILe(1, .32), SpeedAtIGe(0, 0), SpeedAtIGe(1, 0))))
       .Times(AtMost(1));
-  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B),
-                                                SpeedAtILe(0, .1), SpeedAtILe(1, .32),
-                                                SpeedAtIGe(0, 0), SpeedAtIGe(1, .28))))
+  EXPECT_CALL(*this, frame_speeds_cb_mock(AllOf(NameAtI(0, TEST_FRAME_A), NameAtI(1, TEST_FRAME_B), SpeedAtILe(0, .1),
+                                                SpeedAtILe(1, .32), SpeedAtIGe(0, 0), SpeedAtIGe(1, .28))))
       .WillOnce(Return())
       .WillOnce(Return())
       .WillOnce(ACTION_OPEN_BARRIER_VOID(BARRIER_LIMIT))
@@ -336,10 +331,8 @@ TEST_F(SpeedObserverUnitTest, testSetSpeedLimit)
   SetSpeedLimitResponse res = SetSpeedLimitResponse();
   req.speed_limit = .4;
   observer.setSpeedLimitCb(req, res);
-  std::thread observer_thread = std::thread(&SpeedObserver::startObserving,
-                                            &observer,
-                                            TEST_FREQUENCY,
-                                            DEFAULT_ALLOWED_MISSED_CALCULATIONS);
+  std::thread observer_thread =
+      std::thread(&SpeedObserver::startObserving, &observer, TEST_FREQUENCY, DEFAULT_ALLOWED_MISSED_CALCULATIONS);
   ROS_DEBUG_STREAM("thread started");
 
   BARRIER({ BARRIER_LIMIT });
@@ -411,7 +404,8 @@ TEST_F(SpeedObserverUnitTest, testFailingRunPermittedServiceCase)
   // ++++++++++++++++++++++++
   ROS_DEBUG_STREAM("Step 1");
   // ++++++++++++++++++++++++
-  std::thread pubisher_thread_fast = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.3, OBSERVER_FREQUENCY);
+  std::thread pubisher_thread_fast =
+      std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.3, OBSERVER_FREQUENCY);
 
   // ++++++++++++++++++++++++
   ROS_DEBUG_STREAM("Step 2");
@@ -423,10 +417,8 @@ TEST_F(SpeedObserverUnitTest, testFailingRunPermittedServiceCase)
   std::string reference_frame{ TEST_BASE_FRAME };
   std::vector<std::string> frames_to_observe{ TEST_FRAME_A, TEST_FRAME_B };
   prbt_hardware_support::SpeedObserver observer(nh_, reference_frame, frames_to_observe);
-  std::thread observer_thread = std::thread(&SpeedObserver::startObserving,
-                                            &observer,
-                                            TEST_FREQUENCY,
-                                            DEFAULT_ALLOWED_MISSED_CALCULATIONS);
+  std::thread observer_thread =
+      std::thread(&SpeedObserver::startObserving, &observer, TEST_FREQUENCY, DEFAULT_ALLOWED_MISSED_CALCULATIONS);
   ROS_DEBUG_STREAM("thread started");
 
   BARRIER({ BARRIER_FAST });
@@ -457,7 +449,8 @@ TEST_F(SpeedObserverUnitTest, testSlowTfPublishing)
   // ++++++++++++++++++++++++
   ROS_DEBUG_STREAM("Step 1");
   // ++++++++++++++++++++++++
-  std::thread pubisher_thread_fast = std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.24, 0.1*TEST_FREQUENCY);
+  std::thread pubisher_thread_fast =
+      std::thread(&SpeedObserverUnitTest::publishTfAtSpeed, this, 0.24, 0.1 * TEST_FREQUENCY);
 
   // ++++++++++++++++++++++++
   ROS_DEBUG_STREAM("Step 2");
@@ -469,10 +462,8 @@ TEST_F(SpeedObserverUnitTest, testSlowTfPublishing)
   std::string reference_frame{ TEST_BASE_FRAME };
   std::vector<std::string> frames_to_observe{ TEST_FRAME_A, TEST_FRAME_B };
   prbt_hardware_support::SpeedObserver observer(nh_, reference_frame, frames_to_observe);
-  std::thread observer_thread = std::thread(&SpeedObserver::startObserving,
-                                            &observer,
-                                            TEST_FREQUENCY,
-                                            DEFAULT_ALLOWED_MISSED_CALCULATIONS);
+  std::thread observer_thread =
+      std::thread(&SpeedObserver::startObserving, &observer, TEST_FREQUENCY, DEFAULT_ALLOWED_MISSED_CALCULATIONS);
   ROS_DEBUG_STREAM("thread started");
 
   BARRIER({ BARRIER_FAST });

@@ -22,9 +22,7 @@
 
 namespace prbt_hardware_support
 {
-
 using TServiceCallFunc = std::function<bool()>;
-
 }
 
-#endif // SERVICE_FUNCTION_DECL_H
+#endif  // SERVICE_FUNCTION_DECL_H

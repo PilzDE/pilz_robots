@@ -23,14 +23,10 @@
 #include <prbt_hardware_support/WriteModbusRegister.h>
 #include <prbt_hardware_support/register_container.h>
 
-
 namespace prbt_hardware_support
 {
-
-template<class T>
-static bool writeModbusRegisterCall(T& modbus_service,
-                                    const uint16_t& start_idx,
-                                    const RegCont& values)
+template <class T>
+static bool writeModbusRegisterCall(T& modbus_service, const uint16_t& start_idx, const RegCont& values)
 {
   WriteModbusRegister srv;
   srv.request.holding_register_block.start_idx = start_idx;
@@ -53,6 +49,6 @@ static bool writeModbusRegisterCall(T& modbus_service,
   return true;
 }
 
-}
+}  // namespace prbt_hardware_support
 
-#endif // WRITE_MODBUS_REGISTER_CALL_H
+#endif  // WRITE_MODBUS_REGISTER_CALL_H

@@ -34,16 +34,22 @@
 
 namespace prbt_hardware_support
 {
-
 #define COLOR_GREEN "\033[32m"
 #define COLOR_GREEN_BOLD "\033[1;32m"
 
-#define STATE_ENTER_OUTPUT ROS_DEBUG_STREAM_NAMED("RunPermittedStateMachine", "Event: " << className(boost::core::demangle(typeid(ev).name())) \
-                                            << " - Entering: " << COLOR_GREEN_BOLD << className(boost::core::demangle(typeid(*this).name())) << COLOR_GREEN);
-#define STATE_EXIT_OUTPUT ROS_DEBUG_STREAM_NAMED("RunPermittedStateMachine", "Event: " << className(boost::core::demangle(typeid(ev).name())) \
-                                            << " - Leaving: " << className(boost::core::demangle(typeid(*this).name())));
-#define ACTION_OUTPUT ROS_DEBUG_STREAM_NAMED("RunPermittedStateMachine", "Event: " << className(boost::core::demangle(typeid(ev).name())) \
-                                        << " - Action: " << className(boost::core::demangle(typeid(*this).name())));
+#define STATE_ENTER_OUTPUT                                                                                             \
+  ROS_DEBUG_STREAM_NAMED("RunPermittedStateMachine",                                                                   \
+                         "Event: " << className(boost::core::demangle(typeid(ev).name()))                              \
+                                   << " - Entering: " << COLOR_GREEN_BOLD                                              \
+                                   << className(boost::core::demangle(typeid(*this).name())) << COLOR_GREEN);
+#define STATE_EXIT_OUTPUT                                                                                              \
+  ROS_DEBUG_STREAM_NAMED("RunPermittedStateMachine",                                                                   \
+                         "Event: " << className(boost::core::demangle(typeid(ev).name()))                              \
+                                   << " - Leaving: " << className(boost::core::demangle(typeid(*this).name())));
+#define ACTION_OUTPUT                                                                                                  \
+  ROS_DEBUG_STREAM_NAMED("RunPermittedStateMachine",                                                                   \
+                         "Event: " << className(boost::core::demangle(typeid(ev).name()))                              \
+                                   << " - Action: " << className(boost::core::demangle(typeid(*this).name())));
 
 /**
  * @brief An AsyncRunPermittedTask is represented by a task execution and a completion signalling.
@@ -54,10 +60,10 @@ namespace prbt_hardware_support
 class AsyncRunPermittedTask
 {
 public:
-  AsyncRunPermittedTask(const TServiceCallFunc &operation, const std::function<void()> &finished_handler)
-      : operation_(operation),
-        finished_handler_(finished_handler)
-  {}
+  AsyncRunPermittedTask(const TServiceCallFunc& operation, const std::function<void()>& finished_handler)
+    : operation_(operation), finished_handler_(finished_handler)
+  {
+  }
 
   /**
    * @brief Execute the task.
@@ -108,16 +114,12 @@ public:
    * @param halt_operation The execution function of the halt-task.
    * @param hold_operation The execution function of the hold-task.
    * @param unhold_operation The execution function of the unhold-task.
-  */
-  RunPermittedStateMachine_(const TServiceCallFunc &recover_operation,
-                   const TServiceCallFunc &halt_operation,
-                   const TServiceCallFunc &hold_operation,
-                   const TServiceCallFunc &unhold_operation)
-      : recover_op_(recover_operation),
-        halt_op_(halt_operation),
-        hold_op_(hold_operation),
-        unhold_op_(unhold_operation)
-  {}
+   */
+  RunPermittedStateMachine_(const TServiceCallFunc& recover_operation, const TServiceCallFunc& halt_operation,
+                            const TServiceCallFunc& hold_operation, const TServiceCallFunc& unhold_operation)
+    : recover_op_(recover_operation), halt_op_(halt_operation), hold_op_(hold_operation), unhold_op_(unhold_operation)
+  {
+  }
 
   ////////////
   // States //
@@ -126,12 +128,12 @@ public:
   struct RobotInactive : public msm::front::state<>
   {
     template <class Event, class FSM>
-    void on_entry(Event const &ev, FSM &)
+    void on_entry(Event const& ev, FSM&)
     {
       STATE_ENTER_OUTPUT
     }
     template <class Event, class FSM>
-    void on_exit(Event const &ev, FSM &)
+    void on_exit(Event const& ev, FSM&)
     {
       STATE_EXIT_OUTPUT
     }
@@ -139,12 +141,12 @@ public:
   struct RobotActive : public msm::front::state<>
   {
     template <class Event, class FSM>
-    void on_entry(Event const &ev, FSM &)
+    void on_entry(Event const& ev, FSM&)
     {
       STATE_ENTER_OUTPUT
     }
     template <class Event, class FSM>
-    void on_exit(Event const &ev, FSM &)
+    void on_exit(Event const& ev, FSM&)
     {
       STATE_EXIT_OUTPUT
     }
@@ -153,12 +155,12 @@ public:
   struct Enabling : public msm::front::state<>
   {
     template <class Event, class FSM>
-    void on_entry(Event const &ev, FSM &)
+    void on_entry(Event const& ev, FSM&)
     {
       STATE_ENTER_OUTPUT
     }
     template <class Event, class FSM>
-    void on_exit(Event const &ev, FSM &)
+    void on_exit(Event const& ev, FSM&)
     {
       STATE_EXIT_OUTPUT
     }
@@ -167,12 +169,12 @@ public:
   struct Stopping : public msm::front::state<>
   {
     template <class Event, class FSM>
-    void on_entry(Event const &ev, FSM &)
+    void on_entry(Event const& ev, FSM&)
     {
       STATE_ENTER_OUTPUT
     }
     template <class Event, class FSM>
-    void on_exit(Event const &ev, FSM &)
+    void on_exit(Event const& ev, FSM&)
     {
       STATE_EXIT_OUTPUT
     }
@@ -181,12 +183,12 @@ public:
   struct StopRequestedDuringEnable : public msm::front::state<>
   {
     template <class Event, class FSM>
-    void on_entry(Event const &ev, FSM &)
+    void on_entry(Event const& ev, FSM&)
     {
       STATE_ENTER_OUTPUT
     }
     template <class Event, class FSM>
-    void on_exit(Event const &ev, FSM &)
+    void on_exit(Event const& ev, FSM&)
     {
       STATE_EXIT_OUTPUT
     }
@@ -195,17 +197,16 @@ public:
   struct EnableRequestedDuringStop : public msm::front::state<>
   {
     template <class Event, class FSM>
-    void on_entry(Event const &ev, FSM &)
+    void on_entry(Event const& ev, FSM&)
     {
       STATE_ENTER_OUTPUT
     }
     template <class Event, class FSM>
-    void on_exit(Event const &ev, FSM &)
+    void on_exit(Event const& ev, FSM&)
     {
       STATE_EXIT_OUTPUT
     }
   };
-
 
   //! Initial state
   typedef RobotInactive initial_state;
@@ -219,23 +220,28 @@ public:
    */
   struct run_permitted_updated
   {
-    run_permitted_updated(const bool run_permitted)
-        : run_permitted_(run_permitted){}
+    run_permitted_updated(const bool run_permitted) : run_permitted_(run_permitted)
+    {
+    }
 
     bool run_permitted_;
   };
 
   struct recover_done
-  {};
+  {
+  };
 
   struct halt_done
-  {};
+  {
+  };
 
   struct hold_done
-  {};
+  {
+  };
 
   struct unhold_done
-  {};
+  {
+  };
 
   ////////////
   // Guards //
@@ -244,7 +250,7 @@ public:
   struct run_permitted_true
   {
     template <class EVT, class FSM, class SourceState, class TargetState>
-    bool operator()(EVT const &evt, FSM &, SourceState &, TargetState &)
+    bool operator()(EVT const& evt, FSM&, SourceState&, TargetState&)
     {
       return evt.run_permitted_;
     }
@@ -253,7 +259,7 @@ public:
   struct run_permitted_false
   {
     template <class EVT, class FSM, class SourceState, class TargetState>
-    bool operator()(EVT const &evt, FSM &, SourceState &, TargetState &)
+    bool operator()(EVT const& evt, FSM&, SourceState&, TargetState&)
     {
       return !evt.run_permitted_;
     }
@@ -271,7 +277,7 @@ public:
   struct recover_start
   {
     template <class EVT, class FSM, class SourceState, class TargetState>
-    void operator()(EVT const &ev, FSM &fsm, SourceState &, TargetState &)
+    void operator()(EVT const& ev, FSM& fsm, SourceState&, TargetState&)
     {
       ACTION_OUTPUT
 
@@ -287,7 +293,7 @@ public:
   struct halt_start
   {
     template <class EVT, class FSM, class SourceState, class TargetState>
-    void operator()(EVT const &ev, FSM &fsm, SourceState &, TargetState &)
+    void operator()(EVT const& ev, FSM& fsm, SourceState&, TargetState&)
     {
       ACTION_OUTPUT
 
@@ -303,7 +309,7 @@ public:
   struct hold_start
   {
     template <class EVT, class FSM, class SourceState, class TargetState>
-    void operator()(EVT const &ev, FSM &fsm, SourceState &, TargetState &)
+    void operator()(EVT const& ev, FSM& fsm, SourceState&, TargetState&)
     {
       ACTION_OUTPUT
 
@@ -319,7 +325,7 @@ public:
   struct unhold_start
   {
     template <class EVT, class FSM, class SourceState, class TargetState>
-    void operator()(EVT const &ev, FSM &fsm, SourceState &, TargetState &)
+    void operator()(EVT const& ev, FSM& fsm, SourceState&, TargetState&)
     {
       ACTION_OUTPUT
 
@@ -331,29 +337,30 @@ public:
   // Transitions //
   /////////////////
 
-  struct transition_table : mpl::vector<
-  //  Start                       Event          Target                      Action         Guard
-  // +---------------------------+--------------+---------------------------+--------------+----------+
-  Row< RobotInactive             , run_permitted_updated  , Enabling                  , recover_start, run_permitted_true >,
-  Row< RobotInactive             , run_permitted_updated  , none                      , none         , run_permitted_false>,
-  Row< Enabling                  , run_permitted_updated  , none                      , none         , run_permitted_true >,
-  Row< Enabling                  , run_permitted_updated  , StopRequestedDuringEnable , none         , run_permitted_false>,
-  Row< Enabling                  , recover_done , none                      , unhold_start , none     >,
-  Row< Enabling                  , unhold_done  , RobotActive               , none         , none     >,
-  Row< StopRequestedDuringEnable , run_permitted_updated  , none                      , none         , none     >,
-  Row< StopRequestedDuringEnable , recover_done , Stopping                  , halt_start   , none     >,
-  Row< StopRequestedDuringEnable , unhold_done  , Stopping                  , hold_start   , none     >,
-  Row< RobotActive               , run_permitted_updated  , none                      , none         , run_permitted_true >,
-  Row< RobotActive               , run_permitted_updated  , Stopping                  , hold_start   , run_permitted_false>,
-  Row< Stopping                  , run_permitted_updated  , EnableRequestedDuringStop , none         , run_permitted_true >,
-  Row< Stopping                  , hold_done    , none                      , halt_start   , none     >,
-  Row< Stopping                  , halt_done    , RobotInactive             , none         , none     >,
-  Row< EnableRequestedDuringStop , hold_done    , none                      , halt_start   , none     >,
-  Row< EnableRequestedDuringStop , halt_done    , Enabling                  , recover_start, none     >,
-  Row< EnableRequestedDuringStop , run_permitted_updated  , Stopping                  , none         , run_permitted_false>,
-  Row< EnableRequestedDuringStop , run_permitted_updated  , none                      , none         , run_permitted_true >
-  // +---------------------------+--------------+---------------------------+--------------+----------+
-  > {};
+  struct transition_table
+    : mpl::vector<
+          //  Start                       Event          Target                      Action         Guard
+          // +---------------------------+--------------+---------------------------+--------------+----------+
+          Row<RobotInactive, run_permitted_updated, Enabling, recover_start, run_permitted_true>,
+          Row<RobotInactive, run_permitted_updated, none, none, run_permitted_false>,
+          Row<Enabling, run_permitted_updated, none, none, run_permitted_true>,
+          Row<Enabling, run_permitted_updated, StopRequestedDuringEnable, none, run_permitted_false>,
+          Row<Enabling, recover_done, none, unhold_start, none>, Row<Enabling, unhold_done, RobotActive, none, none>,
+          Row<StopRequestedDuringEnable, run_permitted_updated, none, none, none>,
+          Row<StopRequestedDuringEnable, recover_done, Stopping, halt_start, none>,
+          Row<StopRequestedDuringEnable, unhold_done, Stopping, hold_start, none>,
+          Row<RobotActive, run_permitted_updated, none, none, run_permitted_true>,
+          Row<RobotActive, run_permitted_updated, Stopping, hold_start, run_permitted_false>,
+          Row<Stopping, run_permitted_updated, EnableRequestedDuringStop, none, run_permitted_true>,
+          Row<Stopping, hold_done, none, halt_start, none>, Row<Stopping, halt_done, RobotInactive, none, none>,
+          Row<EnableRequestedDuringStop, hold_done, none, halt_start, none>,
+          Row<EnableRequestedDuringStop, halt_done, Enabling, recover_start, none>,
+          Row<EnableRequestedDuringStop, run_permitted_updated, Stopping, none, run_permitted_false>,
+          Row<EnableRequestedDuringStop, run_permitted_updated, none, none, run_permitted_true>
+          // +---------------------------+--------------+---------------------------+--------------+----------+
+          >
+  {
+  };
 
   //! The task queue
   RunPermittedTaskQueue task_queue_;
@@ -374,6 +381,6 @@ public:
 //! The top-level (back-end) state machine
 typedef msm::back::state_machine<RunPermittedStateMachine_> RunPermittedStateMachine;
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support
 
-#endif // PRBT_HARDWARE_SUPPORT_RUN_PERMITTED_STATE_MACHINE_H
+#endif  // PRBT_HARDWARE_SUPPORT_RUN_PERMITTED_STATE_MACHINE_H

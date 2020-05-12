@@ -25,27 +25,24 @@
 
 namespace pilz_utils
 {
-
 /**
-   * @brief Exception used by the getParam function.
-   */
+ * @brief Exception used by the getParam function.
+ */
 class GetParamException : public std::runtime_error
 {
 public:
   GetParamException(const std::string& msg);
 };
 
-inline GetParamException::GetParamException(const std::string& msg)
-  : std::runtime_error (msg)
+inline GetParamException::GetParamException(const std::string& msg) : std::runtime_error(msg)
 {
-
 }
 
-template<class T>
+template <class T>
 T getParam(const ros::NodeHandle& nh, const std::string& param_name)
 {
   T ret_val;
-  if ( !nh.getParam(param_name, ret_val) )
+  if (!nh.getParam(param_name, ret_val))
   {
     std::ostringstream os;
     os << "Parameter \"" << param_name << "\" not given";
@@ -54,6 +51,6 @@ T getParam(const ros::NodeHandle& nh, const std::string& param_name)
   return ret_val;
 }
 
-}
+}  // namespace pilz_utils
 
-#endif // PILZ_UTILS_GET_PARAM_H
+#endif  // PILZ_UTILS_GET_PARAM_H

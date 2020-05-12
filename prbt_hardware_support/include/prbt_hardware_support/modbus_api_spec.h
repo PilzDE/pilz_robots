@@ -29,17 +29,17 @@
 
 namespace prbt_hardware_support
 {
-static const std::string READ_API_SPEC_PARAM_NAME {"read_api_spec/"};
+static const std::string READ_API_SPEC_PARAM_NAME{ "read_api_spec/" };
 
 namespace modbus_api_spec
 {
-  static const std::string RUN_PERMITTED {"RUN_PERMITTED"};
-  static const std::string VERSION {"VERSION"};
-  static const std::string BRAKETEST_REQUEST {"BRAKETEST_REQUEST"};
-  static const std::string OPERATION_MODE {"OPERATION_MODE"};
-  static const std::string BRAKETEST_PERFORMED {"BRAKETEST_PERFORMED"};
-  static const std::string BRAKETEST_RESULT {"BRAKETEST_RESULT"};
-}
+static const std::string RUN_PERMITTED{ "RUN_PERMITTED" };
+static const std::string VERSION{ "VERSION" };
+static const std::string BRAKETEST_REQUEST{ "BRAKETEST_REQUEST" };
+static const std::string OPERATION_MODE{ "OPERATION_MODE" };
+static const std::string BRAKETEST_PERFORMED{ "BRAKETEST_PERFORMED" };
+static const std::string BRAKETEST_RESULT{ "BRAKETEST_RESULT" };
+}  // namespace modbus_api_spec
 
 /**
  * @brief Expection thrown by prbt_hardware_support::ModbusApiSpec
@@ -47,8 +47,7 @@ namespace modbus_api_spec
 class ModbusApiSpecException : public std::runtime_error
 {
 public:
-  ModbusApiSpecException( const std::string& what_arg ):
-    std::runtime_error(what_arg)
+  ModbusApiSpecException(const std::string& what_arg) : std::runtime_error(what_arg)
   {
   }
 };
@@ -63,10 +62,10 @@ template <class T = ros::NodeHandle>
 class ModbusApiSpecTemplated
 {
 public:
-
-  ModbusApiSpecTemplated(std::initializer_list< std::pair<std::string, unsigned short> > reg_list)
+  ModbusApiSpecTemplated(std::initializer_list<std::pair<std::string, unsigned short> > reg_list)
   {
-    for(auto entry : reg_list){
+    for (auto entry : reg_list)
+    {
       setRegisterDefinition(entry.first, entry.second);
     }
   }
@@ -84,7 +83,9 @@ public:
    *
    * @param nh NodeHandle to read the parameters from
    */
-  ModbusApiSpecTemplated(T &nh):ModbusApiSpecTemplated(nh, READ_API_SPEC_PARAM_NAME){}
+  ModbusApiSpecTemplated(T& nh) : ModbusApiSpecTemplated(nh, READ_API_SPEC_PARAM_NAME)
+  {
+  }
 
   /**
    * @brief Construct a new Modbus Api Spec Templated object.
@@ -100,7 +101,7 @@ public:
    * @param nh NodeHandle to read the parameters from
    * @param param_name the name on the rosparam server to read from
    */
-  ModbusApiSpecTemplated(T &nh, const std::string &param_name)
+  ModbusApiSpecTemplated(T& nh, const std::string& param_name)
   {
     XmlRpc::XmlRpcValue rpc;
     if (!nh.getParam(param_name, rpc))
@@ -113,26 +114,25 @@ public:
       int value = rpci->second;
       setRegisterDefinition(rpci->first.c_str(), static_cast<unsigned short>(value));
     }
-
   }
 
-  inline bool hasRegisterDefinition(const std::string &key) const
+  inline bool hasRegisterDefinition(const std::string& key) const
   {
     return register_mapping_.find(key) != register_mapping_.end();
   }
 
-  inline void setRegisterDefinition(const std::string &key, unsigned short value)
+  inline void setRegisterDefinition(const std::string& key, unsigned short value)
   {
     register_mapping_[key] = value;
   }
 
-  inline unsigned short getRegisterDefinition(const std::string &key) const
+  inline unsigned short getRegisterDefinition(const std::string& key) const
   {
     try
     {
       return register_mapping_.at(key);
     }
-    catch(const std::out_of_range& e)
+    catch (const std::out_of_range& e)
     {
       throw ModbusApiSpecException(e.what());
     }
@@ -148,9 +148,9 @@ public:
     // The following is excluded because lambda functions are not marked properly with gcc-7
     // see https://github.com/gcc-mirror/gcc/commit/7de708f
     // LCOV_EXCL_START
-    auto it = std::min_element(register_mapping_.begin(), register_mapping_.end(),
-                               [] (const RegisterMappingEntry& a, const RegisterMappingEntry& b)
-                               { return a.second < b.second; });
+    auto it = std::min_element(
+        register_mapping_.begin(), register_mapping_.end(),
+        [](const RegisterMappingEntry& a, const RegisterMappingEntry& b) { return a.second < b.second; });
     // LCVO EXCL_STOP
     return it->second;
   }
@@ -166,15 +166,17 @@ public:
     // The following is excluded because lambda functions are not marked properly with gcc-7
     // see https://github.com/gcc-mirror/gcc/commit/7de708f
     // LCOV_EXCL_START
-    auto it = std::max_element(register_mapping_.begin(), register_mapping_.end(),
-                               [] (const RegisterMappingEntry& a, const RegisterMappingEntry& b)
-                               { return a.second < b.second; });
+    auto it = std::max_element(
+        register_mapping_.begin(), register_mapping_.end(),
+        [](const RegisterMappingEntry& a, const RegisterMappingEntry& b) { return a.second < b.second; });
     // LCVO EXCL_STOP
     return it->second;
   }
 
-  inline void getAllDefinedRegisters(std::vector<unsigned short> &registers) {
-    for(auto it = register_mapping_.begin(); it != register_mapping_.end(); ++it){
+  inline void getAllDefinedRegisters(std::vector<unsigned short>& registers)
+  {
+    for (auto it = register_mapping_.begin(); it != register_mapping_.end(); ++it)
+    {
       registers.push_back(it->second);
       std::sort(registers.begin(), registers.end());
     }
@@ -192,5 +194,5 @@ private:
 //! Simple typedef for class like usage
 typedef ModbusApiSpecTemplated<> ModbusApiSpec;
 
-} // namespace prbt_hardware_support
-#endif // MODBUS_API_SPEC_H
+}  // namespace prbt_hardware_support
+#endif  // MODBUS_API_SPEC_H

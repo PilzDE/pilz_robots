@@ -22,17 +22,16 @@
 
 namespace prbt_hardware_support
 {
+static const std::string PARAM_MODBUS_SERVER_IP_STR{ "modbus_server_ip" };
+static const std::string PARAM_MODBUS_SERVER_PORT_STR{ "modbus_server_port" };
+static const std::string PARAM_MODBUS_RESPONSE_TIMEOUT_STR{ "modbus_response_timeout" };
+static const std::string PARAM_MODBUS_READ_TOPIC_NAME_STR{ "modbus_read_topic_name" };
+static const std::string PARAM_MODBUS_WRITE_SERVICE_NAME_STR{ "modbus_write_service_name" };
+static const std::string PARAM_INDEX_OF_FIRST_REGISTER_TO_READ_STR{ "index_of_first_register_to_read" };
+static const std::string PARAM_NUM_REGISTERS_TO_READ_STR{ "num_registers_to_read" };
+static const std::string PARAM_MODBUS_CONNECTION_RETRIES{ "modbus_connection_retries" };
+static const std::string PARAM_MODBUS_CONNECTION_RETRY_TIMEOUT{ "modbus_connection_retry_timeout" };
 
-static const std::string PARAM_MODBUS_SERVER_IP_STR {"modbus_server_ip"};
-static const std::string PARAM_MODBUS_SERVER_PORT_STR {"modbus_server_port"};
-static const std::string PARAM_MODBUS_RESPONSE_TIMEOUT_STR {"modbus_response_timeout"};
-static const std::string PARAM_MODBUS_READ_TOPIC_NAME_STR {"modbus_read_topic_name"};
-static const std::string PARAM_MODBUS_WRITE_SERVICE_NAME_STR {"modbus_write_service_name"};
-static const std::string PARAM_INDEX_OF_FIRST_REGISTER_TO_READ_STR {"index_of_first_register_to_read"};
-static const std::string PARAM_NUM_REGISTERS_TO_READ_STR {"num_registers_to_read"};
-static const std::string PARAM_MODBUS_CONNECTION_RETRIES {"modbus_connection_retries"};
-static const std::string PARAM_MODBUS_CONNECTION_RETRY_TIMEOUT {"modbus_connection_retry_timeout"};
+}  // namespace prbt_hardware_support
 
-}
-
-#endif // PARAM_NAMES_H
+#endif  // PARAM_NAMES_H

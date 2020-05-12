@@ -33,7 +33,6 @@
 
 namespace prbt_hardware_support
 {
-
 /**
  * @class PilzModbusServerMock
  * @brief Offers a modbus server and read/write functionality via subscription/publication.
@@ -63,7 +62,7 @@ public:
    */
   void startAsync(const char* ip, const unsigned int port);
 
-  void setHoldingRegister(std::initializer_list< std::pair<unsigned int, uint16_t> > reg_list);
+  void setHoldingRegister(std::initializer_list<std::pair<unsigned int, uint16_t> > reg_list);
 
   /**
    * @brief Set the values in the holding register
@@ -82,8 +81,7 @@ public:
    *
    * @returns the registers which were read.
    */
-  RegCont readHoldingRegister(const RegCont::size_type start_index,
-                              const RegCont::size_type num_reg_to_read);
+  RegCont readHoldingRegister(const RegCont::size_type start_index, const RegCont::size_type num_reg_to_read);
 
   /**
    * @brief Terminate the Server. Reading or connecting to it will fail.
@@ -126,13 +124,12 @@ private:
   const unsigned int terminate_register_idx_;
 
 private:
-
   //! Modbus
-  int socket_ {-1};
-  modbus_t *modbus_connection_ {nullptr};
-  modbus_mapping_t *mb_mapping_ {nullptr};
+  int socket_{ -1 };
+  modbus_t* modbus_connection_{ nullptr };
+  modbus_mapping_t* mb_mapping_{ nullptr };
 
-  std::atomic_bool terminate_ {false};
+  std::atomic_bool terminate_{ false };
 
   std::mutex modbus_register_access_mutex;
 
@@ -142,15 +139,14 @@ private:
   std::thread thread_;
 
 private:
-  static constexpr uint32_t DISCONNECT_TIMEOUT_IN_SEC     {1};
-  static constexpr uint32_t DISCONNECT_TIMEOUT_IN_USEC    {0};
+  static constexpr uint32_t DISCONNECT_TIMEOUT_IN_SEC{ 1 };
+  static constexpr uint32_t DISCONNECT_TIMEOUT_IN_USEC{ 0 };
 
-  static constexpr uint32_t RESPONSE_TIMEOUT_IN_SEC       {0};
-  static constexpr uint32_t RESPONSE_TIMEOUT_IN_USEC      {10000};
+  static constexpr uint32_t RESPONSE_TIMEOUT_IN_SEC{ 0 };
+  static constexpr uint32_t RESPONSE_TIMEOUT_IN_USEC{ 10000 };
 
   //! Register value which indicates that server has to shutdown.
-  static constexpr uint16_t TERMINATE_SIGNAL {1};
-
+  static constexpr uint16_t TERMINATE_SIGNAL{ 1 };
 };
 
 inline void PilzModbusServerMock::setTerminateFlag()
@@ -164,7 +160,7 @@ inline void PilzModbusServerMock::terminate()
   ROS_INFO_NAMED("ServerMock", "Terminate called on ServerMock.");
   setTerminateFlag();
 
-  if(thread_.joinable())
+  if (thread_.joinable())
   {
     ROS_DEBUG_NAMED("ServerMock", "Waiting for worker Thread of ServerMock to be joined.");
     thread_.join();
@@ -177,5 +173,5 @@ inline bool PilzModbusServerMock::shutdownSignalReceived()
   return readHoldingRegister(terminate_register_idx_, 1).back() == TERMINATE_SIGNAL;
 }
 
-}
-#endif // PRBT_HARDWARE_SUPPORT_PILZ_MODBUS_SERVER_MOCK_H
+}  // namespace prbt_hardware_support
+#endif  // PRBT_HARDWARE_SUPPORT_PILZ_MODBUS_SERVER_MOCK_H

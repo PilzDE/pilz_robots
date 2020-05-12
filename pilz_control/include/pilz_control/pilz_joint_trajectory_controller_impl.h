@@ -21,35 +21,29 @@
 
 namespace pilz_joint_trajectory_controller
 {
-
 namespace ph = std::placeholders;
 
 template <class SegmentImpl, class HardwareInterface>
-PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
-PilzJointTrajectoryController()
+PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::PilzJointTrajectoryController()
 {
 }
 
 template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(HardwareInterface* hw,
-                                                                     ros::NodeHandle&   root_nh,
-                                                                     ros::NodeHandle&   controller_nh)
+                                                                         ros::NodeHandle& root_nh,
+                                                                         ros::NodeHandle& controller_nh)
 
 {
   bool res = JointTrajectoryController::init(hw, root_nh, controller_nh);
 
-  hold_position_service = controller_nh.advertiseService("hold",
-                                                         &PilzJointTrajectoryController::handleHoldRequest,
-                                                         this);
+  hold_position_service =
+      controller_nh.advertiseService("hold", &PilzJointTrajectoryController::handleHoldRequest, this);
 
+  unhold_position_service =
+      controller_nh.advertiseService("unhold", &PilzJointTrajectoryController::handleUnHoldRequest, this);
 
-  unhold_position_service = controller_nh.advertiseService("unhold",
-                                                         &PilzJointTrajectoryController::handleUnHoldRequest,
-                                                         this);
-
-  is_executing_service_ = controller_nh.advertiseService("is_executing",
-                                                         &PilzJointTrajectoryController::handleIsExecutingRequest,
-                                                         this);
+  is_executing_service_ =
+      controller_nh.advertiseService("is_executing", &PilzJointTrajectoryController::handleIsExecutingRequest, this);
 
   return res;
 }
@@ -72,11 +66,11 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::is_executing
 
   Trajectory& curr_traj = *curr_traj_ptr;
 
-  bool is_executing {false};
+  bool is_executing{ false };
 
   for (unsigned int i = 0; i < JointTrajectoryController::joints_.size(); ++i)
   {
-    auto uptime {JointTrajectoryController::time_data_.readFromRT()->uptime.toSec()};
+    auto uptime{ JointTrajectoryController::time_data_.readFromRT()->uptime.toSec() };
     typename TrajectoryPerJoint::const_iterator segment_it = findSegment(curr_traj[i], uptime);
     const auto& tolerances = segment_it->getTolerances();
     // Times that preceed the trajectory start time are ignored here, so is_executing() returns false
@@ -92,12 +86,12 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::is_executing
 }
 
 template <class SegmentImpl, class HardwareInterface>
-bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
-handleHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response)
+bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::handleHoldRequest(
+    std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response)
 {
   std::lock_guard<std::mutex> lock(sync_mutex_);
 
-  if(active_mode_ == Mode::HOLD)
+  if (active_mode_ == Mode::HOLD)
   {
     response.message = "Already in hold mode";
     response.success = true;
@@ -117,12 +111,12 @@ handleHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response
 }
 
 template <class SegmentImpl, class HardwareInterface>
-bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
-handleUnHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response)
+bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::handleUnHoldRequest(
+    std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response)
 {
   std::lock_guard<std::mutex> lock(sync_mutex_);
 
-  if(active_mode_ == Mode::UNHOLD)
+  if (active_mode_ == Mode::UNHOLD)
   {
     response.message = "Already in unhold mode";
     response.success = true;
@@ -137,19 +131,19 @@ handleUnHoldRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& respon
 }
 
 template <class SegmentImpl, class HardwareInterface>
-bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
-handleIsExecutingRequest(std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response)
+bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::handleIsExecutingRequest(
+    std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response)
 {
   response.success = is_executing();
   return true;
 }
 
 template <class SegmentImpl, class HardwareInterface>
-bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
-updateTrajectoryCommand(const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePtr gh, std::string* error_string)
+bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::updateTrajectoryCommand(
+    const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePtr gh, std::string* error_string)
 {
   std::lock_guard<std::mutex> lock(sync_mutex_);
-  if(active_mode_ == Mode::HOLD)
+  if (active_mode_ == Mode::HOLD)
   {
     return updateStrategyWhileHolding(msg, gh, error_string);
   }
@@ -159,15 +153,15 @@ updateTrajectoryCommand(const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePt
 }
 
 template <class SegmentImpl, class HardwareInterface>
-bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
-updateStrategyDefault(const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePtr gh, std::string* error_string)
+bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::updateStrategyDefault(
+    const JointTrajectoryConstPtr& msg, RealtimeGoalHandlePtr gh, std::string* error_string)
 {
   return JointTrajectoryController::updateTrajectoryCommand(msg, gh, error_string);
 }
 
 template <class SegmentImpl, class HardwareInterface>
-bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
-updateStrategyWhileHolding(const JointTrajectoryConstPtr&, RealtimeGoalHandlePtr, std::string* error_string)
+bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::updateStrategyWhileHolding(
+    const JointTrajectoryConstPtr&, RealtimeGoalHandlePtr, std::string* error_string)
 {
   ROS_WARN_THROTTLE_NAMED(10, this->name_,
                           "Controller received new commands but won't react because it is currently in holding mode.");
@@ -175,12 +169,10 @@ updateStrategyWhileHolding(const JointTrajectoryConstPtr&, RealtimeGoalHandlePtr
 }
 
 template <class SegmentImpl, class HardwareInterface>
-void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::
-triggerMovementToHoldPosition()
+void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::triggerMovementToHoldPosition()
 {
   JointTrajectoryController::setHoldPosition(this->time_data_.readFromRT()->uptime);
 }
-
 
 }  // namespace pilz_joint_trajectory_controller
 

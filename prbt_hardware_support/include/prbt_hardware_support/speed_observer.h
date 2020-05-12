@@ -32,7 +32,7 @@
 namespace prbt_hardware_support
 {
 //! Allowed number of missed calculations. If it is exceeded a Stop1 is triggered.
-static constexpr unsigned int DEFAULT_ALLOWED_MISSED_CALCULATIONS{3};
+static constexpr unsigned int DEFAULT_ALLOWED_MISSED_CALCULATIONS{ 3 };
 
 class SpeedObserver
 {
@@ -51,7 +51,8 @@ public:
    * @param frequency [Hz] Will check all frame once per cycle
    * @param allowed_missed_calculations Number of iterations that can have outdated tf data before a Stop1 is triggered.
    */
-  void startObserving(const double frequency, const unsigned int allowed_missed_calculations = DEFAULT_ALLOWED_MISSED_CALCULATIONS);
+  void startObserving(const double frequency,
+                      const unsigned int allowed_missed_calculations = DEFAULT_ALLOWED_MISSED_CALCULATIONS);
 
   /**
    * @brief Callback for service to set the currently active speed limit.
