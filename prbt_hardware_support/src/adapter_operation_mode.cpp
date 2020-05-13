@@ -24,7 +24,8 @@ static const std::string SERVICE_NAME_GET_OPERATION_MODE = "/prbt/get_operation_
 
 static constexpr int DEFAULT_QUEUE_SIZE{ 10 };
 
-AdapterOperationMode::AdapterOperationMode(ros::NodeHandle& nh) : nh_(nh)
+AdapterOperationMode::AdapterOperationMode(ros::NodeHandle& nh)
+  : nh_(nh)
 {
   op_mode_.time_stamp = ros::Time::now();
   op_mode_.value = OperationModes::UNKNOWN;

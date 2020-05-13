@@ -37,7 +37,8 @@ static const std::string GET_FIRMWARE_VERSION_OBJECT{ "100A" };
 // This is currently under investigation. See https://github.com/PilzDE/pilz_robots/issues/299.
 static constexpr std::size_t FIRMWARE_STRING_LENGTH{ 40 };
 
-SystemInfo::SystemInfo(ros::NodeHandle& nh) : joint_names_(getNodeNames(nh))
+SystemInfo::SystemInfo(ros::NodeHandle& nh)
+  : joint_names_(getNodeNames(nh))
 {
   // Wait till CAN is up and running.
   // Reason: If the first CAN service call happens before

@@ -25,7 +25,8 @@ namespace prbt_hardware_support
 {
 ModbusAdapterRunPermitted::ModbusAdapterRunPermitted(UpdateRunPermittedFunc&& update_run_permitted_func,
                                                      const ModbusApiSpec& api_spec)
-  : api_spec_(api_spec), update_run_permitted_(std::move(update_run_permitted_func))
+  : api_spec_(api_spec)
+  , update_run_permitted_(std::move(update_run_permitted_func))
 {
 }
 

@@ -39,7 +39,8 @@ using BrakeTestResultFunc = std::function<bool(const bool)>;
 class BrakeTestExecutorException : public std::runtime_error
 {
 public:
-  BrakeTestExecutorException(const std::string& what_arg) : std::runtime_error(what_arg)
+  BrakeTestExecutorException(const std::string& what_arg)
+    : std::runtime_error(what_arg)
   {
   }
 };

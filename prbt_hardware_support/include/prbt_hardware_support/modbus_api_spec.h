@@ -47,7 +47,8 @@ static const std::string BRAKETEST_RESULT{ "BRAKETEST_RESULT" };
 class ModbusApiSpecException : public std::runtime_error
 {
 public:
-  ModbusApiSpecException(const std::string& what_arg) : std::runtime_error(what_arg)
+  ModbusApiSpecException(const std::string& what_arg)
+    : std::runtime_error(what_arg)
   {
   }
 };
@@ -83,7 +84,8 @@ public:
    *
    * @param nh NodeHandle to read the parameters from
    */
-  ModbusApiSpecTemplated(T& nh) : ModbusApiSpecTemplated(nh, READ_API_SPEC_PARAM_NAME)
+  ModbusApiSpecTemplated(T& nh)
+    : ModbusApiSpecTemplated(nh, READ_API_SPEC_PARAM_NAME)
   {
   }
 

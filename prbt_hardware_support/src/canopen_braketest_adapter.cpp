@@ -43,7 +43,8 @@ static const std::string GET_BRAKETEST_DURATION_OBJECT{ "2060sub1" };
 static const std::string SET_START_BRAKETEST_OBJECT{ "2060sub2" };
 static const std::string GET_BRAKETEST_STATUS_OBJECT{ "2060sub3" };
 
-CANOpenBrakeTestAdapter::CANOpenBrakeTestAdapter(ros::NodeHandle& nh) : nh_(nh)
+CANOpenBrakeTestAdapter::CANOpenBrakeTestAdapter(ros::NodeHandle& nh)
+  : nh_(nh)
 {
   brake_test_srv_ = nh_.advertiseService(nh_.getNamespace() + TRIGGER_BRAKETEST_SERVICE_NAME,
                                          &CANOpenBrakeTestAdapter::triggerBrakeTests, this);

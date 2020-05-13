@@ -50,7 +50,8 @@ public:
 class TestPublisher : public ros::Publisher
 {
 public:
-  TestPublisher(const Publisher& rhs) : ros::Publisher::Publisher(rhs)
+  TestPublisher(const Publisher& rhs)
+    : ros::Publisher::Publisher(rhs)
   {
   }
 

@@ -23,7 +23,8 @@
 
 namespace prbt_hardware_support
 {
-ModbusMsgInBuilder::ModbusMsgInBuilder(const ModbusApiSpec& api_spec) : api_spec_(api_spec)
+ModbusMsgInBuilder::ModbusMsgInBuilder(const ModbusApiSpec& api_spec)
+  : api_spec_(api_spec)
 {
 }
 

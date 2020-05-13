@@ -28,7 +28,8 @@ namespace prbt_hardware_support
 class ModbusAdapterBrakeTestException : public std::runtime_error
 {
 public:
-  ModbusAdapterBrakeTestException(const std::string& what_arg) : std::runtime_error(what_arg)
+  ModbusAdapterBrakeTestException(const std::string& what_arg)
+    : std::runtime_error(what_arg)
   {
   }
 };

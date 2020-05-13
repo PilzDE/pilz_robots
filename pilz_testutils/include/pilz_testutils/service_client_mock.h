@@ -39,7 +39,9 @@ public:
 
   ServiceClientMock(const std::string& name, const CallFunction& call_callback,
                     const LogicalOperatorFunction& negation_operator_callback)
-    : name_(name), call_callback_(call_callback), negation_operator_callback_(negation_operator_callback)
+    : name_(name)
+    , call_callback_(call_callback)
+    , negation_operator_callback_(negation_operator_callback)
   {
   }
 

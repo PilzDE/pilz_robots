@@ -33,7 +33,8 @@ namespace prbt_hardware_support
 class ModbusMsgRunPermittedStatusMissing : public ModbusMsgWrapperException
 {
 public:
-  ModbusMsgRunPermittedStatusMissing(const std::string& what_arg) : ModbusMsgWrapperException(what_arg)
+  ModbusMsgRunPermittedStatusMissing(const std::string& what_arg)
+    : ModbusMsgWrapperException(what_arg)
   {
   }
 };

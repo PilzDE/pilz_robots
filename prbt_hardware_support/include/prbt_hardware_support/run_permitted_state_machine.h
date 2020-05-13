@@ -61,7 +61,8 @@ class AsyncRunPermittedTask
 {
 public:
   AsyncRunPermittedTask(const TServiceCallFunc& operation, const std::function<void()>& finished_handler)
-    : operation_(operation), finished_handler_(finished_handler)
+    : operation_(operation)
+    , finished_handler_(finished_handler)
   {
   }
 
@@ -117,7 +118,10 @@ public:
    */
   RunPermittedStateMachine_(const TServiceCallFunc& recover_operation, const TServiceCallFunc& halt_operation,
                             const TServiceCallFunc& hold_operation, const TServiceCallFunc& unhold_operation)
-    : recover_op_(recover_operation), halt_op_(halt_operation), hold_op_(hold_operation), unhold_op_(unhold_operation)
+    : recover_op_(recover_operation)
+    , halt_op_(halt_operation)
+    , hold_op_(hold_operation)
+    , unhold_op_(unhold_operation)
   {
   }
 
@@ -220,7 +224,8 @@ public:
    */
   struct run_permitted_updated
   {
-    run_permitted_updated(const bool run_permitted) : run_permitted_(run_permitted)
+    run_permitted_updated(const bool run_permitted)
+      : run_permitted_(run_permitted)
     {
     }
 

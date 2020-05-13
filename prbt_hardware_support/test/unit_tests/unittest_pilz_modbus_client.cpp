@@ -78,7 +78,8 @@ private:
   std::thread client_thread_;
 };
 
-PilzModbusClientExecutor::PilzModbusClientExecutor(PilzModbusClient* client) : client_(client)
+PilzModbusClientExecutor::PilzModbusClientExecutor(PilzModbusClient* client)
+  : client_(client)
 {
 }
 
@@ -373,7 +374,8 @@ TEST_F(PilzModbusClientTests, testSettingOfTimeOut)
 class HoldingRegisterIncreaser
 {
 public:
-  HoldingRegisterIncreaser(unsigned int register_index = 0u) : register_index_(register_index)
+  HoldingRegisterIncreaser(unsigned int register_index = 0u)
+    : register_index_(register_index)
   {
   }
 

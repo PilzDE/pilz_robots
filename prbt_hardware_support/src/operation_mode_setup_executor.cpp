@@ -21,7 +21,9 @@ namespace prbt_hardware_support
 {
 OperationModeSetupExecutor::OperationModeSetupExecutor(const double& speed_limit_t1, const double& speed_limit_auto,
                                                        const SetSpeedLimitFunc& set_speed_limit_func)
-  : speed_limit_t1_(speed_limit_t1), speed_limit_auto_(speed_limit_auto), set_speed_limit_func_(set_speed_limit_func)
+  : speed_limit_t1_(speed_limit_t1)
+  , speed_limit_auto_(speed_limit_auto)
+  , set_speed_limit_func_(set_speed_limit_func)
 {
 }
 

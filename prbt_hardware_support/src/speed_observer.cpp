@@ -31,7 +31,9 @@ static const std::string RUN_PERMITTED_SERVICE{ "run_permitted" };
 
 SpeedObserver::SpeedObserver(ros::NodeHandle& nh, std::string& reference_frame,
                              std::vector<std::string>& frames_to_observe)
-  : nh_(nh), reference_frame_(reference_frame), frames_to_observe_(frames_to_observe)
+  : nh_(nh)
+  , reference_frame_(reference_frame)
+  , frames_to_observe_(frames_to_observe)
 {
   frame_speeds_pub_ = nh.advertise<FrameSpeeds>(FRAME_SPEEDS_TOPIC_NAME, DEFAULT_QUEUE_SIZE);
   pilz_utils::waitForService(RUN_PERMITTED_SERVICE);

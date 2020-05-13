@@ -19,7 +19,8 @@
 
 namespace prbt_support
 {
-SystemInfoException::SystemInfoException(const std::string& what_arg) : std::runtime_error(what_arg)
+SystemInfoException::SystemInfoException(const std::string& what_arg)
+  : std::runtime_error(what_arg)
 {
 }
 
