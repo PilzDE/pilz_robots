@@ -29,7 +29,7 @@ from pilz_status_indicator_rqt.status_indicator_widget import (
     GREEN, RED, PilzStatusIndicatorWidget)
 
 
-class TestablePilzStatusIndicatorWidget(PilzStatusIndicatorWidget):
+class PilzStatusIndicatorWidgetTestable(PilzStatusIndicatorWidget):
     """
     Needed to skip TestStatusIndicatorWidget.__init__, especially the super
     call within. Was not able to mock. Better solution welcome.
@@ -47,7 +47,7 @@ class TestStatusIndicatorWidget(unittest.TestCase):
 
     def setUp(self):
         """initializing a widget to be tested."""
-        self.psi = TestablePilzStatusIndicatorWidget(0)
+        self.psi = PilzStatusIndicatorWidgetTestable(0)
 
     def test_set_ROS_status(self):
         """Testing whether the LED for the ROS status is turning correctly
