@@ -99,10 +99,11 @@ if(CATKIN_ENABLE_TESTING)
   #catkin_lint: ignore_once missing_directory <-- needed for successful catkin_linting
   #Declare system to supress strict compiler errors in external library headers
   include_directories(
-    SYSTEM ${catkin_INCLUDE_DIRS}
-    SYSTEM ${EIGEN3_INCLUDE_DIR}
     ${pilz_testutils_INCLUDE_DIRS}
-    SYSTEM ${gmock_SOURCE_DIR}/include/
+    SYSTEM
+    ${catkin_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIR}
+    ${gmock_SOURCE_DIR}/include/
   )
 
   #--- SystemInfo unit test ---
