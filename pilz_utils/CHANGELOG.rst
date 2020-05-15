@@ -2,8 +2,8 @@
 Changelog for package pilz_utils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.16 (2020-05-15)
+-------------------
 * Update and apply clang-format (#387)
 * Contributors: Pilz GmbH and Co. KG
 

@@ -2,8 +2,8 @@
 Changelog for package prbt_ikfast_manipulator_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.16 (2020-05-15)
+-------------------
 * Update and apply clang-format (#387)
 * Make test-subfolder-names consistent (#380)
 * Contributors: Pilz GmbH and Co. KG

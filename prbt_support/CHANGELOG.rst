@@ -2,8 +2,8 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.16 (2020-05-15)
+-------------------
 * Fix include_directories for prbt_support tests (#390)
 * Update and apply clang-format (#387)
 * Make test-subfolder-names consistent (#380)
