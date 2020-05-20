@@ -2,33 +2,25 @@
 Checks:          '-*,
                   performance-*,
                   llvm-namespace-comment,
-                  modernize-redundant-void-arg,
-                  modernize-use-nullptr,
-                  modernize-use-default,
-                  modernize-use-override,
-                  modernize-loop-convert,
-                  readability-named-parameter,
-                  readability-redundant-smartptr-get,
-                  readability-redundant-string-cstr,
-                  readability-simplify-boolean-expr,
-                  readability-container-size-empty,
-                  readability-identifier-naming,
+                  boost-*,
+                  bugprone-*,
+                  cppcoreguidelines-*,
+                  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+                  -cppcoreguidelines-pro-type-vararg,
+                  clang-analyzer-*,
+                  google-*,
+                  -google-build-using-namespace,
+                  hicpp-*,
+                  -hicpp-no-array-decay,
+                  -hicpp-vararg,
+                  -hicpp-use-auto,
+                  -hicpp-signed-bitwise,
+                  -hicpp-no-assembler,
+                  misc-*,
+                  modernize-*
+                  readability-*
                   '
-WarningsAsErrors: '
-                  performance-*,
-                  llvm-namespace-comment,
-                  modernize-redundant-void-arg,
-                  modernize-use-nullptr,
-                  modernize-use-default,
-                  modernize-use-override,
-                  modernize-loop-convert,
-                  readability-named-parameter,
-                  readability-redundant-smartptr-get,
-                  readability-redundant-string-cstr,
-                  readability-simplify-boolean-expr,
-                  readability-container-size-empty,
-                  readability-identifier-naming,
-                  '
+WarningsAsErrors: '*'
 
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
