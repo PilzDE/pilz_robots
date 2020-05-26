@@ -25,7 +25,6 @@
 
 namespace prbt_hardware_support
 {
-
 /**
  * @brief Wrapper class to add semantic to a raw ModbusMsgInStamped.
  *
@@ -38,8 +37,7 @@ public:
    * @brief Construct a new Modbus Msg Wrapper object
    *
    */
-  ModbusMsgWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
-                   const ModbusApiSpec& api_spec);
+  ModbusMsgWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw, const ModbusApiSpec& api_spec);
 
   virtual ~ModbusMsgWrapper() = default;
 
@@ -70,7 +68,6 @@ public:
   const ros::Time& getTimeStamp() const;
 
 protected:
-
   /**
    * @brief Check if a certain holding register is define in the Modbus message.
    *
@@ -96,13 +93,11 @@ protected:
 private:
   const ModbusApiSpec api_spec_;
   const ModbusMsgInStampedConstPtr msg_;
-
 };
 
 inline ModbusMsgWrapper::ModbusMsgWrapper(const ModbusMsgInStampedConstPtr& modbus_msg_raw,
                                           const ModbusApiSpec& api_spec)
-  : api_spec_(api_spec)
-  , msg_(modbus_msg_raw)
+  : api_spec_(api_spec), msg_(modbus_msg_raw)
 {
 }
 
@@ -135,7 +130,7 @@ inline bool ModbusMsgWrapper::isDisconnect() const
 
 inline void ModbusMsgWrapper::checkStructuralIntegrity() const
 {
-  if(!hasVersion())
+  if (!hasVersion())
   {
     throw ModbusMsgWrapperException("Received message does not contain a version.");
   }
@@ -151,6 +146,6 @@ inline const ros::Time& ModbusMsgWrapper::getTimeStamp() const
   return msg_->header.stamp;
 }
 
-}
+}  // namespace prbt_hardware_support
 
-#endif // MODBUS_MSG_WRAPPER_H
+#endif  // MODBUS_MSG_WRAPPER_H

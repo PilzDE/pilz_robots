@@ -28,10 +28,10 @@ static const std::string ROBOT_DESCRIPTION_PARAM_NAME{ "robot_description" };
 static const std::string SET_SPEED_LIMIT_SERVICE{ "set_speed_limit" };
 static const std::string OBSERVATION_FREQUENCY_PARAM_NAME{ "observation_frequency" };
 
-bool hasOnlyFixedParentJoints(const urdf::LinkSharedPtr &link)
+bool hasOnlyFixedParentJoints(const urdf::LinkSharedPtr& link)
 {
-  auto parent_link {link};
-  while ( (parent_link->parent_joint != nullptr) && (parent_link->parent_joint->type == urdf::Joint::FIXED) )
+  auto parent_link{ link };
+  while ((parent_link->parent_joint != nullptr) && (parent_link->parent_joint->type == urdf::Joint::FIXED))
   {
     parent_link = parent_link->getParent();
   }
@@ -80,7 +80,7 @@ int main(int argc, char** argv)
   {
     frequency = pilz_utils::getParam<double>(pnh, OBSERVATION_FREQUENCY_PARAM_NAME);
   }
-  catch(const std::runtime_error& ex)
+  catch (const std::runtime_error& ex)
   {
     ROS_ERROR_STREAM(ex.what());
     return EXIT_FAILURE;

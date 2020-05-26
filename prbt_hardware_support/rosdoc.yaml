@@ -7,5 +7,5 @@
   refspec{1}="\ref spec_def_\1 \"Spec - \1\""
   tests{2}="\xrefitem test_list_\1 \"\" \"Test list for specification: \1\" - \2 (\ref spec_def_\1 \"Spec\")"
   '
-  exclude_patterns: '*/test/acceptancetests/*'
+  exclude_patterns: '*/test/acceptance_tests/*'
   use_mdfile_as_mainpage: 'README.md'

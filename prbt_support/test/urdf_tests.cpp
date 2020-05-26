@@ -25,33 +25,37 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-const std::string ARM_GROUP_NAME {"arm_group_name"};
-const std::string ARM_GROUP_TIP_LINK_NAME {"arm_tip_link"};
+const std::string ARM_GROUP_NAME{ "arm_group_name" };
+const std::string ARM_GROUP_TIP_LINK_NAME{ "arm_tip_link" };
 
-static constexpr double L0 {0.2604}; // Height of foot
-static constexpr double L1 {0.3500}; // Height of first connector
-static constexpr double L2 {0.3070}; // Height of second connector
-static constexpr double L3 {0.0840}; // Distance last joint to flange
-static constexpr double DELTA {1.0e-10};
+static constexpr double L0{ 0.2604 };  // Height of foot
+static constexpr double L1{ 0.3500 };  // Height of first connector
+static constexpr double L2{ 0.3070 };  // Height of second connector
+static constexpr double L3{ 0.0840 };  // Distance last joint to flange
+static constexpr double DELTA{ 1.0e-10 };
 
-const std::string PARAM_MODEL {"robot_description"};
+const std::string PARAM_MODEL{ "robot_description" };
 
 typedef std::tuple<std::string, std::vector<double>, Eigen::Vector3d> TestDataPoint;
 
-inline std::string getName(TestDataPoint& tdp){
-	return std::get<0>(tdp);
+inline std::string getName(TestDataPoint& tdp)
+{
+  return std::get<0>(tdp);
 }
 
-inline std::vector<double> getJoints(TestDataPoint& tdp){
-	return std::get<1>(tdp);
+inline std::vector<double> getJoints(TestDataPoint& tdp)
+{
+  return std::get<1>(tdp);
 }
 
-inline Eigen::Vector3d getPos(TestDataPoint& tdp){
-	return std::get<2>(tdp);
+inline Eigen::Vector3d getPos(TestDataPoint& tdp)
+{
+  return std::get<2>(tdp);
 }
 
-std::string vecToString(std::vector<double>& vec) {
-	return std::string(vec.begin(), vec.end());
+std::string vecToString(std::vector<double>& vec)
+{
+  return std::string(vec.begin(), vec.end());
 }
 
 /**
@@ -60,13 +64,12 @@ std::string vecToString(std::vector<double>& vec) {
 class URDFKinematicsTest : public testing::TestWithParam<std::string>
 {
 protected:
-   void SetUp() override;
+  void SetUp() override;
 
 protected:
   // ros stuff
-  ros::NodeHandle ph_ {"~"};
-  robot_model::RobotModelConstPtr robot_model_ {
-    robot_model_loader::RobotModelLoader(GetParam()).getModel()};
+  ros::NodeHandle ph_{ "~" };
+  robot_model::RobotModelConstPtr robot_model_{ robot_model_loader::RobotModelLoader(GetParam()).getModel() };
 
   // parameters
   std::string group_name_, tip_link_name_;
@@ -82,17 +85,24 @@ void URDFKinematicsTest::SetUp()
   ASSERT_TRUE(ph_.getParam(ARM_GROUP_TIP_LINK_NAME, tip_link_name_));
 
   // Fill the testdata
-  testDataSet_.push_back(TestDataPoint("HomePos ", {      0,       0,       0,  0,        0,  0}, Eigen::Vector3d(0,         0, L0+L1+L2+L3)));
-  testDataSet_.push_back(TestDataPoint("TestPos1", {      0,  M_PI_2,       0,  0,        0,  0}, Eigen::Vector3d(L1+L2+L3,  0, L0)));
-  testDataSet_.push_back(TestDataPoint("TestPos2", {      0, -M_PI_2,  M_PI_2,  0,        0,  0}, Eigen::Vector3d(-L1,       0, L0-L2-L3)));
-  testDataSet_.push_back(TestDataPoint("TestPos3", {      0, -M_PI_2, -M_PI_2,  0,        0,  0}, Eigen::Vector3d(-L1,       0, L0+L2+L3)));
-  testDataSet_.push_back(TestDataPoint("TestPos4", {      0,       0,  M_PI_2,  0,        0,  0}, Eigen::Vector3d(-L2-L3,    0, L0+L1)));
-  testDataSet_.push_back(TestDataPoint("TestPos5", {-M_PI_2,       0, -M_PI_2,  0,        0,  0}, Eigen::Vector3d(0,    -L2-L3, L0+L1)));
-  testDataSet_.push_back(TestDataPoint("TestPos6", {-M_PI_2, -M_PI_2, -M_PI_2,  0,        0,  0}, Eigen::Vector3d(0,        L1, L0+L2+L3)));
-  testDataSet_.push_back(TestDataPoint("TestPos7", { M_PI_2, -M_PI_2,       0,  0,        0,  0}, Eigen::Vector3d(0, -L1-L2-L3, L0)));
-  testDataSet_.push_back(TestDataPoint("TestPos8", {      0,       0,       0,  0,  -M_PI_2,  0}, Eigen::Vector3d(L3,        0, L0+L1+L2)));
-  testDataSet_.push_back(TestDataPoint("TestPos9", { M_PI_2,       0,       0,  0,  -M_PI_2,  0}, Eigen::Vector3d(0,        L3, L0+L1+L2)));
-  testDataSet_.push_back(TestDataPoint("TestPos10", {      0,       0,       0,  0,       0,  M_PI_2}, Eigen::Vector3d(0,    0, L0+L1+L2+L3)));
+  testDataSet_.push_back(TestDataPoint("HomePos ", { 0, 0, 0, 0, 0, 0 }, Eigen::Vector3d(0, 0, L0 + L1 + L2 + L3)));
+  testDataSet_.push_back(TestDataPoint("TestPos1", { 0, M_PI_2, 0, 0, 0, 0 }, Eigen::Vector3d(L1 + L2 + L3, 0, L0)));
+  testDataSet_.push_back(
+      TestDataPoint("TestPos2", { 0, -M_PI_2, M_PI_2, 0, 0, 0 }, Eigen::Vector3d(-L1, 0, L0 - L2 - L3)));
+  testDataSet_.push_back(
+      TestDataPoint("TestPos3", { 0, -M_PI_2, -M_PI_2, 0, 0, 0 }, Eigen::Vector3d(-L1, 0, L0 + L2 + L3)));
+  testDataSet_.push_back(TestDataPoint("TestPos4", { 0, 0, M_PI_2, 0, 0, 0 }, Eigen::Vector3d(-L2 - L3, 0, L0 + L1)));
+  testDataSet_.push_back(
+      TestDataPoint("TestPos5", { -M_PI_2, 0, -M_PI_2, 0, 0, 0 }, Eigen::Vector3d(0, -L2 - L3, L0 + L1)));
+  testDataSet_.push_back(
+      TestDataPoint("TestPos6", { -M_PI_2, -M_PI_2, -M_PI_2, 0, 0, 0 }, Eigen::Vector3d(0, L1, L0 + L2 + L3)));
+  testDataSet_.push_back(
+      TestDataPoint("TestPos7", { M_PI_2, -M_PI_2, 0, 0, 0, 0 }, Eigen::Vector3d(0, -L1 - L2 - L3, L0)));
+  testDataSet_.push_back(TestDataPoint("TestPos8", { 0, 0, 0, 0, -M_PI_2, 0 }, Eigen::Vector3d(L3, 0, L0 + L1 + L2)));
+  testDataSet_.push_back(
+      TestDataPoint("TestPos9", { M_PI_2, 0, 0, 0, -M_PI_2, 0 }, Eigen::Vector3d(0, L3, L0 + L1 + L2)));
+  testDataSet_.push_back(
+      TestDataPoint("TestPos10", { 0, 0, 0, 0, 0, M_PI_2 }, Eigen::Vector3d(0, 0, L0 + L1 + L2 + L3)));
 }
 
 INSTANTIATE_TEST_CASE_P(InstantiationName, URDFKinematicsTest, ::testing::Values(PARAM_MODEL), );
@@ -110,7 +120,7 @@ TEST_P(URDFKinematicsTest, forwardKinematics)
   ASSERT_TRUE(rstate.knowsFrameTransform(tip_link_name_));
 
   // Loop over the testdata
-  for(TestDataPoint & test_data : testDataSet_)
+  for (TestDataPoint& test_data : testDataSet_)
   {
     std::string name = getName(test_data);
     std::vector<double> joints = getJoints(test_data);
@@ -118,21 +128,21 @@ TEST_P(URDFKinematicsTest, forwardKinematics)
 
     // get frame transform
     rstate.setJointGroupPositions(group_name_, joints);
-    //rstate.setVariablePositions(joints);
+    // rstate.setVariablePositions(joints);
     rstate.update();
     Eigen::Affine3d transform = rstate.getFrameTransform(tip_link_name_);
 
     // Test the position
     double error_norm = (transform.translation() - pos_exp).norm();
-    EXPECT_NEAR(error_norm, 0, DELTA)
-        << "TestPosition \"" << name << "\" failed\n"
-        << "\t Joints: [" << Eigen::VectorXd::Map(joints.data(), joints.size()).transpose() << "]\n"
-        << "\t Expected position [" << pos_exp.transpose() << "]\n"
-        << "\t Real position [" << transform.translation().transpose() << "]";
+    EXPECT_NEAR(error_norm, 0, DELTA) << "TestPosition \"" << name << "\" failed\n"
+                                      << "\t Joints: ["
+                                      << Eigen::VectorXd::Map(joints.data(), joints.size()).transpose() << "]\n"
+                                      << "\t Expected position [" << pos_exp.transpose() << "]\n"
+                                      << "\t Real position [" << transform.translation().transpose() << "]";
   }
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "urdf_tests");
   testing::InitGoogleTest(&argc, argv);

@@ -24,14 +24,13 @@
 
 namespace prbt_hardware_support
 {
-
 /**
  * @brief Exception thrown by the CANOpenBrakeTestAdapter.
  */
 class CANOpenBrakeTestAdapterException : public std::runtime_error
 {
 public:
-  CANOpenBrakeTestAdapterException(const std::string &what_arg,
+  CANOpenBrakeTestAdapterException(const std::string& what_arg,
                                    const int8_t error_value = BrakeTestErrorCodes::FAILURE);
 
 public:
@@ -46,6 +45,6 @@ inline int8_t CANOpenBrakeTestAdapterException::getErrorValue() const
   return error_value_;
 }
 
-}
+}  // namespace prbt_hardware_support
 
-#endif // PRBT_HARDWARE_SUPPORT_CANOPEN_BRAKETEST_ADAPTER_EXCEPTION_H
+#endif  // PRBT_HARDWARE_SUPPORT_CANOPEN_BRAKETEST_ADAPTER_EXCEPTION_H

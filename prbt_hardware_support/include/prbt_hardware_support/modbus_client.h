@@ -25,7 +25,6 @@
 
 namespace prbt_hardware_support
 {
-
 class ModbusClient
 {
 public:
@@ -34,7 +33,6 @@ public:
   // LCOV_EXCL_STOP
 
 public:
-
   /**
    * @brief Initialize the modbus client by connecting to the server
    *
@@ -72,14 +70,10 @@ public:
    */
   virtual RegCont readHoldingRegister(int addr, int nb) = 0;
 
-  virtual RegCont writeReadHoldingRegister(const int write_addr, const RegCont &write_reg,
-                                           const int read_addr, const int read_nb) = 0;
-
-
-
+  virtual RegCont writeReadHoldingRegister(const int write_addr, const RegCont& write_reg, const int read_addr,
+                                           const int read_nb) = 0;
 };
 
-} // prbt_hardware_support
+}  // namespace prbt_hardware_support
 
-
-#endif // MODBUS_CLIENT_H
+#endif  // MODBUS_CLIENT_H

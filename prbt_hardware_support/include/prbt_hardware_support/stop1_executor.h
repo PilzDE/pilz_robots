@@ -34,7 +34,6 @@
 
 namespace prbt_hardware_support
 {
-
 /**
  * @brief Performs service calls for Stop1 and the respective reversal,
  * that is enabling the manipulator. Incoming
@@ -66,10 +65,8 @@ public:
    * start worker-thread and state machine.
    *
    */
-  Stop1Executor(const TServiceCallFunc& hold_func,
-                const TServiceCallFunc& unhold_func,
-                const TServiceCallFunc& recover_func,
-                const TServiceCallFunc& halt_func);
+  Stop1Executor(const TServiceCallFunc& hold_func, const TServiceCallFunc& unhold_func,
+                const TServiceCallFunc& recover_func, const TServiceCallFunc& halt_func);
 
   /**
    * @brief Stop state machine and terminate worker-thread.
@@ -88,8 +85,7 @@ public:
    * @param run_permitted The updated run_permitted value.
    */
   void updateRunPermitted(const bool run_permitted);
-  bool updateRunPermittedCallback(std_srvs::SetBool::Request &req,
-                                  std_srvs::SetBool::Response &res);
+  bool updateRunPermittedCallback(std_srvs::SetBool::Request& req, std_srvs::SetBool::Response& res);
 
 protected:
   /**
@@ -100,7 +96,6 @@ protected:
   void stopStateMachine();
 
 private:
-
   /**
    * @brief This is executed in the worker-thread and allows asynchronous
    * handling of run_permitted updates.
@@ -120,7 +115,7 @@ private:
   std::unique_ptr<RunPermittedStateMachine> state_machine_;
 
   //! Flag indicating if the worker-thread should terminate
-  std::atomic_bool terminate_{false};
+  std::atomic_bool terminate_{ false };
 
   //! Mutex for protecting access to the state machine, needs to be owned when
   //! triggering an event of the state machine
@@ -131,7 +126,6 @@ private:
 
   //! Worker-thread
   std::thread worker_thread_;
-
 };
 
 inline void Stop1Executor::stopStateMachine()
@@ -140,6 +134,6 @@ inline void Stop1Executor::stopStateMachine()
   state_machine_->stop();
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support
 
-#endif // STOP1_EXECUTOR_H
+#endif  // STOP1_EXECUTOR_H

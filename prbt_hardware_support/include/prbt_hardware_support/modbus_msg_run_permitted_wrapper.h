@@ -25,7 +25,6 @@
 
 namespace prbt_hardware_support
 {
-
 /**
  * @brief Wrapper class to add semantic to a raw ModbusMsgInStamped
  *
@@ -60,7 +59,6 @@ private:
    * @return false if there is no RUN_PERMITTED defined in the message
    */
   bool hasRunPermitted() const;
-
 };
 
 inline bool ModbusMsgRunPermittedWrapper::hasRunPermitted() const
@@ -73,6 +71,6 @@ inline bool ModbusMsgRunPermittedWrapper::getRunPermitted() const
   return getRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::RUN_PERMITTED));
 }
 
-}
+}  // namespace prbt_hardware_support
 
-#endif // MODBUS_MSG_RUN_PERMITTED_WRAPPER_H
+#endif  // MODBUS_MSG_RUN_PERMITTED_WRAPPER_H

@@ -2,6 +2,14 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.16 (2020-05-15)
+-------------------
+* Update and apply clang-format (#387)
+* Make test-subfolder-names consistent (#380)
+* Extend stop1 acceptance test (#378)
+* Fix namespace in launch-file (#383)
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.15 (2020-05-03)
 -------------------
 * Add support for starting the robot without modbus

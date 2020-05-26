@@ -26,7 +26,6 @@
 
 namespace prbt_hardware_support
 {
-
 static const std::string FRAME_SPEEDS_TOPIC_NAME{ "frame_speeds" };
 static const std::string RUN_PERMITTED_SERVICE{ "run_permitted" };
 
@@ -61,7 +60,8 @@ void SpeedObserver::waitUntillCanTransform(const std::string& frame, const ros::
 
   if (terminate_)
   {
-    throw std::runtime_error("Terminate flag is true"); // LCOV_EXCL_LINE Flag only needed for tests, therefore, excluded from line coverage.
+    throw std::runtime_error("Terminate flag is true");  // LCOV_EXCL_LINE Flag only needed for tests, therefore,
+                                                         // excluded from line coverage.
   }
 }
 
@@ -106,32 +106,31 @@ void SpeedObserver::startObserving(const double frequency, const unsigned int al
       {
         return;  // LCOV_EXCL_LINE Flag only needed for tests, therefore, excluded from line coverage.
       }
-        
-      const auto curr_pose_data = getLatestPose(frame);
-      const auto &curr_pose = curr_pose_data.first;
-      const auto &curr_time_stamp = curr_pose_data.second;
 
-      if (std::abs((ros::Time::now() - curr_time_stamp).toSec()) > 2.0/frequency)
+      const auto curr_pose_data = getLatestPose(frame);
+      const auto& curr_pose = curr_pose_data.first;
+      const auto& curr_time_stamp = curr_pose_data.second;
+
+      if (std::abs((ros::Time::now() - curr_time_stamp).toSec()) > 2.0 / frequency)
       {
         ROS_WARN_STREAM("Latest transform of frame " << frame << " is too old. ");
         ++missed_calculations_[frame];
         ROS_WARN_STREAM("Missed calculations for frame " << frame << ": " << missed_calculations_[frame]);
         if (missed_calculations_[frame] > allowed_missed_calculations)
         {
-          ROS_ERROR_STREAM("Could not compute frame speed for frame " << frame
-                           << " for " << allowed_missed_calculations << " times."
-                           << " Triggering Stop1.");
+          ROS_ERROR_STREAM("Could not compute frame speed for frame " << frame << " for " << allowed_missed_calculations
+                                                                      << " times."
+                                                                      << " Triggering Stop1.");
           triggerStop1();
           missed_calculations_[frame] = 0;
         }
       }
       else
       {
-        double curr_speed{0.0};
+        double curr_speed{ 0.0 };
         if ((curr_time_stamp - previous_time_stamps.at(frame)).toSec() > TIME_INTERVAL_EPSILON_S)
         {
-          curr_speed = speedFromTwoPoses(previous_poses.at(frame),
-                                         curr_pose,
+          curr_speed = speedFromTwoPoses(previous_poses.at(frame), curr_pose,
                                          (curr_time_stamp - previous_time_stamps.at(frame)).toSec());
         }
         else

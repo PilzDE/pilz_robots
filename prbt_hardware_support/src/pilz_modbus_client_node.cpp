@@ -29,20 +29,20 @@
 #include <prbt_hardware_support/modbus_topic_definitions.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
 
-static constexpr int32_t MODBUS_CONNECTION_RETRIES_DEFAULT {10};
-static constexpr double MODBUS_CONNECTION_RETRY_TIMEOUT_S_DEFAULT {1.0};
-static constexpr int MODBUS_RESPONSE_TIMEOUT_MS {20};
+static constexpr int32_t MODBUS_CONNECTION_RETRIES_DEFAULT{ 10 };
+static constexpr double MODBUS_CONNECTION_RETRY_TIMEOUT_S_DEFAULT{ 1.0 };
+static constexpr int MODBUS_RESPONSE_TIMEOUT_MS{ 20 };
 
 using namespace prbt_hardware_support;
 
 /**
  * @brief Read requested parameters, start and initialize the prbt_hardware_support::PilzModbusClient
  */
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "modbus_client_node");
 
-  ros::NodeHandle pnh{"~"};
+  ros::NodeHandle pnh{ "~" };
   ros::NodeHandle nh;
 
   // LCOV_EXCL_START Simple parameter reading not analyzed
@@ -57,8 +57,7 @@ int main(int argc, char **argv)
     port = pilz_utils::getParam<int>(pnh, PARAM_MODBUS_SERVER_PORT_STR);
 
     bool has_register_range_parameters =
-        pnh.hasParam(PARAM_NUM_REGISTERS_TO_READ_STR) &&
-        pnh.hasParam(PARAM_INDEX_OF_FIRST_REGISTER_TO_READ_STR);
+        pnh.hasParam(PARAM_NUM_REGISTERS_TO_READ_STR) && pnh.hasParam(PARAM_INDEX_OF_FIRST_REGISTER_TO_READ_STR);
     if (has_register_range_parameters)
     {
       int num_registers_to_read = pilz_utils::getParam<int>(pnh, PARAM_NUM_REGISTERS_TO_READ_STR);
@@ -74,46 +73,39 @@ int main(int argc, char **argv)
       ROS_DEBUG("registers_to_read.size() %zu", registers_to_read.size());
     }
   }
-  catch (const std::runtime_error &ex)
+  catch (const std::runtime_error& ex)
   {
     ROS_ERROR_STREAM(ex.what());
     return EXIT_FAILURE;
   }
 
-  int32_t modbus_connection_retries{MODBUS_CONNECTION_RETRIES_DEFAULT};
+  int32_t modbus_connection_retries{ MODBUS_CONNECTION_RETRIES_DEFAULT };
   pnh.param<int32_t>(PARAM_MODBUS_CONNECTION_RETRIES, modbus_connection_retries, MODBUS_CONNECTION_RETRIES_DEFAULT);
 
-  double modbus_connection_retry_timeout_s{MODBUS_CONNECTION_RETRY_TIMEOUT_S_DEFAULT};
+  double modbus_connection_retry_timeout_s{ MODBUS_CONNECTION_RETRY_TIMEOUT_S_DEFAULT };
   pnh.param<double>(PARAM_MODBUS_CONNECTION_RETRY_TIMEOUT, modbus_connection_retry_timeout_s,
                     MODBUS_CONNECTION_RETRY_TIMEOUT_S_DEFAULT);
 
   int response_timeout_ms;
-  pnh.param<int>(PARAM_MODBUS_RESPONSE_TIMEOUT_STR, response_timeout_ms,
-                 MODBUS_RESPONSE_TIMEOUT_MS);
+  pnh.param<int>(PARAM_MODBUS_RESPONSE_TIMEOUT_STR, response_timeout_ms, MODBUS_RESPONSE_TIMEOUT_MS);
 
   std::string modbus_read_topic_name;
-  nh.param<std::string>(PARAM_MODBUS_READ_TOPIC_NAME_STR, modbus_read_topic_name,
-                        TOPIC_MODBUS_READ);
+  nh.param<std::string>(PARAM_MODBUS_READ_TOPIC_NAME_STR, modbus_read_topic_name, TOPIC_MODBUS_READ);
 
   std::string modbus_write_service_name;
-  nh.param<std::string>(PARAM_MODBUS_WRITE_SERVICE_NAME_STR, modbus_write_service_name,
-                        SERVICE_MODBUS_WRITE);
-
+  nh.param<std::string>(PARAM_MODBUS_WRITE_SERVICE_NAME_STR, modbus_write_service_name, SERVICE_MODBUS_WRITE);
 
   // LCOV_EXCL_STOP
 
-  prbt_hardware_support::PilzModbusClient modbus_client(pnh,
-                                                        registers_to_read,
-                                                        std::unique_ptr<LibModbusClient>(new LibModbusClient()),
-                                                        static_cast<unsigned int>(response_timeout_ms),
-                                                        modbus_read_topic_name, modbus_write_service_name);
+  prbt_hardware_support::PilzModbusClient modbus_client(
+      pnh, registers_to_read, std::unique_ptr<LibModbusClient>(new LibModbusClient()),
+      static_cast<unsigned int>(response_timeout_ms), modbus_read_topic_name, modbus_write_service_name);
 
   ROS_DEBUG_STREAM("Modbus client IP: " << ip << " | Port: " << port);
   std::ostringstream oss;
   if (!registers_to_read.empty())
   {
-    std::copy(registers_to_read.begin(), registers_to_read.end()-1,
-        std::ostream_iterator<unsigned short>(oss, ","));
+    std::copy(registers_to_read.begin(), registers_to_read.end() - 1, std::ostream_iterator<unsigned short>(oss, ","));
     oss << registers_to_read.back();
   }
   ROS_DEBUG_STREAM("Registers to read: " << oss.str());
@@ -138,7 +130,7 @@ int main(int argc, char **argv)
   {
     modbus_client.run();
   }
-  catch(PilzModbusClientException& e)
+  catch (PilzModbusClientException& e)
   {
     ROS_ERROR_STREAM(e.what());
     return EXIT_FAILURE;

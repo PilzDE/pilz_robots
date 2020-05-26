@@ -28,7 +28,6 @@
 
 namespace prbt_hardware_support
 {
-
 LibModbusClient::~LibModbusClient()
 {
   close();
@@ -51,7 +50,7 @@ bool LibModbusClient::init(const char* ip, unsigned int port)
 void LibModbusClient::setResponseTimeoutInMs(unsigned long timeout_ms)
 {
   struct timeval response_timeout;
-  response_timeout.tv_sec = timeout_ms/1000;
+  response_timeout.tv_sec = timeout_ms / 1000;
   response_timeout.tv_usec = (timeout_ms % 1000) * 1000;
   modbus_set_response_timeout(modbus_connection_, &response_timeout);
 }
@@ -60,19 +59,19 @@ unsigned long LibModbusClient::getResponseTimeoutInMs()
 {
   struct timeval response_timeout;
   modbus_get_response_timeout(modbus_connection_, &response_timeout);
-  return static_cast<unsigned long>(response_timeout.tv_sec * 1000L + (response_timeout.tv_usec  / 1000L));
+  return static_cast<unsigned long>(response_timeout.tv_sec * 1000L + (response_timeout.tv_usec / 1000L));
 }
 
 RegCont LibModbusClient::readHoldingRegister(int addr, int nb)
 {
   ROS_DEBUG("readHoldingRegister()");
-  if(modbus_connection_ == nullptr)
+  if (modbus_connection_ == nullptr)
   {
     throw ModbusExceptionDisconnect("Modbus disconnected!");
   }
 
   RegCont tab_reg(static_cast<RegCont::size_type>(nb));
-  int rc {-1};
+  int rc{ -1 };
 
   rc = modbus_read_registers(modbus_connection_, addr, nb, tab_reg.data());
   if (rc == -1)
@@ -88,11 +87,10 @@ RegCont LibModbusClient::readHoldingRegister(int addr, int nb)
   return tab_reg;
 }
 
-RegCont LibModbusClient::writeReadHoldingRegister(const int write_addr,
-                                                  const RegCont& write_reg,
-                                                  const int read_addr, const int read_nb)
+RegCont LibModbusClient::writeReadHoldingRegister(const int write_addr, const RegCont& write_reg, const int read_addr,
+                                                  const int read_nb)
 {
-  if(modbus_connection_ == nullptr)
+  if (modbus_connection_ == nullptr)
   {
     throw ModbusExceptionDisconnect("Modbus disconnected!");
   }
@@ -108,13 +106,12 @@ RegCont LibModbusClient::writeReadHoldingRegister(const int write_addr,
     throw std::invalid_argument("Argument \"write_reg\" must not exceed max value of type \"int\"");
   }
 
-  int rc {-1};
-  rc = modbus_write_and_read_registers(modbus_connection_,
-                                       write_addr, static_cast<int>(write_reg.size()), write_reg.data(),
-                                       read_addr, read_nb, read_reg.data());
+  int rc{ -1 };
+  rc = modbus_write_and_read_registers(modbus_connection_, write_addr, static_cast<int>(write_reg.size()),
+                                       write_reg.data(), read_addr, read_nb, read_reg.data());
   ROS_DEBUG_NAMED("LibModbusClient", "modbus_write_and_read_registers: writing from %i %i registers\
                                       and reading from %i %i registers",
-                                      write_addr, static_cast<int>(write_reg.size()), read_addr, read_nb);
+                  write_addr, static_cast<int>(write_reg.size()), read_addr, read_nb);
   if (rc == -1)
   {
     std::string err = "Failed to write and read modbus registers: ";
@@ -136,4 +133,4 @@ void LibModbusClient::close()
   }
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support

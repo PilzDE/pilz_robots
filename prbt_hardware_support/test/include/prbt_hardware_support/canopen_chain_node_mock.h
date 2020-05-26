@@ -27,7 +27,6 @@
 
 namespace prbt_hardware_support
 {
-
 class CANOpenChainNodeMock
 {
 public:
@@ -65,10 +64,9 @@ public:
    */
   void shutdownGetService();
 
-
 public:
-  MOCK_METHOD2(get_obj, bool(canopen_chain_node::GetObjectRequest &, canopen_chain_node::GetObjectResponse &));
-  MOCK_METHOD2(set_obj, bool(canopen_chain_node::SetObjectRequest &, canopen_chain_node::SetObjectResponse &));
+  MOCK_METHOD2(get_obj, bool(canopen_chain_node::GetObjectRequest&, canopen_chain_node::GetObjectResponse&));
+  MOCK_METHOD2(set_obj, bool(canopen_chain_node::SetObjectRequest&, canopen_chain_node::SetObjectResponse&));
 
 private:
   ros::NodeHandle nh_;
@@ -76,6 +74,6 @@ private:
   ros::ServiceServer set_obj_serv_;
 };
 
-} //namespace brake_test_executor_test
+}  // namespace prbt_hardware_support
 
 #endif

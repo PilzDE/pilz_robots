@@ -21,9 +21,7 @@
 
 namespace prbt_hardware_support
 {
-
 using SetSpeedLimitFunc = std::function<bool(const double&)>;
-
 }
 
-#endif // SET_SPEED_LIMIT_FUNC_DECL_H
+#endif  // SET_SPEED_LIMIT_FUNC_DECL_H

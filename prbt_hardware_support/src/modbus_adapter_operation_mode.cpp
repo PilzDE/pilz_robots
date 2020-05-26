@@ -24,15 +24,13 @@
 
 namespace prbt_hardware_support
 {
-
 using std::placeholders::_1;
 
 ModbusAdapterOperationMode::ModbusAdapterOperationMode(ros::NodeHandle& nh, const ModbusApiSpec& api_spec)
   : AdapterOperationMode(nh)
   , api_spec_(api_spec)
-  , filter_pipeline_(new FilterPipeline(nh, std::bind(&ModbusAdapterOperationMode::modbusMsgCallback, this, _1 )) )
+  , filter_pipeline_(new FilterPipeline(nh, std::bind(&ModbusAdapterOperationMode::modbusMsgCallback, this, _1)))
 {
-
 }
 
 OperationModes ModbusAdapterOperationMode::createUnknownOperationMode()
@@ -45,7 +43,7 @@ OperationModes ModbusAdapterOperationMode::createUnknownOperationMode()
 
 void ModbusAdapterOperationMode::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw)
 {
-  ModbusMsgOperationModeWrapper msg {msg_raw, api_spec_};
+  ModbusMsgOperationModeWrapper msg{ msg_raw, api_spec_ };
 
   if (msg.isDisconnect())
   {
@@ -57,20 +55,19 @@ void ModbusAdapterOperationMode::modbusMsgCallback(const ModbusMsgInStampedConst
   {
     msg.checkStructuralIntegrity();
   }
-  catch (const prbt_hardware_support::ModbusMsgWrapperException &ex)
+  catch (const prbt_hardware_support::ModbusMsgWrapperException& ex)
   {
     ROS_ERROR_STREAM(ex.what());
     updateOperationMode(createUnknownOperationMode());
     return;
   }
 
-  if(msg.getVersion() != MODBUS_API_VERSION_REQUIRED)
+  if (msg.getVersion() != MODBUS_API_VERSION_REQUIRED)
   {
     std::ostringstream os;
-    os << "Received Modbus message of unsupported API Version: "
-       << msg.getVersion()
+    os << "Received Modbus message of unsupported API Version: " << msg.getVersion()
        << ", required Version: " << MODBUS_API_VERSION_REQUIRED;
-    os <<"\n";
+    os << "\n";
     os << "Can not determine OperationMode from Modbus message.";
     ROS_ERROR_STREAM(os.str());
     updateOperationMode(createUnknownOperationMode());
@@ -80,4 +77,4 @@ void ModbusAdapterOperationMode::modbusMsgCallback(const ModbusMsgInStampedConst
   updateOperationMode(msg.getTimeStampedOperationMode());
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support

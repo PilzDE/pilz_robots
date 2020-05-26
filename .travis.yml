@@ -29,6 +29,7 @@ env:
       AFTER_SCRIPT="./.coverage.sh"
       CMAKE_ARGS="-DENABLE_COVERAGE_TESTING=ON -DCMAKE_BUILD_TYPE=Debug"
       DOCKER_RUN_OPTS='-e COVERAGE_PKGS="pilz_control pilz_utils prbt_hardware_support"'
+    - CLANG_FORMAT_CHECK=file
 matrix:
   allow_failures:
     - env: ROS_REPO=main

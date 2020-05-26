@@ -27,11 +27,8 @@
  */
 class ModbusExceptionDisconnect : public std::runtime_error
 {
-  public:
-    ModbusExceptionDisconnect( const std::string& what_arg ):
-      std::runtime_error(what_arg)
-    {
-    };
+public:
+  ModbusExceptionDisconnect(const std::string& what_arg) : std::runtime_error(what_arg){};
 };
 
-#endif // PILZ_MODBUS_EXCEPTIONS_H
+#endif  // PILZ_MODBUS_EXCEPTIONS_H

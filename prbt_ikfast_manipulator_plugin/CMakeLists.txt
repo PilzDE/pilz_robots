@@ -81,8 +81,8 @@ if(CATKIN_ENABLE_TESTING)
   include_directories(include ${catkin_INCLUDE_DIR})
 
   add_rostest_gtest(unittest_${PROJECT_NAME}
-    test/unittests/tst_${PROJECT_NAME}.test
-    test/unittests/tst_${PROJECT_NAME}.cpp
+    test/unit_tests/tst_${PROJECT_NAME}.test
+    test/unit_tests/tst_${PROJECT_NAME}.cpp
   )
 
   target_link_libraries(unittest_${PROJECT_NAME}

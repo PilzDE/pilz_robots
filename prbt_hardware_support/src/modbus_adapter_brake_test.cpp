@@ -24,44 +24,42 @@
 
 namespace prbt_hardware_support
 {
-
-static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {3};
-static constexpr short unsigned int BRAKE_TEST_NOT_PERFORMED {1};
-static constexpr short unsigned int BRAKE_TEST_PERFORMED {2};
-static constexpr short unsigned int BRAKE_TEST_NOT_PASSED {1};
-static constexpr short unsigned int BRAKE_TEST_PASSED {2};
+static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{ 3 };
+static constexpr short unsigned int BRAKE_TEST_NOT_PERFORMED{ 1 };
+static constexpr short unsigned int BRAKE_TEST_PERFORMED{ 2 };
+static constexpr short unsigned int BRAKE_TEST_NOT_PASSED{ 1 };
+static constexpr short unsigned int BRAKE_TEST_PASSED{ 2 };
 
 ModbusAdapterBrakeTest::ModbusAdapterBrakeTest(TWriteModbusRegister&& write_modbus_register_func,
-                                               const ModbusApiSpec& read_api_spec,
-                                               const ModbusApiSpec& write_api_spec)
+                                               const ModbusApiSpec& read_api_spec, const ModbusApiSpec& write_api_spec)
   : api_spec_(read_api_spec)
   , reg_idx_cont_(getRegisters(write_api_spec))
   , reg_start_idx_(getMinRegisterIdx(reg_idx_cont_))
   , reg_block_size_(getRegisterBlockSize(reg_idx_cont_))
   , write_modbus_register_func_(write_modbus_register_func)
 {
-
 }
 
-ModbusAdapterBrakeTest::TRegIdxCont ModbusAdapterBrakeTest::getRegisters(const ModbusApiSpec &write_api_spec)
+ModbusAdapterBrakeTest::TRegIdxCont ModbusAdapterBrakeTest::getRegisters(const ModbusApiSpec& write_api_spec)
 {
   TRegIdxCont reg_idx_cont;
 
-  if(!write_api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED))
+  if (!write_api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED))
   {
     throw ModbusAdapterBrakeTestException("Failed to read API spec for BRAKETEST_PERFORMED");
   }
   reg_idx_cont[modbus_api_spec::BRAKETEST_PERFORMED] =
       write_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_PERFORMED);
 
-  if(!write_api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT))
+  if (!write_api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT))
   {
     throw ModbusAdapterBrakeTestException("Failed to read API spec for BRAKETEST_RESULT");
   }
   reg_idx_cont[modbus_api_spec::BRAKETEST_RESULT] =
       write_api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_RESULT);
 
-  if(abs(reg_idx_cont.at(modbus_api_spec::BRAKETEST_PERFORMED) - reg_idx_cont.at(modbus_api_spec::BRAKETEST_RESULT)) != 1)
+  if (abs(reg_idx_cont.at(modbus_api_spec::BRAKETEST_PERFORMED) - reg_idx_cont.at(modbus_api_spec::BRAKETEST_RESULT)) !=
+      1)
   {
     std::ostringstream os;
     os << "Registers of BRAKETEST_PERFORMED and BRAKETEST_RESULT need to be 1 apart";
@@ -75,7 +73,7 @@ ModbusAdapterBrakeTest::TRegIdxCont ModbusAdapterBrakeTest::getRegisters(const M
 
 void ModbusAdapterBrakeTest::modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw)
 {
-  ModbusMsgBrakeTestWrapper msg {msg_raw, api_spec_};
+  ModbusMsgBrakeTestWrapper msg{ msg_raw, api_spec_ };
 
   if (msg.isDisconnect())
   {
@@ -86,19 +84,18 @@ void ModbusAdapterBrakeTest::modbusMsgCallback(const ModbusMsgInStampedConstPtr&
   {
     msg.checkStructuralIntegrity();
   }
-  catch(const ModbusMsgWrapperException &ex)
+  catch (const ModbusMsgWrapperException& ex)
   {
     ROS_ERROR_STREAM(ex.what());
     return;
   }
 
-  if(msg.getVersion() != MODBUS_API_VERSION_REQUIRED)
+  if (msg.getVersion() != MODBUS_API_VERSION_REQUIRED)
   {
     std::ostringstream os;
-    os << "Received Modbus message of unsupported API Version: "
-       << msg.getVersion()
+    os << "Received Modbus message of unsupported API Version: " << msg.getVersion()
        << ", required Version: " << MODBUS_API_VERSION_REQUIRED;
-    os <<"\n";
+    os << "\n";
     os << "Can not determine from Modbus message if brake-test is required.";
     ROS_ERROR_STREAM(os.str());
     return;
@@ -109,17 +106,16 @@ void ModbusAdapterBrakeTest::modbusMsgCallback(const ModbusMsgInStampedConstPtr&
 
 void ModbusAdapterBrakeTest::updateBrakeTestRequiredState(TBrakeTestRequired brake_test_required)
 {
-  TBrakeTestRequired last_brake_test_flag {brake_test_required_};
+  TBrakeTestRequired last_brake_test_flag{ brake_test_required_ };
   brake_test_required_ = brake_test_required;
-  if(brake_test_required_ == pilz_msgs::IsBrakeTestRequiredResult::REQUIRED
-     && last_brake_test_flag != pilz_msgs::IsBrakeTestRequiredResult::REQUIRED)
+  if (brake_test_required_ == pilz_msgs::IsBrakeTestRequiredResult::REQUIRED &&
+      last_brake_test_flag != pilz_msgs::IsBrakeTestRequiredResult::REQUIRED)
   {
     ROS_INFO("Brake Test required.");
   }
 }
 
-bool ModbusAdapterBrakeTest::sendBrakeTestResult(SendBrakeTestResult::Request& req,
-                                                 SendBrakeTestResult::Response& res)
+bool ModbusAdapterBrakeTest::sendBrakeTestResult(SendBrakeTestResult::Request& req, SendBrakeTestResult::Response& res)
 {
   if (!write_modbus_register_func_)
   {
@@ -156,4 +152,4 @@ bool ModbusAdapterBrakeTest::sendBrakeTestResult(SendBrakeTestResult::Request& r
   return true;
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support

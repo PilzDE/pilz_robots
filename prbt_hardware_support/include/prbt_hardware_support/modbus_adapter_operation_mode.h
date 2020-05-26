@@ -30,7 +30,6 @@
 
 namespace prbt_hardware_support
 {
-
 /**
  * @brief Listens to the modbus_read topic and offers a service
  * informing about the active operation mode
@@ -63,8 +62,8 @@ private:
   std::unique_ptr<FilterPipeline> filter_pipeline_;
 
 private:
-  static constexpr unsigned int MODBUS_API_VERSION_REQUIRED {3};
+  static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{ 3 };
 };
 
-} // namespace prbt_hardware_support
-#endif // MODBUS_ADAPTER_OPERATION_MODE_H
+}  // namespace prbt_hardware_support
+#endif  // MODBUS_ADAPTER_OPERATION_MODE_H

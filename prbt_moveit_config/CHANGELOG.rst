@@ -2,6 +2,9 @@
 Changelog for package prbt_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.16 (2020-05-15)
+-------------------
+
 0.5.15 (2020-05-03)
 -------------------
 * Use default hardware setup in moveit_planning_execution.launch

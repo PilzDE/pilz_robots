@@ -30,12 +30,11 @@ namespace prbt_hardware_support
 class ModbusMsgBrakeTestWrapperException : public ModbusMsgWrapperException
 {
 public:
-  ModbusMsgBrakeTestWrapperException( const std::string& what_arg )
-    : ModbusMsgWrapperException(what_arg)
+  ModbusMsgBrakeTestWrapperException(const std::string& what_arg) : ModbusMsgWrapperException(what_arg)
   {
   }
 };
 
-}
+}  // namespace prbt_hardware_support
 
-#endif // MODBUS_MSG_BRAKE_TEST_WRAPPER_EXCEPTION_H
+#endif  // MODBUS_MSG_BRAKE_TEST_WRAPPER_EXCEPTION_H

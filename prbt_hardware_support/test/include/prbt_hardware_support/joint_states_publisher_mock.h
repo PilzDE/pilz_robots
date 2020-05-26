@@ -27,7 +27,6 @@
 
 namespace prbt_hardware_support
 {
-
 /**
  * @brief Asynchronously publishes predefined messages on the /joint_states topic with rate ~100Hz.
  */
@@ -64,6 +63,6 @@ private:
   sensor_msgs::JointState msg_;
 };
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support
 
 #endif

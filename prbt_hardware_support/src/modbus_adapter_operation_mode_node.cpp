@@ -23,10 +23,10 @@
 /**
  * @brief Starts a modbus operation mode adapter and runs it until a failure occurs.
  */
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "modbus_adapter_operation_mode");
-  ros::NodeHandle pnh{"~"};
+  ros::NodeHandle pnh{ "~" };
   ros::NodeHandle nh{};
 
   prbt_hardware_support::ModbusApiSpec api_spec(nh);

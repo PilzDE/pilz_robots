@@ -2,6 +2,14 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.16 (2020-05-15)
+-------------------
+* Fix include_directories for prbt_support tests (#390)
+* Update and apply clang-format (#387)
+* Make test-subfolder-names consistent (#380)
+* Fix/joint limits acceptance test (#381)
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.15 (2020-05-03)
 -------------------
 * Add support for starting the robot without modbus

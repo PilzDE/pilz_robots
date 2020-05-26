@@ -22,17 +22,15 @@
 
 namespace prbt_support
 {
-
 /**
  * @brief Exception thrown by the SystemInfo class in case of an error.
  */
 class SystemInfoException : public std::runtime_error
 {
 public:
-  SystemInfoException(const std::string &what_arg);
+  SystemInfoException(const std::string& what_arg);
 };
 
+}  // namespace prbt_support
 
-}
-
-#endif // PRBT_SUPPORT_SYSTEM_INFO_EXCEPTION_H
+#endif  // PRBT_SUPPORT_SYSTEM_INFO_EXCEPTION_H

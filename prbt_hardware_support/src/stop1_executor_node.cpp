@@ -22,15 +22,14 @@
 #include <prbt_hardware_support/stop1_executor.h>
 #include <prbt_hardware_support/service_function_decl.h>
 
-const std::string HOLD_SERVICE{"manipulator_joint_trajectory_controller/hold"};
-const std::string UNHOLD_SERVICE{"manipulator_joint_trajectory_controller/unhold"};
-const std::string RECOVER_SERVICE{"driver/recover"};
-const std::string HALT_SERVICE{"driver/halt"};
+const std::string HOLD_SERVICE{ "manipulator_joint_trajectory_controller/hold" };
+const std::string UNHOLD_SERVICE{ "manipulator_joint_trajectory_controller/unhold" };
+const std::string RECOVER_SERVICE{ "driver/recover" };
+const std::string HALT_SERVICE{ "driver/halt" };
 
 // LCOV_EXCL_START
 namespace prbt_hardware_support
 {
-
 bool callService(ros::ServiceClient& srv_client)
 {
   std_srvs::Trigger trigger;
@@ -43,18 +42,17 @@ bool callService(ros::ServiceClient& srv_client)
 
   if (!trigger.response.success)
   {
-    ROS_ERROR_STREAM("Service: " << srv_client.getService()
-                     << " failed with error message:\n"
-                     << trigger.response.message);
+    ROS_ERROR_STREAM("Service: " << srv_client.getService() << " failed with error message:\n"
+                                 << trigger.response.message);
   }
   return call_success && trigger.response.success;
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support
 
 using namespace prbt_hardware_support;
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "stop1_executor");
   ros::NodeHandle nh;
@@ -77,9 +75,8 @@ int main(int argc, char **argv)
   TServiceCallFunc halt_func = std::bind(callService, halt_srv);
 
   Stop1Executor stop1_executor(hold_func, unhold_func, recover_func, halt_func);
-  ros::ServiceServer run_permitted_serv = nh.advertiseService("run_permitted",
-                                                              &Stop1Executor::updateRunPermittedCallback,
-                                                              &stop1_executor);
+  ros::ServiceServer run_permitted_serv =
+      nh.advertiseService("run_permitted", &Stop1Executor::updateRunPermittedCallback, &stop1_executor);
 
   ros::spin();
 

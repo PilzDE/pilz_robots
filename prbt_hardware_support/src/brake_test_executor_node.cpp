@@ -28,22 +28,22 @@
 #include <prbt_hardware_support/brake_test_utils.h>
 #include <prbt_hardware_support/brake_test_executor_node_service_calls.h>
 
-static const std::string EXECUTE_BRAKETEST_SERVICE_NAME{"/prbt/execute_braketest"};
-static const std::string BRAKETEST_ADAPTER_SERVICE_NAME{"/prbt/braketest_adapter_node/trigger_braketest"};
+static const std::string EXECUTE_BRAKETEST_SERVICE_NAME{ "/prbt/execute_braketest" };
+static const std::string BRAKETEST_ADAPTER_SERVICE_NAME{ "/prbt/braketest_adapter_node/trigger_braketest" };
 
-static const std::string CONTROLLER_HOLD_MODE_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/hold"};
-static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{"/prbt/manipulator_joint_trajectory_controller/unhold"};
-static const std::string BRAKE_TEST_RESULT_SERVICE_NAME{"/prbt/send_brake_test_result"};
+static const std::string CONTROLLER_HOLD_MODE_SERVICE_NAME{ "/prbt/manipulator_joint_trajectory_controller/hold" };
+static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{ "/prbt/manipulator_joint_trajectory_controller/unhold" };
+static const std::string BRAKE_TEST_RESULT_SERVICE_NAME{ "/prbt/send_brake_test_result" };
 
 using namespace prbt_hardware_support;
 
 /**
  * @brief Provides service to execute a braketest
  */
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "brake_test_executor");
-  ros::NodeHandle nh{"~"};
+  ros::NodeHandle nh{ "~" };
 
   pilz_utils::waitForService(CONTROLLER_HOLD_MODE_SERVICE_NAME);
   ros::ServiceClient hold_client = nh.serviceClient<std_srvs::Trigger>(CONTROLLER_HOLD_MODE_SERVICE_NAME);
@@ -58,15 +58,15 @@ int main(int argc, char **argv)
   ros::ServiceClient brake_test_result_client = nh.serviceClient<SendBrakeTestResult>(BRAKE_TEST_RESULT_SERVICE_NAME);
 
   using std::placeholders::_1;
-  prbt_hardware_support::BrakeTestExecutor brake_test_executor(std::bind(BrakeTestUtils::detectRobotMotion, DEFAULT_ROBOT_MOTION_TIMEOUT_S),
-                                                               std::bind(triggerServiceCall<ros::ServiceClient>, hold_client),
-                                                               std::bind(executeBrakeTestCall<ros::ServiceClient>, brake_test_execute_client),
-                                                               std::bind(triggerServiceCall<ros::ServiceClient>, unhold_client),
-                                                               std::bind(sendBrakeTestResultCall<ros::ServiceClient>, brake_test_result_client, _1));
+  prbt_hardware_support::BrakeTestExecutor brake_test_executor(
+      std::bind(BrakeTestUtils::detectRobotMotion, DEFAULT_ROBOT_MOTION_TIMEOUT_S),
+      std::bind(triggerServiceCall<ros::ServiceClient>, hold_client),
+      std::bind(executeBrakeTestCall<ros::ServiceClient>, brake_test_execute_client),
+      std::bind(triggerServiceCall<ros::ServiceClient>, unhold_client),
+      std::bind(sendBrakeTestResultCall<ros::ServiceClient>, brake_test_result_client, _1));
 
-  ros::ServiceServer brake_test_srv = nh.advertiseService(EXECUTE_BRAKETEST_SERVICE_NAME,
-                                                          &BrakeTestExecutor::executeBrakeTest,
-                                                          &brake_test_executor);
+  ros::ServiceServer brake_test_srv =
+      nh.advertiseService(EXECUTE_BRAKETEST_SERVICE_NAME, &BrakeTestExecutor::executeBrakeTest, &brake_test_executor);
 
   ros::spin();
 

@@ -23,26 +23,24 @@
 
 namespace prbt_hardware_support
 {
-
-ModbusMsgInBuilder::ModbusMsgInBuilder(const ModbusApiSpec &api_spec)
-  : api_spec_(api_spec)
+ModbusMsgInBuilder::ModbusMsgInBuilder(const ModbusApiSpec& api_spec) : api_spec_(api_spec)
 {
 }
 
 ModbusMsgInStampedPtr ModbusMsgInBuilder::build(const ros::Time& time) const
 {
   // Get the minimum and maximum register
-  uint32_t first_index_to_read{register_values_.cbegin()->first};
-  uint32_t last_index_to_read{register_values_.crbegin()->first};
+  uint32_t first_index_to_read{ register_values_.cbegin()->first };
+  uint32_t last_index_to_read{ register_values_.crbegin()->first };
 
   // Setup vector
   RegCont tab_reg(last_index_to_read - first_index_to_read + 1);
-  for(auto reg : register_values_)
+  for (auto reg : register_values_)
   {
     tab_reg[reg.first - first_index_to_read] = reg.second;
   }
 
-  ModbusMsgInStampedPtr msg { createDefaultModbusMsgIn(first_index_to_read, tab_reg) };
+  ModbusMsgInStampedPtr msg{ createDefaultModbusMsgIn(first_index_to_read, tab_reg) };
   msg->header.stamp = time;
   return msg;
 }
@@ -53,7 +51,8 @@ void ModbusMsgInBuilder::setDefaultLayout(std_msgs::MultiArrayLayout* layout,
 {
   if (size > std::numeric_limits<std_msgs::MultiArrayDimension::_size_type>::max())
   {
-    throw std::invalid_argument("Argument \"size\" must not exceed max value of type \"std_msgs::MultiArrayDimension::_size_type\"");
+    throw std::invalid_argument("Argument \"size\" must not exceed max value of type "
+                                "\"std_msgs::MultiArrayDimension::_size_type\"");
   }
 
   layout->data_offset = offset;
@@ -63,10 +62,10 @@ void ModbusMsgInBuilder::setDefaultLayout(std_msgs::MultiArrayLayout* layout,
   layout->dim.back().label = "Data in holding register";
 }
 
-ModbusMsgInStampedPtr ModbusMsgInBuilder::createDefaultModbusMsgIn(const std_msgs::MultiArrayLayout::_data_offset_type& offset,
-                                                                   const RegCont& holding_register)
+ModbusMsgInStampedPtr ModbusMsgInBuilder::createDefaultModbusMsgIn(
+    const std_msgs::MultiArrayLayout::_data_offset_type& offset, const RegCont& holding_register)
 {
-  ModbusMsgInStampedPtr msg { new ModbusMsgInStamped() };
+  ModbusMsgInStampedPtr msg{ new ModbusMsgInStamped() };
   setDefaultLayout(&(msg->holding_registers.layout), offset, holding_register.size());
   msg->holding_registers.data = holding_register;
   msg->disconnect.data = false;
@@ -74,4 +73,4 @@ ModbusMsgInStampedPtr ModbusMsgInBuilder::createDefaultModbusMsgIn(const std_msg
   return msg;
 }
 
-} // namespace prbt_hardware_support
+}  // namespace prbt_hardware_support
