@@ -38,6 +38,7 @@
   <test_depend>geometry_msgs</test_depend>
   <test_depend>tf2</test_depend>
   <test_depend>tf2_geometry_msgs</test_depend>
+  <test_depend>pilz_utils</test_depend>
 
   <export>
     <controller_interface plugin="${prefix}/pilz_control_plugins.xml"/>

@@ -77,11 +77,20 @@ if(CATKIN_ENABLE_TESTING)
   find_package(geometry_msgs REQUIRED)
   find_package(tf2 REQUIRED)
   find_package(tf2_geometry_msgs REQUIRED)
+  find_package(pilz_utils REQUIRED)
 
   if(ENABLE_COVERAGE_TESTING)
     find_package(code_coverage REQUIRED)
     APPEND_COVERAGE_COMPILER_FLAGS()
   endif()
+
+  include_directories(${pilz_utils_INCLUDE_DIRS})
+
+  # JOINT_STATES_SPEED_OBSERVER
+  add_executable(joint_states_speed_observer
+    test/joint_states_speed_observer.cpp
+  )
+  target_link_libraries(joint_states_speed_observer ${catkin_LIBRARIES})
 
   add_executable(robot_mock
     test/robot_mock_node.cpp
