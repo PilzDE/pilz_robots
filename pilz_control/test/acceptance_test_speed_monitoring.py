@@ -24,14 +24,13 @@ from std_msgs.msg import Float64
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from std_srvs.srv import Trigger, TriggerRequest
 
-# needs pilz_robot_programming
-from pilz_robot_programming.robot import *
-from pilz_robot_programming.commands import *
-
 _MAX_FRAME_SPEED_TOPIC_NAME = '/max_frame_speed'
 _SPEED_LIMIT = 0.25
 _VEL_SCALE_DEFAULT = 0.5
 _LONG_TRAJ_CMD_DURATION = 5.0
+
+_START_POSITION_JOINT2 = -0.5
+_TARGET_POSITION_JOINT2 = 0.5
 
 _DEFAULT_QUEUE_SIZE = 10
 _JOINT_NAMES = ['prbt_joint_1', 'prbt_joint_2', 'prbt_joint_3', 'prbt_joint_4', 'prbt_joint_5', 'prbt_joint_6']
@@ -39,32 +38,21 @@ _JOINT_NAMES = ['prbt_joint_1', 'prbt_joint_2', 'prbt_joint_3', 'prbt_joint_4', 
 _UNHOLD_SERVICE_NAME = '/prbt/manipulator_joint_trajectory_controller/unhold'
 _COMMAND_TOPIC_NAME = '/prbt/manipulator_joint_trajectory_controller/command'
 
-_REQUIRED_API_VERSION = '1'
-
 
 class AcceptancetestSpeedMonitoring(unittest.TestCase):
     """ Prerequisites: Launch robot and joint_states_speed_observer.
     """
 
     def setUp(self):
-        """ Setup description
-        """
-
-        self.robot = Robot(_REQUIRED_API_VERSION)
-
         self._max_frame_speed_sub = rospy.Subscriber(_MAX_FRAME_SPEED_TOPIC_NAME, Float64, self._max_frame_speed_callback)
 
         self._command_pub = rospy.Publisher(_COMMAND_TOPIC_NAME, JointTrajectory, queue_size=_DEFAULT_QUEUE_SIZE)
 
-        self._max_frame_speed = 0
-
         rospy.wait_for_service(_UNHOLD_SERVICE_NAME)
         self._unhold_service = rospy.ServiceProxy(_UNHOLD_SERVICE_NAME, Trigger)
 
-    def tearDown(self):
-        """ Teardown description
-        """
-        self.robot._release()
+        self._determine_target_duration()
+        self._reset_max_frame_speed()
 
     def _trigger_unhold(self):
         req = TriggerRequest()
@@ -94,43 +82,49 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
 
         rospy.sleep(time_from_start)
 
-    def test_speed_monitoring(self):
-        """ Tests speed observing by sending trajectory commands.
-            The target duration (representing the speed limit) is computed via a formula and one speed observation.
+    def _determine_target_duration(self):
+        """ The target duration (representing the speed limit) is computed via a formula and one speed observation.
         """
         self._trigger_unhold()
-        target_pos = -0.5
-        self.robot.move(Ptp(goal=[0, target_pos, 0, 0, 0, 0], vel_scale=_VEL_SCALE_DEFAULT))
+        self._send_trajectory_command_and_wait(_TARGET_POSITION_JOINT2, _LONG_TRAJ_CMD_DURATION)
 
         self._reset_max_frame_speed()
-        target_pos *= -1.0
-        self._send_trajectory_command_and_wait(target_pos, _LONG_TRAJ_CMD_DURATION)
+        self._send_trajectory_command_and_wait(_START_POSITION_JOINT2, _LONG_TRAJ_CMD_DURATION)
 
-        target_duration = _LONG_TRAJ_CMD_DURATION * self._max_frame_speed / _SPEED_LIMIT
+        self._target_duration = _LONG_TRAJ_CMD_DURATION * self._max_frame_speed / _SPEED_LIMIT
 
-        print('Command movement below speed limit...')
-
-        self._reset_max_frame_speed()
-        target_pos *= -1.0
-        time_from_start = 1.1 * target_duration
-        self._send_trajectory_command_and_wait(target_pos, time_from_start)
-
-        # in case movement failed
-        self._trigger_unhold()
-        self._send_trajectory_command_and_wait(target_pos, _LONG_TRAJ_CMD_DURATION)
-
-        print('Movement had maximum frame speed: ' + str(self._max_frame_speed))
-
-        print('Command movement above speed limit...')
+    def _perform_movement(self, duration_scale):
+        """ Send a trajectory command where the target duration is multiplied by a scaling factor
+        """
 
         self._reset_max_frame_speed()
-        target_pos *= -1.0
-        time_from_start = 0.9 * target_duration
-        self._send_trajectory_command_and_wait(target_pos, time_from_start)
+        time_from_start = duration_scale * self._target_duration
+        self._send_trajectory_command_and_wait(_TARGET_POSITION_JOINT2, time_from_start)
+        
+        self._trigger_unhold() # in case movement failed
+        self._send_trajectory_command_and_wait(_START_POSITION_JOINT2, _LONG_TRAJ_CMD_DURATION)
 
-        print('Movement had maximum frame speed: ' + str(self._max_frame_speed))
+    def test_reduced_speed_mode(self):
+
+        self._perform_movement(1.1)
+        self.assertGreater(_SPEED_LIMIT, self._max_frame_speed, 'Speed limit of 0.25[m/s] was violated')
+
+        self._perform_movement(0.9)
+        self.assertGreater(_SPEED_LIMIT, self._max_frame_speed, 'Speed limit of 0.25[m/s] was violated')
+
+    def test_automatic_mode(self):
+
+        self._perform_movement(1.1)
+        self.assertLess(_SPEED_LIMIT, self._max_frame_speed, 'Did not exceed speed limit of 0.25[m/s] as excepted')
 
 
 if __name__ == "__main__":
-    rospy.init_node('acceptancetest_speed_monitoring')
-    unittest.main()
+    import rosunit
+    import sys
+    rospy.init_node('acceptance_test_speed_monitoring')
+    if (len(sys.argv) > 1) and (sys.argv[1] == 'auto'):
+        rosunit.unitrun('pilz_control', 'acceptance_test_speed_monitoring', ...
+                        'acceptance_test_speed_monitoring.AcceptancetestSpeedMonitoring.test_automatic_mode')
+    else:
+        rosunit.unitrun('pilz_control', 'acceptance_test_speed_monitoring', ...
+                        'acceptance_test_speed_monitoring.AcceptancetestSpeedMonitoring.test_reduced_speed_mode')

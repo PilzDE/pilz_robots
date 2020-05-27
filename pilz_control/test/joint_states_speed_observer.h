@@ -51,13 +51,9 @@ private:
   ros::Subscriber joint_states_sub_;
   ros::Publisher max_frame_speed_pub_;
 
-  //! Reference frame for all speeds
   std::string reference_frame_;
-  //! All frames to observe
   std::vector<std::string> frames_to_observe_;
-  //! time stamp of previous callback
   ros::Time previous_time_stamp_;
-  //! poses of previous callback
   std::map<std::string, Eigen::Isometry3d> previous_tfs_;
 
   robot_model_loader::RobotModelLoaderPtr robot_model_loader_;
