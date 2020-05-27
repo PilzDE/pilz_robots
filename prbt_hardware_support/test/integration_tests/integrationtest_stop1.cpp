@@ -193,8 +193,8 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
   ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::RUN_PERMITTED));
   unsigned int run_permitted_register = api_spec.getRegisterDefinition(modbus_api_spec::RUN_PERMITTED);
 
-  modbus_server.setHoldingRegister({ { version_register, MODBUS_API_VERSION_REQUIRED },
-                                     { run_permitted_register, MODBUS_RUN_PERMITTED_TRUE } });
+  modbus_server.setHoldingRegister(
+      { { version_register, MODBUS_API_VERSION_REQUIRED }, { run_permitted_register, MODBUS_RUN_PERMITTED_TRUE } });
 
   /**********
    * Step 2 *
