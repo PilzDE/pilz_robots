@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <prbt_hardware_support/modbus_api_definitions.h>
 #include <prbt_hardware_support/modbus_adapter_operation_mode.h>
 
 #include <ros/time.h>
@@ -25,6 +26,8 @@
 namespace prbt_hardware_support
 {
 using std::placeholders::_1;
+
+using namespace modbus_api::v3;
 
 ModbusAdapterOperationMode::ModbusAdapterOperationMode(ros::NodeHandle& nh, const ModbusApiSpec& api_spec)
   : AdapterOperationMode(nh)
