@@ -37,7 +37,8 @@ limitations under the License.
   3. Perform movements via RViz with velocity scales `0.1` and `1.0`.
   4. Switch into AUTO mode. Make sure the drives are enabled again by pressing the acknowledge button and execute `rosrun pilz_control acceptance_test_speed_monitoring.py auto`.
   5. Perform movements via RViz with velocity scale `1.0`.
-  6. Switch back into T1 mode. Make sure the drives are enabled again by pressing the acknowledge button. Repeat 2. and 3.
+  6. Switch back into T1 mode. Make sure the drives are enabled again by pressing the acknowledge button and execute `rosrun pilz_control acceptance_test_speed_monitoring.py`.
+  7. Perform movements via RViz with velocity scales `0.1` and `1.0`.
 
 ### Expected Results
   1. The robot starts properly and is moveable via Rviz.
@@ -45,7 +46,8 @@ limitations under the License.
   3. A movement with velocity scale of `1.0` should be interrupted by a stop. The maxmimum frame speed should **not** have exceeded the limit of `0.25m/s`.
   4. All tests pass.
   5. The robot movements should **not** have been interrupted. The maximum frame speed should have exceeded the limit of `0.25m/s`. 
-  6. All tests pass. A movement with velocity scale of `1.0` should be interrupted by a stop. The maxmimum frame speed should **not** have exceeded the limit of `0.25m/s`.
+  6. All tests pass.
+  7. A movement with velocity scale of `1.0` should be interrupted by a stop. The maxmimum frame speed should **not** have exceeded the limit of `0.25m/s`.
 
 ## Start in AUTO mode
 
@@ -60,7 +62,7 @@ limitations under the License.
   roslaunch pilz_control joint_states_speed_observer.launch
   ```
   2. Execute `rosrun pilz_control acceptance_test_speed_monitoring.py auto`.
-  3. Perform movements via RViz with velocity scales `0.1` and `1.0`.
+  3. Perform movements via RViz with velocity scale `1.0`.
 
 ### Expected Results
   1. The robot starts properly and is moveable via Rviz.
