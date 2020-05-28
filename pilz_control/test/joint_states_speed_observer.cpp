@@ -35,6 +35,7 @@
 
 namespace pilz_control
 {
+static const std::string ROBOT_DESCRIPTION_PARAMETER{ "robot_description" };
 static const std::string JOINT_STATES_TOPIC_NAME{ "joint_states" };
 static const std::string MAX_FRAME_SPEED_TOPIC_NAME{ "max_frame_speed" };
 static const std::string MONITORED_LINK_NAMES_PARAMETER{ "/prbt/monitored_link_names" };
@@ -58,8 +59,7 @@ JointStatesSpeedObserver::JointStatesSpeedObserver(const ros::NodeHandle& nh) : 
 void JointStatesSpeedObserver::setupKinematics()
 {
   ROS_INFO("Loading model");
-  bool load_kinematics_solvers = true;  // OTHERWISE warning TODO investigate what is best todo here. Check if loaded?
-  robot_model_loader_.reset(new robot_model_loader::RobotModelLoader("robot_description", load_kinematics_solvers));
+  robot_model_loader_.reset(new robot_model_loader::RobotModelLoader(ROBOT_DESCRIPTION_PARAMETER, false));
   kinematic_model_ = robot_model_loader_->getModel();
   ROS_INFO("Model frame: %s", kinematic_model_->getModelFrame().c_str());
 
