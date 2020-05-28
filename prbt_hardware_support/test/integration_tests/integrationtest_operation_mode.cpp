@@ -29,11 +29,12 @@
 #include <prbt_hardware_support/pilz_modbus_server_mock.h>
 #include <prbt_hardware_support/OperationModes.h>
 #include <prbt_hardware_support/ros_test_helper.h>
+#include <prbt_hardware_support/modbus_api_definitions.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
 
 namespace prbt_hardware_support
 {
-static constexpr uint16_t MODBUS_API_VERSION_VALUE{ 2 };
+using namespace modbus_api::v3;
 
 static const std::string TOPIC_OPERATION_MODE{ "/prbt/operation_mode" };
 static constexpr int OPERATION_MODE_QUEUE_SIZE{ 1 };
@@ -150,7 +151,7 @@ TEST_F(OperationModeIntegrationTest, testOperationModeRequestAnnouncement)
   ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::VERSION));
   unsigned int version_register = api_spec.getRegisterDefinition(modbus_api_spec::VERSION);
 
-  modbus_server.setHoldingRegister({ { version_register, MODBUS_API_VERSION_VALUE } });
+  modbus_server.setHoldingRegister({ { version_register, MODBUS_API_VERSION_REQUIRED } });
 
   EXPECT_CALL(subscriber, callback(IsExpectedOperationMode(OperationModes::T1)))
       .WillOnce(ACTION_OPEN_BARRIER_VOID(OPERATION_MODE_CALLBACK_EVENT));
