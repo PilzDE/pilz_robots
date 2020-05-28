@@ -44,6 +44,7 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
     """
 
     def setUp(self):
+        self._reset_max_frame_speed()
         self._max_frame_speed_sub = rospy.Subscriber(_MAX_FRAME_SPEED_TOPIC_NAME, Float64, self._max_frame_speed_callback)
 
         self._command_pub = rospy.Publisher(_COMMAND_TOPIC_NAME, JointTrajectory, queue_size=_DEFAULT_QUEUE_SIZE)
@@ -123,8 +124,8 @@ if __name__ == "__main__":
     import sys
     rospy.init_node('acceptance_test_speed_monitoring')
     if (len(sys.argv) > 1) and (sys.argv[1] == 'auto'):
-        rosunit.unitrun('pilz_control', 'acceptance_test_speed_monitoring', ...
+        rosunit.unitrun('pilz_control', 'acceptance_test_speed_monitoring',
                         'acceptance_test_speed_monitoring.AcceptancetestSpeedMonitoring.test_automatic_mode')
     else:
-        rosunit.unitrun('pilz_control', 'acceptance_test_speed_monitoring', ...
+        rosunit.unitrun('pilz_control', 'acceptance_test_speed_monitoring',
                         'acceptance_test_speed_monitoring.AcceptancetestSpeedMonitoring.test_reduced_speed_mode')
