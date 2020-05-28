@@ -22,6 +22,7 @@
 
 #include <pilz_testutils/async_test.h>
 
+#include <prbt_hardware_support/modbus_api_definitions.h>
 #include <prbt_hardware_support/modbus_adapter_operation_mode.h>
 #include <prbt_hardware_support/modbus_topic_definitions.h>
 #include <prbt_hardware_support/OperationModes.h>
@@ -30,14 +31,14 @@
 
 namespace prbt_hardware_support
 {
+using namespace modbus_api::v3;
+
 static constexpr int DEFAULT_QUEUE_SIZE_MODBUS{ 1 };
 static const std::string SERVICE_NAME_OPERATION_MODE = "/prbt/get_operation_mode";
 static const std::string TOPIC_OPERATION_MODE{ "/prbt/operation_mode" };
 static constexpr int OPERATION_MODE_QUEUE_SIZE{ 1 };
 
 static const std::string OPERATION_MODE_CALLBACK_EVENT{ "operation_mode_callback_event" };
-
-static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{ 2 };
 
 static const ModbusApiSpec TEST_API_SPEC{ { modbus_api_spec::VERSION, 1 }, { modbus_api_spec::OPERATION_MODE, 11 } };
 

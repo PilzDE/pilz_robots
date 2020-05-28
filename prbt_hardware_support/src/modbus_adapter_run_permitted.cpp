@@ -15,14 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <prbt_hardware_support/modbus_adapter_run_permitted.h>
-
 #include <sstream>
 
+#include <prbt_hardware_support/modbus_api_definitions.h>
+#include <prbt_hardware_support/modbus_adapter_run_permitted.h>
 #include <prbt_hardware_support/modbus_msg_run_permitted_wrapper.h>
 
 namespace prbt_hardware_support
 {
+using namespace modbus_api::v3;
+
 ModbusAdapterRunPermitted::ModbusAdapterRunPermitted(UpdateRunPermittedFunc&& update_run_permitted_func,
                                                      const ModbusApiSpec& api_spec)
   : api_spec_(api_spec), update_run_permitted_(std::move(update_run_permitted_func))

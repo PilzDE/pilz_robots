@@ -35,8 +35,8 @@ static const std::string CONTROLLER_HOLD_MODE_SERVICE_NAME{ "/prbt/manipulator_j
 static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{ "/prbt/manipulator_joint_trajectory_controller/unhold" };
 
 static constexpr double WAIT_FOR_BRAKE_TEST_SERVICE_TIMEOUT_S{ 5.0 };
-static constexpr uint16_t MODBUS_BRAKE_TEST_PREPARE_VALUE{ 0 };
-static constexpr uint16_t MODBUS_BRAKE_TEST_EXPECTED_VALUE{ 1 };
+static constexpr uint16_t MODBUS_BRAKE_TEST_PREPARE_VALUE{ 1 };
+static constexpr uint16_t MODBUS_BRAKE_TEST_EXPECTED_VALUE{ 2 };
 
 namespace prbt_hardware_support
 {
