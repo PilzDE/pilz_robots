@@ -16,6 +16,7 @@
 
 import math
 import rospy
+import threading
 import unittest
 
 from geometry_msgs.msg import Point
@@ -24,10 +25,14 @@ from std_msgs.msg import Float64
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from std_srvs.srv import Trigger, TriggerRequest
 
+_JOINT_STATES_TOPIC_NAME = '/joint_states'
 _MAX_FRAME_SPEED_TOPIC_NAME = '/max_frame_speed'
 _SPEED_LIMIT = 0.25
 _VEL_SCALE_DEFAULT = 0.5
 _LONG_TRAJ_CMD_DURATION = 5.0
+_SLEEP_RATE_HZ = 10
+_POSITION_TOLERANCE = 0.01
+_WAIT_FOR_CMD_FINISH_TIMEOUT = 3
 
 _START_POSITION_JOINT2 = -0.5
 _TARGET_POSITION_JOINT2 = 0.5
@@ -46,6 +51,10 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
     def setUp(self):
         self._reset_max_frame_speed()
         self._max_frame_speed_sub = rospy.Subscriber(_MAX_FRAME_SPEED_TOPIC_NAME, Float64, self._max_frame_speed_callback)
+
+        self._joint_states_sub = rospy.Subscriber(_JOINT_STATES_TOPIC_NAME, JointState, self._joint_states_callback)
+        self._joint_state = None
+        self._joint_state_lock = threading.Lock()
 
         self._command_pub = rospy.Publisher(_COMMAND_TOPIC_NAME, JointTrajectory, queue_size=_DEFAULT_QUEUE_SIZE)
 
@@ -67,21 +76,52 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
         """
         self._max_frame_speed = max(self._max_frame_speed, msg.data)
 
+    def _joint_states_callback(self, msg):
+        with self._joint_state_lock:
+            self._joint_state = msg
+
+    def _wait_for_position_reached(self, position):
+        """ Wait for joint2 reaching a specified position
+            - position: Position of the joint2
+        """
+        position_diff = None
+        rate = rospy.Rate(_SLEEP_RATE_HZ)
+        start_waiting = rospy.Time.now()
+
+        while True:
+            with self._joint_state_lock:
+                position_diff = abs(position - self._joint_state.position[1])
+
+            if (position_diff < _POSITION_TOLERANCE):
+                return True
+
+            if ((rospy.Time.now() - start_waiting).to_sec() > _WAIT_FOR_CMD_FINISH_TIMEOUT):
+                return False
+
+            rate.sleep()
+
     def _send_trajectory_command_and_wait(self, position, time_from_start):
         """ Publish a trajectory command containing one point
             - position: Position of the joint2
         """
         traj = JointTrajectory()
         traj.joint_names = _JOINT_NAMES
-        traj.header.stamp = rospy.Time.now()
         point = JointTrajectoryPoint()
         point.positions = [0.0, position, 0.0, 0.0, 0.0, 0.0]
         point.time_from_start = rospy.Duration(time_from_start)
         traj.points.append(point)
 
         self._command_pub.publish(traj)
-
         rospy.sleep(time_from_start)
+
+        if not self._wait_for_position_reached(position):
+            # Message might have got lost, try again
+            self._command_pub.publish(traj)
+            rospy.sleep(time_from_start)
+
+            self.assertTrue(self._wait_for_position_reached(position),
+                            'Robot does not perform command as expected')
+
 
     def _determine_target_duration(self):
         """ The target duration (representing the speed limit) is computed via a formula and one speed observation.
