@@ -26,9 +26,10 @@
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
 
+#include <pilz_testutils/joint_state_publisher_mock.h>
+
 #include <prbt_hardware_support/brake_test_utils.h>
 #include <prbt_hardware_support/brake_test_utils_exception.h>
-#include <prbt_hardware_support/joint_states_publisher_mock.h>
 
 namespace brake_test_utils_test
 {
@@ -36,6 +37,8 @@ using namespace prbt_hardware_support;
 using sensor_msgs::JointState;
 using sensor_msgs::JointStateConstPtr;
 using sensor_msgs::JointStatePtr;
+
+static const std::string ROBOT_NAMESPACE{ "prbt" };
 
 /**
  * @brief Checks for identical names and positions in joint state messages.
@@ -155,9 +158,15 @@ TEST(BrakeTestUtilsTest, testGetCurrentJointStates)
   /**********
    * Step 2 *
    **********/
-  JointStatesPublisherMock joint_states_pub;
-  auto expected_msg = joint_states_pub.getNextMessage();
+  pilz_testutils::JointStatePublisherMock joint_states_pub;
   joint_states_pub.startAsync();
+
+  // Move away from zero
+  joint_states_pub.setVelocity(0.1);
+  ros::Duration(0.1).sleep();
+  joint_states_pub.setVelocity(0.0);
+
+  auto expected_msg = joint_states_pub.getNextMessage();
 
   try
   {
@@ -169,7 +178,7 @@ TEST(BrakeTestUtilsTest, testGetCurrentJointStates)
     ADD_FAILURE() << e.what();
   }
 
-  joint_states_pub.terminate();
+  joint_states_pub.stop();
 }
 
 /**
@@ -188,19 +197,23 @@ TEST(BrakeTestUtilsTest, testDetectRobotMotion)
   /**********
    * Step 1 *
    **********/
-  JointStatesPublisherMock joint_states_pub;
+  pilz_testutils::JointStatePublisherMock joint_states_pub;
   joint_states_pub.startAsync();
 
   EXPECT_FALSE(BrakeTestUtils::detectRobotMotion());
 
-  joint_states_pub.terminate();
+  joint_states_pub.stop();
 
   /**********
    * Step 2 *
    **********/
-  joint_states_pub.startAsync(true);
+  joint_states_pub.startAsync();
+
+  joint_states_pub.setVelocity(0.1);
 
   EXPECT_TRUE(BrakeTestUtils::detectRobotMotion());
+
+  joint_states_pub.stop();
 }
 
 }  // namespace brake_test_utils_test

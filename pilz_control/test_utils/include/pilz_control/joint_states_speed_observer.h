@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PRBT_HARDWARE_SUPPORT_JOINT_STATES_SPEED_OBSERVER_H
-#define PRBT_HARDWARE_SUPPORT_JOINT_STATES_SPEED_OBSERVER_H
+#ifndef PILZ_CONTROL_JOINT_STATES_SPEED_OBSERVER_H
+#define PILZ_CONTROL_JOINT_STATES_SPEED_OBSERVER_H
 
 #include <utility>
 #include <string>
@@ -63,4 +63,4 @@ private:
 
 }  // namespace pilz_control
 
-#endif  // PRBT_HARDWARE_SUPPORT_JOINT_STATES_SPEED_OBSERVER_H
+#endif  // PILZ_CONTROL_JOINT_STATES_SPEED_OBSERVER_H
