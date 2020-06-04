@@ -5,6 +5,7 @@ Changelog for package pilz_testutils
 Forthcoming
 -----------
 * add JointStatePublisherMock
+* Add LoggerMock
 * Contributors: Pilz GmbH and Co. KG
 
 0.5.16 (2020-05-15)
