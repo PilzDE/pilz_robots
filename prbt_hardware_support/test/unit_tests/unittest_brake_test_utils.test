@@ -17,7 +17,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <launch>
 
-<test test-name="unittest_brake_test_utils" pkg="prbt_hardware_support" type="unittest_brake_test_utils">
-</test>
+<group ns="prbt">
+  <rosparam command="load" file="$(find prbt_hardware_support)/test/config/joint_names.yaml" />
+
+  <test test-name="unittest_brake_test_utils" pkg="prbt_hardware_support" type="unittest_brake_test_utils">
+  </test>
+</group>
 
 </launch>

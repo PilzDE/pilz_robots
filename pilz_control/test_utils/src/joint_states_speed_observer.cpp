@@ -31,7 +31,7 @@
 
 #include <pilz_utils/get_param.h>
 
-#include "joint_states_speed_observer.h"
+#include <pilz_control/joint_states_speed_observer.h>
 
 namespace pilz_control
 {

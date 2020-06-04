@@ -21,9 +21,10 @@
 
 #include <pilz_msgs/BrakeTest.h>
 
+#include <pilz_testutils/joint_state_publisher_mock.h>
+
 #include <prbt_hardware_support/WriteModbusRegister.h>
 #include <prbt_hardware_support/canopen_chain_node_mock.h>
-#include <prbt_hardware_support/joint_states_publisher_mock.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/pilz_manipulator_mock.h>
 #include <prbt_hardware_support/pilz_modbus_server_mock.h>
@@ -109,7 +110,7 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
    **********/
   CANOpenChainNodeMock canopen_mock;
 
-  JointStatesPublisherMock joint_states_pub;
+  pilz_testutils::JointStatePublisherMock joint_states_pub;
   joint_states_pub.startAsync();
 
   ManipulatorMock manipulator;
@@ -137,6 +138,7 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
   /**********
    * Step 6 *
    **********/
+  joint_states_pub.stop();
   modbus_server.terminate();
   modbus_server_thread.join();
 }

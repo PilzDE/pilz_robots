@@ -1,0 +1,6 @@
+monitored_link_names:
+  [arm_right_link,
+   hand_right_link,
+   finger_right_link,
+   arm_left_link,
+   hand_left_link]
