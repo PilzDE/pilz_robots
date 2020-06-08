@@ -94,7 +94,7 @@ class JointStatesSpeedObserverTest : public testing::Test, public testing::Async
 {
 public:
   JointStatesSpeedObserverTest();
-  ~JointStatesSpeedObserverTest();
+  ~JointStatesSpeedObserverTest() override;
 
 protected:
   testing::StrictMock<MaxFrameSpeedSubscriberMock> subscriber_mock_;
