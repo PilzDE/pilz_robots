@@ -154,6 +154,12 @@ if(CATKIN_ENABLE_TESTING)
     DEPENDENCIES ${PROJECT_NAME} robot_mock
   )
 
+  roslint_python(
+    test/acceptance_test_speed_monitoring.py
+    test/integrationtest_pilz_joint_trajectory_controller.py
+  )
+  roslint_add_test()
+
   # run: catkin_make -DENABLE_COVERAGE_TESTING=ON package_name_coverage
   if(ENABLE_COVERAGE_TESTING)
     APPEND_COVERAGE_COMPILER_FLAGS()
