@@ -39,7 +39,7 @@ These acceptance tests check that the real robot system reacts to RUN_PERMITTED 
 ### Test Sequence
   1. Do not press the acknowledge button.
      Run `roslaunch prbt_moveit_config moveit_planning_execution.launch sim:=False pipeline:=pilz_command_planner`
-     After a about 10 seconds press the safety cabinet.
+     After a about 10 seconds press the acknowledge button.
   2. Try to move the Robot via Rviz.
 
 ### Expected Results
