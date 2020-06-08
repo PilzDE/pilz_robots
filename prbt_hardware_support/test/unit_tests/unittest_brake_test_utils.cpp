@@ -159,12 +159,12 @@ TEST(BrakeTestUtilsTest, testGetCurrentJointStates)
    * Step 2 *
    **********/
   pilz_testutils::JointStatePublisherMock joint_states_pub;
-  joint_states_pub.startAsync();
+  joint_states_pub.startPublishingAsync();
 
   // Move away from zero
-  joint_states_pub.setVelocity(0.1);
+  joint_states_pub.setJoint1Velocity(0.1);
   ros::Duration(0.1).sleep();
-  joint_states_pub.setVelocity(0.0);
+  joint_states_pub.setJoint1Velocity(0.0);
 
   auto expected_msg = joint_states_pub.getNextMessage();
 
@@ -178,7 +178,7 @@ TEST(BrakeTestUtilsTest, testGetCurrentJointStates)
     ADD_FAILURE() << e.what();
   }
 
-  joint_states_pub.stop();
+  joint_states_pub.stopPublishing();
 }
 
 /**
@@ -198,22 +198,18 @@ TEST(BrakeTestUtilsTest, testDetectRobotMotion)
    * Step 1 *
    **********/
   pilz_testutils::JointStatePublisherMock joint_states_pub;
-  joint_states_pub.startAsync();
+  joint_states_pub.startPublishingAsync();
 
   EXPECT_FALSE(BrakeTestUtils::detectRobotMotion());
-
-  joint_states_pub.stop();
 
   /**********
    * Step 2 *
    **********/
-  joint_states_pub.startAsync();
-
-  joint_states_pub.setVelocity(0.1);
+  joint_states_pub.setJoint1Velocity(0.1);
 
   EXPECT_TRUE(BrakeTestUtils::detectRobotMotion());
 
-  joint_states_pub.stop();
+  joint_states_pub.stopPublishing();
 }
 
 }  // namespace brake_test_utils_test

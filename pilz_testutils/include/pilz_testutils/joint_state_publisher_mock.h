@@ -40,21 +40,11 @@ class JointStatePublisherMock
   typedef sensor_msgs::JointStateConstPtr JointStateConstPtr;
 
 public:
-  /**
-   * @brief Constructor.
-   * @param ns Namespace in which the joint states are to be published.
-   */
   JointStatePublisherMock();
 
-  /**
-   * @brief Start periodic publishing in a separate thread.
-   */
-  void startAsync();
+  void startPublishingAsync();
 
-  /**
-   * @brief Set velocity for joint1.
-   */
-  void setVelocity(const double& joint1_velocity);
+  void setJoint1Velocity(const double& vel);
 
   /**
    * @brief Go back to home position (position=velocity=0.0).
@@ -64,13 +54,12 @@ public:
    */
   void goHome();
 
-  /**
-   * @brief Stop publishing joint states.
-   */
-  void stop();
+  void stopPublishing();
 
   /**
    * @brief In degenerate-time-mode each message is published twice.
+   *
+   * This helps testing edge-cases of methods, which compute the time interval between two messages.
    */
   void setDegenerateTimeMode();
 

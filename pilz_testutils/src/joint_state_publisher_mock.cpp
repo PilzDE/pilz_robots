@@ -53,17 +53,17 @@ JointStatePublisherMock::JointStatePublisherMock()
   pub_ = nh_.advertise<JointState>(nh_.getNamespace() + "/" + JOINT_STATES_TOPIC_NAME, JOINT_STATES_QUEUE_SIZE);
 }
 
-void JointStatePublisherMock::startAsync()
+void JointStatePublisherMock::startPublishingAsync()
 {
   stop_flag_ = false;
   publisher_thread_ = std::thread(&JointStatePublisherMock::run, this);
 }
 
-void JointStatePublisherMock::setVelocity(const double& joint1_velocity)
+void JointStatePublisherMock::setJoint1Velocity(const double& vel)
 {
   go_home_flag_ = false;
   std::lock_guard<std::mutex> lock(joint1_velocity_mutex_);
-  joint1_velocity_ = joint1_velocity;
+  joint1_velocity_ = vel;
 }
 
 void JointStatePublisherMock::goHome()
@@ -71,7 +71,7 @@ void JointStatePublisherMock::goHome()
   go_home_flag_ = true;
 }
 
-void JointStatePublisherMock::stop()
+void JointStatePublisherMock::stopPublishing()
 {
   if (publisher_thread_.joinable())
   {
