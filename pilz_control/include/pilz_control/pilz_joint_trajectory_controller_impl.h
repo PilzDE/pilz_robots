@@ -27,6 +27,16 @@ static constexpr double SPEED_LIMIT_NOT_ACTIVATED{ -1.0 };
 
 namespace ph = std::placeholders;
 
+std::vector<double> getJointAccelerationLimits(const ros::NodeHandle& nh, const std::vector<std::string> joint_names)
+{
+  std::vector<double> acc_limits(joint_names.size());
+  for (unsigned int i = 0; i < joint_names.size(); ++i)
+  {
+    nh.param(joint_names.at(i) + "/acceleration", acc_limits.at(i), 0.0);
+  }
+  return acc_limits;
+}
+
 /**
  * @brief Check if a trajectory is in execution at a given uptime of the controller.
  *
@@ -62,6 +72,9 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
 
 {
   bool res = JointTrajectoryController::init(hw, root_nh, controller_nh);
+
+  ros::NodeHandle limits_nh(controller_nh, "limits");
+  acceleration_joint_limits_ = getJointAccelerationLimits(limits_nh, JointTrajectoryController::joint_names_);
 
   using robot_model_loader::RobotModelLoader;
   robot_model_loader_ = std::make_shared<RobotModelLoader>("robot_description", false);
@@ -202,7 +215,7 @@ inline void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::updat
   {
     case TrajProcessingMode::unhold:
     {
-      if (!isPlannedCartesianVelocityOK(time_data.period) && mode_->stopEvent())
+      if (!isPlannedUpdateOK(time_data.period) && mode_->stopEvent())
       {
         stopMotion(time_data.uptime);
       }
@@ -223,6 +236,33 @@ inline void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::updat
       stopMotion(time_data.uptime);
       return;
   }  // LCOV_EXCL_STOP
+}
+
+template <class SegmentImpl, class HardwareInterface>
+inline bool
+PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::isPlannedUpdateOK(const ros::Duration& period) const
+{
+  return isPlannedJointAccelerationOK(period) && isPlannedCartesianVelocityOK(period);
+}
+
+template <class SegmentImpl, class HardwareInterface>
+inline bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::isPlannedJointAccelerationOK(
+    const ros::Duration& period) const
+{
+  for (unsigned int i = 0; i < JointTrajectoryController::getNumberOfJoints(); ++i)
+  {
+    const double& old_velocity = JointTrajectoryController::old_desired_state_.velocity.at(i);
+    const double& new_velocity = JointTrajectoryController::desired_state_.velocity.at(i);
+    const double& acceleration = (new_velocity - old_velocity) / period.toSec();
+    if ((acceleration_joint_limits_.at(i) > 0.0) && (acceleration > acceleration_joint_limits_.at(i)))
+    {
+      ROS_ERROR_STREAM("Acceleration limit violated by joint "
+                       << JointTrajectoryController::joint_names_.at(i) << ". Desired acceleration: " << acceleration
+                       << "rad/s^2, limit: " << acceleration_joint_limits_.at(i) << "rad/s^2.");
+      return false;
+    }
+  }
+  return true;
 }
 
 template <class SegmentImpl, class HardwareInterface>

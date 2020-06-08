@@ -17,9 +17,10 @@
 #ifndef PILZ_CONTROL_PILZ_JOINT_TRAJECTORY_CONTROLLER_H
 #define PILZ_CONTROL_PILZ_JOINT_TRAJECTORY_CONTROLLER_H
 
-#include <mutex>
-#include <memory>
 #include <atomic>
+#include <memory>
+#include <mutex>
+#include <vector>
 
 #include <std_srvs/Trigger.h>
 #include <std_srvs/SetBool.h>
@@ -161,6 +162,24 @@ private:
                                 const typename JointTrajectoryController::TimeData& time_data) override;
 
   /**
+   * @brief Check if planned update fullfilles all requirements on trajectory execution.
+   *
+   * @param period The time passed since the last update.
+   *
+   * @returns True if update can be performed, otherwise false.
+   */
+  bool isPlannedUpdateOK(const ros::Duration& period) const;
+
+  /**
+   * @brief Check acceleration limit. Ensure that trajectories are smooth enough.
+   *
+   * @param period The time passed since the last update.
+   *
+   * @returns False if one or more joints violate the acceleration limit, otherwise true.
+   */
+  bool isPlannedJointAccelerationOK(const ros::Duration& period) const;
+
+  /**
    * @brief Trigger cartesian speed monitoring using the current and the desired joint states.
    *
    * @param period The time passed since the last update.
@@ -215,6 +234,9 @@ private:
 
   //! The currently max allowed speed for each frame on the Cartesian trajectory.
   std::atomic<double> cartesian_speed_limit_{ 0.0 };
+
+  //! The max allowed acceleration for each joint.
+  std::vector<double> acceleration_joint_limits_;
 
   /**
    * @brief Used for loading a RobotModel for the CartesianSpeedMonitor.
