@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import math
+import numpy
 import rospy
 import threading
 import unittest
@@ -29,70 +30,76 @@ _JOINT_STATES_TOPIC_NAME = '/joint_states'
 _MAX_FRAME_SPEED_TOPIC_NAME = '/max_frame_speed'
 _SPEED_LIMIT = 0.25
 _VEL_SCALE_DEFAULT = 0.5
-_LONG_TRAJ_CMD_DURATION = 5.0
+_LONG_TRAJ_CMD_DURATION = 10.0
 _SLEEP_RATE_HZ = 10
 _POSITION_TOLERANCE = 0.01
 _WAIT_FOR_CMD_FINISH_TIMEOUT = 3
 
-_START_POSITION_JOINT2 = -0.5
-_TARGET_POSITION_JOINT2 = 0.5
+_START_POSITION = [0.0, -0.5, 0.0, 0.0, 0.0, 0.0]
+_TARGET_POSITION = [0.0, 0.5, 0.0, 0.0, 0.0, 0.0]
 
-_DEFAULT_QUEUE_SIZE = 10
+_WAIT_FOR_SERVICE_TIMEOUT_S = 10
 _JOINT_NAMES = ['prbt_joint_1', 'prbt_joint_2', 'prbt_joint_3', 'prbt_joint_4', 'prbt_joint_5', 'prbt_joint_6']
 
 _UNHOLD_SERVICE_NAME = '/prbt/manipulator_joint_trajectory_controller/unhold'
-_COMMAND_TOPIC_NAME = '/prbt/manipulator_joint_trajectory_controller/command'
+_FOLLOW_JOINT_TRAJ_ACTION_NAME = '/prbt/manipulator_joint_trajectory_controller/follow_joint_trajectory'
 
 
-class AcceptancetestSpeedMonitoring(unittest.TestCase):
-    """ Prerequisites: Launch robot and joint_states_speed_observer.
-    """
+class SinglePointTrajectoryDispatcher:
 
-    def setUp(self):
-        self._reset_max_frame_speed()
-        self._max_frame_speed_sub = rospy.Subscriber(_MAX_FRAME_SPEED_TOPIC_NAME, Float64, self._max_frame_speed_callback)
+    def __init__(self):
+        self._client = actionlib.SimpleActionClient(_FOLLOW_JOINT_TRAJ_ACTION_NAME, FollowJointTrajectoryAction)
 
+        timeout = rospy.Duration(WAIT_FOR_SERVICE_TIMEOUT_S)
+        self._client.wait_for_server(timeout)
+
+    def send_action_goal(self, position=[0.0]*len(_JOINT_NAMES), velocity=[], velocity_tolerance=0.0,
+                         time_from_start=_LONG_TRAJ_CMD_DURATION):
+        assert len(position) == len(_JOINT_NAMES)
+        if velocity:
+            assert len(velocity) == len(_JOINT_NAMES)
+
+        goal = FollowJointTrajectoryGoal()
+        goal.trajectory.joint_names = _JOINT_NAMES
+
+        point = JointTrajectoryPoint()
+        point.positions = position
+        point.velocities = velocity
+        point.time_from_start = rospy.Duration(time_from_start)
+
+        goal.trajectory.points = [point]
+
+        for joint_name in _JOINT_NAMES:
+            tol = JointTolerance()
+            tol.name = joint_name
+            tol.velocity = velocity_tolerance
+            goal.path_tolerance.append(tol)
+
+        self._client.send_goal_and_wait(goal)
+
+
+class RobotPositionObserver:
+
+    def __init__(self):
         self._joint_states_sub = rospy.Subscriber(_JOINT_STATES_TOPIC_NAME, JointState, self._joint_states_callback)
         self._joint_state = None
         self._joint_state_lock = threading.Lock()
-
-        self._command_pub = rospy.Publisher(_COMMAND_TOPIC_NAME, JointTrajectory, queue_size=_DEFAULT_QUEUE_SIZE)
-
-        rospy.wait_for_service(_UNHOLD_SERVICE_NAME)
-        self._unhold_service = rospy.ServiceProxy(_UNHOLD_SERVICE_NAME, Trigger)
-
-        self._determine_target_duration()
-        self._reset_max_frame_speed()
-
-    def _trigger_unhold(self):
-        req = TriggerRequest()
-        self._unhold_service(req)
-
-    def _reset_max_frame_speed(self):
-        self._max_frame_speed = 0
-
-    def _max_frame_speed_callback(self, msg):
-        """ Detects the maximum speed of all monitored links
-        """
-        self._max_frame_speed = max(self._max_frame_speed, msg.data)
 
     def _joint_states_callback(self, msg):
         with self._joint_state_lock:
             self._joint_state = msg
 
-    def _wait_for_position_reached(self, position):
-        """ Wait for joint2 reaching a specified position
-            - position: Position of the joint2
-        """
-        position_diff = None
+    def wait_for_position_reached(self, position):
+        assert len(position) == len(_JOINT_NAMES)
+
         rate = rospy.Rate(_SLEEP_RATE_HZ)
         start_waiting = rospy.Time.now()
 
         while True:
             with self._joint_state_lock:
-                position_diff = abs(position - self._joint_state.position[1])
+                position_diff = numpy.array(position - self._joint_state.position)
 
-            if (position_diff < _POSITION_TOLERANCE):
+            if (numpy.linalg.norm(position_diff) < _POSITION_TOLERANCE):
                 return True
 
             if ((rospy.Time.now() - start_waiting).to_sec() > _WAIT_FOR_CMD_FINISH_TIMEOUT):
@@ -100,62 +107,92 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
 
             rate.sleep()
 
-    def _send_trajectory_command_and_wait(self, position, time_from_start):
-        """ Publish a trajectory command containing one point
-            - position: Position of the joint2
+
+class UnholdServiceWrapper():
+
+    def __init__(self):
+        rospy.wait_for_service(_UNHOLD_SERVICE_NAME)
+        self._unhold_service = rospy.ServiceProxy(_UNHOLD_SERVICE_NAME, Trigger)
+
+    def call(self):
+        req = TriggerRequest()
+        self._unhold_service(req)
+
+
+class MaxFrameSpeedWrapper():
+
+    def __init__(self):
+        self._max_frame_speed = 0.0
+        self._max_frame_speed_lock = threading.Lock()
+        self._max_frame_speed_sub = rospy.Subscriber(_MAX_FRAME_SPEED_TOPIC_NAME, Float64,
+                                                     self._max_frame_speed_callback)
+
+    def get(self):
+        with self._max_frame_speed_lock:
+            return self._max_frame_speed
+
+    def reset(self):
+        with self._max_frame_speed_lock:
+            self._max_frame_speed = 0.0
+
+    def _max_frame_speed_callback(self, msg):
+        """ Detects the maximum speed of all monitored links
         """
-        traj = JointTrajectory()
-        traj.joint_names = _JOINT_NAMES
-        point = JointTrajectoryPoint()
-        point.positions = [0.0, position, 0.0, 0.0, 0.0, 0.0]
-        point.time_from_start = rospy.Duration(time_from_start)
-        traj.points.append(point)
+        with self._max_frame_speed_lock:
+            self._max_frame_speed = max(self._max_frame_speed, msg.data)
 
-        self._command_pub.publish(traj)
-        rospy.sleep(time_from_start)
 
-        if not self._wait_for_position_reached(position):
-            # Message might have got lost, try again
-            self._command_pub.publish(traj)
-            rospy.sleep(time_from_start)
+class AcceptancetestSpeedMonitoring(unittest.TestCase):
+    """ Prerequisites: Launch robot and joint_states_speed_observer.
+    """
 
-            self.assertTrue(self._wait_for_position_reached(position),
-                            'Robot does not perform command as expected')
+    def setUp(self):
+        self._max_frame_speed = MaxFrameSpeedWrapper()
+        # The observer can be used to ensure that trajectory goals are reached in order to have a clean test setup.
+        self._robot_observer = RobotPositionObserver()
+        self._trajectory_dispatcher = SinglePointTrajectoryDispatcher()
+        self._unhold_service = UnholdServiceWrapper()
 
+        self._determine_target_duration()
+        self._max_frame_speed.reset()
 
     def _determine_target_duration(self):
         """ The target duration (representing the speed limit) is computed via a formula and one speed observation.
+            At the end of this function the robot reaches the start position.
         """
-        self._trigger_unhold()
-        self._send_trajectory_command_and_wait(_TARGET_POSITION_JOINT2, _LONG_TRAJ_CMD_DURATION)
+        self._unhold_service.call()
+        self._trajectory_dispatcher.send_action_goal(position=_TARGET_POSITION)
+        self._robot_observer.wait_for_position_reached(_TARGET_POSITION)
 
-        self._reset_max_frame_speed()
-        self._send_trajectory_command_and_wait(_START_POSITION_JOINT2, _LONG_TRAJ_CMD_DURATION)
+        self._max_frame_speed.reset()
+        self._trajectory_dispatcher.send_action_goal(position=_START_POSITION)
+        self._robot_observer.wait_for_position_reached(_START_POSITION)
 
-        self._target_duration = _LONG_TRAJ_CMD_DURATION * self._max_frame_speed / _SPEED_LIMIT
+        self._target_duration = _LONG_TRAJ_CMD_DURATION * self._max_frame_speed.get() / _SPEED_LIMIT
 
-    def _perform_movement(self, duration_scale):
-        """ Send a trajectory command where the target duration is multiplied by a scaling factor
+    def _perform_scaled_movement(self, duration_scale):
+        """ Send a trajectory command where the target duration is multiplied by a scaling factor.
+            Then move back to start position.
         """
-
-        self._reset_max_frame_speed()
+        self._max_frame_speed.reset()
         time_from_start = duration_scale * self._target_duration
-        self._send_trajectory_command_and_wait(_TARGET_POSITION_JOINT2, time_from_start)
-        
-        self._trigger_unhold() # in case movement failed
-        self._send_trajectory_command_and_wait(_START_POSITION_JOINT2, _LONG_TRAJ_CMD_DURATION)
+        self._trajectory_dispatcher.send_action_goal(position=_TARGET_POSITION, time_from_start=time_from_start)
+
+        self._trigger_unhold()  # in case movement failed
+        self._trajectory_dispatcher.send_action_goal(position=_START_POSITION, time_from_start=_LONG_TRAJ_CMD_DURATION)
+        self._robot_observer.wait_for_position_reached(_START_POSITION)
 
     def test_reduced_speed_mode(self):
 
-        self._perform_movement(1.1)
+        self._perform_scaled_movement(1.1)
         self.assertGreater(_SPEED_LIMIT, self._max_frame_speed, 'Speed limit of 0.25[m/s] was violated')
 
-        self._perform_movement(0.9)
+        self._perform_scaled_movement(0.9)
         self.assertGreater(_SPEED_LIMIT, self._max_frame_speed, 'Speed limit of 0.25[m/s] was violated')
 
     def test_automatic_mode(self):
 
-        self._perform_movement(1.1)
+        self._perform_scaled_movement(1.1)
         self.assertLess(_SPEED_LIMIT, self._max_frame_speed, 'Did not exceed speed limit of 0.25[m/s] as excepted')
 
 
