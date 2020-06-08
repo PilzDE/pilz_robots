@@ -32,7 +32,8 @@ std::vector<double> getJointAccelerationLimits(const ros::NodeHandle& nh, const 
   std::vector<double> acc_limits(joint_names.size());
   for (unsigned int i = 0; i < joint_names.size(); ++i)
   {
-    nh.param(joint_names.at(i) + "/acceleration", acc_limits.at(i), 0.0);
+    if(!nh.param("/joint_limits/" + joint_names.at(i) + "/max_acceleration", acc_limits.at(i), 0.0))
+      ROS_ERROR_STREAM("Failed to get the joint acceleration limit for " << joint_names.at(i));
   }
   return acc_limits;
 }

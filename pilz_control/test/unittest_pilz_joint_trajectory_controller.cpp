@@ -31,6 +31,7 @@
 #include <trajectory_interface/quintic_spline_segment.h>
 
 #include <pilz_control/pilz_joint_trajectory_controller.h>
+#include <pilz_control/pilz_joint_trajectory_controller_impl.h>
 
 #include "pjtc_manager_mock.h"
 #include "pjtc_test_helper.h"
@@ -45,6 +46,7 @@ static const std::string HOLD_SERVICE{ "/hold" };
 static const std::string UNHOLD_SERVICE{ "/unhold" };
 static const std::string IS_EXECUTING_SERVICE{ "/is_executing" };
 static const std::string TRAJECTORY_COMMAND_TOPIC{ "/command" };
+static const std::string CONTROLLER_JOINT_NAMES_PARAM{ "/controller_joint_names" };
 
 using namespace pilz_joint_trajectory_controller;
 
@@ -118,19 +120,13 @@ testing::AssertionResult PilzJointTrajectoryControllerTest::isControllerInUnhold
   return testing::AssertionSuccess();
 }
 
-///////////////////////////////////////
-//    The actual tests start here    //
-///////////////////////////////////////
+//////////////////////////////////
+//  Testing of Initialization   //
+//////////////////////////////////
 
 /**
- * @brief Test increases function coverage by ensuring that all Dtor variants are called.
+ * @brief Test if test environemt is initialized successfully.
  */
-TEST_F(PilzJointTrajectoryControllerTest, testD0Destructor)
-{
-  ControllerPtr controller{ new Controller() };
-  SUCCEED();
-}
-
 TEST_F(PilzJointTrajectoryControllerTest, testInitializiation)
 {
   ASSERT_TRUE(manager_->loadController()) << "Failed to initialize the controller.";
@@ -141,6 +137,41 @@ TEST_F(PilzJointTrajectoryControllerTest, testInitializiation)
 
   EXPECT_TRUE(action_client_.waitForActionServer());
 }
+
+/////////////////////////////////////////
+//    Testing of additional methods    //
+/////////////////////////////////////////
+
+/**
+ * @brief Test increases function coverage by ensuring that all Dtor variants are called.
+ */
+TEST_F(PilzJointTrajectoryControllerTest, testD0Destructor)
+{
+  ControllerPtr controller{ new Controller() };
+  SUCCEED();
+}
+
+/**
+ * @brief Test if acceleration limits are correctly received.
+ */
+TEST_F(PilzJointTrajectoryControllerTest, testGetJointAccelerationLimits)
+{
+  ros::NodeHandle nh{ "~" };
+  std::vector<std::string> joint_names;
+  EXPECT_TRUE(nh.getParam(CONTROLLER_JOINT_NAMES_PARAM, joint_names));
+  EXPECT_FALSE(joint_names.empty());
+  std::vector<double> acceleration_limits = getJointAccelerationLimits(nh, joint_names);
+  EXPECT_EQ(joint_names.size(), acceleration_limits.size());
+  EXPECT_FLOAT_EQ(acceleration_limits.at(0), 3.49);
+  EXPECT_FLOAT_EQ(acceleration_limits.at(1), 3.49);  // as of pilz_control/test/config/joint_limits.yaml
+}
+
+
+
+/////////////////////////////////////
+//    Testing of hold and unhold   //
+/////////////////////////////////////
+
 
 /**
  * @tests{end_holding,
