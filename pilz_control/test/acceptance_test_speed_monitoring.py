@@ -14,19 +14,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import actionlib
 import math
 import numpy
 import rospy
 import threading
 import unittest
 
-from geometry_msgs.msg import Point
-from sensor_msgs.msg import JointState
+from control_msgs.msg import *
 from std_msgs.msg import Float64
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from std_srvs.srv import Trigger, TriggerRequest
 
-_JOINT_STATES_TOPIC_NAME = '/joint_states'
 _MAX_FRAME_SPEED_TOPIC_NAME = '/max_frame_speed'
 _SPEED_LIMIT = 0.25
 _VEL_SCALE_DEFAULT = 0.5
@@ -39,10 +38,12 @@ _START_POSITION = [0.0, -0.5, 0.0, 0.0, 0.0, 0.0]
 _TARGET_POSITION = [0.0, 0.5, 0.0, 0.0, 0.0, 0.0]
 
 _WAIT_FOR_SERVICE_TIMEOUT_S = 10
+_WAIT_FOR_MESSAGE_TIMEOUT_S = 10
 _JOINT_NAMES = ['prbt_joint_1', 'prbt_joint_2', 'prbt_joint_3', 'prbt_joint_4', 'prbt_joint_5', 'prbt_joint_6']
 
 _UNHOLD_SERVICE_NAME = '/prbt/manipulator_joint_trajectory_controller/unhold'
 _FOLLOW_JOINT_TRAJ_ACTION_NAME = '/prbt/manipulator_joint_trajectory_controller/follow_joint_trajectory'
+_STATE_TOPIC_NAME = '/prbt/manipulator_joint_trajectory_controller/state'
 
 
 class SinglePointTrajectoryDispatcher:
@@ -50,7 +51,7 @@ class SinglePointTrajectoryDispatcher:
     def __init__(self):
         self._client = actionlib.SimpleActionClient(_FOLLOW_JOINT_TRAJ_ACTION_NAME, FollowJointTrajectoryAction)
 
-        timeout = rospy.Duration(WAIT_FOR_SERVICE_TIMEOUT_S)
+        timeout = rospy.Duration(_WAIT_FOR_SERVICE_TIMEOUT_S)
         self._client.wait_for_server(timeout)
 
     def send_action_goal(self, position=[0.0]*len(_JOINT_NAMES), velocity=[], velocity_tolerance=0.0,
@@ -81,13 +82,15 @@ class SinglePointTrajectoryDispatcher:
 class RobotPositionObserver:
 
     def __init__(self):
-        self._joint_states_sub = rospy.Subscriber(_JOINT_STATES_TOPIC_NAME, JointState, self._joint_states_callback)
-        self._joint_state = None
-        self._joint_state_lock = threading.Lock()
+        self._controller_state_sub = rospy.Subscriber(_STATE_TOPIC_NAME, JointTrajectoryControllerState, self._state_callback)
+        self._actual_position = None
+        self._actual_position_lock = threading.Lock()
 
-    def _joint_states_callback(self, msg):
-        with self._joint_state_lock:
-            self._joint_state = msg
+        rospy.wait_for_message(_STATE_TOPIC_NAME, JointTrajectoryControllerState, _WAIT_FOR_MESSAGE_TIMEOUT_S)
+
+    def _state_callback(self, msg):
+        with self._actual_position_lock:
+            self._actual_position = msg.actual.positions
 
     def wait_for_position_reached(self, position):
         assert len(position) == len(_JOINT_NAMES)
@@ -96,8 +99,8 @@ class RobotPositionObserver:
         start_waiting = rospy.Time.now()
 
         while True:
-            with self._joint_state_lock:
-                position_diff = numpy.array(position - self._joint_state.position)
+            with self._actual_position_lock:
+                position_diff = numpy.array(position) - numpy.array(self._actual_position)
 
             if (numpy.linalg.norm(position_diff) < _POSITION_TOLERANCE):
                 return True
@@ -178,7 +181,7 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
         time_from_start = duration_scale * self._target_duration
         self._trajectory_dispatcher.send_action_goal(position=_TARGET_POSITION, time_from_start=time_from_start)
 
-        self._trigger_unhold()  # in case movement failed
+        self._unhold_service.call()  # in case movement failed
         self._trajectory_dispatcher.send_action_goal(position=_START_POSITION, time_from_start=_LONG_TRAJ_CMD_DURATION)
         self._robot_observer.wait_for_position_reached(_START_POSITION)
 
