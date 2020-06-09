@@ -82,7 +82,8 @@ class SinglePointTrajectoryDispatcher:
 class RobotPositionObserver:
 
     def __init__(self):
-        self._controller_state_sub = rospy.Subscriber(_STATE_TOPIC_NAME, JointTrajectoryControllerState, self._state_callback)
+        self._controller_state_sub = rospy.Subscriber(_STATE_TOPIC_NAME, JointTrajectoryControllerState,
+                                                      self._state_callback)
         self._actual_position = None
         self._actual_position_lock = threading.Lock()
 
