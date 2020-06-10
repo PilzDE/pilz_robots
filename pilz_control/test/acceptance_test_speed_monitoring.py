@@ -42,10 +42,12 @@ _LONG_TRAJ_CMD_DURATION = 10.0
 _SLEEP_RATE_HZ = 10
 _POSITION_TOLERANCE = 0.01
 _WAIT_FOR_CMD_FINISH_TIMEOUT = 3
+_SLEEP_TIME = 3.0
 
 _JOINT2_START_POSITION = -0.5
 _JOINT2_TARGET_POSITION = 0.5
 _JOINT2_INDEX = 1
+_JOINT2_SPEED_LIMIT = 1.5
 
 _WAIT_FOR_SERVICE_TIMEOUT_S = 10
 _WAIT_FOR_MESSAGE_TIMEOUT_S = 10
@@ -135,7 +137,8 @@ class UnholdServiceWrapper():
 
     def call(self):
         req = TriggerRequest()
-        self._unhold_service(req)
+        resp = self._unhold_service(req)
+        return resp.success
 
 
 class MaxFrameSpeedWrapper():
@@ -183,40 +186,52 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
         self._trajectory_dispatcher = SinglePointTrajectoryDispatcher(self._joint_names)
         self._unhold_service = UnholdServiceWrapper()
 
-        self._determine_target_duration()
+        self._move_to_start_position()
         self._max_frame_speed.reset()
+
+    def _move_to_start_position(self):
+        rospy.loginfo('Move to start position')
+
+        if not self._unhold_service.call():
+            rospy.sleep(_SLEEP_TIME)
+            self.assertTrue(self._unhold_service.call(), 'Unable to unhold controller')
+
+        self._trajectory_dispatcher.send_action_goal(position=self._start_position)
+        self._robot_observer.wait_for_position_reached(self._start_position)
 
     def _determine_target_duration(self):
         """ The target duration (representing the speed limit) is computed via a formula and one speed observation.
             At the end of this function the robot reaches the start position.
         """
         rospy.loginfo('Determine target duration for reaching the speed limit')
-        self._unhold_service.call()
         self._trajectory_dispatcher.send_action_goal(position=self._target_position)
         self._robot_observer.wait_for_position_reached(self._target_position)
 
-        self._max_frame_speed.reset()
-        self._trajectory_dispatcher.send_action_goal(position=self._start_position)
-        self._robot_observer.wait_for_position_reached(self._start_position)
-
         self._target_duration = _LONG_TRAJ_CMD_DURATION * self._max_frame_speed.get() / _SPEED_LIMIT
+
+        self._move_to_start_position()
+
+    def _compute_min_duration(self):
+        """ The minimal duration can be computed from the maximal velocity of joint2.
+        """
+        return (_JOINT2_TARGET_POSITION - _JOINT2_START_POSITION) / _JOINT2_SPEED_LIMIT
 
     def _perform_scaled_movement(self, duration_scale):
         """ Send a trajectory command where the target duration is multiplied by a scaling factor.
             Then move back to start position.
         """
-        self._max_frame_speed.reset()
         time_from_start = duration_scale * self._target_duration
         self._trajectory_dispatcher.send_action_goal(position=self._target_position, time_from_start=time_from_start)
 
-        self._unhold_service.call()  # in case movement failed
-        self._trajectory_dispatcher.send_action_goal(position=self._start_position,
-                                                     time_from_start=_LONG_TRAJ_CMD_DURATION)
-        self._robot_observer.wait_for_position_reached(self._start_position)
+        self._move_to_start_position()
+        rospy.loginfo('Finished scaled movement')
 
     def test_reduced_speed_mode(self):
         rospy.loginfo('Test speed monitoring in T1 mode')
 
+        self._determine_target_duration()
+
+        self._max_frame_speed.reset()
         self._perform_scaled_movement(1.1)
         self.assertGreater(_SPEED_LIMIT, self._max_frame_speed.get(), 'Speed limit of 0.25[m/s] was violated')
 
@@ -225,7 +240,7 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
         self.assertGreater(_SPEED_LIMIT, self._max_frame_speed.get(), 'Speed limit of 0.25[m/s] was violated')
 
         rospy.loginfo('!!!BE CAREFUL, ROBOT MIGHT CRASH INTO TABLE!!!')
-        rospy.sleep(3.0)
+        rospy.sleep(_SLEEP_TIME)
 
         self._max_frame_speed.reset()
         self._perform_scaled_movement(0.1)
@@ -234,7 +249,10 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
     def test_automatic_mode(self):
         rospy.loginfo('Test speed monitoring in AUTO mode')
 
-        self._perform_scaled_movement(0.9)
+        duration = self._compute_min_duration()
+
+        self._max_frame_speed.reset()
+        self._trajectory_dispatcher.send_action_goal(position=self._target_position, time_from_start=duration)
         self.assertLess(_SPEED_LIMIT, self._max_frame_speed.get(),
                         'Did not exceed speed limit of 0.25[m/s] as excepted')
 
