@@ -92,7 +92,7 @@ static ros::Duration getGoalDuration(const control_msgs::FollowJointTrajectoryGo
 static GoalType generateSimpleGoal(const ros::Duration& goal_duration = ros::Duration(DEFAULT_GOAL_DURATION_SEC))
 {
   static unsigned int position_index{ 0 };
-  const std::vector<double> alternating_positions{ 0.5, -0.25, -0.5 };
+  const std::vector<double> alternating_positions{ 1E-3, 2E-3, 3E-3, 2E-3};  // very small movements to not violate acceleration limit.
   position_index = (++position_index) % alternating_positions.size();
 
   std::vector<std::string> joint_names(JOINT_NAMES.begin(), JOINT_NAMES.end());
