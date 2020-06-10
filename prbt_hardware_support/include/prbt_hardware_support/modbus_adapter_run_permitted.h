@@ -56,9 +56,6 @@ public:
 private:
   const ModbusApiSpec api_spec_;
   UpdateRunPermittedFunc update_run_permitted_;
-
-private:
-  static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{ 2 };
 };
 
 }  // namespace prbt_hardware_support

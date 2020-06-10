@@ -19,12 +19,15 @@
 
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
 #include <prbt_hardware_support/OperationModes.h>
+#include <prbt_hardware_support/modbus_api_definitions.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/modbus_msg_wrapper.h>
 #include <prbt_hardware_support/modbus_msg_operation_mode_wrapper_exception.h>
 
 namespace prbt_hardware_support
 {
+using namespace modbus_api::v3;
+
 /**
  * @brief Wrapper class to add semantic to a raw ModbusMsgInStamped
  *
@@ -80,13 +83,13 @@ inline int8_t ModbusMsgOperationModeWrapper::getOperationMode() const
 {
   switch (getRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::OPERATION_MODE)))
   {
-    case 0:
+    case MODBUS_OPERATION_MODE_NONE:
       return OperationModes::UNKNOWN;
-    case 1:
+    case MODBUS_OPERATION_MODE_T1:
       return OperationModes::T1;
-    case 2:
+    case MODBUS_OPERATION_MODE_T2:
       return OperationModes::T2;
-    case 3:
+    case MODBUS_OPERATION_MODE_AUTO:
       return OperationModes::AUTO;
     default:
       return OperationModes::UNKNOWN;

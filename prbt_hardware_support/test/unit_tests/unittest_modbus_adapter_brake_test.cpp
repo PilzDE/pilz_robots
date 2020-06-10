@@ -23,6 +23,7 @@
 #include <pilz_msgs/IsBrakeTestRequired.h>
 #include <pilz_msgs/IsBrakeTestRequiredResult.h>
 
+#include <prbt_hardware_support/modbus_api_definitions.h>
 #include <prbt_hardware_support/modbus_adapter_brake_test.h>
 #include <prbt_hardware_support/modbus_msg_in_builder.h>
 #include <prbt_hardware_support/register_container.h>
@@ -36,7 +37,7 @@
 
 namespace prbt_hardware_support
 {
-static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{ 2 };
+using namespace modbus_api::v3;
 
 static const ModbusApiSpec TEST_API_SPEC{ { modbus_api_spec::VERSION, 969 },
                                           { modbus_api_spec::BRAKETEST_REQUEST, 973 } };

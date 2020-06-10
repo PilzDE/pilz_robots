@@ -24,11 +24,23 @@ namespace prbt_hardware_support
 {
 namespace modbus_api
 {
-namespace v2
+namespace v3
 {
-static constexpr uint16_t MODBUS_RUN_PERMITTED_CLEAR_VALUE{ 1 };
-static constexpr uint16_t MODBUS_RUN_PERMITTED_ACTIVE_VALUE{ 0 };
-}  // namespace v2
+static constexpr uint16_t MODBUS_API_VERSION_REQUIRED{ 3 };
+
+static constexpr uint16_t MODBUS_BRAKE_TEST_PASSED{ 2 };
+static constexpr uint16_t MODBUS_BRAKE_TEST_NOT_PASSED{ 1 };
+static constexpr uint16_t MODBUS_BRAKE_TEST_PERFORMED{ 2 };
+static constexpr uint16_t MODBUS_BRAKE_TEST_NOT_PERFORMED{ 1 };
+
+static constexpr uint16_t MODBUS_OPERATION_MODE_NONE{ 0 };
+static constexpr uint16_t MODBUS_OPERATION_MODE_T1{ 1 };
+static constexpr uint16_t MODBUS_OPERATION_MODE_T2{ 2 };
+static constexpr uint16_t MODBUS_OPERATION_MODE_AUTO{ 3 };
+
+static constexpr uint16_t MODBUS_RUN_PERMITTED_TRUE{ 1 };
+static constexpr uint16_t MODBUS_RUN_PERMITTED_FALSE{ 0 };
+}  // namespace v3
 }  // namespace modbus_api
 
 }  // namespace prbt_hardware_support

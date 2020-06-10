@@ -18,13 +18,15 @@
 #ifndef MODBUS_MSG_RUN_PERMITTED_WRAPPER_H
 #define MODBUS_MSG_RUN_PERMITTED_WRAPPER_H
 
-#include <prbt_hardware_support/modbus_api_definitions.h>
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
+#include <prbt_hardware_support/modbus_api_definitions.h>
 #include <prbt_hardware_support/modbus_msg_run_permitted_wrapper_exception.h>
 #include <prbt_hardware_support/modbus_msg_wrapper.h>
 
 namespace prbt_hardware_support
 {
+using namespace modbus_api::v3;
+
 /**
  * @brief Wrapper class to add semantic to a raw ModbusMsgInStamped
  *
@@ -68,7 +70,15 @@ inline bool ModbusMsgRunPermittedWrapper::hasRunPermitted() const
 
 inline bool ModbusMsgRunPermittedWrapper::getRunPermitted() const
 {
-  return getRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::RUN_PERMITTED));
+  switch (getRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::RUN_PERMITTED)))
+  {
+    case MODBUS_RUN_PERMITTED_TRUE:
+      return true;
+    case MODBUS_RUN_PERMITTED_FALSE:
+      return false;
+    default:
+      return false;
+  }
 }
 
 }  // namespace prbt_hardware_support
