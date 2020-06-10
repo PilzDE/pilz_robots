@@ -42,7 +42,7 @@ class JointStatePublisherMock
 public:
   JointStatePublisherMock();
 
-  void startPublishingAsync();
+  void startPublishingAsync(const double& joint1_start_position = 0.0);
 
   void setJoint1Velocity(const double& vel);
 
@@ -57,20 +57,15 @@ public:
   void stopPublishing();
 
   /**
-   * @brief In degenerate-time-mode each message is published twice.
-   *
-   * This helps testing edge-cases of methods, which compute the time interval between two messages.
-   */
-  void setDegenerateTimeMode();
-
-  /**
    * @brief Return the message which will be published next.
    */
   JointStateConstPtr getNextMessage();
 
 private:
   void run();
-  void createMessage(JointState& msg);
+  void createNextMessage();
+  void publish();
+  void updateNextMessage();
   void updateJoint1Position();
 
 private:
@@ -79,12 +74,12 @@ private:
   std::vector<std::string> joint_names_;
   std::atomic_bool stop_flag_;
   std::atomic_bool go_home_flag_;
-  std::atomic_bool degenerate_time_flag_{ false };
   std::thread publisher_thread_;
-  std::mutex joint1_position_mutex_;
-  std::mutex joint1_velocity_mutex_;
   double joint1_position_{ 0.0 };
   double joint1_velocity_{ 0.0 };
+  ros::Time next_time_stamp_;
+  JointState next_msg_;
+  std::mutex next_msg_mutex_;
 };
 
 }  // namespace pilz_testutils

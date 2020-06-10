@@ -40,9 +40,6 @@ static const std::string JOINT_STATES_TOPIC_NAME{ "joint_states" };
 static const std::string MAX_FRAME_SPEED_TOPIC_NAME{ "max_frame_speed" };
 static const std::string MONITORED_LINK_NAMES_PARAMETER{ "/prbt/monitored_link_names" };
 
-static constexpr double T1_SPEED_LIMIT{ 0.25 };
-static constexpr int THROTTLED_OUTPUT_PERIOD{ 1 };
-
 JointStatesSpeedObserver::JointStatesSpeedObserver(const ros::NodeHandle& nh) : nh_(nh)
 {
   setupKinematics();
@@ -93,15 +90,8 @@ void JointStatesSpeedObserver::jointStatesCallback(const sensor_msgs::JointState
       auto distance_cartesian = (tf.translation() - previous_tfs_.at(frame).translation()).norm();
       auto time_distance = (time_stamp - previous_time_stamp_).toSec();
 
-      if (time_distance > 1e-16)
-      {
-        computed_new_speed = true;
-        max_frame_speed = std::max(max_frame_speed, distance_cartesian / time_distance);
-      }
-      else
-      {
-        ROS_INFO("Skipping speed computation for frame >%s<.", frame.c_str());
-      }
+      max_frame_speed = std::max(max_frame_speed, distance_cartesian / time_distance);
+      computed_new_speed = true;
     }
 
     previous_tfs_[frame] = tf;
@@ -112,11 +102,6 @@ void JointStatesSpeedObserver::jointStatesCallback(const sensor_msgs::JointState
   if (computed_new_speed)
   {
     publishMaxFrameSpeed(max_frame_speed);
-
-    if (max_frame_speed > T1_SPEED_LIMIT)
-    {
-      ROS_WARN_STREAM_THROTTLE(THROTTLED_OUTPUT_PERIOD, "Detected violation of T1 speed limit: " << max_frame_speed);
-    }
   }
 }
 

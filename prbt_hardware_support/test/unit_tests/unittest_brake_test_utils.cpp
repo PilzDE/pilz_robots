@@ -27,6 +27,7 @@
 #include <sensor_msgs/JointState.h>
 
 #include <pilz_testutils/joint_state_publisher_mock.h>
+#include <pilz_utils/wait_for_message.h>
 
 #include <prbt_hardware_support/brake_test_utils.h>
 #include <prbt_hardware_support/brake_test_utils_exception.h>
@@ -38,7 +39,7 @@ using sensor_msgs::JointState;
 using sensor_msgs::JointStateConstPtr;
 using sensor_msgs::JointStatePtr;
 
-static const std::string ROBOT_NAMESPACE{ "prbt" };
+static const std::string JOINT_STATES_TOPIC_NAME{ "/prbt/joint_states" };
 
 /**
  * @brief Checks for identical names and positions in joint state messages.
@@ -159,12 +160,10 @@ TEST(BrakeTestUtilsTest, testGetCurrentJointStates)
    * Step 2 *
    **********/
   pilz_testutils::JointStatePublisherMock joint_states_pub;
-  joint_states_pub.startPublishingAsync();
+  const double joint1_start_position{ 0.92 };
+  joint_states_pub.startPublishingAsync(joint1_start_position);
 
-  // Move away from zero
-  joint_states_pub.setJoint1Velocity(0.1);
-  ros::Duration(0.1).sleep();
-  joint_states_pub.setJoint1Velocity(0.0);
+  pilz_utils::waitForMessage<JointState>(JOINT_STATES_TOPIC_NAME);
 
   auto expected_msg = joint_states_pub.getNextMessage();
 
@@ -199,6 +198,8 @@ TEST(BrakeTestUtilsTest, testDetectRobotMotion)
    **********/
   pilz_testutils::JointStatePublisherMock joint_states_pub;
   joint_states_pub.startPublishingAsync();
+
+  pilz_utils::waitForMessage<JointState>(JOINT_STATES_TOPIC_NAME);
 
   EXPECT_FALSE(BrakeTestUtils::detectRobotMotion());
 

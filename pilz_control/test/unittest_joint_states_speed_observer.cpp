@@ -133,23 +133,6 @@ TEST_F(JointStatesSpeedObserverTest, testMaxFrameSpeed)
   BARRIER(BARRIER_MAX_FRAME_SPEED, BARRIER_MAX_FRAME_SPEED_TIMEOUT_MS);
 }
 
-TEST_F(JointStatesSpeedObserverTest, testDegenerateTimeDistance)
-{
-  double max_frame_speed_target{ 0.3 };
-
-  EXPECT_CALL(subscriber_mock_, cb_mock(MaxFrameSpeedLe(max_frame_speed_target))).Times(AtLeast(0));
-  EXPECT_CALL(subscriber_mock_, cb_mock(MaxFrameSpeedNear(max_frame_speed_target)))
-      .WillOnce(Return())
-      .WillOnce(ACTION_OPEN_BARRIER_VOID(BARRIER_MAX_FRAME_SPEED))
-      .WillRepeatedly(Return());
-
-  double angular_velocity = max_frame_speed_target / RIGHT_ARM_RADIUS;
-  joint_state_pub_.setDegenerateTimeMode();
-  joint_state_pub_.setJoint1Velocity(angular_velocity);
-
-  BARRIER(BARRIER_MAX_FRAME_SPEED, BARRIER_MAX_FRAME_SPEED_TIMEOUT_MS);
-}
-
 }  // namespace joint_states_speed_observer_test
 
 int main(int argc, char* argv[])
