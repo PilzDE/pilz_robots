@@ -1,14 +1,31 @@
 <launch>
 
+  <arg name="controller_ns" default="controller_ns"/>
   <arg name="model" default="$(dirname)/robot_mock.urdf"/>
   <arg name="gui" default="true" />
   <arg name="rvizconfig" default="$(dirname)/robot_mock_urdf.rviz" />
 
+  <rosparam command="load" file="$(find pilz_control)/test/config/joint_names.yaml" />
+
   <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
+  <param name="robot_description_semantic" textfile="$(find pilz_control)/test/urdf/robot_mock.srdf"/>
   <param name="use_gui" value="$(arg gui)"/>
 
-  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <!-- start robot mock -->
+  <node name="robot_mock" pkg="pilz_control" type="robot_mock" />
+
+  <!-- load controller configuration -->
+  <rosparam ns="$(arg controller_ns)" command="load" file="$(find pilz_control)/test/config/test_controller.yaml" />
+
+  <!-- spawn controller -->
+  <param name="controller_ns_string" value="$(arg controller_ns)"/>
+  <node ns="$(arg controller_ns)" name="controller_spawner" pkg="controller_manager" type="spawner"
+        args="test_joint_trajectory_controller test_joint_state_controller" output="screen"/>
+
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+  <!-- relay to /joint_states -->
+  <node ns="$(arg controller_ns)" name="joint_state_relay" pkg="topic_tools" type="relay"
+        args="/$(arg controller_ns)/joint_states /joint_states" />
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
 
 </launch>

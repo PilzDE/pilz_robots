@@ -28,9 +28,11 @@ RobotMock::RobotMock()
                                                            &(data_.at(i).eff) };
     hardware_interface::JointHandle jnt_handle{ jnt_state_handle, &(data_.at(i).cmd) };
     pos_jnt_interface_.registerHandle(jnt_handle);
+    jnt_state_interface_.registerHandle(jnt_handle);
   }
 
   registerInterface(&pos_jnt_interface_);
+  registerInterface(&jnt_state_interface_);
 }
 
 void RobotMock::read()
