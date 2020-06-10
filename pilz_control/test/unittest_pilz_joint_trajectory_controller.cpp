@@ -301,6 +301,10 @@ TEST_F(PilzJointTrajectoryControllerTest, testDoubleUnholdSuccess)
   EXPECT_TRUE(manager_->triggerUnHold(req, resp));
   EXPECT_TRUE(resp.success);
   EXPECT_TRUE(isControllerInUnholdMode());
+
+  EXPECT_TRUE(manager_->triggerUnHold(req, resp));
+  EXPECT_TRUE(resp.success);
+  EXPECT_TRUE(isControllerInUnholdMode());
 }
 
 /**
