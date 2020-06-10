@@ -166,6 +166,16 @@ TEST_F(PilzJointTrajectoryControllerTest, testGetJointAccelerationLimits)
   EXPECT_FLOAT_EQ(acceleration_limits.at(1), 3.49);  // as of pilz_control/test/config/joint_limits.yaml
 }
 
+/**
+ * @brief Test if an exception is thrown if the acceleration limits can not be found.
+ */
+TEST_F(PilzJointTrajectoryControllerTest, testGetJointAccelerationLimitsException)
+{
+  ros::NodeHandle nh{ "~" };
+  std::vector<std::string> joint_names = {"non_existant_joint_name"};
+  EXPECT_THROW(getJointAccelerationLimits(nh, joint_names), ros::InvalidParameterException);
+}
+
 
 
 /////////////////////////////////////

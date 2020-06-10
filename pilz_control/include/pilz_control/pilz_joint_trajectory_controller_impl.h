@@ -34,7 +34,7 @@ std::vector<double> getJointAccelerationLimits(const ros::NodeHandle& nh, const 
   {
     const std::string param_name_to_read = "/joint_limits/" + joint_names.at(i) + "/max_acceleration";
     if(!nh.param(param_name_to_read, acc_limits.at(i), 0.0))
-      throw new ros::InvalidParameterException("Failed to get the joint acceleration limit for " +
+      throw ros::InvalidParameterException("Failed to get the joint acceleration limit for " +
         joint_names.at(i) + " under param name >" + param_name_to_read + "<.");      
   }
   return acc_limits;
