@@ -190,6 +190,7 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
         """ The target duration (representing the speed limit) is computed via a formula and one speed observation.
             At the end of this function the robot reaches the start position.
         """
+        rospy.loginfo('Determine target duration for reaching the speed limit')
         self._unhold_service.call()
         self._trajectory_dispatcher.send_action_goal(position=self._target_position)
         self._robot_observer.wait_for_position_reached(self._target_position)
@@ -214,6 +215,7 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
         self._robot_observer.wait_for_position_reached(self._start_position)
 
     def test_reduced_speed_mode(self):
+        rospy.loginfo('Test speed monitoring in T1 mode')
 
         self._perform_scaled_movement(1.1)
         self.assertGreater(_SPEED_LIMIT, self._max_frame_speed.get(), 'Speed limit of 0.25[m/s] was violated')
@@ -222,7 +224,15 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
         self._perform_scaled_movement(0.9)
         self.assertGreater(_SPEED_LIMIT, self._max_frame_speed.get(), 'Speed limit of 0.25[m/s] was violated')
 
+        rospy.loginfo('!!!BE CAREFUL, ROBOT MIGHT CRASH INTO TABLE!!!')
+        rospy.sleep(3.0)
+
+        self._max_frame_speed.reset()
+        self._perform_scaled_movement(0.1)
+        self.assertGreater(_SPEED_LIMIT, self._max_frame_speed.get(), 'Speed limit of 0.25[m/s] was violated')
+
     def test_automatic_mode(self):
+        rospy.loginfo('Test speed monitoring in AUTO mode')
 
         self._perform_scaled_movement(0.9)
         self.assertLess(_SPEED_LIMIT, self._max_frame_speed.get(),
