@@ -172,16 +172,13 @@ TEST_F(PilzJointTrajectoryControllerTest, testGetJointAccelerationLimits)
 TEST_F(PilzJointTrajectoryControllerTest, testGetJointAccelerationLimitsException)
 {
   ros::NodeHandle nh{ "~" };
-  std::vector<std::string> joint_names = {"non_existant_joint_name"};
+  std::vector<std::string> joint_names = { "non_existant_joint_name" };
   EXPECT_THROW(getJointAccelerationLimits(nh, joint_names), ros::InvalidParameterException);
 }
-
-
 
 /////////////////////////////////////
 //    Testing of hold and unhold   //
 /////////////////////////////////////
-
 
 /**
  * @tests{end_holding,
