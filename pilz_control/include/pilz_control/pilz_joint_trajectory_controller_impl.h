@@ -27,15 +27,46 @@ static constexpr double SPEED_LIMIT_NOT_ACTIVATED{ -1.0 };
 
 namespace ph = std::placeholders;
 
+/**
+ * @brief Get the Joint Acceleration Limits for each joint from the parameter server.
+ *
+ * If has_acceleration_limits is set to false acceleration limits will be set to 0.
+ *
+ * Function assumes parameter server naming prefix '/joint_limits/' for Joint Names.
+ *
+ * @param nh NodeHandle to access parameter server.
+ * @param joint_names Vector of Strings for all joint names to get the acceleration limits for.
+ * @return std::vector<double> Requested acceleration limits as vector. Has the same length as param 'joint_names'.
+ *
+ * @throw InvalidParameterException Requested values not found on param server.
+ */
 std::vector<double> getJointAccelerationLimits(const ros::NodeHandle& nh, const std::vector<std::string> joint_names)
 {
+  const std::string joint_limits_naming_prefix { "/joint_limits/" };
+
   std::vector<double> acc_limits(joint_names.size());
   for (unsigned int i = 0; i < joint_names.size(); ++i)
   {
-    const std::string param_name_to_read = "/joint_limits/" + joint_names.at(i) + "/max_acceleration";
-    if (!nh.param(param_name_to_read, acc_limits.at(i), 0.0))
+    double has_acceleration_limits = false;
+    const std::string param_name_to_read = joint_limits_naming_prefix + joint_names.at(i) + "/has_acceleration_limits";
+    if (!nh.param(param_name_to_read, has_acceleration_limits))
+    {
+      throw ros::InvalidParameterException("Failed to get the has_acceleration_limits for " + joint_names.at(i) +
+                                           " under param name >" + param_name_to_read + "<.");
+    }
+
+    if (!has_acceleration_limits)
+    {
+      acc_limits.at(i) = 0.;
+      continue;
+    }
+
+    const std::string param_name_to_read = joint_limits_naming_prefix + joint_names.at(i) + "/max_acceleration";
+    if (!nh.param(param_name_to_read, acc_limits.at(i)))
+    {
       throw ros::InvalidParameterException("Failed to get the joint acceleration limit for " + joint_names.at(i) +
                                            " under param name >" + param_name_to_read + "<.");
+    }
   }
   return acc_limits;
 }
