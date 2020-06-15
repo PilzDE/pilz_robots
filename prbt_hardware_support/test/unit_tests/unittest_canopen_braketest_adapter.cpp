@@ -28,7 +28,6 @@
 #include <prbt_hardware_support/canopen_braketest_adapter.h>
 #include <prbt_hardware_support/canopen_braketest_adapter_exception.h>
 #include <prbt_hardware_support/BrakeTest.h>
-#include <prbt_hardware_support/joint_states_publisher_mock.h>
 #include <prbt_hardware_support/canopen_chain_node_mock.h>
 
 namespace canopen_braketest_adapter_test

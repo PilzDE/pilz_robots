@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2019 Pilz GmbH & Co. KG
+Copyright (c) 2020 Pilz GmbH & Co. KG
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
@@ -17,11 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <launch>
 
-<group ns="prbt">
-  <rosparam command="load" file="$(find prbt_hardware_support)/test/config/joint_names.yaml" />
+  <rosparam ns="prbt" command="load" file="$(find pilz_control)/test/config/prbt_monitored_links.yaml" />
 
-  <test test-name="unittest_brake_test_utils" pkg="prbt_hardware_support" type="unittest_brake_test_utils">
-  </test>
-</group>
-
+  <node pkg="pilz_control" type="joint_states_speed_observer" name="joint_states_speed_observer" output="screen" />
 </launch>

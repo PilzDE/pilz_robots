@@ -10,6 +10,7 @@ add_definitions(-Werror)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  pilz_utils
 )
 
 ###################################
@@ -51,6 +52,7 @@ include_directories(
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
   src/async_test.cpp
+  src/joint_state_publisher_mock.cpp
 )
 
 ## Specify libraries to link a library or executable target against

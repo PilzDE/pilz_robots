@@ -77,17 +77,41 @@ if(CATKIN_ENABLE_TESTING)
   find_package(geometry_msgs REQUIRED)
   find_package(tf2 REQUIRED)
   find_package(tf2_geometry_msgs REQUIRED)
+  find_package(pilz_utils REQUIRED)
+  find_package(pilz_testutils REQUIRED)
 
   if(ENABLE_COVERAGE_TESTING)
     find_package(code_coverage REQUIRED)
     APPEND_COVERAGE_COMPILER_FLAGS()
   endif()
 
+  include_directories(test_utils/include)
+  include_directories(${pilz_utils_INCLUDE_DIRS})
+  include_directories(${pilz_testutils_INCLUDE_DIRS})
+
+  # JOINT_STATES_SPEED_OBSERVER
+  add_executable(joint_states_speed_observer
+    test_utils/src/joint_states_speed_observer.cpp
+  )
+  target_link_libraries(joint_states_speed_observer ${catkin_LIBRARIES})
+
   add_executable(robot_mock
     test/robot_mock_node.cpp
     test/robot_mock.cpp
   )
   target_link_libraries(robot_mock ${catkin_LIBRARIES})
+
+  add_rostest_gmock(unittest_joint_states_speed_observer
+    test/unittest_joint_states_speed_observer.test
+    test/unittest_joint_states_speed_observer.cpp
+  )
+  target_link_libraries(unittest_joint_states_speed_observer
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+  )
+  add_dependencies(unittest_joint_states_speed_observer
+    joint_states_speed_observer
+    ${catkin_EXPORTED_TARGETS}
+  )
 
   catkin_add_gtest(unittest_cartesian_speed_monitor
     test/unittest_cartesian_speed_monitor.cpp
@@ -130,10 +154,16 @@ if(CATKIN_ENABLE_TESTING)
     DEPENDENCIES ${PROJECT_NAME} robot_mock
   )
 
+  roslint_python(
+    test/acceptance_test_speed_monitoring.py
+    test/integrationtest_pilz_joint_trajectory_controller.py
+  )
+  roslint_add_test()
+
   # run: catkin_make -DENABLE_COVERAGE_TESTING=ON package_name_coverage
   if(ENABLE_COVERAGE_TESTING)
     APPEND_COVERAGE_COMPILER_FLAGS()
-    set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*")
+    set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test/*")
     add_code_coverage(
       NAME ${PROJECT_NAME}_coverage
       DEPENDS tests

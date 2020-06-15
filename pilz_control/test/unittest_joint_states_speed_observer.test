@@ -1,0 +1,34 @@
+<!--
+Copyright (c) 2020 Pilz GmbH & Co. KG
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<launch>
+  <arg name="debug" default="false"/>
+
+  <rosparam command="load" file="$(find pilz_control)/test/config/joint_names.yaml" />
+
+  <param name="robot_description" textfile="$(find pilz_control)/test/urdf/robot_mock.urdf"/>
+  <param name="robot_description_semantic" textfile="$(find pilz_control)/test/urdf/robot_mock.srdf"/>
+
+  <rosparam ns="prbt" command="load" file="$(find pilz_control)/test/config/robot_mock_monitored_links.yaml" />
+
+  <node pkg="pilz_control" type="joint_states_speed_observer" name="joint_states_speed_observer" output="screen"/>
+
+  <test unless="$(arg debug)" test-name="unittest_joint_states_speed_observer" pkg="pilz_control"
+        type="unittest_joint_states_speed_observer" />
+  <test if="$(arg debug)" test-name="unittest_joint_states_speed_observer" pkg="pilz_control"
+        type="unittest_joint_states_speed_observer" launch-prefix="xterm -e gdb -args" />
+</launch>

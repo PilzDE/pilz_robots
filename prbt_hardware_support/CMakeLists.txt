@@ -296,9 +296,11 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest_gtest(unittest_brake_test_utils
     test/unit_tests/unittest_brake_test_utils.test
     test/unit_tests/unittest_brake_test_utils.cpp
-    test/unit_tests/joint_states_publisher_mock.cpp
   )
-  target_link_libraries(unittest_brake_test_utils ${catkin_LIBRARIES})
+  target_link_libraries(unittest_brake_test_utils
+    ${catkin_LIBRARIES}
+    ${pilz_testutils_LIBRARIES}
+  )
   #----------------------------------
 
   # --- CanOpenBraketestAdapter unit test ---
@@ -438,7 +440,6 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest_gmock(integrationtest_execute_brake_test
     test/integration_tests/integrationtest_execute_brake_test.test
     test/integration_tests/integrationtest_execute_brake_test.cpp
-    test/unit_tests/joint_states_publisher_mock.cpp
     test/unit_tests/pilz_modbus_server_mock.cpp
     test/unit_tests/canopen_chain_node_mock.cpp
     src/libmodbus_client.cpp

@@ -18,4 +18,5 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>roscpp</build_depend>
+  <build_depend>pilz_utils</build_depend>
 </package>
