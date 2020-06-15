@@ -22,6 +22,8 @@
 
 #include <ros/time.h>
 
+#include <std_srvs/SetBool.h>
+
 #include <pilz_msgs/GetSpeedOverride.h>
 
 #include <prbt_hardware_support/OperationModes.h>
@@ -44,11 +46,9 @@ public:
   void SetUp() override;
   void TearDown() override;
 
-  MOCK_METHOD1(setSpeedLimit, bool(const double&));
+  MOCK_METHOD1(monitorCartesianSpeed, bool(const bool));
 
 public:
-  double t1_limit_{ 0.1 };
-  double auto_limit_{ 0.2 };
   std::unique_ptr<OperationModeSetupExecutor> executor_;
 };
 
@@ -60,10 +60,10 @@ void OperationModeSetupExecutorTest::SetUp()
   op_mode.time_stamp = ros::Time::now();
   op_mode.value = OperationModes::UNKNOWN;
 
-  ON_CALL(*this, setSpeedLimit(_)).WillByDefault(Return(true));
+  ON_CALL(*this, monitorCartesianSpeed(_)).WillByDefault(Return(true));
 
   executor_ = std::unique_ptr<OperationModeSetupExecutor>(new OperationModeSetupExecutor(
-      t1_limit_, auto_limit_, std::bind(&OperationModeSetupExecutorTest::setSpeedLimit, this, std::placeholders::_1)));
+      std::bind(&OperationModeSetupExecutorTest::monitorCartesianSpeed, this, std::placeholders::_1)));
 }
 
 void OperationModeSetupExecutorTest::TearDown()
@@ -72,8 +72,8 @@ void OperationModeSetupExecutorTest::TearDown()
 }
 
 /**
- * @tests{Speed_limits_per_operation_mode,
- * Tests that speed limit is set according to current operation mode.
+ * @tests{speed_monitoring_per_operation_mode,
+ * Tests that the cartesian speed is monitored depending on the current operation mode.
  * }
  *
  * Test Sequence:
@@ -81,8 +81,8 @@ void OperationModeSetupExecutorTest::TearDown()
  *  2. Call updateOperationMode() with operation mode AUTO and current time stamp.
  *
  * Expected Results:
- *  1. setSpeedLimit() is called with predefined T1 limit.
- *  2. setSpeedLimit() is called with predefined AUTO limit.
+ *  1. monitorCartesianSpeed() is called with arg=true.
+ *  2. monitorCartesianSpeed() is called with arg=false.
  */
 TEST_F(OperationModeSetupExecutorTest, testUpdateOperationMode)
 {
@@ -93,7 +93,7 @@ TEST_F(OperationModeSetupExecutorTest, testUpdateOperationMode)
   op_mode.time_stamp = ros::Time::now();
   op_mode.value = OperationModes::T1;
 
-  EXPECT_CALL(*this, setSpeedLimit(t1_limit_)).WillOnce(Return(true));
+  EXPECT_CALL(*this, monitorCartesianSpeed(true)).WillOnce(Return(true));
 
   executor_->updateOperationMode(op_mode);
 
@@ -104,13 +104,13 @@ TEST_F(OperationModeSetupExecutorTest, testUpdateOperationMode)
   op_mode2.time_stamp = ros::Time::now();
   op_mode2.value = OperationModes::AUTO;
 
-  EXPECT_CALL(*this, setSpeedLimit(auto_limit_)).WillOnce(Return(true));
+  EXPECT_CALL(*this, monitorCartesianSpeed(false)).WillOnce(Return(true));
 
   executor_->updateOperationMode(op_mode2);
 }
 
 /**
- * @tests{Speed_limits_per_operation_mode,
+ * @tests{speed_monitoring_per_operation_mode,
  * Test updateOperationMode() with no change in operation mode.
  * }
  *
@@ -119,8 +119,8 @@ TEST_F(OperationModeSetupExecutorTest, testUpdateOperationMode)
  *  2. Call updateOperationMode() with operation mode T1 and current time stamp.
  *
  * Expected Results:
- *  1. setSpeedLimit() is called with predefined T1 limit.
- *  2. setSpeedLimit() can be called with predefined T1 limit.
+ *  1. monitorCartesianSpeed() is called with arg=true.
+ *  2. monitorCartesianSpeed() can be called with arg=true.
  */
 TEST_F(OperationModeSetupExecutorTest, testUpdateOperationModeSameMode)
 {
@@ -131,7 +131,7 @@ TEST_F(OperationModeSetupExecutorTest, testUpdateOperationModeSameMode)
   op_mode.time_stamp = ros::Time::now();
   op_mode.value = OperationModes::T1;
 
-  EXPECT_CALL(*this, setSpeedLimit(t1_limit_)).WillOnce(Return(true));
+  EXPECT_CALL(*this, monitorCartesianSpeed(true)).WillOnce(Return(true));
 
   executor_->updateOperationMode(op_mode);
 
@@ -142,13 +142,13 @@ TEST_F(OperationModeSetupExecutorTest, testUpdateOperationModeSameMode)
   op_mode2.time_stamp = ros::Time::now();
   op_mode2.value = op_mode.value;
 
-  EXPECT_CALL(*this, setSpeedLimit(t1_limit_)).WillRepeatedly(Return(true));
+  EXPECT_CALL(*this, monitorCartesianSpeed(true)).WillRepeatedly(Return(true));
 
   executor_->updateOperationMode(op_mode2);
 }
 
 /**
- * @tests{Speed_limits_per_operation_mode,
+ * @tests{speed_monitoring_per_operation_mode,
  * Test updateOperationMode() with no change in time.
  * }
  *
@@ -157,8 +157,8 @@ TEST_F(OperationModeSetupExecutorTest, testUpdateOperationModeSameMode)
  *  2. Call updateOperationMode() with operation mode AUTO and previous time stamp.
  *
  * Expected Results:
- *  1. setSpeedLimit() is called with predefined T1 limit.
- *  2. setSpeedLimit() is not called.
+ *  1. monitorCartesianSpeed() is called with arg=true.
+ *  2. monitorCartesianSpeed() is not called.
  */
 TEST_F(OperationModeSetupExecutorTest, testUpdateOperationModeSameTime)
 {
@@ -169,7 +169,7 @@ TEST_F(OperationModeSetupExecutorTest, testUpdateOperationModeSameTime)
   op_mode.time_stamp = ros::Time::now();
   op_mode.value = OperationModes::T1;
 
-  EXPECT_CALL(*this, setSpeedLimit(t1_limit_)).WillOnce(Return(true));
+  EXPECT_CALL(*this, monitorCartesianSpeed(true)).WillOnce(Return(true));
 
   executor_->updateOperationMode(op_mode);
 
@@ -180,13 +180,13 @@ TEST_F(OperationModeSetupExecutorTest, testUpdateOperationModeSameTime)
   op_mode2.time_stamp = op_mode.time_stamp;
   op_mode2.value = OperationModes::AUTO;
 
-  EXPECT_CALL(*this, setSpeedLimit(auto_limit_)).Times(0);
+  EXPECT_CALL(*this, monitorCartesianSpeed(_)).Times(0);
 
   executor_->updateOperationMode(op_mode2);
 }
 
 /**
- * @tests{Speed_limits_per_operation_mode,
+ * @tests{speed_monitoring_per_operation_mode,
  * Test updateOperationMode() with unknown operation mode.
  * }
  *
@@ -194,7 +194,7 @@ TEST_F(OperationModeSetupExecutorTest, testUpdateOperationModeSameTime)
  *  1. Call updateOperationMode() with operation mode UNKNOWN and current time stamp.
  *
  * Expected Results:
- *  1. setSpeedLimit() is called with limit less or equal 0.0.
+ *  1. monitorCartesianSpeed() is not called.
  */
 TEST_F(OperationModeSetupExecutorTest, testUpdateOperationModeUnknownMode)
 {
@@ -205,51 +205,51 @@ TEST_F(OperationModeSetupExecutorTest, testUpdateOperationModeUnknownMode)
   op_mode.time_stamp = ros::Time::now();
   op_mode.value = OperationModes::UNKNOWN;
 
-  EXPECT_CALL(*this, setSpeedLimit(Le(0.0))).WillOnce(Return(true));
+  EXPECT_CALL(*this, monitorCartesianSpeed(_)).Times(0);
 
   executor_->updateOperationMode(op_mode);
 }
 
-class SetSpeedLimitServiceMock
+class MonitorCartesianSpeedServiceMock
 {
 public:
-  MOCK_METHOD1(call, bool(SetSpeedLimit& srv));
+  MOCK_METHOD1(call, bool(std_srvs::SetBool& srv));
   MOCK_METHOD0(getService, std::string());
 };
 
-MATCHER_P(IsCorrectSpeedLimitSet, speed_limit, "")
+MATCHER_P(IsSpeedMonitoringSettingCorrect, active_flag, "")
 {
-  return arg.request.speed_limit == speed_limit;
+  return arg.request.data == active_flag;
 }
 
 /**
- * @brief Tests the correct behavior in case the SetSpeedLimit service
+ * @brief Tests the correct behavior in case the MonitorCartesianSpeed service
  * succeeds.
  */
-TEST_F(OperationModeSetupExecutorTest, testSetSpeedLimitSrvSuccess)
+TEST_F(OperationModeSetupExecutorTest, testMonitorCartesianSpeedSrvSuccess)
 {
-  const double exp_limit{ 7.7 };
-  SetSpeedLimit exp_srv;
-  exp_srv.request.speed_limit = exp_limit;
+  const bool exp_active_flag{ false };
+  std_srvs::SetBool exp_srv;
+  exp_srv.request.data = exp_active_flag;
 
-  SetSpeedLimitServiceMock mock;
+  MonitorCartesianSpeedServiceMock mock;
   EXPECT_CALL(mock, getService()).WillRepeatedly(Return("TestServiceName"));
-  EXPECT_CALL(mock, call(IsCorrectSpeedLimitSet(exp_limit))).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(mock, call(IsSpeedMonitoringSettingCorrect(exp_active_flag))).Times(1).WillOnce(Return(true));
 
-  EXPECT_TRUE(setSpeedLimitSrv<SetSpeedLimitServiceMock>(mock, exp_limit));
+  EXPECT_TRUE(monitorCartesianSpeedSrv<MonitorCartesianSpeedServiceMock>(mock, exp_active_flag));
 }
 
 /**
- * @brief Tests the correct behavior in case the SetSpeedLimit service fails.
+ * @brief Tests the correct behavior in case the MonitorCartesianSpeed service fails.
  */
-TEST_F(OperationModeSetupExecutorTest, testSetSpeedLimitSrvFailure)
+TEST_F(OperationModeSetupExecutorTest, testMonitorCartesianSpeedSrvFailure)
 {
-  SetSpeedLimitServiceMock mock;
+  MonitorCartesianSpeedServiceMock mock;
   EXPECT_CALL(mock, getService()).WillRepeatedly(Return("TestServiceName"));
   EXPECT_CALL(mock, call(_)).Times(1).WillOnce(Return(false));
 
-  const double exp_limit{ 7.7 };
-  EXPECT_FALSE(setSpeedLimitSrv<SetSpeedLimitServiceMock>(mock, exp_limit));
+  const bool exp_active_flag{ false };
+  EXPECT_FALSE(monitorCartesianSpeedSrv<MonitorCartesianSpeedServiceMock>(mock, exp_active_flag));
 }
 
 class OperationModeSetupExecutorTestSpeedOverride

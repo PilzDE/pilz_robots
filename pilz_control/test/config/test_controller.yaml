@@ -22,17 +22,21 @@
 #
 
 ## joint_names
-joint_names: [joint1]
+joint_names:
+    - shoulder_to_right_arm
+    - shoulder_to_left_arm
 
 ## joint trajectory controller
 test_joint_trajectory_controller:
   type: position_controllers/PilzJointTrajectoryController
   joints:
-     - joint1
+    - shoulder_to_right_arm
+    - shoulder_to_left_arm
   constraints:
       goal_time: 0.6
       stopped_velocity_tolerance: 0.05
-      joint1: {trajectory: 0.157, goal: 0.01}
+      shoulder_to_right_arm: {trajectory: 0.157, goal: 0.01}
+      shoulder_to_left_arm:  {trajectory: 0.157, goal: 0.01}
   stop_trajectory_duration: 0.2
   state_publish_rate:  25
   action_monitor_rate: 10

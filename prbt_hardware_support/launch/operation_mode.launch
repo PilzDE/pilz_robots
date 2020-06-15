@@ -19,5 +19,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
   <include file="$(find prbt_hardware_support)/launch/modbus_adapter_operation_mode_node.launch"/>
   <include file="$(find prbt_hardware_support)/launch/operation_mode_setup_executor_node.launch"/>
-  <include file="$(find prbt_hardware_support)/launch/speed_observer_node.launch"/>
 </launch>

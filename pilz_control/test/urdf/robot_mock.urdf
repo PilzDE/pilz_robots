@@ -1,10 +1,117 @@
 <?xml version="1.0"?>
 <robot name="robot_mock">
-  <link name="link1"/>
-  <link name="link2"/>
 
-  <joint name="joint1" type="continuous">
-    <parent link="link1"/>
-    <child link="link2"/>
+  <material name="blue">
+    <color rgba="0 0 0.8 1"/>
+  </material>
+  <material name="black">
+    <color rgba="0 0 0 1"/>
+  </material>
+  <material name="white">
+    <color rgba="1 1 1 1"/>
+  </material>
+
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="0.3 0.1 0.5"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0.25"/>
+      <material name="black"/>
+    </visual>
+  </link>
+  
+  <link name="shoulder_link"/>
+  
+  <joint name="base_to_shoulder" type="fixed">
+    <parent link="base_link"/>
+    <child link="shoulder_link"/>
+    <origin xyz="0 0 0.25"/>
   </joint>
+  
+  <link name="arm_right_link">
+    <visual>
+      <geometry>
+        <cylinder length="0.25" radius="0.05"/>
+      </geometry>
+      <origin rpy="1.57075 0 0" xyz="0 -0.125 0"/>
+      <material name="white"/>
+    </visual>
+  </link>
+  
+  <joint name="shoulder_to_right_arm" type="continuous">
+    <parent link="shoulder_link"/>
+    <child link="arm_right_link"/>
+    <axis xyz="0 1 0"/>
+    <origin xyz="0 0.25 0"/>
+  </joint>
+
+  <link name="hand_right_link">
+    <visual>
+      <geometry>
+        <box size="0.05 0.05 0.25"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 -0.125"/>
+      <material name="blue"/>
+    </visual>
+      <origin rpy="0.0 0 0" xyz="0 0 0"/>
+  </link>
+
+  <joint name="arm_right_to_hand_right" type="fixed">
+    <parent link="arm_right_link"/>
+    <child link="hand_right_link"/>
+    <origin xyz="0 0 0.25"/>
+  </joint>
+
+  <link name="finger_right_link">
+    <visual>
+      <geometry>
+        <box size="0.05 0.05 0.05"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <material name="white"/>
+    </visual>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+  </link>
+
+  <joint name="hand_right_to_finger_right" type="fixed">
+    <parent link="hand_right_link"/>
+    <child link="finger_right_link"/>
+    <origin xyz="0 0 0.025"/>
+  </joint>
+
+  <link name="arm_left_link">
+    <visual>
+      <geometry>
+        <cylinder length="0.125" radius="0.02"/>
+      </geometry>
+      <origin rpy="1.57075 0 0" xyz="0 0.0625 0"/>
+      <material name="white"/>
+    </visual>
+  </link>
+
+  <joint name="shoulder_to_left_arm" type="continuous">
+    <parent link="shoulder_link"/>
+    <child link="arm_left_link"/>
+    <axis xyz="0 1 0"/>
+    <origin xyz="0 -0.125 0"/>
+  </joint>
+
+  <link name="hand_left_link">
+    <visual>
+      <geometry>
+        <box size="0.03 0.03 0.125"/>
+      </geometry>
+      <origin rpy="0 0 0" xyz="0 0 -0.0625"/>
+      <material name="blue"/>
+    </visual>
+      <origin rpy="0.0 0 0" xyz="0 0 0"/>
+  </link>
+
+  <joint name="arm_left_to_hand_left" type="fixed">
+    <parent link="arm_left_link"/>
+    <child link="hand_left_link"/>
+    <origin xyz="0 0 0.125"/>
+  </joint>
+
 </robot>

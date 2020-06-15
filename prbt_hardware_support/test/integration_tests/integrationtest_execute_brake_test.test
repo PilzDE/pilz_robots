@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <rosparam ns="driver/" command="load"
               file="$(find prbt_hardware_support)/test/config/prbt_manipulator_driver_nodes.yaml">
     </rosparam>
+    <rosparam command="load" file="$(find prbt_hardware_support)/test/config/joint_names.yaml" />
     <node name="modbus_adapter_brake_test_node" pkg="prbt_hardware_support" type="modbus_adapter_brake_test_node" />
     <node name="brake_test_executor_node" pkg="prbt_hardware_support" type="brake_test_executor_node" />
     <node name="braketest_adapter_node" pkg="prbt_hardware_support" type="canopen_braketest_adapter_node" />

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<robot name="robot_mock">
+
+  <group name="manipulator">
+    <chain base_link="base_link" tip_link="hand_right_link"/>
+    <chain base_link="base_link" tip_link="hand_left_link"/>
+  </group>
+
+  <group name="gripper">
+    <link name="finger_right_link"/>
+  </group>
+
+  <end_effector name="end_effector_right" parent_link="hand_right_link" group="gripper"/>
+</robot>

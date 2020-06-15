@@ -16,6 +16,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <launch>
-  <!-- Provide (default) speed override -->
-  <node name="fake_speed_override_node" pkg="prbt_hardware_support" type="fake_speed_override_node" />
+  <include file="$(find prbt_hardware_support)/launch/fake_operation_mode_setup.launch" />
 </launch>
