@@ -22,7 +22,8 @@
 #include <errno.h>
 #include <limits>
 #include <stdexcept>
-
+#include <arpa/inet.h> 
+#include <fcntl.h>
 #include <prbt_hardware_support/libmodbus_client.h>
 #include <prbt_hardware_support/pilz_modbus_exceptions.h>
 
@@ -35,8 +36,37 @@ LibModbusClient::~LibModbusClient()
 
 bool LibModbusClient::init(const char* ip, unsigned int port)
 {
+  long   arg;
+  int    sockfd;
+  int    retries;
+  struct sockaddr_in serv_addr;
+  
+  sockfd = socket(AF_INET, SOCK_STREAM, 0);      // Create socket for testing purpose
+  bzero((char *) &serv_addr, sizeof(serv_addr)); 
+  serv_addr.sin_family = AF_INET;                   
+  serv_addr.sin_port = htons((short unsigned int)port);
+  
+  arg = fcntl(sockfd, F_GETFL, NULL); 
+  arg |= O_NONBLOCK; 
+  fcntl(sockfd, F_SETFL, arg);                   //set connection to non blocking, no timeout
+  serv_addr.sin_addr.s_addr = inet_addr(ip); 
+  retries = 20;
+  //try 20 times to connect within 100 mseconds
+  while ((connect(sockfd,(const sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) && ( 0 != retries))
+  {
+    retries--;    
+    if (0  == retries)
+    {
+       ROS_ERROR_STREAM_NAMED("LibModbusClient","Could not establish modbus connection. Cable connected?");
+       return false;
+    }
+    usleep(100000); // wait 1 sec
+  }
+  ::close(sockfd); 
+  sleep(1);                                  //wait one second until port is released
+ 
   modbus_connection_ = modbus_new_tcp(ip, static_cast<int>(port));
-
+ 
   if (modbus_connect(modbus_connection_) == -1)
   {
     ROS_ERROR_STREAM_NAMED("LibModbusClient", "Could not establish modbus connection." << modbus_strerror(errno));
@@ -44,6 +74,7 @@ bool LibModbusClient::init(const char* ip, unsigned int port)
     modbus_connection_ = nullptr;
     return false;
   }
+  
   return true;
 }
 
