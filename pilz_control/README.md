@@ -6,6 +6,8 @@ A controlled stop using a hold trajectory is performed thus stopping the manipul
 ## Speed monitoring
 The controller can perform a speed monitoring of the robot links in cartesian space. If one or more robot links move faster than 250 mm/s, a controlled stop is executed. This is a requirement in operation mode T1 from DIN EN ISO 10218-1. See [prbt_hardware_support](https://github.com/PilzDE/pilz_robots/blob/melodic-devel/prbt_hardware_support).
 
+Additionally the controller limits the joint acceleration of the performed trajectories. In the file [joint_limits.yaml](https://github.com/PilzDE/pilz_robots/blob/melodic-devel/prbt_moveit_config/config/joint_limits.yaml) these limits can be adjusted.
+
 The speed monitoring is activated by default.
 
 # ROS API
