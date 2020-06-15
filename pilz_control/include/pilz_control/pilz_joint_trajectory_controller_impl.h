@@ -48,7 +48,7 @@ std::vector<double> getJointAccelerationLimits(const ros::NodeHandle& nh, const 
   for (unsigned int i = 0; i < joint_names.size(); ++i)
   {
     double has_acceleration_limits = false;
-    const std::string param_name_to_read = joint_limits_naming_prefix + joint_names.at(i) + "/has_acceleration_limits";
+    std::string param_name_to_read = joint_limits_naming_prefix + joint_names.at(i) + "/has_acceleration_limits";
     if (!nh.param(param_name_to_read, has_acceleration_limits))
     {
       throw ros::InvalidParameterException("Failed to get the has_acceleration_limits for " + joint_names.at(i) +
@@ -61,7 +61,7 @@ std::vector<double> getJointAccelerationLimits(const ros::NodeHandle& nh, const 
       continue;
     }
 
-    const std::string param_name_to_read = joint_limits_naming_prefix + joint_names.at(i) + "/max_acceleration";
+    param_name_to_read = joint_limits_naming_prefix + joint_names.at(i) + "/max_acceleration";
     if (!nh.param(param_name_to_read, acc_limits.at(i)))
     {
       throw ros::InvalidParameterException("Failed to get the joint acceleration limit for " + joint_names.at(i) +
