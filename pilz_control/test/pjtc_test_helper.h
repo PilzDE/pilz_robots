@@ -87,26 +87,6 @@ static ros::Duration getGoalDuration(const control_msgs::FollowJointTrajectoryGo
 }
 
 /**
- * @brief Cycle through three joint positions in order to always get a movement even if the previous goal failed.
- */
-static GoalType generateSimpleGoal(const ros::Duration& goal_duration = ros::Duration(DEFAULT_GOAL_DURATION_SEC))
-{
-  static unsigned int position_index{ 0 };
-  const std::vector<double> alternating_positions{ 1E-3, 2E-3, 3E-3, 2E-3};  // very small movements to not violate acceleration limit.
-  position_index = (++position_index) % alternating_positions.size();
-
-  std::vector<std::string> joint_names(JOINT_NAMES.begin(), JOINT_NAMES.end());
-
-  GoalType goal;
-  goal.trajectory.joint_names = joint_names;
-  goal.trajectory.points.resize(1);
-  goal.trajectory.points[0].time_from_start = goal_duration;
-  goal.trajectory.points[0].positions = { alternating_positions[position_index], 0.0 };
-
-  return goal;
-}
-
-/**
  * @brief Either return true, when the condition is fulfilled or false, when the timeout has been reached
  * or ROS is shutdown.
  * @param is_condition_fulfilled Boolean function, which is expected to return true eventually.
@@ -153,6 +133,56 @@ static bool updateUntilRobotMotion(RobotDriver* robot_driver,
 {
   return waitFor([robot_driver]() { return robot_driver->isRobotMoving(); }, movement_timeout,
                  [robot_driver]() { robot_driver->update(); });
+}
+
+template <class RobotDriver>
+static bool updateUntilNoRobotMotion(RobotDriver* robot_driver,
+                                     const std::chrono::milliseconds movement_timeout = MOVEMENT_TIMEOUT)
+{
+  return waitFor([robot_driver]() { return !robot_driver->isRobotMoving(); }, movement_timeout,
+                 [robot_driver]() { robot_driver->update(); });
+}
+
+
+template <class RobotDriver>
+static std::vector<double> getMockRobotJointPositions(RobotDriver* robot_driver)
+{
+  robot_driver->update();
+  std::array<JointData, NUM_JOINTS> joint_data = robot_driver->getRobotMock().read();
+  std::vector<double> joint_positions(NUM_JOINTS);
+  for (unsigned int i = 0; i < NUM_JOINTS; ++i)
+  {
+    joint_positions[i] = joint_data.at(i).pos;
+  }
+  return joint_positions;
+}
+
+/**
+ * @brief Cycle through four different postion deltas to always get a motion, even if last goal fails.
+ * These deltas are added to the current position of the robot, to always move relatively and judge the size and speed
+ * of motion correctly.
+ */
+template <class RobotDriver>
+static GoalType generateSimpleGoal(RobotDriver* robot_driver,
+                                   const ros::Duration& goal_duration = ros::Duration(DEFAULT_GOAL_DURATION_SEC),
+                                   const float size_multiplier = 1)
+{
+  updateUntilNoRobotMotion<RobotDriver>(robot_driver);
+  std::vector<double> joint_positions = getMockRobotJointPositions<RobotDriver>(robot_driver);
+  static unsigned int position_shift_index{ 0 };
+  const std::vector<double> alternating_position_shifts{ size_multiplier * 1E-4, size_multiplier * -1E-4,
+                                                         size_multiplier * 2E-4, size_multiplier * -2E-4 };
+  position_shift_index = (++position_shift_index) % alternating_position_shifts.size();
+
+  std::vector<std::string> joint_names(JOINT_NAMES.begin(), JOINT_NAMES.end());
+
+  GoalType goal;
+  goal.trajectory.joint_names = joint_names;
+  goal.trajectory.points.resize(1);
+  goal.trajectory.points[0].time_from_start = goal_duration;
+  goal.trajectory.points[0].positions = { alternating_position_shifts[position_shift_index] + joint_positions[0], 0.0 };
+
+  return goal;
 }
 
 /**

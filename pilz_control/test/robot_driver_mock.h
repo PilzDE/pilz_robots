@@ -44,6 +44,8 @@ public:
 
   bool isRobotMoving() const;
 
+  RobotMock getRobotMock();
+
 private:
   RobotMock robot_;
   ManagerPtr manager_;
@@ -73,6 +75,12 @@ template <class ControllerManager>
 bool RobotDriverMock<ControllerManager>::isRobotMoving() const
 {
   return robot_.isMoving();
+}
+
+template <class ControllerManager>
+RobotMock RobotDriverMock<ControllerManager>::getRobotMock()
+{
+  return robot_;
 }
 
 }  // namespace pilz_joint_trajectory_controller_test

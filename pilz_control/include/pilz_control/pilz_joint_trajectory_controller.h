@@ -208,7 +208,6 @@ private:
   void triggerCancellingOfActiveGoal();
 
 private:
-private:
   ros::ServiceServer hold_position_service;
   ros::ServiceServer unhold_position_service;
   ros::ServiceServer is_executing_service_;

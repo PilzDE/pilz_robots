@@ -90,7 +90,7 @@ void PilzJointTrajectoryControllerTest::SetUp()
 
 testing::AssertionResult PilzJointTrajectoryControllerTest::isControllerInHoldMode()
 {
-  GoalType goal{ generateSimpleGoal() };
+  GoalType goal{ generateSimpleGoal<RobotDriver>(&robot_driver_) };
   action_client_.sendGoal(goal);
   if (!action_client_.waitForActionResult())
   {
@@ -106,7 +106,7 @@ testing::AssertionResult PilzJointTrajectoryControllerTest::isControllerInHoldMo
 
 testing::AssertionResult PilzJointTrajectoryControllerTest::isControllerInUnholdMode()
 {
-  GoalType goal{ generateSimpleGoal() };
+  GoalType goal{ generateSimpleGoal<RobotDriver>(&robot_driver_) };
   action_client_.sendGoal(goal);
   if (!action_client_.waitForActionResult([this]() { robot_driver_.update(); }))
   {
@@ -351,7 +351,7 @@ TEST_F(PilzJointTrajectoryControllerTest, testHoldDuringGoalExecution)
 {
   ASSERT_TRUE(performFullControllerStartup(&robot_driver_));
 
-  GoalType goal{ generateSimpleGoal() };
+  GoalType goal{ generateSimpleGoal<RobotDriver>(&robot_driver_) };
   action_client_.sendGoal(goal);
 
   EXPECT_TRUE(updateUntilRobotMotion<RobotDriver>(&robot_driver_));
@@ -377,7 +377,7 @@ TEST_F(PilzJointTrajectoryControllerTest, testGoalCancellingDuringHold)
 {
   ASSERT_TRUE(performFullControllerStartup(&robot_driver_));
 
-  GoalType goal{ generateSimpleGoal() };
+  GoalType goal{ generateSimpleGoal<RobotDriver>(&robot_driver_) };
   action_client_.sendGoal(goal);
 
   EXPECT_TRUE(updateUntilRobotMotion<RobotDriver>(&robot_driver_));
@@ -395,6 +395,40 @@ TEST_F(PilzJointTrajectoryControllerTest, testGoalCancellingDuringHold)
   EXPECT_TRUE(updateUntilHoldMode<RobotDriver>(&robot_driver_, hold_future));
   EXPECT_TRUE(resp.success);
   EXPECT_TRUE(isControllerInHoldMode());
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+//    Testing the correct handling of trajectories that violate the acceleration limits    //
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief Send a trajectory that has too high acceleration and make sure controller does not execute it.
+ */
+TEST_F(PilzJointTrajectoryControllerTest, testTrajectoryWithTooHighAcceleration)
+{
+  ASSERT_TRUE(performFullControllerStartup(&robot_driver_));
+
+  // unhold controller and record start pose;
+  std_srvs::TriggerRequest req;
+  std_srvs::TriggerResponse resp;
+  EXPECT_TRUE(manager_->triggerUnHold(req, resp));
+  EXPECT_TRUE(resp.success);
+  EXPECT_TRUE(isControllerInUnholdMode());
+
+  // Make sure, robot moves for slow motion
+  GoalType goal{ generateSimpleGoal<RobotDriver>(&robot_driver_, ros::Duration(DEFAULT_GOAL_DURATION_SEC)) };
+  action_client_.sendGoal(goal);
+  EXPECT_TRUE(manager_->controller_->is_executing());
+  action_client_.waitForActionResult();
+  EXPECT_TRUE(updateUntilNoRobotMotion<RobotDriver>(&robot_driver_));
+
+  // Now sending a quicker motion which should trigger the acceleration limit and not move the robot
+  goal = generateSimpleGoal<RobotDriver>(&robot_driver_, ros::Duration(DEFAULT_GOAL_DURATION_SEC), 1E4);
+  EXPECT_TRUE(updateUntilNoRobotMotion<RobotDriver>(&robot_driver_));
+  action_client_.sendGoal(goal);
+  EXPECT_FALSE(manager_->controller_->is_executing());
+  action_client_.waitForActionResult();
+  EXPECT_TRUE(updateUntilNoRobotMotion<RobotDriver>(&robot_driver_));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -512,7 +546,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testActionGoalExecution)
 {
   ASSERT_TRUE(performFullControllerStartup(&robot_driver_));
 
-  GoalType goal{ generateSimpleGoal() };
+  GoalType goal{ generateSimpleGoal<RobotDriver>(&robot_driver_) };
   action_client_.sendGoal(goal);
 
   EXPECT_TRUE(updateUntilRobotMotion<RobotDriver>(&robot_driver_));
@@ -536,7 +570,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testTrajCommandExecution)
   ros::Publisher trajectory_command_publisher =
       nh.advertise<trajectory_msgs::JointTrajectory>(CONTROLLER_NAMESPACE + TRAJECTORY_COMMAND_TOPIC, 1);
 
-  GoalType goal{ generateSimpleGoal() };
+  GoalType goal{ generateSimpleGoal<RobotDriver>(&robot_driver_) };
   trajectory_command_publisher.publish(goal.trajectory);
 
   EXPECT_TRUE(updateUntilRobotMotion<RobotDriver>(&robot_driver_));
@@ -556,7 +590,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStopTrajExecutionAtHold
 {
   ASSERT_TRUE(performFullControllerStartup(&robot_driver_));
 
-  GoalType goal{ generateSimpleGoal() };
+  GoalType goal{ generateSimpleGoal<RobotDriver>(&robot_driver_) };
   action_client_.sendGoal(goal);
 
   EXPECT_TRUE(updateUntilRobotMotion<RobotDriver>(&robot_driver_));
