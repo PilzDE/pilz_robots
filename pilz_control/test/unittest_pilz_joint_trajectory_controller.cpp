@@ -152,7 +152,9 @@ TEST_F(PilzJointTrajectoryControllerTest, testD0Destructor)
 }
 
 /**
- * @brief Test if acceleration limits are correctly received.
+ * @tests{Monitor_joint_accelerations,
+ *   Test if parameters for acceleration limits are correctly read.
+ * }
  */
 TEST_F(PilzJointTrajectoryControllerTest, testGetJointAccelerationLimits)
 {
@@ -177,7 +179,9 @@ TEST_F(PilzJointTrajectoryControllerTest, testGetJointAccelerationLimits)
 }
 
 /**
- * @brief Test if an exception is thrown if the acceleration limits can not be found.
+ * @tests{Monitor_joint_accelerations,
+ *   Test if correct errors are thrown if parameters can not be correctly read.
+ * }
  */
 TEST_F(PilzJointTrajectoryControllerTest, testGetJointAccelerationLimitsException)
 {
