@@ -36,12 +36,15 @@ ACTION_NAME = '/test_joint_trajectory_controller/follow_joint_trajectory'
 STATE_TOPIC_NAME = '/test_joint_trajectory_controller/state'
 
 WAIT_FOR_SERVICE_TIMEOUT_S = 10
+WAIT_FOR_POSITION_TIMEOUT_S = 2
 SLEEP_RATE_HZ = 10
 STOP_DURATION_UPPER_BOUND_S = 0.31
 MAX_DECELERATION = 7.85
 
 # Default goal position of the test trajectory
 DEFAULT_GOAL_POSITION = [0.1, 0]
+DEFAULT_GOAL_DURATION_S = 5
+DEFAULT_GOAL_POSITION_DELTA = .1
 
 controller_ns = rospy.get_param(CONTROLLER_NS_PARAM_NAME)
 
@@ -181,6 +184,20 @@ class MovementObserver:
         with self._stop_trajectory_ok_lock:
             return self._stop_trajectory_ok
 
+
+    def _try_to_get_actual_position(self):
+        with self._controller_state_lock:
+            return self._actual_position
+
+    def get_actual_position(self, timeout):
+        """ Blocking observation until the we can get a position. """
+        r = rospy.Rate(SLEEP_RATE_HZ)
+        start_loop = rospy.Time.now()
+        while self._try_to_get_actual_position() is None:
+            r.sleep()
+            if timeout < (rospy.Time.now() - start_loop).to_sec():
+                raise ObservationException("Could not get position within timeout")
+        return self._try_to_get_actual_position()
 
 class TrajectoryDispatcher:
     """A wrapper around the SimpleActionClient for dispatching trajectories."""
@@ -325,21 +342,23 @@ class TestPilzJointTrajectoryController(unittest.TestCase):
             rospy.sleep(STOP_DURATION_UPPER_BOUND_S)
         self.assertTrue(self._hold_srv.request_default_mode(), 'Switch to default mode failed')
 
-        self.assertTrue(self._move_to(position=DEFAULT_GOAL_POSITION, duration=0.5),
+        self.assertTrue(self._move_to(position=DEFAULT_GOAL_POSITION, duration=DEFAULT_GOAL_DURATION_S),
                         "Motion failed although controller should be in 'unhold' mode")
 
     def test_hold_during_motion(self):
         """Activate hold mode while robot is moving and evaluate executed stop."""
         is_executing_srv = IsExecutingServiceWrapper()
+        motion_observer = MovementObserver()
+        start_pose = motion_observer.get_actual_position(WAIT_FOR_POSITION_TIMEOUT_S)
+        rospy.loginfo("start_pose: " + str(start_pose))
 
         new_pos = list(DEFAULT_GOAL_POSITION)
-        new_pos[0] += 0.1
+        new_pos[0] += DEFAULT_GOAL_POSITION_DELTA
 
-        self._start_motion(position=new_pos, duration=5)
+        self._start_motion(position=new_pos, duration=DEFAULT_GOAL_DURATION_S)
 
         # Wait for movement to commence
-        motion_observer = MovementObserver()
-        motion_observer.observe_until_position_greater([0.11, 0.0], 3)
+        motion_observer.observe_until_position_greater(start_pose, DEFAULT_GOAL_DURATION_S / 2.)
         self.assertTrue(is_executing_srv.call(), "Controller is not executing")
         # Make sure robot stops (not abruptly)
         motion_observer.start_stop_observation()
@@ -355,18 +374,21 @@ class TestPilzJointTrajectoryController(unittest.TestCase):
     def test_speed_monitoring(self):
         """Tests if controller detects Cartesian speed limit violation and switches to hold mode."""
         self.assertTrue(self._turn_on_speed_monitoring(), "Could not turn on speed monitoring")
+        motion_observer = MovementObserver()
 
         # Test speed monitoring for all joints
         for i in range(len(JOINT_NAMES)):
+            start_pose = motion_observer.get_actual_position(WAIT_FOR_POSITION_TIMEOUT_S)
+
             far_away_position = list(DEFAULT_GOAL_POSITION)
-            far_away_position[i] += 0.4
+            far_away_position[i] += DEFAULT_GOAL_POSITION_DELTA
 
             self.assertTrue(self._hold_srv.request_default_mode(), "Switch to default mode failed")
 
-            self.assertTrue(self._move_to(position=DEFAULT_GOAL_POSITION, duration=0.5),
+            self.assertTrue(self._move_to(position=DEFAULT_GOAL_POSITION, duration=DEFAULT_GOAL_DURATION_S),
                             "Motion to default position failed")
 
-            move_result = self._move_to(position=far_away_position, duration=0.1)
+            move_result = self._move_to(position=far_away_position, duration=DEFAULT_GOAL_DURATION_S / 3.)
             # Unfortunately, the goal returns SUCCESSFUL as error_code, in case the motion
             # is cancelled. Therefore, the following check is commented out.
             # self.assertFalse(move_result, "Cartesian speed monitor did not detect speed limit violation")
@@ -377,7 +399,7 @@ class TestPilzJointTrajectoryController(unittest.TestCase):
             motion_observer.start_stop_observation()
             self.assertTrue(motion_observer.wait_for_end_of_stop_observation(), "Stop trajectory incorrect")
 
-            self.assertTrue(self._move_to(position=far_away_position, duration=0.5,
+            self.assertTrue(self._move_to(position=far_away_position, duration=DEFAULT_GOAL_DURATION_S,
                                           expected_error_code=FollowJointTrajectoryResult.INVALID_GOAL),
                             "Controller did not block motion execution although controller should be in 'hold' mode")
 
@@ -386,7 +408,7 @@ class TestPilzJointTrajectoryController(unittest.TestCase):
                 rospy.sleep(STOP_DURATION_UPPER_BOUND_S)
             self.assertTrue(self._hold_srv.request_default_mode(), "Switch to 'unhold' mode failed")
 
-            self.assertTrue(self._move_to(position=far_away_position, duration=0.5),
+            self.assertTrue(self._move_to(position=far_away_position, duration=DEFAULT_GOAL_DURATION_S),
                             "Controller did not allow motion execution, although controller should be in 'unhold' mode")
 
 
