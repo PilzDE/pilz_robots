@@ -111,7 +111,7 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
   CANOpenChainNodeMock canopen_mock;
 
   pilz_testutils::JointStatePublisherMock joint_states_pub;
-  joint_states_pub.startAsync();
+  joint_states_pub.startPublishingAsync();
 
   ManipulatorMock manipulator;
   manipulator.advertiseHoldService(nh, CONTROLLER_HOLD_MODE_SERVICE_NAME);
@@ -138,7 +138,7 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
   /**********
    * Step 6 *
    **********/
-  joint_states_pub.stop();
+  joint_states_pub.stopPublishing();
   modbus_server.terminate();
   modbus_server_thread.join();
 }

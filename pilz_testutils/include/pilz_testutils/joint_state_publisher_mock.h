@@ -40,21 +40,11 @@ class JointStatePublisherMock
   typedef sensor_msgs::JointStateConstPtr JointStateConstPtr;
 
 public:
-  /**
-   * @brief Constructor.
-   * @param ns Namespace in which the joint states are to be published.
-   */
   JointStatePublisherMock();
 
-  /**
-   * @brief Start periodic publishing in a separate thread.
-   */
-  void startAsync();
+  void startPublishingAsync(const double& joint1_start_position = 0.0);
 
-  /**
-   * @brief Set velocity for joint1.
-   */
-  void setVelocity(const double& joint1_velocity);
+  void setJoint1Velocity(const double& vel);
 
   /**
    * @brief Go back to home position (position=velocity=0.0).
@@ -64,15 +54,7 @@ public:
    */
   void goHome();
 
-  /**
-   * @brief Stop publishing joint states.
-   */
-  void stop();
-
-  /**
-   * @brief In degenerate-time-mode each message is published twice.
-   */
-  void setDegenerateTimeMode();
+  void stopPublishing();
 
   /**
    * @brief Return the message which will be published next.
@@ -81,7 +63,9 @@ public:
 
 private:
   void run();
-  void createMessage(JointState& msg);
+  void createNextMessage();
+  void publish();
+  void updateNextMessage();
   void updateJoint1Position();
 
 private:
@@ -90,12 +74,12 @@ private:
   std::vector<std::string> joint_names_;
   std::atomic_bool stop_flag_;
   std::atomic_bool go_home_flag_;
-  std::atomic_bool degenerate_time_flag_{ false };
   std::thread publisher_thread_;
-  std::mutex joint1_position_mutex_;
-  std::mutex joint1_velocity_mutex_;
   double joint1_position_{ 0.0 };
   double joint1_velocity_{ 0.0 };
+  ros::Time next_time_stamp_;
+  JointState next_msg_;
+  std::mutex next_msg_mutex_;
 };
 
 }  // namespace pilz_testutils

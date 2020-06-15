@@ -53,17 +53,18 @@ JointStatePublisherMock::JointStatePublisherMock()
   pub_ = nh_.advertise<JointState>(nh_.getNamespace() + "/" + JOINT_STATES_TOPIC_NAME, JOINT_STATES_QUEUE_SIZE);
 }
 
-void JointStatePublisherMock::startAsync()
+void JointStatePublisherMock::startPublishingAsync(const double& joint1_start_position)
 {
   stop_flag_ = false;
+  joint1_position_ = joint1_start_position;
   publisher_thread_ = std::thread(&JointStatePublisherMock::run, this);
 }
 
-void JointStatePublisherMock::setVelocity(const double& joint1_velocity)
+void JointStatePublisherMock::setJoint1Velocity(const double& vel)
 {
   go_home_flag_ = false;
-  std::lock_guard<std::mutex> lock(joint1_velocity_mutex_);
-  joint1_velocity_ = joint1_velocity;
+  std::lock_guard<std::mutex> lock(next_msg_mutex_);
+  joint1_velocity_ = vel;
 }
 
 void JointStatePublisherMock::goHome()
@@ -71,7 +72,7 @@ void JointStatePublisherMock::goHome()
   go_home_flag_ = true;
 }
 
-void JointStatePublisherMock::stop()
+void JointStatePublisherMock::stopPublishing()
 {
   if (publisher_thread_.joinable())
   {
@@ -80,54 +81,58 @@ void JointStatePublisherMock::stop()
   }
 }
 
-void JointStatePublisherMock::setDegenerateTimeMode()
-{
-  degenerate_time_flag_ = true;
-}
-
 sensor_msgs::JointStateConstPtr JointStatePublisherMock::getNextMessage()
 {
-  JointState msg;
-  createMessage(msg);
-  return boost::make_shared<JointState>(msg);
+  std::lock_guard<std::mutex> lock(next_msg_mutex_);
+  return boost::make_shared<JointState>(next_msg_);
 }
 
 void JointStatePublisherMock::run()
 {
+  next_time_stamp_ = ros::Time::now();
+  createNextMessage();
+
   ros::Rate rate{ JOINT_STATES_RATE };
   while (ros::ok() && !stop_flag_)
   {
-    JointState msg;
-    createMessage(msg);
-    pub_.publish(msg);
-    if (degenerate_time_flag_)
-    {
-      pub_.publish(msg);
-    }
+    next_time_stamp_ = next_time_stamp_ + rate.expectedCycleTime();
+
+    std::unique_lock<std::mutex> lock(next_msg_mutex_);
+    publish();
     updateJoint1Position();
+    updateNextMessage();
+    lock.unlock();
+
     rate.sleep();
   }
 }
 
-void JointStatePublisherMock::createMessage(JointState& msg)
+void JointStatePublisherMock::createNextMessage()
 {
-  msg.name = joint_names_;
-  msg.header.stamp = ros::Time::now();
-  msg.position.resize(joint_names_.size(), 0.0);
-  msg.velocity.resize(joint_names_.size(), 0.0);
-  msg.effort.resize(joint_names_.size(), 0.0);
+  next_msg_.name = joint_names_;
+  next_msg_.header.stamp = next_time_stamp_;
+  next_msg_.position.resize(joint_names_.size(), 0.0);
+  next_msg_.velocity.resize(joint_names_.size(), 0.0);
+  next_msg_.effort.resize(joint_names_.size(), 0.0);
 
-  std::lock_guard<std::mutex> lock(joint1_position_mutex_);
-  msg.position.at(0) = joint1_position_;
+  next_msg_.position.at(0) = joint1_position_;
+}
+
+void JointStatePublisherMock::publish()
+{
+  pub_.publish(next_msg_);
+}
+
+void JointStatePublisherMock::updateNextMessage()
+{
+  next_msg_.header.stamp = next_time_stamp_;
+  next_msg_.position.at(0) = joint1_position_;
 }
 
 void JointStatePublisherMock::updateJoint1Position()
 {
-  std::unique_lock<std::mutex> velocity_lock(joint1_velocity_mutex_);
   double delta = joint1_velocity_ / static_cast<double>(JOINT_STATES_RATE);
-  velocity_lock.unlock();
 
-  std::lock_guard<std::mutex> position_lock(joint1_position_mutex_);
   if (go_home_flag_)
   {
     if (std::abs(delta) > std::abs(joint1_position_))
