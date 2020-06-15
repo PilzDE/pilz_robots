@@ -143,7 +143,6 @@ static bool updateUntilNoRobotMotion(RobotDriver* robot_driver,
                  [robot_driver]() { robot_driver->update(); });
 }
 
-
 template <class RobotDriver>
 static std::vector<double> getMockRobotJointPositions(RobotDriver* robot_driver)
 {

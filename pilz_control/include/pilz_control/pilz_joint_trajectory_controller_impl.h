@@ -42,7 +42,7 @@ namespace ph = std::placeholders;
  */
 std::vector<double> getJointAccelerationLimits(const ros::NodeHandle& nh, const std::vector<std::string> joint_names)
 {
-  const std::string joint_limits_naming_prefix { "/joint_limits/" };
+  const std::string joint_limits_naming_prefix{ "/joint_limits/" };
 
   std::vector<double> acc_limits(joint_names.size());
   for (unsigned int i = 0; i < joint_names.size(); ++i)
