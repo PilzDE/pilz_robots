@@ -156,14 +156,28 @@ TEST_F(PilzJointTrajectoryControllerTest, testD0Destructor)
  */
 TEST_F(PilzJointTrajectoryControllerTest, testGetJointAccelerationLimits)
 {
+  // test setup
   ros::NodeHandle nh{ "~" };
   std::vector<std::string> joint_names;
-  EXPECT_TRUE(nh.getParam(CONTROLLER_JOINT_NAMES_PARAM, joint_names));
-  EXPECT_FALSE(joint_names.empty());
+  ASSERT_TRUE(nh.getParam(CONTROLLER_JOINT_NAMES_PARAM, joint_names));
+  ASSERT_FALSE(joint_names.empty());
+
+  // test with existing acc limits
   std::vector<double> acceleration_limits = getJointAccelerationLimits(nh, joint_names);
   EXPECT_EQ(joint_names.size(), acceleration_limits.size());
   EXPECT_FLOAT_EQ(acceleration_limits.at(0), 3.49);
   EXPECT_FLOAT_EQ(acceleration_limits.at(1), 3.49);  // as of pilz_control/test/config/joint_limits.yaml
+
+  // testing behaviour if acc limit can not be read
+  std::vector<std::string> joint_names_no_acc_limit = { "joint_with_undefined_max_acc" };
+  EXPECT_THROW(getJointAccelerationLimits(nh, joint_names_no_acc_limit), ros::InvalidParameterException);
+
+  // testing behaviour if `has_acceleration_limits` is false
+  std::vector<std::string> joint_names_has_acc_lim_false = { "joint_with_has_acc_lim_false" };
+  std::vector<double> acceleration_limits_has_acc_lim_false =
+      getJointAccelerationLimits(nh, joint_names_has_acc_lim_false);
+  EXPECT_EQ(joint_names_has_acc_lim_false.size(), acceleration_limits_has_acc_lim_false.size());
+  EXPECT_FLOAT_EQ(acceleration_limits_has_acc_lim_false.at(0), 0);
 }
 
 /**
