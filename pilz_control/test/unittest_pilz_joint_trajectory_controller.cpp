@@ -168,10 +168,6 @@ TEST_F(PilzJointTrajectoryControllerTest, testGetJointAccelerationLimits)
   EXPECT_FLOAT_EQ(acceleration_limits.at(0), 3.49);
   EXPECT_FLOAT_EQ(acceleration_limits.at(1), 3.49);  // as of pilz_control/test/config/joint_limits.yaml
 
-  // testing behaviour if acc limit can not be read
-  std::vector<std::string> joint_names_no_acc_limit = { "joint_with_undefined_max_acc" };
-  EXPECT_THROW(getJointAccelerationLimits(nh, joint_names_no_acc_limit), ros::InvalidParameterException);
-
   // testing behaviour if `has_acceleration_limits` is false
   std::vector<std::string> joint_names_has_acc_lim_false = { "joint_with_has_acc_lim_false" };
   std::vector<double> acceleration_limits_has_acc_lim_false =
@@ -186,8 +182,14 @@ TEST_F(PilzJointTrajectoryControllerTest, testGetJointAccelerationLimits)
 TEST_F(PilzJointTrajectoryControllerTest, testGetJointAccelerationLimitsException)
 {
   ros::NodeHandle nh{ "~" };
-  std::vector<std::string> joint_names = { "non_existant_joint_name" };
-  EXPECT_THROW(getJointAccelerationLimits(nh, joint_names), ros::InvalidParameterException);
+
+  // testing behaviour if acc limit can not be read
+  std::vector<std::string> joint_names_no_acc_limit = { "joint_with_undefined_max_acc" };
+  EXPECT_THROW(getJointAccelerationLimits(nh, joint_names_no_acc_limit), ros::InvalidParameterException);
+
+  // testing behaviour if `has_acceleration_limits` is undefined
+  std::vector<std::string> joint_names_has_acc_lim_undefined = { "joint_with_undefined_has_acc_lim" };
+  EXPECT_THROW(getJointAccelerationLimits(nh, joint_names_has_acc_lim_undefined), ros::InvalidParameterException);
 }
 
 /////////////////////////////////////
