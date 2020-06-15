@@ -243,7 +243,7 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
         rospy.sleep(_SLEEP_TIME)
 
         self._max_frame_speed.reset()
-        self._perform_scaled_movement(0.1)
+        self._trajectory_dispatcher.send_action_goal(position=self._target_position, time_from_start=0.02)
         self.assertGreater(_SPEED_LIMIT, self._max_frame_speed.get(), 'Speed limit of 0.25[m/s] was violated')
 
     def test_automatic_mode(self):
