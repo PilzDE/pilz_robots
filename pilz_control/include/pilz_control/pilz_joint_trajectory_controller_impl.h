@@ -47,7 +47,7 @@ std::vector<double> getJointAccelerationLimits(const ros::NodeHandle& nh, const 
   std::vector<double> acc_limits(joint_names.size());
   for (unsigned int i = 0; i < joint_names.size(); ++i)
   {
-    double has_acceleration_limits = false;
+    bool has_acceleration_limits = false;
     std::string param_name_to_read = joint_limits_naming_prefix + joint_names.at(i) + "/has_acceleration_limits";
     if (!nh.param(param_name_to_read, has_acceleration_limits))
     {
