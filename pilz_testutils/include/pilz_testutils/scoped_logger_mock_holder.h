@@ -25,20 +25,33 @@
 namespace pilz_testutils
 {
 /**
- * @brief Class holding a logger mock to be used in tests where logging is checked.
- * 
+ * @brief Class holding a logger mock within a given scope to be used in tests with logging checks.
+ *
  * This class serves as scoped version of the LoggerMock.
  * After going out of scoped the LoggerMock is removed from the logging
  * mechanism.
  *
+ * <b>Usage</b><br>
  *
- * \e Usage:<br>
- * Suppose you expect a certain warning during your test use
+ * \code
+ *
+ * #include <pilz_testutils/scoped_logger_mock_holder.h>
+ *
+ * pilz_testutils::ScopedLoggerMockHolder ros_log_mock;
+ *
+ * EXPECT_CALL(*ros_log_mock, append(IsWarn("Your warning text"),_))
+ *            .Times(1));
+ *
+ * function_causing_warning();
+ *
+ * \endcode
+ * <br>
+ * <b>Asynchronous usage in combination with testing::AsyncTest</b><br>
  *
  * \code
  *
  * #include <pilz_testutils/async_test.h>
- * #include <pilz_testutils/ros_log_extender.h>
+ * #include <pilz_testutils/scoped_logger_mock_holder.h>
  *
  *
  * const std::string LOG_MSG_RECEIVED_EVENT{ "logger_called_event" };
@@ -48,7 +61,7 @@ namespace pilz_testutils
  * EXPECT_CALL(*ros_log_mock, append(IsWarn("Your warning text"),_))
  *            .WillOnce(ACTION_OPEN_BARRIER_VOID(LOG_MSG_RECEIVED_EVENT));
  *
- * function_causing_warning();
+ * function_causing_async_warning();
  *
  * BARRIER(LOG_MSG_RECEIVED_EVENT); // Wait till log message is received
  *

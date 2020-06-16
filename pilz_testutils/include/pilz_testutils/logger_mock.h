@@ -30,6 +30,9 @@ namespace pilz_testutils
 /**
  * @brief Class for checking logging messages during tests
  *
+ * @related ScopedLoggerMockHolder
+ *
+ * @note If possible please use the safer and more convenient ScopedLoggerMockHolder
  *
  * \e Usage:<br>
  * Suppose you expect a certain warning during your test use
