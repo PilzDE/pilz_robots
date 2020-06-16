@@ -42,7 +42,7 @@ namespace pilz_testutils
  * auto mock_logger = new pilz_testutils::LoggerMock();
  * logger->addAppender(mock_logger);
  *
- * EXPECT_CALL(*mock_logger, append(IsWarn("Your warning text"),_)).Times(1);
+ * EXPECT_LOG(*mock_logger, WARN, "Your warning text").Times(1);
  *
  * function_causing_warning();
  *
@@ -86,6 +86,8 @@ GENERATE_LOGMESSAGE_MATCHER_P(INFO)
 GENERATE_LOGMESSAGE_MATCHER_P(WARN)
 GENERATE_LOGMESSAGE_MATCHER_P(ERROR)
 GENERATE_LOGMESSAGE_MATCHER_P(FATAL)
+
+#define EXPECT_LOG(logger, severity, msg) EXPECT_CALL(logger, append(Is##severity(msg), ::testing::_))
 
 }  // namespace pilz_testutils
 

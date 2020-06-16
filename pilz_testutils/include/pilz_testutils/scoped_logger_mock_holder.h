@@ -39,8 +39,7 @@ namespace pilz_testutils
  *
  * pilz_testutils::ScopedLoggerMockHolder ros_log_mock;
  *
- * EXPECT_CALL(*ros_log_mock, append(IsWarn("Your warning text"),_))
- *            .Times(1));
+ * EXPECT_LOG(*mock_logger, WARN, "Your warning text").Times(1);
  *
  * function_causing_warning();
  *
@@ -58,7 +57,7 @@ namespace pilz_testutils
  *
  * pilz_testutils::ScopedLoggerMockHolder ros_log_mock;
  *
- * EXPECT_CALL(*ros_log_mock, append(IsWarn("Your warning text"),_))
+ * EXPECT_LOG(*mock_logger, WARN, "Your warning text")
  *            .WillOnce(ACTION_OPEN_BARRIER_VOID(LOG_MSG_RECEIVED_EVENT));
  *
  * function_causing_async_warning();

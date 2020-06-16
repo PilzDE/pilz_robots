@@ -510,11 +510,10 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testTrajCommandExecution)
   GoalType goal{ generateSimpleGoal() };
 
   pilz_testutils::ScopedLoggerMockHolder logger_mock_holder;
-  EXPECT_CALL(*logger_mock_holder,
-              append(IsWARN("For safety reasons the trajectory command interface is deactivated "
-                            "(for more information see https://github.com/ros-controls/ros_controllers/issues/493). "
-                            "Please use the action interface instead."),
-                     _))
+  EXPECT_LOG(*logger_mock_holder, WARN,
+             "For safety reasons the trajectory command interface is deactivated "
+             "(for more information see https://github.com/ros-controls/ros_controllers/issues/493). "
+             "Please use the action interface instead.")
       .WillOnce(ACTION_OPEN_BARRIER_VOID(LOG_MSG_RECEIVED_EVENT));
 
   trajectory_command_publisher.publish(goal.trajectory);
