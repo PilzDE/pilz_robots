@@ -73,8 +73,6 @@ public:
   }
 };
 
-namespace levels = ::ros::console::levels;
-
 #define GENERATE_LOGMESSAGE_MATCHER_P(severity)                                                                        \
   MATCHER_P(Is##severity, msg, "")                                                                                     \
   {                                                                                                                    \
