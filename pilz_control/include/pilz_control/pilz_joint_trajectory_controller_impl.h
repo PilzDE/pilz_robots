@@ -55,7 +55,7 @@ std::vector<boost::optional<double>>
 PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::getJointAccelerationLimits(
     const ros::NodeHandle& nh, const std::vector<std::string>& joint_names)
 {
-  const std::string joint_limits_naming_prefix{ "/joint_limits/" };
+  const std::string joint_limits_naming_prefix{ "joint_limits/" };
 
   std::vector<boost::optional<double>> acc_limits(joint_names.size());
   for (unsigned int i = 0; i < joint_names.size(); ++i)
@@ -102,7 +102,7 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
 {
   bool res = JointTrajectoryController::init(hw, root_nh, controller_nh);
 
-  ros::NodeHandle limits_nh(controller_nh, "limits");
+  ros::NodeHandle limits_nh("/robot_description_planning");
   acceleration_joint_limits_ = getJointAccelerationLimits(limits_nh, JointTrajectoryController::joint_names_);
 
   using robot_model_loader::RobotModelLoader;
