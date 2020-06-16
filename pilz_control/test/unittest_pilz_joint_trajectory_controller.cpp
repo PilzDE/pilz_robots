@@ -18,6 +18,7 @@
 #include <functional>
 #include <future>
 #include <thread>
+#include <exception>
 
 #include <gtest/gtest.h>
 
@@ -359,39 +360,34 @@ TEST_F(PilzJointTrajectoryControllerTest, testGoalCancellingDuringHold)
 //    Parameterized tests for the "is-executing-check" functionality    //
 //////////////////////////////////////////////////////////////////////////
 
-//! The return value indicates if the call was successful (in case of a service callback), the actual result
-//! of the is-executing-check is assigned (via reference) to the second argument.
-using InvokeIsExecuting = std::function<testing::AssertionResult(const ControllerPtr&, bool&)>;
+using IsExecutingFunc = std::function<bool(const ControllerPtr&)>;
 
-static testing::AssertionResult InvokeIsExecutingMethod(const ControllerPtr& controller, bool& result)
+static bool InvokeIsExecutingMethod(const ControllerPtr& controller)
 {
-  result = controller->is_executing();
-  return testing::AssertionSuccess();
+  return controller->is_executing();
 }
 
-static testing::AssertionResult InvokeIsExecutingServiceCallback(const ControllerPtr& controller, bool& result)
+static bool InvokeIsExecutingServiceCallback(const ControllerPtr& controller)
 {
   std_srvs::TriggerRequest req;
   std_srvs::TriggerResponse resp;
   if (!controller->handleIsExecutingRequest(req, resp))
   {
-    return testing::AssertionFailure() << "Callback of is_executing returned false unexpectedly.";
+    throw std::runtime_error("Callback of is_executing returned false unexpectedly.");
   }
-
-  result = resp.success;
-  return testing::AssertionSuccess();
+  return resp.success;
 }
 
 /**
  * @brief For testing both the isExecuting method and the is_executing service callback we use parameterized tests.
  */
 class PilzJointTrajectoryControllerIsExecutingTest : public testing::Test,
-                                                     public testing::WithParamInterface<InvokeIsExecuting>
+                                                     public testing::WithParamInterface<IsExecutingFunc>
 {
 protected:
   void SetUp() override;
 
-  testing::AssertionResult invokeIsExecuting(bool& result);
+  bool isControllerExecuting();
 
 protected:
   RobotDriver robot_driver_{ CONTROLLER_NAMESPACE };
@@ -409,19 +405,16 @@ void PilzJointTrajectoryControllerIsExecutingTest::SetUp()
   startSimTime();
 }
 
-testing::AssertionResult PilzJointTrajectoryControllerIsExecutingTest::invokeIsExecuting(bool& result)
+bool PilzJointTrajectoryControllerIsExecutingTest::isControllerExecuting()
 {
   auto invoke_is_executing{ GetParam() };
-  return invoke_is_executing(manager_->controller_, result);
+  return invoke_is_executing(manager_->controller_);
 }
 
 TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testNotStarted)
 {
   ASSERT_TRUE(manager_->loadController()) << "Failed to initialize the controller.";
-
-  bool is_executing_result;
-  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
+  EXPECT_FALSE(isControllerExecuting()) << "There should be no execution to detect";
 }
 
 /**
@@ -434,9 +427,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testFakeStart)
   ASSERT_TRUE(manager_->loadController()) << "Failed to initialize the controller.";
 
   manager_->controller_->state_ = Controller::RUNNING;
-  bool is_executing_result;
-  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
+  EXPECT_FALSE(isControllerExecuting()) << "There should be no execution to detect";
 }
 
 TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStopTrajExecutionAtStart)
@@ -445,25 +436,19 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStopTrajExecutionAtStar
 
   manager_->startController();
 
-  bool is_executing_result;
-  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_TRUE(is_executing_result) << "Failed to detect stop trajectory execution at start.";
+  EXPECT_TRUE(isControllerExecuting()) << "Failed to detect stop trajectory execution at start.";
 
   ros::Duration stop_duration{ STOP_TRAJECTORY_DURATION_SEC + 2 * DEFAULT_UPDATE_PERIOD_SEC };
   progressInTime(stop_duration);
   robot_driver_.update();
 
-  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
+  EXPECT_FALSE(isControllerExecuting()) << "There should be no execution to detect";
 }
 
 TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testNotExecutingAfterUnhold)
 {
   ASSERT_TRUE(performFullControllerStartup(&robot_driver_));
-
-  bool is_executing_result;
-  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
+  EXPECT_FALSE(isControllerExecuting()) << "There should be no execution to detect";
 }
 
 TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testActionGoalExecution)
@@ -475,15 +460,12 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testActionGoalExecution)
 
   EXPECT_TRUE(updateUntilRobotMotion<RobotDriver>(&robot_driver_));
 
-  bool is_executing_result;
-  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_TRUE(is_executing_result) << "Failed to detect action goal execution";
+  EXPECT_TRUE(isControllerExecuting()) << "Failed to detect action goal execution";
 
   progressInTime(getGoalDuration(goal) + ros::Duration(DEFAULT_UPDATE_PERIOD_SEC));
   robot_driver_.update();
 
-  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
+  EXPECT_FALSE(isControllerExecuting()) << "There should be no execution to detect";
 }
 
 TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testTrajCommandExecution)
@@ -499,15 +481,12 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testTrajCommandExecution)
 
   EXPECT_TRUE(updateUntilRobotMotion<RobotDriver>(&robot_driver_));
 
-  bool is_executing_result;
-  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_TRUE(is_executing_result) << "Failed to detect trajectory command execution";
+  EXPECT_TRUE(isControllerExecuting()) << "Failed to detect trajectory command execution";
 
   progressInTime(getGoalDuration(goal) + ros::Duration(DEFAULT_UPDATE_PERIOD_SEC));
   robot_driver_.update();
 
-  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
+  EXPECT_FALSE(isControllerExecuting()) << "There should be no execution to detect";
 }
 
 TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStopTrajExecutionAtHold)
@@ -530,15 +509,12 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStopTrajExecutionAtHold
 
   robot_driver_.update();
 
-  bool is_executing_result;
-  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_TRUE(is_executing_result) << "Failed to detect stop trajectory execution";
+  EXPECT_TRUE(isControllerExecuting()) << "Failed to detect stop trajectory execution";
 
   EXPECT_TRUE(updateUntilHoldMode<RobotDriver>(&robot_driver_, hold_future));
   EXPECT_TRUE(resp.success);
 
-  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
+  EXPECT_FALSE(isControllerExecuting()) << "There should be no execution to detect";
 }
 
 INSTANTIATE_TEST_CASE_P(MethodAndServiceCallback, PilzJointTrajectoryControllerIsExecutingTest,
