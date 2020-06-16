@@ -73,10 +73,10 @@ public:
   }
 };
 
-#define GENERATE_LOGMESSAGE_MATCHER_P(severity)                                                                        \
-  MATCHER_P(Is##severity, msg, "")                                                                                     \
+#define GENERATE_LOGMESSAGE_MATCHER_P(level)                                                                           \
+  MATCHER_P(Is##level, msg, "")                                                                                        \
   {                                                                                                                    \
-    return arg->getLevel()->toInt() == log4cxx::Level::severity##_INT && std::string(msg) == arg->getMessage();        \
+    return arg->getLevel()->toInt() == log4cxx::Level::level##_INT && std::string(msg) == arg->getMessage();           \
   }
 
 GENERATE_LOGMESSAGE_MATCHER_P(DEBUG)
@@ -85,7 +85,7 @@ GENERATE_LOGMESSAGE_MATCHER_P(WARN)
 GENERATE_LOGMESSAGE_MATCHER_P(ERROR)
 GENERATE_LOGMESSAGE_MATCHER_P(FATAL)
 
-#define EXPECT_LOG(logger, severity, msg) EXPECT_CALL(logger, append(Is##severity(msg), ::testing::_))
+#define EXPECT_LOG(logger, level, msg) EXPECT_CALL(logger, append(Is##level(msg), ::testing::_))
 
 }  // namespace pilz_testutils
 
