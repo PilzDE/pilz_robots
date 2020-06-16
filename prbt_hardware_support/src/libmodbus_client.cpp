@@ -36,7 +36,7 @@ LibModbusClient::~LibModbusClient()
 
 bool LibModbusClient::init(const char* ip, unsigned int port)
 {
-  long   arg;
+  long   result; // auxiliary variable
   int    sockfd;
   int    retries;
   struct sockaddr_in serv_addr;
@@ -46,9 +46,9 @@ bool LibModbusClient::init(const char* ip, unsigned int port)
   serv_addr.sin_family = AF_INET;                   
   serv_addr.sin_port = htons((short unsigned int)port);
   
-  arg = fcntl(sockfd, F_GETFL, NULL); 
-  arg |= O_NONBLOCK; 
-  fcntl(sockfd, F_SETFL, arg);                   //set connection to non blocking, no timeout
+  result = fcntl(sockfd, F_GETFL, NULL); 
+  result |= O_NONBLOCK; 
+  fcntl(sockfd, F_SETFL, result);                   //set connection to non blocking, no timeout
   serv_addr.sin_addr.s_addr = inet_addr(ip); 
   retries = 20;
   //try 20 times to connect within 100 mseconds
