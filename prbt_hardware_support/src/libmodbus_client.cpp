@@ -60,7 +60,7 @@ bool LibModbusClient::init(const char* ip, unsigned int port)
        ROS_ERROR_STREAM_NAMED("LibModbusClient","Could not establish modbus connection. Cable connected?");
        return false;
     }
-    usleep(100000); // wait 1 sec
+    usleep(100000); // wait 100 ms
   }
   ::close(sockfd); 
   sleep(1);                                  //wait one second until port is released
