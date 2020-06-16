@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef ROS_LOG_EXTENDER_H
-#define ROS_LOG_EXTENDER_H
+#ifndef SCOPED_LOGGER_MOCK_HOLDER_H
+#define SCOPED_LOGGER_MOCK_HOLDER_H
 
 #include <string>
 
@@ -25,7 +25,11 @@
 namespace pilz_testutils
 {
 /**
- * @brief Class for checking ROS log messages during tests.
+ * @brief Class holding a logger mock to be used in tests where logging is checked.
+ * 
+ * This class serves as scoped version of the LoggerMock.
+ * After going out of scoped the LoggerMock is removed from the logging
+ * mechanism.
  *
  *
  * \e Usage:<br>
@@ -39,7 +43,7 @@ namespace pilz_testutils
  *
  * const std::string LOG_MSG_RECEIVED_EVENT{ "logger_called_event" };
  *
- * pilz_testutils::ROSLogExtender ros_log_mock;
+ * pilz_testutils::ScopedLoggerMockHolder ros_log_mock;
  *
  * EXPECT_CALL(*ros_log_mock, append(IsWarn("Your warning text"),_))
  *            .WillOnce(ACTION_OPEN_BARRIER_VOID(LOG_MSG_RECEIVED_EVENT));
@@ -50,11 +54,11 @@ namespace pilz_testutils
  *
  * \endcode
  */
-class ROSLogExtender
+class ScopedLoggerMockHolder
 {
 public:
-  ROSLogExtender(const std::string& logger_name = ROSCONSOLE_ROOT_LOGGER_NAME);
-  ~ROSLogExtender();
+  ScopedLoggerMockHolder(const std::string& logger_name = ROSCONSOLE_ROOT_LOGGER_NAME);
+  ~ScopedLoggerMockHolder();
 
 public:
   LoggerMock& operator*();
@@ -67,22 +71,22 @@ private:
   LoggerMock* logger_mock_{ new LoggerMock() };
 };
 
-inline ROSLogExtender::ROSLogExtender(const std::string& logger_name)
+inline ScopedLoggerMockHolder::ScopedLoggerMockHolder(const std::string& logger_name)
   : ros_root_logger_(log4cxx::Logger::getLogger(logger_name))
 {
   ros_root_logger_->addAppender(logger_mock_);
 }
 
-inline ROSLogExtender::~ROSLogExtender()
+inline ScopedLoggerMockHolder::~ScopedLoggerMockHolder()
 {
   ros_root_logger_->removeAppender(logger_mock_);
 }
 
-inline LoggerMock& ROSLogExtender::operator*()
+inline LoggerMock& ScopedLoggerMockHolder::operator*()
 {
   return *logger_mock_;
 }
 
 }  // namespace pilz_testutils
 
-#endif  // ROS_LOG_EXTENDER_H
+#endif  // SCOPED_LOGGER_MOCK_HOLDER_H
