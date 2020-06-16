@@ -519,8 +519,8 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testTrajCommandExecution)
   trajectory_command_publisher.publish(goal.trajectory);
 
   ros::Duration observation_time = getGoalDuration(goal) + ros::Duration(DEFAULT_UPDATE_PERIOD_SEC);
-  EXPECT_TRUE(noExecutionObserving<RobotDriver>(&robot_driver_,
-                                                std::chrono::milliseconds(observation_time.toNSec() * 1000000ll)));
+  EXPECT_FALSE(
+      updateUntilRobotMotion(&robot_driver_, std::chrono::milliseconds(observation_time.toNSec() * 1000000ll)));
   BARRIER(LOG_MSG_RECEIVED_EVENT);
 }
 

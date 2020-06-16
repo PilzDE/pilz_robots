@@ -155,33 +155,6 @@ static bool updateUntilRobotMotion(RobotDriver* robot_driver,
                  [robot_driver]() { robot_driver->update(); });
 }
 
-//! @brief Checks for the specified observation time that the robot does not move.
-template <class RobotDriver>
-static testing::AssertionResult noExecutionObserving(RobotDriver* robot_driver,
-                                                     const std::chrono::milliseconds observation_time)
-{
-  const std::chrono::system_clock::time_point start{ std::chrono::system_clock::now() };
-  while (ros::ok())
-  {
-    if (robot_driver->isRobotMoving())
-    {
-      return testing::AssertionFailure() << "Controller unexpectedly executed a trajectory.";
-    }
-
-    if (std::chrono::system_clock::now() - start > observation_time)
-    {
-      return testing::AssertionSuccess() << "Controller did not execute a trajectory.";
-    }
-
-    progressInTime(ros::Duration(DEFAULT_UPDATE_PERIOD_SEC));
-    robot_driver->update();
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_TIME_MSEC));
-  }
-
-  return testing::AssertionFailure() << "ROS seems to have problems -> motion observation failed.";
-}
-
 /**
  * @brief Perform init, start, unhold and update, such that controller is ready for executing.
  */
