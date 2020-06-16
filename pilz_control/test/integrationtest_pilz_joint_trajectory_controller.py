@@ -184,7 +184,6 @@ class MovementObserver:
         with self._stop_trajectory_ok_lock:
             return self._stop_trajectory_ok
 
-
     def _try_to_get_actual_position(self):
         with self._controller_state_lock:
             return self._actual_position
@@ -198,6 +197,7 @@ class MovementObserver:
             if timeout < (rospy.Time.now() - start_loop).to_sec():
                 raise ObservationException("Could not get position within timeout")
         return self._try_to_get_actual_position()
+
 
 class TrajectoryDispatcher:
     """A wrapper around the SimpleActionClient for dispatching trajectories."""
@@ -393,7 +393,8 @@ class TestPilzJointTrajectoryController(unittest.TestCase):
             # is cancelled. Therefore, the following check is commented out.
             # self.assertFalse(move_result, "Cartesian speed monitor did not detect speed limit violation")
 
-            self.assertEqual(GoalStatus.PREEMPTED, self._trajectory_dispatcher.get_last_state(), 'Goal was not preempted.')
+            self.assertEqual(GoalStatus.PREEMPTED, self._trajectory_dispatcher.get_last_state(),
+                             'Goal was not preempted.')
             motion_observer = MovementObserver()
             # Make sure robot stops (not abruptly)
             motion_observer.start_stop_observation()
