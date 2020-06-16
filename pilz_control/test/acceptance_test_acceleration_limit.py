@@ -35,7 +35,7 @@ TEST_JOINT_TARGET_POSITION = 0.5
 TEST_JOINT_ACC_LIMIT = 3.49
 
 SLEEP_UNHOLD_FAILURE_S = 3
-DEFAULT_TRAJECTORY_DURATION_S = 5
+DEFAULT_TRAJECTORY_DURATION_S = 10
 WAIT_FOR_SERVICE_TIMEOUT_S = 10
 WAIT_FOR_MESSAGE_TIMEOUT_S = 10
 
@@ -135,7 +135,7 @@ class AcceptancetestAccelerationLimit(unittest.TestCase):
         self._start_position = [0.0]*len(JOINT_NAMES)
         self._start_position[TEST_JOINT_INDEX] = TEST_JOINT_START_POSITION
         self._target_position = [0.0]*len(JOINT_NAMES)
-        self._start_position[TEST_JOINT_INDEX] = TEST_JOINT_TARGET_POSITION
+        self._target_position[TEST_JOINT_INDEX] = TEST_JOINT_TARGET_POSITION
         self._target_velocity = [0.0]*len(JOINT_NAMES)
 
         self._unhold_controller()
@@ -155,7 +155,7 @@ class AcceptancetestAccelerationLimit(unittest.TestCase):
         self._trajectory_dispatcher.sendActionGoal(position=self._target_position, time_from_start=0.02)
 
         self.assertAlmostEqual(self._robot_observer.get_actual_position(), TEST_JOINT_START_POSITION,
-                               msg='Robot did not stand still as expected')
+                               msg='Robot did not stand still as expected', delta=0.01)
 
     def test_critical_continuous_movement(self):
         rospy.loginfo('!!! BE CAREFUL. ROBOT MIGHT CRASH. !!!')
