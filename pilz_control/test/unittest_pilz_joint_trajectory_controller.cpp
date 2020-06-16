@@ -493,7 +493,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testActionGoalExecution)
   EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
 }
 
-using pilz_testutils::IsWarn;
+using pilz_testutils::IsWARN;
 using ::testing::_;
 /**
  * @brief Tests that the controller does not execute if a trajectory is sent via command interface.
@@ -510,7 +510,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testTrajCommandExecution)
 
   pilz_testutils::ROSLogExtender ros_log_extender;
   EXPECT_CALL(*ros_log_extender,
-              append(IsWarn("For safety reasons the trajectory command interface is deactivated "
+              append(IsWARN("For safety reasons the trajectory command interface is deactivated "
                             "(for more information see https://github.com/ros-controls/ros_controllers/issues/493). "
                             "Please use the action interface instead."),
                      _))

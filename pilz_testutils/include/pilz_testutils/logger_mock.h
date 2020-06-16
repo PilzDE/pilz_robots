@@ -72,20 +72,17 @@ public:
 
 namespace levels = ::ros::console::levels;
 
-MATCHER_P(IsInfo, msg, "")
-{
-  return arg->getLevel()->toInt() == log4cxx::Level::INFO_INT && std::string(msg) == arg->getMessage();
-}
+#define GENERATE_LOGMESSAGE_MATCHER_P(severity)                                                                        \
+  MATCHER_P(Is##severity, msg, "")                                                                                     \
+  {                                                                                                                    \
+    return arg->getLevel()->toInt() == log4cxx::Level::severity##_INT && std::string(msg) == arg->getMessage();        \
+  }
 
-MATCHER_P(IsWarn, msg, "")
-{
-  return arg->getLevel()->toInt() == log4cxx::Level::WARN_INT && std::string(msg) == arg->getMessage();
-}
-
-MATCHER_P(IsError, msg, "")
-{
-  return arg->getLevel()->toInt() == log4cxx::Level::ERROR_INT && std::string(msg) == arg->getMessage();
-}
+GENERATE_LOGMESSAGE_MATCHER_P(DEBUG)
+GENERATE_LOGMESSAGE_MATCHER_P(INFO)
+GENERATE_LOGMESSAGE_MATCHER_P(WARN)
+GENERATE_LOGMESSAGE_MATCHER_P(ERROR)
+GENERATE_LOGMESSAGE_MATCHER_P(FATAL)
 
 }  // namespace pilz_testutils
 

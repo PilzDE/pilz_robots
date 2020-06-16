@@ -279,10 +279,9 @@ template <class SegmentImpl, class HardwareInterface>
 void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::trajectoryCommandCB(
     const JointTrajectoryConstPtr& /*msg*/)
 {
-  ROS_WARN_NAMED(this->name_,
-                 "For safety reasons the trajectory command interface is deactivated"
-                 " (for more information see https://github.com/ros-controls/ros_controllers/issues/493)."
-                 " Please use the action interface instead.");
+  ROS_WARN_NAMED(this->name_, "For safety reasons the trajectory command interface is deactivated"
+                              " (for more information see https://github.com/ros-controls/ros_controllers/issues/493)."
+                              " Please use the action interface instead.");
 }
 
 }  // namespace pilz_joint_trajectory_controller
