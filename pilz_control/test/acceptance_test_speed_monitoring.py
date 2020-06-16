@@ -20,8 +20,6 @@ import rospy
 import threading
 import unittest
 
-from operator import sub
-
 from control_msgs.msg import *
 from std_msgs.msg import Float64
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
