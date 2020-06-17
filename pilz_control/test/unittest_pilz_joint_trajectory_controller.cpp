@@ -52,8 +52,6 @@ static const std::string UNHOLD_SERVICE{ "/unhold" };
 static const std::string IS_EXECUTING_SERVICE{ "/is_executing" };
 static const std::string TRAJECTORY_COMMAND_TOPIC{ "/command" };
 
-static const std::string LOG_MSG_RECEIVED_EVENT{ "log_msg_received" };
-
 using namespace pilz_joint_trajectory_controller;
 
 using HWInterface = hardware_interface::PositionJointInterface;
@@ -495,8 +493,12 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testActionGoalExecution)
   EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
 }
 
+using pilz_testutils::IsINFO;
 using pilz_testutils::IsWARN;
+using ::testing::InSequence;
 using ::testing::_;
+static const std::string LOG_MSG_RECEIVED_EVENT_WARN{ "log_msg_received_warn" };
+static const std::string LOG_MSG_RECEIVED_EVENT_INFO{ "log_msg_received_info" };
 /**
  * @brief Tests that the controller does not execute if a trajectory is sent via command interface.
  */
@@ -511,16 +513,20 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testTrajCommandExecution)
   GoalType goal{ generateSimpleGoal() };
 
   pilz_testutils::LoggerMock logger_mock_holder;
+  InSequence seq;
   EXPECT_LOG(*logger_mock_holder, WARN,
-             pilz_joint_trajectory_controller::USER_NOTIFICATION_NOT_IMPLEMENTED_COMMAND_INTERFACE)
-      .WillOnce(ACTION_OPEN_BARRIER_VOID(LOG_MSG_RECEIVED_EVENT));
+             pilz_joint_trajectory_controller::USER_NOTIFICATION_NOT_IMPLEMENTED_COMMAND_INTERFACE_WARN)
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(LOG_MSG_RECEIVED_EVENT_WARN));
+  EXPECT_LOG(*logger_mock_holder, INFO,
+             pilz_joint_trajectory_controller::USER_NOTIFICATION_NOT_IMPLEMENTED_COMMAND_INTERFACE_INFO)
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(LOG_MSG_RECEIVED_EVENT_INFO));
 
   trajectory_command_publisher.publish(goal.trajectory);
 
   ros::Duration observation_time = getGoalDuration(goal) + ros::Duration(DEFAULT_UPDATE_PERIOD_SEC);
   EXPECT_FALSE(
       updateUntilRobotMotion(&robot_driver_, std::chrono::milliseconds(observation_time.toNSec() * 1000000ll)));
-  BARRIER(LOG_MSG_RECEIVED_EVENT);
+  BARRIER({LOG_MSG_RECEIVED_EVENT_WARN, LOG_MSG_RECEIVED_EVENT_INFO});
 }
 
 TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStopTrajExecutionAtHold)

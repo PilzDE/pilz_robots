@@ -27,10 +27,17 @@ namespace pilz_joint_trajectory_controller
 static constexpr double SPEED_LIMIT_ACTIVATED{ 0.25 };
 static constexpr double SPEED_LIMIT_NOT_ACTIVATED{ -1.0 };
 
-static const std::string USER_NOTIFICATION_NOT_IMPLEMENTED_COMMAND_INTERFACE{
-  "For safety reasons the trajectory command interface is deactivated"
-  " (for more information see https://github.com/ros-controls/ros_controllers/issues/493)."
-  " Please use the action interface instead."
+static const std::string USER_NOTIFICATION_NOT_IMPLEMENTED_COMMAND_INTERFACE_WARN{
+  "The topic interface of the original `joint_trajectory_controller` is deactivated. Please use the action interface "
+  "to send goals, that allows monitoring and receiving notifications about cancelled goals. If nonetheless you need "
+  "the topic interface feel encouraged to open an issue with this feature request at "
+  "https://github.com/PilzDE/pilz_robots/issues so that we can improve your user experience with our product."
+};
+
+static const std::string USER_NOTIFICATION_NOT_IMPLEMENTED_COMMAND_INTERFACE_INFO{
+  "For the reason behind the deactivation of this interface see "
+  "https://github.com/ros-controls/ros_controllers/issues/493). "
+  "PR welcome ;-)"
 };
 
 namespace ph = std::placeholders;
@@ -287,7 +294,8 @@ template <class SegmentImpl, class HardwareInterface>
 void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::trajectoryCommandCB(
     const JointTrajectoryConstPtr& /*msg*/)
 {
-  ROS_WARN_STREAM_NAMED(this->name_, USER_NOTIFICATION_NOT_IMPLEMENTED_COMMAND_INTERFACE);
+  ROS_WARN_STREAM_NAMED(this->name_, USER_NOTIFICATION_NOT_IMPLEMENTED_COMMAND_INTERFACE_WARN);
+  ROS_INFO_STREAM_NAMED(this->name_, USER_NOTIFICATION_NOT_IMPLEMENTED_COMMAND_INTERFACE_INFO);
 }
 
 }  // namespace pilz_joint_trajectory_controller
