@@ -31,7 +31,7 @@
 
 static constexpr int32_t MODBUS_CONNECTION_RETRIES_DEFAULT{ 10 };
 static constexpr double MODBUS_CONNECTION_RETRY_TIMEOUT_S_DEFAULT{ 1.0 };
-static constexpr int MODBUS_RESPONSE_TIMEOUT_MS{ 20 };
+static constexpr int MODBUS_RESPONSE_TIMEOUT_MS{ 500 };
 
 using namespace prbt_hardware_support;
 
