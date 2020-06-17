@@ -38,9 +38,9 @@ LibModbusClient::~LibModbusClient()
 
 bool LibModbusClient::init(const char* ip, unsigned int port)
 {
-  if(!checkIPConnection(ip, port, 1, 10))
+  if (!checkIPConnection(ip, port))
   {
-    ROS_ERROR_STREAM("Precheck for connection to " << ip << ":" << port << " failed.");
+    ROS_DEBUG_STREAM("Precheck for connection to " << ip << ":" << port << " failed.");
     return false;
   }
 
@@ -143,7 +143,7 @@ void LibModbusClient::close()
   }
 }
 
-bool checkIPConnection(const char* ip, const unsigned int port, double timeout, const unsigned int n_retries)
+bool checkIPConnection(const char* ip, const unsigned int port)
 {
   long result;
   int sockfd;
@@ -159,21 +159,9 @@ bool checkIPConnection(const char* ip, const unsigned int port, double timeout, 
   fcntl(sockfd, F_SETFL, result);  // set connection to non blocking, no timeout
   serv_addr.sin_addr.s_addr = inet_addr(ip);
 
-  // try "retries" times to connect
-  unsigned int tries{ 0 };
-  while ((connect(sockfd, (const sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) && (tries < n_retries))
+  if (connect(sockfd, (const sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
   {
-    tries++;
-    ROS_INFO_STREAM("Trying to connect to " << ip << ":" << port << " " << tries << "/" << n_retries);
-    if (tries == n_retries)
-    {
-      ROS_ERROR_STREAM_NAMED("LibModbusClient", "Could not establish modbus connection with: "
-                                                    << ip << ":" << port
-                                                    << ". Make sure that your cables are connected properly and that "
-                                                       "you have set the right IP Address and Port");
-      return false;
-    }
-    std::this_thread::sleep_for(std::chrono::duration<double>(timeout));
+    return false;
   }
   ::close(sockfd);
   std::this_thread::sleep_for(std::chrono::duration<double>(1));  // wait one second to grant a free port

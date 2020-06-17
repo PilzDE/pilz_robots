@@ -321,33 +321,34 @@ TEST_F(LibModbusClientTest, setResponseTimeout)
   client.close();
 }
 
-/**
- * @brief Tests that the checkIPConnection function will respond properly on presense of a modbus server and also if it
- * misses.
- *
- * @note To keep things simple timeout and repeats are not altered.
- */
-TEST_F(LibModbusClientTest, checkIPConnection)
-{
-  EXPECT_FALSE(checkIPConnection(LOCALHOST, testPort(), 0.1, 20));  // No Server
+// /**
+//  * @brief Tests that the checkIPConnection function will respond properly on presense of a modbus server and also if
+//  it
+//  * misses.
+//  *
+//  * @note To keep things simple timeout and repeats are not altered.
+//  */
+// TEST_F(LibModbusClientTest, checkIPConnection)
+// {
+//   EXPECT_FALSE(checkIPConnection(LOCALHOST, testPort(), 0.1, 20));  // No Server
 
-  LibModbusClient client;
-  std::shared_ptr<PilzModbusServerMock> server(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
-  server->startAsync(LOCALHOST, testPort());
+//   LibModbusClient client;
+//   std::shared_ptr<PilzModbusServerMock> server(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
+//   server->startAsync(LOCALHOST, testPort());
 
-  EXPECT_TRUE(client.init(LOCALHOST, testPort()));  // Server present
+//   EXPECT_TRUE(client.init(LOCALHOST, testPort()));  // Server present
 
-  EXPECT_TRUE(checkIPConnection(LOCALHOST, testPort(), 0.1, 20));  // Server present ip+port correct
+//   EXPECT_TRUE(checkIPConnection(LOCALHOST, testPort(), 0.1, 20));  // Server present ip+port correct
 
-  EXPECT_FALSE(checkIPConnection(LOCALHOST, 4711, 0.1, 20));  // Server present ip correct port wrong
+//   EXPECT_FALSE(checkIPConnection(LOCALHOST, 4711, 0.1, 20));  // Server present ip correct port wrong
 
-  EXPECT_FALSE(checkIPConnection("192.192.192.192", testPort(), 0.1, 20));  // Server present ip wrong port correct
+//   EXPECT_FALSE(checkIPConnection("192.192.192.192", testPort(), 0.1, 20));  // Server present ip wrong port correct
 
-  EXPECT_FALSE(checkIPConnection("192.192.192.192", 4711, 0.1, 20));  // Server present ip wrong port wrong
+//   EXPECT_FALSE(checkIPConnection("192.192.192.192", 4711, 0.1, 20));  // Server present ip wrong port wrong
 
-  shutdownModbusServer(server.get(), client);
-  client.close();
-}
+//   shutdownModbusServer(server.get(), client);
+//   client.close();
+// }
 
 }  // namespace pilz_modbus_client_test
 

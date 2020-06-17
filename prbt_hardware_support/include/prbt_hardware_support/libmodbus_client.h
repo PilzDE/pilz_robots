@@ -72,7 +72,7 @@ private:
  * @return true if the connection to the server succeeded
  * @return false if the connection to the server failed
  */
-bool checkIPConnection(const char* ip, const unsigned int port, double timeout, const unsigned int n_retries);
+bool checkIPConnection(const char* ip, const unsigned int port);
 
 }  // namespace prbt_hardware_support
 

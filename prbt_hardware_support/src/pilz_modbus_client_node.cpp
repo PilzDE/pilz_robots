@@ -122,7 +122,11 @@ int main(int argc, char** argv)
   // LCOV_EXCL_START inside this main ignored, tested multiple times in the unittest
   if (!res)
   {
-    ROS_ERROR_STREAM("Connection to modbus server " << ip << ":" << port << " could not be established");
+    ROS_ERROR_STREAM("Could not establish modbus connection with: "
+                     << ip << ":" << port
+                     << ". Make sure that your cables are connected properly and that "
+                        "you have set the right IP Address and Port");
+
     return EXIT_FAILURE;
   }
 
