@@ -323,7 +323,13 @@ TEST_F(LibModbusClientTest, setResponseTimeout)
   client.close();
 }
 
+TEST_F(LibModbusClientTest, checkIPConnection)
+{
+  EXPECT_FALSE(checkIPConnection("192.192.192.192", 4711, 100000, 20));
+}
+
 }  // namespace pilz_modbus_client_test
+
 
 int main(int argc, char* argv[])
 {
