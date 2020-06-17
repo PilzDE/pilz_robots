@@ -36,7 +36,9 @@ limitations under the License.
   ```
   rosrun pilz_control acceptance_test_acceleration_limit.py
   ```
+  3. Use RViz to plan a movement with velocity- and acceleration scaling 1.0. Check if it can be planned successfully. Execute it.
 
 ### Expected Results
   1. All tests pass
   2. All tests pass
+  3. Movement is executed without errors.
