@@ -139,7 +139,7 @@ void LibModbusClient::close()
   }
 }
 
-bool checkIPConnection(const char* ip, unsigned int port, double timeout, const unsigned int n_retries)
+bool checkIPConnection(const char* ip, const unsigned int port, double timeout, const unsigned int n_retries)
 {
   long result;
   int sockfd;
