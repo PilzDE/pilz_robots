@@ -24,13 +24,12 @@ from std_srvs.srv import Trigger, TriggerRequest, SetBool, SetBoolRequest
 from control_msgs.msg import JointTrajectoryControllerState, FollowJointTrajectoryResult
 from trajectory_msgs.msg import JointTrajectoryPoint
 
+from test_utils import HoldingModeServiceWrapper
 from trajectory_dispatcher import TrajectoryDispatcher
 
 PACKAGE_NAME = 'pilz_control'
 CONTROLLER_NS_PARAM_NAME = 'controller_ns_string'
 JOINT_NAMES = ['shoulder_to_right_arm', 'shoulder_to_left_arm']
-HOLD_SERVICE_NAME = '/test_joint_trajectory_controller/hold'
-UNHOLD_SERVICE_NAME = '/test_joint_trajectory_controller/unhold'
 IS_EXECUTING_SERVICE_NAME = '/test_joint_trajectory_controller/is_executing'
 CARTESIAN_SPEED_SERVICE_NAME = '/test_joint_trajectory_controller/monitor_cartesian_speed'
 ACTION_NAME = '/test_joint_trajectory_controller/follow_joint_trajectory'
@@ -234,45 +233,13 @@ class IsExecutingServiceWrapper:
         return resp.success
 
 
-class StopServiceWrapper:
-    """Abstraction around the service call to switch the controller between DEFAULT and HOLDING mode."""
-    def __init__(self):
-        hold_service_name = CONTROLLER_NS + HOLD_SERVICE_NAME
-        rospy.wait_for_service(hold_service_name, WAIT_FOR_SERVICE_TIMEOUT_S)
-        self._hold_srv = rospy.ServiceProxy(hold_service_name, Trigger)
-
-        unhold_service_name = CONTROLLER_NS + UNHOLD_SERVICE_NAME
-        rospy.wait_for_service(unhold_service_name, WAIT_FOR_SERVICE_TIMEOUT_S)
-        self._unhold_srv = rospy.ServiceProxy(unhold_service_name, Trigger)
-
-    def request_default_mode(self):
-        """Switch into DEFAULT mode by sending the respective request.
-
-        :return: True if service request was handled successful, False otherwise.
-        """
-        req = TriggerRequest()
-        resp = self._unhold_srv(req)
-
-        return resp.success
-
-    def request_holding_mode(self):
-        """Switch into HOLDING mode by sending the respective request.
-
-        :return: True if service request was handled successful, False otherwise
-        """
-        req = TriggerRequest()
-        resp = self._hold_srv(req)
-
-        return resp.success
-
-
 class TestPilzJointTrajectoryController(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(TestPilzJointTrajectoryController, self).__init__(*args, **kwargs)
 
         self._trajectory_dispatcher = TrajectoryDispatcher(CONTROLLER_NS, CONTROLLER_NAME)
         self._monitored_cartesian_speed_srv = SetMonitoredCartesianSpeed()
-        self._hold_srv = StopServiceWrapper()
+        self._hold_srv = HoldingModeServiceWrapper(CONTROLLER_NS, CONTROLLER_NAME)
 
     def setUp(self):
         self.assertTrue(self._turn_off_speed_monitoring(), 'Could not turn off speed monitoring')
