@@ -80,13 +80,14 @@ class TrajectoryDispatcher:
     def dispatch_dual_point_trajectory(self, joint_index, start_position, mid_position, end_position, velocity):
         """ Send a trajectory with two points. The first part serves for accelerating to the specified velocity.
             The second part is the actual movement that is linear in joint space.
+            Note that this is a single-joint-movement.
 
         :param joint_index: Only the joint given by joint_index will be moved.
                             This is an index into the joint names given on the parameter server.
-        :param start_position: The current position of the robot. This will not be appended to the trajectory.
-        :param mid_position: Position where the target velocity should be reached.
-        :param end_position: End of trajectory.
-        :param velocity: Target velocity.
+        :param start_position: The current position of the joint. This will not be appended to the trajectory.
+        :param mid_position: Joint position where the target velocity should be reached.
+        :param end_position: Joint position at the end of the trajectory.
+        :param velocity: Target joint velocity.
         """
         assert(velocity > self.FLOAT_EPSILON)
 
