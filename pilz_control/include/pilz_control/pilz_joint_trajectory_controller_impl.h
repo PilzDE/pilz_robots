@@ -40,11 +40,11 @@ namespace ph = std::placeholders;
  *
  * @throw InvalidParameterException Requested values not found on param server.
  */
-std::vector<double> getJointAccelerationLimits(const ros::NodeHandle& nh, const std::vector<std::string> joint_names)
+std::vector<boost::optional<double>> getJointAccelerationLimits(const ros::NodeHandle& nh, const std::vector<std::string> joint_names)
 {
   const std::string joint_limits_naming_prefix{ "/joint_limits/" };
 
-  std::vector<double> acc_limits(joint_names.size());
+  std::vector<boost::optional<double>> acc_limits(joint_names.size());
   for (unsigned int i = 0; i < joint_names.size(); ++i)
   {
     bool has_acceleration_limits = false;
@@ -57,12 +57,17 @@ std::vector<double> getJointAccelerationLimits(const ros::NodeHandle& nh, const 
 
     if (!has_acceleration_limits)
     {
-      acc_limits.at(i) = 0.;
+      acc_limits.at(i) = boost::none;
       continue;
     }
 
     param_name_to_read = joint_limits_naming_prefix + joint_names.at(i) + "/max_acceleration";
-    if (!nh.getParam(param_name_to_read, acc_limits.at(i)))
+    double tmp_limit;
+    if (nh.getParam(param_name_to_read, tmp_limit))
+    {
+      acc_limits.at(i) = tmp_limit;
+    }
+    else
     {
       throw ros::InvalidParameterException("Failed to get the joint acceleration limit for " + joint_names.at(i) +
                                            " under param name >" + param_name_to_read + "<.");
@@ -288,7 +293,7 @@ inline bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::isPla
     const double& old_velocity = JointTrajectoryController::old_desired_state_.velocity.at(i);
     const double& new_velocity = JointTrajectoryController::desired_state_.velocity.at(i);
     const double& acceleration = (new_velocity - old_velocity) / period.toSec();
-    if ((acceleration_joint_limits_.at(i) > 0.0) && (acceleration > acceleration_joint_limits_.at(i)))
+    if ((acceleration_joint_limits_.at(i)) && (acceleration > *acceleration_joint_limits_.at(i)))
     {
       ROS_ERROR_STREAM("Acceleration limit violated by joint "
                        << JointTrajectoryController::joint_names_.at(i) << ". Desired acceleration: " << acceleration

@@ -20,10 +20,13 @@
 #include <atomic>
 #include <memory>
 #include <mutex>
+#include <string>
 #include <vector>
 
 #include <std_srvs/Trigger.h>
 #include <std_srvs/SetBool.h>
+
+#include <boost/optional/optional_io.hpp>
 
 #include <joint_trajectory_controller/joint_trajectory_controller.h>
 #include <joint_trajectory_controller/stop_trajectory_builder.h>
@@ -235,7 +238,7 @@ private:
   std::atomic<double> cartesian_speed_limit_{ 0.0 };
 
   //! The max allowed acceleration for each joint.
-  std::vector<double> acceleration_joint_limits_;
+  std::vector<boost::optional<double>> acceleration_joint_limits_;
 
   /**
    * @brief Used for loading a RobotModel for the CartesianSpeedMonitor.

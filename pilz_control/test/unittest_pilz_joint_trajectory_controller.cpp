@@ -165,17 +165,19 @@ TEST_F(PilzJointTrajectoryControllerTest, testGetJointAccelerationLimits)
   ASSERT_FALSE(joint_names.empty());
 
   // test with existing acc limits
-  std::vector<double> acceleration_limits = getJointAccelerationLimits(nh, joint_names);
+  std::vector<boost::optional<double>> acceleration_limits = getJointAccelerationLimits(nh, joint_names);
   EXPECT_EQ(joint_names.size(), acceleration_limits.size());
-  EXPECT_FLOAT_EQ(acceleration_limits.at(0), 3.49);
-  EXPECT_FLOAT_EQ(acceleration_limits.at(1), 3.49);  // as of pilz_control/test/config/joint_limits.yaml
+  EXPECT_TRUE(acceleration_limits.at(0));
+  EXPECT_TRUE(acceleration_limits.at(1));
+  EXPECT_DOUBLE_EQ(*acceleration_limits.at(0), 3.49);
+  EXPECT_DOUBLE_EQ(*acceleration_limits.at(1), 3.49);  // as of pilz_control/test/config/joint_limits.yaml
 
   // testing behaviour if `has_acceleration_limits` is false
   std::vector<std::string> joint_names_has_acc_lim_false = { "joint_with_has_acc_lim_false" };
-  std::vector<double> acceleration_limits_has_acc_lim_false =
+  std::vector<boost::optional<double>> acceleration_limits_has_acc_lim_false =
       getJointAccelerationLimits(nh, joint_names_has_acc_lim_false);
   EXPECT_EQ(joint_names_has_acc_lim_false.size(), acceleration_limits_has_acc_lim_false.size());
-  EXPECT_FLOAT_EQ(acceleration_limits_has_acc_lim_false.at(0), 0);
+  EXPECT_FALSE(acceleration_limits_has_acc_lim_false.at(0));
 }
 
 /**
