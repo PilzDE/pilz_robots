@@ -18,12 +18,13 @@ import unittest
 import rospy
 import threading
 from rospy.exceptions import ROSException
+
+from actionlib_msgs.msg import GoalStatus
 from std_srvs.srv import Trigger, TriggerRequest, SetBool, SetBoolRequest
-from control_msgs.msg import *
+from control_msgs.msg import JointTrajectoryControllerState, FollowJointTrajectoryResult
 from trajectory_msgs.msg import JointTrajectoryPoint
 
-import actionlib
-from actionlib_msgs.msg import *
+from trajectory_dispatcher import TrajectoryDispatcher
 
 PACKAGE_NAME = 'pilz_control'
 CONTROLLER_NS_PARAM_NAME = 'controller_ns_string'
@@ -46,7 +47,8 @@ DEFAULT_GOAL_POSITION = [0.1, 0]
 DEFAULT_GOAL_DURATION_S = 5
 DEFAULT_GOAL_POSITION_DELTA = .1
 
-controller_ns = rospy.get_param(CONTROLLER_NS_PARAM_NAME)
+CONTROLLER_NS = rospy.get_param(CONTROLLER_NS_PARAM_NAME)
+CONTROLLER_NAME = 'test_joint_trajectory_controller'
 
 
 class ObservationException(Exception):
@@ -68,7 +70,7 @@ class MovementObserver:
         self._controller_state_delta_t = None
         self._controller_state_lock = threading.Lock()
 
-        state_topic_name = controller_ns + STATE_TOPIC_NAME
+        state_topic_name = CONTROLLER_NS + STATE_TOPIC_NAME
         self._subscriber = rospy.Subscriber(state_topic_name, JointTrajectoryControllerState,
                                             self.controller_state_callback)
 
@@ -199,48 +201,9 @@ class MovementObserver:
         return self._try_to_get_actual_position()
 
 
-class TrajectoryDispatcher:
-    """A wrapper around the SimpleActionClient for dispatching trajectories."""
-    def __init__(self):
-        action_name = controller_ns + ACTION_NAME
-        self._client = actionlib.SimpleActionClient(action_name, FollowJointTrajectoryAction)
-
-        timeout = rospy.Duration(WAIT_FOR_SERVICE_TIMEOUT_S)
-        self._client.wait_for_server(timeout)
-
-    def dispatch_trajectory(self, goal_position, time_from_start):
-        """Sends a simple JointTrajectory to the action client.
-
-        :param goal_position: The only position in the send trajectory
-        :param time_from_start: The time of the only position to be achieved (Starting at 0)
-        """
-        point = JointTrajectoryPoint()
-        point.positions = goal_position
-        point.time_from_start = rospy.Duration(time_from_start)
-
-        goal = FollowJointTrajectoryGoal()
-        goal.trajectory.header.stamp = rospy.Time.now()
-        goal.trajectory.points = [point]
-        goal.trajectory.joint_names = JOINT_NAMES
-
-        self._client.send_goal(goal)
-
-    def wait_for_result(self):
-        """Wait until the result of the trajectory execution is received."""
-        self._client.wait_for_result()
-        return self._client.get_result()
-
-    def get_last_state(self):
-        """Get the state of the last send trajectory
-
-        :return: see http://docs.ros.org/melodic/api/actionlib_msgs/html/msg/GoalStatus.html
-        """
-        return self._client.get_state()
-
-
 class SetMonitoredCartesianSpeed:
     def __init__(self):
-        service_name = controller_ns + CARTESIAN_SPEED_SERVICE_NAME
+        service_name = CONTROLLER_NS + CARTESIAN_SPEED_SERVICE_NAME
         rospy.wait_for_service(service_name, WAIT_FOR_SERVICE_TIMEOUT_S)
         self._set_catesian_speed_srv = rospy.ServiceProxy(service_name, SetBool)
 
@@ -260,7 +223,7 @@ class SetMonitoredCartesianSpeed:
 class IsExecutingServiceWrapper:
     """Wrapper for the service querying if the controller is executing."""
     def __init__(self):
-        is_executing_service_name = controller_ns + IS_EXECUTING_SERVICE_NAME
+        is_executing_service_name = CONTROLLER_NS + IS_EXECUTING_SERVICE_NAME
         rospy.wait_for_service(is_executing_service_name, WAIT_FOR_SERVICE_TIMEOUT_S)
         self._is_executing_srv = rospy.ServiceProxy(is_executing_service_name, Trigger)
 
@@ -274,11 +237,11 @@ class IsExecutingServiceWrapper:
 class StopServiceWrapper:
     """Abstraction around the service call to switch the controller between DEFAULT and HOLDING mode."""
     def __init__(self):
-        hold_service_name = controller_ns + HOLD_SERVICE_NAME
+        hold_service_name = CONTROLLER_NS + HOLD_SERVICE_NAME
         rospy.wait_for_service(hold_service_name, WAIT_FOR_SERVICE_TIMEOUT_S)
         self._hold_srv = rospy.ServiceProxy(hold_service_name, Trigger)
 
-        unhold_service_name = controller_ns + UNHOLD_SERVICE_NAME
+        unhold_service_name = CONTROLLER_NS + UNHOLD_SERVICE_NAME
         rospy.wait_for_service(unhold_service_name, WAIT_FOR_SERVICE_TIMEOUT_S)
         self._unhold_srv = rospy.ServiceProxy(unhold_service_name, Trigger)
 
@@ -307,7 +270,7 @@ class TestPilzJointTrajectoryController(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(TestPilzJointTrajectoryController, self).__init__(*args, **kwargs)
 
-        self._trajectory_dispatcher = TrajectoryDispatcher()
+        self._trajectory_dispatcher = TrajectoryDispatcher(CONTROLLER_NS, CONTROLLER_NAME)
         self._monitored_cartesian_speed_srv = SetMonitoredCartesianSpeed()
         self._hold_srv = StopServiceWrapper()
 
@@ -319,7 +282,7 @@ class TestPilzJointTrajectoryController(unittest.TestCase):
         return self._wait_for_motion_result(expected_error_code)
 
     def _start_motion(self, position, duration):
-        self._trajectory_dispatcher.dispatch_trajectory(goal_position=position, time_from_start=duration)
+        self._trajectory_dispatcher.dispatch_single_point_trajectory(goal_position=position, time_from_start=duration)
 
     def _wait_for_motion_result(self, expected_error_code=FollowJointTrajectoryResult.SUCCESSFUL):
         result = self._trajectory_dispatcher.wait_for_result()
@@ -378,8 +341,6 @@ class TestPilzJointTrajectoryController(unittest.TestCase):
 
         # Test speed monitoring for all joints
         for i in range(len(JOINT_NAMES)):
-            start_pose = motion_observer.get_actual_position(WAIT_FOR_POSITION_TIMEOUT_S)
-
             far_away_position = list(DEFAULT_GOAL_POSITION)
             far_away_position[i] += DEFAULT_GOAL_POSITION_DELTA
 
