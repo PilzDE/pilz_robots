@@ -38,7 +38,11 @@ LibModbusClient::~LibModbusClient()
 
 bool LibModbusClient::init(const char* ip, unsigned int port)
 {
-  checkIPConnection(ip, port, 1, 10);
+  if(!checkIPConnection(ip, port, 1, 10))
+  {
+    ROS_ERROR_STREAM("Precheck for connection to " << ip << ":" << port << " failed.");
+    return false;
+  }
 
   modbus_connection_ = modbus_new_tcp(ip, static_cast<int>(port));
 
