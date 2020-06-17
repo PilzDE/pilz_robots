@@ -495,8 +495,8 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testActionGoalExecution)
 
 using pilz_testutils::IsINFO;
 using pilz_testutils::IsWARN;
-using ::testing::InSequence;
 using ::testing::_;
+using ::testing::InSequence;
 static const std::string LOG_MSG_RECEIVED_EVENT_WARN{ "log_msg_received_warn" };
 static const std::string LOG_MSG_RECEIVED_EVENT_INFO{ "log_msg_received_info" };
 /**
@@ -526,7 +526,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testTrajCommandExecution)
   ros::Duration observation_time = getGoalDuration(goal) + ros::Duration(DEFAULT_UPDATE_PERIOD_SEC);
   EXPECT_FALSE(
       updateUntilRobotMotion(&robot_driver_, std::chrono::milliseconds(observation_time.toNSec() * 1000000ll)));
-  BARRIER({LOG_MSG_RECEIVED_EVENT_WARN, LOG_MSG_RECEIVED_EVENT_INFO});
+  BARRIER({ LOG_MSG_RECEIVED_EVENT_WARN, LOG_MSG_RECEIVED_EVENT_INFO });
 }
 
 TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStopTrajExecutionAtHold)
