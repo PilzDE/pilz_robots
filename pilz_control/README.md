@@ -3,7 +3,7 @@ This package provides a joint trajectory controller which can be put into a hold
 It contains a specialized version of `ros_controllers::JointTrajectoryController` providing the holding mode functionality.
 A controlled stop using a hold trajectory is performed thus stopping the manipulator without the mechanical stress of a hard brake.
 
-**Please note:**
+**Topic interface deprecated:**
 Due to safety reasons, the command interface of the `PilzJointTrajectoryController` is deactivated. For more information
 see issue [#493](https://github.com/ros-controls/ros_controllers/issues/493) on ros-controls/ros_controllers.
 
