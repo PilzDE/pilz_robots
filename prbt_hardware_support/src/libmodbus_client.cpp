@@ -125,8 +125,18 @@ RegCont LibModbusClient::writeReadHoldingRegister(const int write_addr, const Re
   return read_reg;
 }
 
-bool LibModbusClient::checkIPConnection(const char* ip, unsigned int port, unsigned int timeout,
-                                        unsigned int retries) const
+void LibModbusClient::close()
+{
+  if (modbus_connection_)
+  {
+    modbus_close(modbus_connection_);
+    modbus_free(modbus_connection_);
+    modbus_connection_ = nullptr;
+  }
+}
+
+bool checkIPConnection(const char* ip, unsigned int port, unsigned int timeout,
+                                        unsigned int retries) 
 {
   long result;
   int sockfd;
@@ -157,16 +167,6 @@ bool LibModbusClient::checkIPConnection(const char* ip, unsigned int port, unsig
   sleep(1);  // wait one second to grant a free port
 
   return true;
-}
-
-void LibModbusClient::close()
-{
-  if (modbus_connection_)
-  {
-    modbus_close(modbus_connection_);
-    modbus_free(modbus_connection_);
-    modbus_connection_ = nullptr;
-  }
 }
 
 }  // namespace prbt_hardware_support
