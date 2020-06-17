@@ -156,6 +156,7 @@ if(CATKIN_ENABLE_TESTING)
 
   roslint_python(
     test/acceptance_test_speed_monitoring.py
+    test/acceptance_test_acceleration_limit.py
     test/integrationtest_pilz_joint_trajectory_controller.py
   )
   roslint_add_test()
