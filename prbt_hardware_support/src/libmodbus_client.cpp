@@ -21,6 +21,8 @@
 #include <vector>
 #include <errno.h>
 #include <limits>
+#include <thread>
+#include <chrono>
 #include <stdexcept>
 #include <arpa/inet.h>
 #include <fcntl.h>
@@ -36,6 +38,8 @@ LibModbusClient::~LibModbusClient()
 
 bool LibModbusClient::init(const char* ip, unsigned int port)
 {
+  checkIPConnection(ip, port, 1, 10);
+
   modbus_connection_ = modbus_new_tcp(ip, static_cast<int>(port));
 
   if (modbus_connect(modbus_connection_) == -1)
@@ -135,7 +139,7 @@ void LibModbusClient::close()
   }
 }
 
-bool checkIPConnection(const char* ip, unsigned int port, unsigned int timeout, unsigned int retries)
+bool checkIPConnection(const char* ip, unsigned int port, double timeout, unsigned int retries)
 {
   long result;
   int sockfd;
@@ -160,10 +164,10 @@ bool checkIPConnection(const char* ip, unsigned int port, unsigned int timeout, 
       ROS_ERROR_STREAM_NAMED("LibModbusClient", "Could not establish modbus connection. Cable connected?");
       return false;
     }
-    usleep(timeout);  // wait "timout" usec
+    std::this_thread::sleep_for(std::chrono::duration<double>(timeout));
   }
   ::close(sockfd);
-  sleep(1);  // wait one second to grant a free port
+  std::this_thread::sleep_for(std::chrono::duration<double>(1));  // wait one second to grant a free port
 
   return true;
 }

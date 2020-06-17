@@ -329,7 +329,7 @@ TEST_F(LibModbusClientTest, setResponseTimeout)
  */
 TEST_F(LibModbusClientTest, checkIPConnection)
 {
-  EXPECT_FALSE(checkIPConnection(LOCALHOST, testPort(), 100000, 20));  // No Server
+  EXPECT_FALSE(checkIPConnection(LOCALHOST, testPort(), 0.1, 20));  // No Server
 
   LibModbusClient client;
   std::shared_ptr<PilzModbusServerMock> server(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
@@ -337,13 +337,13 @@ TEST_F(LibModbusClientTest, checkIPConnection)
 
   EXPECT_TRUE(client.init(LOCALHOST, testPort()));  // Server present
 
-  EXPECT_TRUE(checkIPConnection(LOCALHOST, testPort(), 100000, 20));  // Server present ip+port correct
+  EXPECT_TRUE(checkIPConnection(LOCALHOST, testPort(), 0.1, 20));  // Server present ip+port correct
 
-  EXPECT_FALSE(checkIPConnection(LOCALHOST, 4711, 100000, 20));  // Server present ip correct port wrong
+  EXPECT_FALSE(checkIPConnection(LOCALHOST, 4711, 0.1, 20));  // Server present ip correct port wrong
 
-  EXPECT_FALSE(checkIPConnection("192.192.192.192", testPort(), 100000, 20));  // Server present ip wrong port correct
+  EXPECT_FALSE(checkIPConnection("192.192.192.192", testPort(), 0.1, 20));  // Server present ip wrong port correct
 
-  EXPECT_FALSE(checkIPConnection("192.192.192.192", 4711, 100000, 20));  // Server present ip wrong port wrong
+  EXPECT_FALSE(checkIPConnection("192.192.192.192", 4711, 0.1, 20));  // Server present ip wrong port wrong
 
   shutdownModbusServer(server.get(), client);
   client.close();

@@ -67,12 +67,12 @@ private:
  *
  * @param ip of the modbus server
  * @param port of the modbus server
- * @param timeout of the modbus connection attempt
+ * @param timeout of the modbus connection attempt in seconds
  * @param retries of the connection attempt lasting as long as defined in timout
  * @return true if the connection to the server succeeded
  * @return false if the connection to the server failed
  */
-bool checkIPConnection(const char* ip, unsigned int port, unsigned int timeout, unsigned int retries);
+bool checkIPConnection(const char* ip, unsigned int port, double timeout, unsigned int retries);
 
 }  // namespace prbt_hardware_support
 
