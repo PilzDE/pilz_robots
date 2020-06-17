@@ -17,6 +17,8 @@
 #ifndef PILZ_CONTROL_PILZ_JOINT_TRAJECTORY_CONTROLLER_IMPL_H
 #define PILZ_CONTROL_PILZ_JOINT_TRAJECTORY_CONTROLLER_IMPL_H
 
+#include <string>
+
 #include <joint_trajectory_controller/joint_trajectory_segment.h>
 #include <joint_trajectory_controller/tolerances.h>
 
@@ -24,6 +26,12 @@ namespace pilz_joint_trajectory_controller
 {
 static constexpr double SPEED_LIMIT_ACTIVATED{ 0.25 };
 static constexpr double SPEED_LIMIT_NOT_ACTIVATED{ -1.0 };
+
+static const std::string USER_NOTIFICATION_NOT_IMPLEMENTED_COMMAND_INTERFACE{
+  "For safety reasons the trajectory command interface is deactivated"
+  " (for more information see https://github.com/ros-controls/ros_controllers/issues/493)."
+  " Please use the action interface instead."
+};
 
 namespace ph = std::placeholders;
 
@@ -279,9 +287,7 @@ template <class SegmentImpl, class HardwareInterface>
 void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::trajectoryCommandCB(
     const JointTrajectoryConstPtr& /*msg*/)
 {
-  ROS_WARN_NAMED(this->name_, "For safety reasons the trajectory command interface is deactivated"
-                              " (for more information see https://github.com/ros-controls/ros_controllers/issues/493)."
-                              " Please use the action interface instead.");
+  ROS_WARN_STREAM_NAMED(this->name_, USER_NOTIFICATION_NOT_IMPLEMENTED_COMMAND_INTERFACE);
 }
 
 }  // namespace pilz_joint_trajectory_controller

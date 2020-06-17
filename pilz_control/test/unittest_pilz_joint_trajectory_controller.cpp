@@ -36,6 +36,7 @@
 #include <trajectory_interface/quintic_spline_segment.h>
 
 #include <pilz_control/pilz_joint_trajectory_controller.h>
+#include <pilz_control/pilz_joint_trajectory_controller_impl.h>
 
 #include "pjtc_manager_mock.h"
 #include "pjtc_test_helper.h"
@@ -511,9 +512,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testTrajCommandExecution)
 
   pilz_testutils::LoggerMock logger_mock_holder;
   EXPECT_LOG(*logger_mock_holder, WARN,
-             "For safety reasons the trajectory command interface is deactivated "
-             "(for more information see https://github.com/ros-controls/ros_controllers/issues/493). "
-             "Please use the action interface instead.")
+             pilz_joint_trajectory_controller::USER_NOTIFICATION_NOT_IMPLEMENTED_COMMAND_INTERFACE)
       .WillOnce(ACTION_OPEN_BARRIER_VOID(LOG_MSG_RECEIVED_EVENT));
 
   trajectory_command_publisher.publish(goal.trajectory);
