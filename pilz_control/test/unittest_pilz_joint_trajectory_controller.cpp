@@ -23,8 +23,8 @@
 #include <gmock/gmock.h>
 
 #include <pilz_testutils/async_test.h>
+#include <pilz_testutils/mock_appender.h>
 #include <pilz_testutils/logger_mock.h>
-#include <pilz_testutils/scoped_logger_mock_holder.h>
 
 #include <ros/ros.h>
 
@@ -509,7 +509,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testTrajCommandExecution)
 
   GoalType goal{ generateSimpleGoal() };
 
-  pilz_testutils::ScopedLoggerMockHolder logger_mock_holder;
+  pilz_testutils::LoggerMock logger_mock_holder;
   EXPECT_LOG(*logger_mock_holder, WARN,
              "For safety reasons the trajectory command interface is deactivated "
              "(for more information see https://github.com/ros-controls/ros_controllers/issues/493). "

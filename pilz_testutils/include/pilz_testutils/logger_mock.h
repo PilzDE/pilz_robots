@@ -13,79 +13,89 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #ifndef LOGGER_MOCK_H
 #define LOGGER_MOCK_H
 
-#include <gmock/gmock.h>
+#include <string>
 
-#include <ros/console.h>
-#include "ros/console_impl.h"
+#include <log4cxx/logger.h>
 
-#include "log4cxx/appenderskeleton.h"
-#include "log4cxx/level.h"
+#include <pilz_testutils/logger_mock.h>
 
 namespace pilz_testutils
 {
 /**
- * @brief Class for checking logging messages during tests
+ * @brief Class to be used in tests with logging checks.
  *
- * @related ScopedLoggerMockHolder
+ * With deletion of this class the internal logging mechanism is detached.
  *
- * @note If possible please use the safer and more convenient ScopedLoggerMockHolder
- *
- * \e Usage:<br>
- * Suppose you expect a certain warning during your test use
+ * <b>Usage</b><br>
  *
  * \code
- * log4cxx::LoggerPtr logger = log4cxx::Logger::getLogger(ROSCONSOLE_ROOT_LOGGER_NAME);
- * auto mock_logger = new pilz_testutils::LoggerMock();
- * logger->addAppender(mock_logger);
+ *
+ * #include <pilz_testutils/logger_mock.h>
+ *
+ * pilz_testutils::LoggerMock ros_log_mock;
  *
  * EXPECT_LOG(*mock_logger, WARN, "Your warning text").Times(1);
  *
  * function_causing_warning();
  *
- * logger->removeAppender(mock_logger); // No further logging on this mock
+ * \endcode
+ * <br>
+ * <b>Asynchronous usage in combination with testing::AsyncTest</b><br>
+ *
+ * \code
+ *
+ * #include <pilz_testutils/async_test.h>
+ * #include <pilz_testutils/logger_mock.h>
+ *
+ *
+ * const std::string LOG_MSG_RECEIVED_EVENT{ "logger_called_event" };
+ *
+ * pilz_testutils::LoggerMock ros_log_mock;
+ *
+ * EXPECT_LOG(*mock_logger, WARN, "Your warning text")
+ *            .WillOnce(ACTION_OPEN_BARRIER_VOID(LOG_MSG_RECEIVED_EVENT));
+ *
+ * function_causing_async_warning();
+ *
+ * BARRIER(LOG_MSG_RECEIVED_EVENT); // Wait till log message is received
+ *
  * \endcode
  */
-class LoggerMock : public log4cxx::AppenderSkeleton
+class LoggerMock
 {
 public:
-  ~LoggerMock()
-  {
-  }
+  LoggerMock(const std::string& logger_name = ROSCONSOLE_ROOT_LOGGER_NAME);
+  ~LoggerMock();
 
 public:
-  MOCK_METHOD2(append, void(const log4cxx::spi::LoggingEventPtr&, log4cxx::helpers::Pool&));
+  MockAppender& operator*();
 
-  log4cxx::LogString getName() const override
-  {
-    return "LoggerMock";
-  }
-
-  virtual void close()
-  {
-  }
-  virtual bool requiresLayout() const
-  {
-    return false;
-  }
+private:
+  log4cxx::LoggerPtr ros_root_logger_;
+  // Note:
+  // The ROS root logger takes control over the life time management of the LoggerMock!
+  // We only keep a pointer to allow tests make use of the mocked functions of the LoggerMock.
+  MockAppender* mock_appender_{ new MockAppender() };
 };
 
-#define GENERATE_LOGMESSAGE_MATCHER_P(level)                                                                           \
-  MATCHER_P(Is##level, msg, "")                                                                                        \
-  {                                                                                                                    \
-    return arg->getLevel()->toInt() == log4cxx::Level::level##_INT && std::string(msg) == arg->getMessage();           \
-  }
+inline LoggerMock::LoggerMock(const std::string& logger_name)
+  : ros_root_logger_(log4cxx::Logger::getLogger(logger_name))
+{
+  ros_root_logger_->addAppender(mock_appender_);
+}
 
-GENERATE_LOGMESSAGE_MATCHER_P(DEBUG)
-GENERATE_LOGMESSAGE_MATCHER_P(INFO)
-GENERATE_LOGMESSAGE_MATCHER_P(WARN)
-GENERATE_LOGMESSAGE_MATCHER_P(ERROR)
-GENERATE_LOGMESSAGE_MATCHER_P(FATAL)
+inline LoggerMock::~LoggerMock()
+{
+  ros_root_logger_->removeAppender(mock_appender_);
+}
 
-#define EXPECT_LOG(logger, level, msg) EXPECT_CALL(logger, append(Is##level(msg), ::testing::_))
+inline MockAppender& LoggerMock::operator*()
+{
+  return *mock_appender_;
+}
 
 }  // namespace pilz_testutils
 
