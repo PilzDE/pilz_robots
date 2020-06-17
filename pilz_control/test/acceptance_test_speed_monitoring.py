@@ -14,20 +14,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import actionlib
-import math
 import rospy
 import threading
 import unittest
 
-from control_msgs.msg import *
+from control_msgs.msg import JointTrajectoryControllerState
 from std_msgs.msg import Float64
-from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from std_srvs.srv import Trigger, TriggerRequest
 
+from trajectory_dispatcher import TrajectoryDispatcher
+
 # Change the following two lines if you run a different robot
-_PREFIX_CONTROLLER = '/prbt/manipulator_joint_trajectory_controller'
-_PREFIX_CONTROLLER_NAMESPACE = '/prbt'
+CONTROLLER_NS = '/prbt'
+CONTROLLER_NAME = 'manipulator_joint_trajectory_controller'
 
 _JOINT_NAMES_PARAMETER = '/joint_names'
 _UNHOLD_SERVICE_NAME = '/unhold'
@@ -44,8 +43,6 @@ _FRAME_SPEED_TOLERANCE = 0.001
 _WAIT_FOR_CMD_FINISH_TIMEOUT = 3
 _SLEEP_TIME = 3.0
 
-_FLOAT_EPSILON = 1e-9
-
 _TEST_JOINT_START_POSITION = -0.5
 _TEST_JOINT_MID_POSITION = 0.0
 _TEST_JOINT_END_POSITION = 0.5
@@ -53,84 +50,13 @@ _TEST_JOINT_INDEX = 1
 _TEST_JOINT_LOW_SPEED = 0.2
 _TEST_JOINT_SPEED_LIMIT = 1.5
 
-_WAIT_FOR_SERVICE_TIMEOUT_S = 10
 _WAIT_FOR_MESSAGE_TIMEOUT_S = 10
-
-
-class SingleJointTrajectoryDispatcher:
-
-    def __init__(self, joint_names, joint_index):
-        self._joint_names = joint_names
-        self._joint_index = joint_index
-
-        action_name = _PREFIX_CONTROLLER + _FOLLOW_JOINT_TRAJ_ACTION_NAME
-        self._client = actionlib.SimpleActionClient(action_name, FollowJointTrajectoryAction)
-
-        timeout = rospy.Duration(_WAIT_FOR_SERVICE_TIMEOUT_S)
-        self._client.wait_for_server(timeout)
-
-    def move_to(self, position=0.0, time_from_start=_LONG_TRAJ_CMD_DURATION):
-
-        positions = [0.0]*len(self._joint_names)
-        positions[self._joint_index] = position
-        velocities = [0.0]*len(self._joint_names)
-
-        goal = FollowJointTrajectoryGoal()
-        goal.trajectory.joint_names = self._joint_names
-
-        point = JointTrajectoryPoint()
-        point.positions = positions
-        point.velocities = velocities
-        point.time_from_start = rospy.Duration(time_from_start)
-
-        goal.trajectory.points = [point]
-
-        self._client.send_goal_and_wait(goal)
-
-    def move_linearly_to(self, start_position, mid_position, end_position, velocity):
-        """ Send a trajectory with two points. The first part serves for accelerating to the specified velocity.
-            The second part is the actual movement that is linear in joint space.
-        """
-        assert(velocity > _FLOAT_EPSILON)
-
-        acc_part_position_diff = mid_position - start_position
-        lin_part_position_diff = end_position - mid_position
-        assert(math.copysign(1.0, velocity) == math.copysign(1.0, acc_part_position_diff))
-        assert(math.copysign(1.0, velocity) == math.copysign(1.0, lin_part_position_diff))
-
-        lin_part_duration = lin_part_position_diff / velocity
-        acc_part_duration = 2 * acc_part_position_diff / velocity
-
-        mid_positions = [0.0]*len(self._joint_names)
-        mid_positions[self._joint_index] = mid_position
-        end_positions = [0.0]*len(self._joint_names)
-        end_positions[self._joint_index] = end_position
-        velocities = [0.0]*len(self._joint_names)
-        velocities[self._joint_index] = velocity
-
-        goal = FollowJointTrajectoryGoal()
-        goal.trajectory.joint_names = self._joint_names
-
-        mid_point = JointTrajectoryPoint()
-        mid_point.positions = mid_positions
-        mid_point.velocities = velocities
-        mid_point.time_from_start = rospy.Duration(acc_part_duration)
-
-        end_point = JointTrajectoryPoint()
-        end_point.positions = end_positions
-        end_point.velocities = velocities
-        end_point.time_from_start = rospy.Duration(acc_part_duration + lin_part_duration)
-
-        goal.trajectory.points = [mid_point, end_point]
-
-        self._client.send_goal_and_wait(goal)
-
 
 class SingleJointPositionObserver:
 
     def __init__(self, joint_index):
         self._joint_index = joint_index
-        topic_name = _PREFIX_CONTROLLER + _STATE_TOPIC_NAME
+        topic_name = CONTROLLER_NS + "/" + CONTROLLER_NAME + _STATE_TOPIC_NAME
         self._controller_state_sub = rospy.Subscriber(topic_name, JointTrajectoryControllerState, self._state_callback)
         self._actual_position = None
         self._actual_position_lock = threading.Lock()
@@ -161,7 +87,7 @@ class SingleJointPositionObserver:
 class UnholdServiceWrapper():
 
     def __init__(self):
-        service_name = _PREFIX_CONTROLLER + _UNHOLD_SERVICE_NAME
+        service_name = CONTROLLER_NS + "/" + CONTROLLER_NAME + _UNHOLD_SERVICE_NAME
         rospy.wait_for_service(service_name)
         self._unhold_service = rospy.ServiceProxy(service_name, Trigger)
 
@@ -202,7 +128,7 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
     """
 
     def setUp(self):
-        param_name = _PREFIX_CONTROLLER_NAMESPACE + _JOINT_NAMES_PARAMETER
+        param_name = CONTROLLER_NS + _JOINT_NAMES_PARAMETER
         self.assertTrue(rospy.has_param(param_name))
         self._joint_names = rospy.get_param(param_name)
 
@@ -211,7 +137,7 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
         self._max_frame_speed = MaxFrameSpeedWrapper()
         # The observer can be used to ensure that trajectory goals are reached in order to have a clean test setup.
         self._robot_observer = SingleJointPositionObserver(_TEST_JOINT_INDEX)
-        self._trajectory_dispatcher = SingleJointTrajectoryDispatcher(self._joint_names, _TEST_JOINT_INDEX)
+        self._trajectory_dispatcher = TrajectoryDispatcher(CONTROLLER_NS, CONTROLLER_NAME)
         self._unhold_service = UnholdServiceWrapper()
 
         self._move_to_start_position()
@@ -225,15 +151,18 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
     def _move_to_start_position(self):
         rospy.loginfo('Move to start position')
         self._unhold_controller()
-        self._trajectory_dispatcher.move_to(_TEST_JOINT_START_POSITION)
+        self._trajectory_dispatcher.dispatch_single_point_continuous_trajectory(_TEST_JOINT_START_POSITION)
+        self._trajectory_dispatcher.wait_for_result()
         self._robot_observer.wait_for_position_reached(_TEST_JOINT_START_POSITION)
 
     def _perform_test_movement(self, test_joint_velocity):
         self._unhold_controller()
-        self._trajectory_dispatcher.move_linearly_to(start_position=_TEST_JOINT_START_POSITION,
-                                                     mid_position=_TEST_JOINT_MID_POSITION,
-                                                     end_position=_TEST_JOINT_END_POSITION,
-                                                     velocity=test_joint_velocity)
+        self._trajectory_dispatcher.dispatch_dual_point_trajectory(joint_index=_TEST_JOINT_INDEX,
+                                                                   start_position=_TEST_JOINT_START_POSITION,
+                                                                   mid_position=_TEST_JOINT_MID_POSITION,
+                                                                   end_position=_TEST_JOINT_END_POSITION,
+                                                                   velocity=test_joint_velocity)
+        self._trajectory_dispatcher.wait_for_result()
         self._robot_observer.wait_for_position_reached(_TEST_JOINT_END_POSITION)
 
     def _compute_target_velocity(self):
