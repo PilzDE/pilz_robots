@@ -60,7 +60,7 @@ public:
 
 private:
   modbus_t* modbus_connection_{ nullptr };
-  bool checkIPConnection(const char* ip, unsigned int port, unsigned int timeout, unsigned int retries);
+  bool checkIPConnection(const char* ip, unsigned int port, unsigned int timeout, unsigned int retries) const;
 };
 
 }  // namespace prbt_hardware_support

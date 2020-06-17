@@ -126,7 +126,7 @@ RegCont LibModbusClient::writeReadHoldingRegister(const int write_addr, const Re
   return read_reg;
 }
 
-bool LibModbusClient::checkIPConnection(const char* ip, unsigned int port, unsigned int timeout, unsigned int retries)
+bool LibModbusClient::checkIPConnection(const char* ip, unsigned int port, unsigned int timeout, unsigned int retries) const
 {
   long   result;
   int    sockfd;
