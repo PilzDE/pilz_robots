@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2019 Pilz GmbH & Co. KG
+# Copyright (c) 2020 Pilz GmbH & Co. KG
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
@@ -19,8 +19,7 @@ import rospy
 import threading
 import unittest
 
-from actionlib_msgs.msg import *
-from control_msgs.msg import *
+from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryGoal
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from std_srvs.srv import Trigger, TriggerRequest
 
@@ -39,6 +38,7 @@ DEFAULT_TRAJECTORY_DURATION_S = 10
 WAIT_FOR_SERVICE_TIMEOUT_S = 10
 WAIT_FOR_MESSAGE_TIMEOUT_S = 10
 
+
 class SinglePointTrajectoryDispatcher:
 
     def __init__(self):
@@ -47,8 +47,7 @@ class SinglePointTrajectoryDispatcher:
         timeout = rospy.Duration(WAIT_FOR_SERVICE_TIMEOUT_S)
         self._client.wait_for_server(timeout)
 
-    def sendActionGoal(self, position=[0.0]*len(JOINT_NAMES), velocity=[],
-                       time_from_start = DEFAULT_TRAJECTORY_DURATION_S):
+    def send_action_goal(self, position, velocity=[], time_from_start=DEFAULT_TRAJECTORY_DURATION_S):
         assert len(position) == len(JOINT_NAMES)
         if velocity:
             assert len(velocity) == len(JOINT_NAMES)
@@ -150,9 +149,9 @@ class AcceptancetestAccelerationLimit(unittest.TestCase):
         rospy.sleep(3.0)
 
         rospy.loginfo('First move to start position...')
-        self._trajectory_dispatcher.sendActionGoal(position=self._start_position, velocity=self._target_velocity)
+        self._trajectory_dispatcher.send_action_goal(position=self._start_position, velocity=self._target_velocity)
         self._unhold_controller()
-        self._trajectory_dispatcher.sendActionGoal(position=self._target_position, time_from_start=0.02)
+        self._trajectory_dispatcher.send_action_goal(position=self._target_position, time_from_start=0.02)
 
         self.assertAlmostEqual(self._robot_observer.get_actual_position(), TEST_JOINT_START_POSITION,
                                msg='Robot did not stand still as expected', delta=0.01)
@@ -162,11 +161,11 @@ class AcceptancetestAccelerationLimit(unittest.TestCase):
         rospy.sleep(3.0)
 
         rospy.loginfo('First move to start position...')
-        self._trajectory_dispatcher.sendActionGoal(position=self._start_position, velocity=self._target_velocity)
+        self._trajectory_dispatcher.send_action_goal(position=self._start_position, velocity=self._target_velocity)
         self._unhold_controller()
         self._robot_observer.reset_max_acceleration()
-        self._trajectory_dispatcher.sendActionGoal(position=self._target_position, time_from_start=0.02,
-                                                   velocity=self._target_velocity)
+        self._trajectory_dispatcher.send_action_goal(position=self._target_position, time_from_start=0.02,
+                                                     velocity=self._target_velocity)
 
         self.assertGreater(TEST_JOINT_ACC_LIMIT, self._robot_observer.get_max_acceleration(),
                            'Acceleration limit was violated')
