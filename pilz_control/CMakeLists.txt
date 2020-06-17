@@ -158,7 +158,8 @@ if(CATKIN_ENABLE_TESTING)
     test/acceptance_test_speed_monitoring.py
     test/acceptance_test_acceleration_limit.py
     test/integrationtest_pilz_joint_trajectory_controller.py
-    test/test_utils.py
+    test/controller_state_observer.py
+    test/holding_mode_service_wrapper.py
     test/trajectory_dispatcher.py
   )
   roslint_add_test()

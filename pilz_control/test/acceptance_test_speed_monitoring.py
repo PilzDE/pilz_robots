@@ -18,10 +18,10 @@ import rospy
 import threading
 import unittest
 
-from control_msgs.msg import JointTrajectoryControllerState
 from std_msgs.msg import Float64
 
-from test_utils import HoldingModeServiceWrapper
+from controller_state_observer import ControllerStateObserver
+from holding_mode_service_wrapper import HoldingModeServiceWrapper
 from trajectory_dispatcher import TrajectoryDispatcher
 
 # Change the following two lines if you run a different robot
@@ -29,14 +29,11 @@ CONTROLLER_NS = '/prbt'
 CONTROLLER_NAME = 'manipulator_joint_trajectory_controller'
 
 _JOINT_NAMES_PARAMETER = '/joint_names'
-_STATE_TOPIC_NAME = '/state'
 _MAX_FRAME_SPEED_TOPIC_NAME = '/max_frame_speed'
 
 _SPEED_LIMIT = 0.25
 _VEL_SCALE_DEFAULT = 0.5
 _LONG_TRAJ_CMD_DURATION = 10.0
-_SLEEP_RATE_HZ = 10
-_POSITION_TOLERANCE = 0.01
 _FRAME_SPEED_TOLERANCE = 0.001
 _WAIT_FOR_CMD_FINISH_TIMEOUT = 3
 _SLEEP_TIME = 3.0
@@ -47,39 +44,6 @@ _TEST_JOINT_END_POSITION = 0.5
 _TEST_JOINT_INDEX = 1
 _TEST_JOINT_LOW_SPEED = 0.2
 _TEST_JOINT_SPEED_LIMIT = 1.5
-
-_WAIT_FOR_MESSAGE_TIMEOUT_S = 10
-
-class SingleJointPositionObserver:
-
-    def __init__(self, joint_index):
-        self._joint_index = joint_index
-        topic_name = CONTROLLER_NS + "/" + CONTROLLER_NAME + _STATE_TOPIC_NAME
-        self._controller_state_sub = rospy.Subscriber(topic_name, JointTrajectoryControllerState, self._state_callback)
-        self._actual_position = None
-        self._actual_position_lock = threading.Lock()
-
-        rospy.wait_for_message(topic_name, JointTrajectoryControllerState, _WAIT_FOR_MESSAGE_TIMEOUT_S)
-
-    def _state_callback(self, msg):
-        with self._actual_position_lock:
-            self._actual_position = msg.actual.positions[self._joint_index]
-
-    def wait_for_position_reached(self, position):
-        rate = rospy.Rate(_SLEEP_RATE_HZ)
-        start_waiting = rospy.Time.now()
-
-        while True:
-            with self._actual_position_lock:
-                position_diff = position - self._actual_position
-
-            if abs(position_diff) < _POSITION_TOLERANCE:
-                return True
-
-            if ((rospy.Time.now() - start_waiting).to_sec() > _WAIT_FOR_CMD_FINISH_TIMEOUT):
-                return False
-
-            rate.sleep()
 
 
 class MaxFrameSpeedWrapper():
@@ -121,7 +85,7 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
 
         self._max_frame_speed = MaxFrameSpeedWrapper()
         # The observer can be used to ensure that trajectory goals are reached in order to have a clean test setup.
-        self._robot_observer = SingleJointPositionObserver(_TEST_JOINT_INDEX)
+        self._robot_observer = ControllerStateObserver(CONTROLLER_NS, CONTROLLER_NAME)
         self._trajectory_dispatcher = TrajectoryDispatcher(CONTROLLER_NS, CONTROLLER_NAME)
         self._holding_mode_srv = HoldingModeServiceWrapper(CONTROLLER_NS, CONTROLLER_NAME)
 
@@ -136,9 +100,11 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
     def _move_to_start_position(self):
         rospy.loginfo('Move to start position')
         self._unhold_controller()
-        self._trajectory_dispatcher.dispatch_single_point_continuous_trajectory(_TEST_JOINT_START_POSITION)
+        start_position = [0.0] * len(self._joint_names)
+        start_position[_TEST_JOINT_INDEX] = _TEST_JOINT_START_POSITION
+        self._trajectory_dispatcher.dispatch_single_point_continuous_trajectory(start_position)
         self._trajectory_dispatcher.wait_for_result()
-        self._robot_observer.wait_for_position_reached(_TEST_JOINT_START_POSITION)
+        self._robot_observer.wait_for_position_reached(start_position)
 
     def _perform_test_movement(self, test_joint_velocity):
         self._unhold_controller()
@@ -148,7 +114,9 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
                                                                    end_position=_TEST_JOINT_END_POSITION,
                                                                    velocity=test_joint_velocity)
         self._trajectory_dispatcher.wait_for_result()
-        self._robot_observer.wait_for_position_reached(_TEST_JOINT_END_POSITION)
+        end_position = [0.0] * len(self._joint_names)
+        end_position[_TEST_JOINT_INDEX] = _TEST_JOINT_END_POSITION
+        self._robot_observer.wait_for_position_reached(end_position)
 
     def _compute_target_velocity(self):
         """ The target velocity (representing the speed limit) is computed via a formula and one speed observation.
