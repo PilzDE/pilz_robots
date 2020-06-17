@@ -167,13 +167,6 @@ TEST(BrakeTestUtilsTest, testGetCurrentJointStates)
 
   auto expected_msg = joint_states_pub.getNextMessage();
 
-  // Move away from zero
-  joint_states_pub.setVelocity(0.1);
-  ros::Duration(0.1).sleep();
-  joint_states_pub.setVelocity(0.0);
-
-  auto expected_msg = joint_states_pub.getNextMessage();
-
   try
   {
     auto msg = BrakeTestUtils::getCurrentJointStates();
