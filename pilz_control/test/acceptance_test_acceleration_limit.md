@@ -32,7 +32,7 @@ limitations under the License.
   ```
   rosrun pilz_control acceptance_test_acceleration_limit.py
   ```
-  2. Switch into AUTO mode and execute
+  2. Switch into AUTO mode. Make sure the drives are enabled again by pressing RESET and execute
   ```
   rosrun pilz_control acceptance_test_acceleration_limit.py
   ```
