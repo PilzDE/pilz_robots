@@ -19,13 +19,12 @@ import threading
 import unittest
 
 from control_msgs.msg import JointTrajectoryControllerState
-from std_srvs.srv import Trigger, TriggerRequest
 
+from test_utils import HoldingModeServiceWrapper
 from trajectory_dispatcher import TrajectoryDispatcher
 
 CONTROLLER_NS = '/prbt'
 CONTROLLER_NAME = 'manipulator_joint_trajectory_controller'
-UNHOLD_SERVICE_NAME = '/prbt/manipulator_joint_trajectory_controller/unhold'
 CONTROLLER_STATE_TOPIC_NAME = '/prbt/manipulator_joint_trajectory_controller/state'
 JOINT_NAMES = ['prbt_joint_1', 'prbt_joint_2', 'prbt_joint_3', 'prbt_joint_4', 'prbt_joint_5', 'prbt_joint_6']
 
@@ -34,22 +33,9 @@ TEST_JOINT_START_POSITION = -0.5
 TEST_JOINT_TARGET_POSITION = 0.5
 TEST_JOINT_ACC_LIMIT = 3.49
 
-SLEEP_UNHOLD_FAILURE_S = 3
 DEFAULT_TRAJECTORY_DURATION_S = 10
 WAIT_FOR_SERVICE_TIMEOUT_S = 10
 WAIT_FOR_MESSAGE_TIMEOUT_S = 10
-
-class UnholdServiceWrapper():
-
-    def __init__(self):
-        service_name = UNHOLD_SERVICE_NAME
-        rospy.wait_for_service(service_name)
-        self._unhold_service = rospy.ServiceProxy(service_name, Trigger)
-
-    def call(self):
-        req = TriggerRequest()
-        resp = self._unhold_service(req)
-        return resp.success
 
 
 class SingleJointStateObserver:
@@ -102,7 +88,7 @@ class AcceptancetestAccelerationLimit(unittest.TestCase):
 
     def setUp(self):
         self._trajectory_dispatcher = TrajectoryDispatcher(CONTROLLER_NS, CONTROLLER_NAME)
-        self._unhold_service = UnholdServiceWrapper()
+        self._holding_mode_srv = HoldingModeServiceWrapper(CONTROLLER_NS, CONTROLLER_NAME)
         self._robot_observer = SingleJointStateObserver(TEST_JOINT_INDEX)
 
         self._start_position = [0.0]*len(JOINT_NAMES)
@@ -113,9 +99,9 @@ class AcceptancetestAccelerationLimit(unittest.TestCase):
         self._unhold_controller()
 
     def _unhold_controller(self):
-        if not self._unhold_service.call():
+        if not self._holding_mode_srv.request_default_mode():
             rospy.sleep(SLEEP_UNHOLD_FAILURE_S)
-            self.assertTrue(self._unhold_service.call(), 'Unable to unhold controller')
+            self.assertTrue(self._holding_mode_srv.request_default_mode(), 'Unable to unhold controller')
 
     def test_critical_discontinuous_movement(self):
         rospy.loginfo('!!! BE CAREFUL. ROBOT MIGHT CRASH. !!!')

@@ -20,8 +20,8 @@ import unittest
 
 from control_msgs.msg import JointTrajectoryControllerState
 from std_msgs.msg import Float64
-from std_srvs.srv import Trigger, TriggerRequest
 
+from test_utils import HoldingModeServiceWrapper
 from trajectory_dispatcher import TrajectoryDispatcher
 
 # Change the following two lines if you run a different robot
@@ -29,8 +29,6 @@ CONTROLLER_NS = '/prbt'
 CONTROLLER_NAME = 'manipulator_joint_trajectory_controller'
 
 _JOINT_NAMES_PARAMETER = '/joint_names'
-_UNHOLD_SERVICE_NAME = '/unhold'
-_FOLLOW_JOINT_TRAJ_ACTION_NAME = '/follow_joint_trajectory'
 _STATE_TOPIC_NAME = '/state'
 _MAX_FRAME_SPEED_TOPIC_NAME = '/max_frame_speed'
 
@@ -84,19 +82,6 @@ class SingleJointPositionObserver:
             rate.sleep()
 
 
-class UnholdServiceWrapper():
-
-    def __init__(self):
-        service_name = CONTROLLER_NS + "/" + CONTROLLER_NAME + _UNHOLD_SERVICE_NAME
-        rospy.wait_for_service(service_name)
-        self._unhold_service = rospy.ServiceProxy(service_name, Trigger)
-
-    def call(self):
-        req = TriggerRequest()
-        resp = self._unhold_service(req)
-        return resp.success
-
-
 class MaxFrameSpeedWrapper():
 
     def __init__(self, smooth_factor=1.0):
@@ -138,15 +123,15 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
         # The observer can be used to ensure that trajectory goals are reached in order to have a clean test setup.
         self._robot_observer = SingleJointPositionObserver(_TEST_JOINT_INDEX)
         self._trajectory_dispatcher = TrajectoryDispatcher(CONTROLLER_NS, CONTROLLER_NAME)
-        self._unhold_service = UnholdServiceWrapper()
+        self._holding_mode_srv = HoldingModeServiceWrapper(CONTROLLER_NS, CONTROLLER_NAME)
 
         self._move_to_start_position()
         self._max_frame_speed.reset()
 
     def _unhold_controller(self):
-        if not self._unhold_service.call():
+        if not self._holding_mode_srv.request_default_mode():
             rospy.sleep(_SLEEP_TIME)
-            self.assertTrue(self._unhold_service.call(), 'Unable to unhold controller')
+            self.assertTrue(self._holding_mode_srv.request_default_mode(), 'Unable to unhold controller')
 
     def _move_to_start_position(self):
         rospy.loginfo('Move to start position')
