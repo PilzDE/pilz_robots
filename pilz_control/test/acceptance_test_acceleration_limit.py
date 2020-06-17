@@ -24,10 +24,11 @@ from controller_state_observer import ControllerStateObserver
 from holding_mode_service_wrapper import HoldingModeServiceWrapper
 from trajectory_dispatcher import TrajectoryDispatcher
 
+# Change the following two lines if you run a different robot
 CONTROLLER_NS = '/prbt'
 CONTROLLER_NAME = 'manipulator_joint_trajectory_controller'
 
-JOINT_NAMES = ['prbt_joint_1', 'prbt_joint_2', 'prbt_joint_3', 'prbt_joint_4', 'prbt_joint_5', 'prbt_joint_6']
+JOINT_NAMES_PARAMETER = '/joint_names'
 
 TEST_JOINT_INDEX = 1
 TEST_JOINT_START_POSITION = -0.5
@@ -40,13 +41,17 @@ SLEEP_UNHOLD_FAILURE_S = 3
 class AcceptancetestAccelerationLimit(unittest.TestCase):
 
     def setUp(self):
+        param_name = CONTROLLER_NS + JOINT_NAMES_PARAMETER
+        self.assertTrue(rospy.has_param(param_name))
+        self._joint_names = rospy.get_param(param_name)
+
         self._trajectory_dispatcher = TrajectoryDispatcher(CONTROLLER_NS, CONTROLLER_NAME)
         self._holding_mode_srv = HoldingModeServiceWrapper(CONTROLLER_NS, CONTROLLER_NAME)
         self._robot_observer = ControllerStateObserver(CONTROLLER_NS, CONTROLLER_NAME)
 
-        self._start_position = [0.0]*len(JOINT_NAMES)
+        self._start_position = [0.0]*len(self._joint_names)
         self._start_position[TEST_JOINT_INDEX] = TEST_JOINT_START_POSITION
-        self._target_position = [0.0]*len(JOINT_NAMES)
+        self._target_position = [0.0]*len(self._joint_names)
         self._target_position[TEST_JOINT_INDEX] = TEST_JOINT_TARGET_POSITION
 
         self._unhold_controller()
