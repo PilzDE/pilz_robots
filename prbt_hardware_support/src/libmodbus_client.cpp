@@ -139,7 +139,7 @@ void LibModbusClient::close()
   }
 }
 
-bool checkIPConnection(const char* ip, unsigned int port, double timeout, unsigned int retries)
+bool checkIPConnection(const char* ip, unsigned int port, double timeout, const unsigned int n_retries)
 {
   long result;
   int sockfd;
@@ -156,12 +156,17 @@ bool checkIPConnection(const char* ip, unsigned int port, double timeout, unsign
   serv_addr.sin_addr.s_addr = inet_addr(ip);
 
   // try "retries" times to connect
-  while ((connect(sockfd, (const sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) && (0 != retries))
+  unsigned int tries{ 0 };
+  while ((connect(sockfd, (const sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) && (tries < n_retries))
   {
-    retries--;
-    if (0 == retries)
+    tries++;
+    ROS_INFO_STREAM("Trying to connect to " << ip << ":" << port << " " << tries << "/" << n_retries);
+    if (tries == n_retries)
     {
-      ROS_ERROR_STREAM_NAMED("LibModbusClient", "Could not establish modbus connection. Cable connected?");
+      ROS_ERROR_STREAM_NAMED("LibModbusClient", "Could not establish modbus connection with: "
+                                                    << ip << ":" << port
+                                                    << ". Make sure that your cables are connected properly and that "
+                                                       "you have set the right IP Address and Port");
       return false;
     }
     std::this_thread::sleep_for(std::chrono::duration<double>(timeout));
