@@ -145,6 +145,7 @@ void LibModbusClient::close()
 
 bool checkIPConnection(const char* ip, const unsigned int port)
 {
+  int conresult;
   long result;
   int sockfd;
   struct sockaddr_in serv_addr;
@@ -158,9 +159,38 @@ bool checkIPConnection(const char* ip, const unsigned int port)
   result |= O_NONBLOCK;
   fcntl(sockfd, F_SETFL, result);  // set connection to non blocking, no timeout
   serv_addr.sin_addr.s_addr = inet_addr(ip);
+  conresult = connect(sockfd, (const sockaddr*)&serv_addr, sizeof(serv_addr));
 
-  if (connect(sockfd, (const sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
+  if (conresult < 0)
   {
+    if (errno == EINPROGRESS)
+    {
+      fd_set writeset;
+      int optval;
+      socklen_t optlen = sizeof(optval);
+      struct timeval tv;
+      tv.tv_sec = 0;
+      tv.tv_usec = 100000;  // timout is 100ms
+
+      FD_ZERO(&writeset);         // clear writeset all to zero
+      FD_SET(sockfd, &writeset);  // set the sockfd filedescriptor to be affected in following select function
+      conresult =
+          select(sockfd + 1, NULL, &writeset, NULL, &tv);  // wait if sockfd is ready for writing with tv timeout
+      if (conresult <= 0)
+      {
+        /* Timeout or fail */
+        return false;
+      }
+      conresult = getsockopt(sockfd, SOL_SOCKET, SO_ERROR, (void*)&optval,
+                             &optlen);        // get from socket api if any error is pending
+      if ((conresult == 0) && (optval == 0))  // if getsockopt was executed with success annd no error is returned from
+                                              // socket api
+      {
+        ::close(sockfd);
+        std::this_thread::sleep_for(std::chrono::duration<double>(1));  // wait one second to grant a free port
+        return true;
+      }
+    }
     return false;
   }
   ::close(sockfd);
