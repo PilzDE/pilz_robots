@@ -125,7 +125,7 @@ int main(int argc, char** argv)
     ROS_ERROR_STREAM("Could not establish modbus connection with: "
                      << ip << ":" << port
                      << ". Make sure that your cables are connected properly and that "
-                        "you have set the right IP Address and Port");
+                        "you have set the correct ip address and port.");
 
     return EXIT_FAILURE;
   }
