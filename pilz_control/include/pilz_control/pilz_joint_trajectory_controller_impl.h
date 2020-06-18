@@ -25,6 +25,13 @@ namespace pilz_joint_trajectory_controller
 static constexpr double SPEED_LIMIT_ACTIVATED{ 0.25 };
 static constexpr double SPEED_LIMIT_NOT_ACTIVATED{ -1.0 };
 
+static const std::string LIMITS_NAMESPACE{ "limits" };
+static const std::string ROBOT_DESCRIPTION_PARAM_NAME{ "robot_description" };
+static const std::string HOLD_SERVICE_NAME{ "hold" };
+static const std::string UNHOLD_SERVICE_NAME{ "unhold" };
+static const std::string IS_EXECUTING_SERVICE_NAME{ "is_executing" };
+static const std::string MONITOR_CARTESIAN_SPEED_SERVICE_NAME{ "monitor_cartesian_speed" };
+
 namespace ph = std::placeholders;
 
 /**
@@ -51,8 +58,8 @@ bool isTrajectoryExecuted(const std::vector<TrajectoryPerJoint<Segment>>& traj, 
 };
 
 template <class SegmentImpl, class HardwareInterface>
-void 
-PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::makeParamNameWithSuffix(std::string& param_name, const std::string joint_name, const std::string suffix)
+void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::makeParamNameWithSuffix(
+    std::string& param_name, const std::string joint_name, const std::string suffix)
 {
   const std::string joint_limits_naming_prefix{ "/joint_limits/" };
   std::stringstream param_name_stream;
@@ -83,7 +90,7 @@ PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::getJointAccelerat
       continue;
     }
 
-    std::string acc_limits_param_name_to_read{""};
+    std::string acc_limits_param_name_to_read{ "" };
     makeParamNameWithSuffix(acc_limits_param_name_to_read, joint_names.at(i), "/max_acceleration");
     double tmp_limit;
     if (nh.getParam(acc_limits_param_name_to_read, tmp_limit))
@@ -112,11 +119,11 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
 {
   bool res = JointTrajectoryController::init(hw, root_nh, controller_nh);
 
-  ros::NodeHandle limits_nh("/robot_description_planning");
+  ros::NodeHandle limits_nh(controller_nh, LIMITS_NAMESPACE);
   acceleration_joint_limits_ = getJointAccelerationLimits(limits_nh, JointTrajectoryController::joint_names_);
 
   using robot_model_loader::RobotModelLoader;
-  robot_model_loader_ = std::make_shared<RobotModelLoader>("robot_description", false);
+  robot_model_loader_ = std::make_shared<RobotModelLoader>(ROBOT_DESCRIPTION_PARAM_NAME, false);
   auto kinematic_model = robot_model_loader_->getModel();
 
   using pilz_control::CartesianSpeedMonitor;
@@ -125,16 +132,16 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
   cartesian_speed_limit_ = SPEED_LIMIT_ACTIVATED;
 
   hold_position_service =
-      controller_nh.advertiseService("hold", &PilzJointTrajectoryController::handleHoldRequest, this);
+      controller_nh.advertiseService(HOLD_SERVICE_NAME, &PilzJointTrajectoryController::handleHoldRequest, this);
 
   unhold_position_service =
-      controller_nh.advertiseService("unhold", &PilzJointTrajectoryController::handleUnHoldRequest, this);
+      controller_nh.advertiseService(UNHOLD_SERVICE_NAME, &PilzJointTrajectoryController::handleUnHoldRequest, this);
 
-  is_executing_service_ =
-      controller_nh.advertiseService("is_executing", &PilzJointTrajectoryController::handleIsExecutingRequest, this);
+  is_executing_service_ = controller_nh.advertiseService(
+      IS_EXECUTING_SERVICE_NAME, &PilzJointTrajectoryController::handleIsExecutingRequest, this);
 
   monitor_cartesian_speed_service_ = controller_nh.advertiseService(
-      "monitor_cartesian_speed", &PilzJointTrajectoryController::handleMonitorCartesianSpeedRequest, this);
+      MONITOR_CARTESIAN_SPEED_SERVICE_NAME, &PilzJointTrajectoryController::handleMonitorCartesianSpeedRequest, this);
 
   stop_traj_builder_ = std::unique_ptr<joint_trajectory_controller::StopTrajectoryBuilder<SegmentImpl>>(
       new joint_trajectory_controller::StopTrajectoryBuilder<SegmentImpl>(
