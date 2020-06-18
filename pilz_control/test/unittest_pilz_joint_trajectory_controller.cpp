@@ -59,6 +59,33 @@ using RobotDriver = RobotDriverMock<PJTCManager>;
 using Controller = pilz_joint_trajectory_controller::PilzJointTrajectoryController<Segment, HWInterface>;
 using ControllerPtr = std::shared_ptr<Controller>;
 
+
+/**
+ * @brief Dummy needed for testGetJointAccelerationLimits.
+ */
+class DummySegmentImpl
+{
+public:
+  struct State : public Segment::State
+  {
+  };
+  typedef typename Segment::Scalar Scalar;
+  typedef typename Segment::Time   Time;
+};
+
+/**
+ * @brief Dummy needed for testGetJointAccelerationLimits.
+ */
+class DummyHardwareInterface: public hardware_interface::RobotHW
+{
+  public:
+    struct MyResourceHandleType
+    {
+    };
+    typedef typename DummyHardwareInterface::MyResourceHandleType ResourceHandleType;
+    typedef typename hardware_interface::JointHandle JointHandle;
+};
+
 /**
  * @brief Test fixture class for the unit-test of the PilzJointTrajectoryController.
  *
@@ -73,6 +100,7 @@ protected:
 
   testing::AssertionResult isControllerInHoldMode();
   testing::AssertionResult isControllerInUnholdMode();
+  void runGetJointAccelerationLimits(const ros::NodeHandle& nh, const std::vector<std::string>& joint_names);
 
 protected:
   RobotDriver robot_driver_{ CONTROLLER_NAMESPACE };
@@ -122,6 +150,10 @@ testing::AssertionResult PilzJointTrajectoryControllerTest::isControllerInUnhold
   return testing::AssertionSuccess();
 }
 
+void PilzJointTrajectoryControllerTest::runGetJointAccelerationLimits(const ros::NodeHandle& nh, const std::vector<std::string>& joint_names){
+  PilzJointTrajectoryController<DummySegmentImpl, DummyHardwareInterface>::getJointAccelerationLimits(nh, joint_names);
+}
+
 //////////////////////////////////
 //  Testing of Initialization   //
 //////////////////////////////////
@@ -152,32 +184,6 @@ TEST_F(PilzJointTrajectoryControllerTest, testD0Destructor)
   ControllerPtr controller{ new Controller() };
   SUCCEED();
 }
-
-/**
- * @brief Dummy needed for testGetJointAccelerationLimits.
- */
-class DummySegmentImpl
-{
-public:
-  struct State : public Segment::State
-  {
-  };
-  typedef typename Segment::Scalar Scalar;
-  typedef typename Segment::Time   Time;
-};
-
-/**
- * @brief Dummy needed for testGetJointAccelerationLimits.
- */
-class DummyHardwareInterface: public hardware_interface::RobotHW
-{
-  public:
-    struct MyResourceHandleType
-    {
-    };
-    typedef typename DummyHardwareInterface::MyResourceHandleType ResourceHandleType;
-    typedef typename hardware_interface::JointHandle JointHandle;
-};
 
 /**
  * @tests{Monitor_joint_accelerations,
@@ -221,16 +227,14 @@ TEST_F(PilzJointTrajectoryControllerTest, testGetJointAccelerationLimitsExceptio
   ros::NodeHandle nh{ "~" };
 
   // testing behaviour if acc limit can not be read
-  // std::vector<std::string> joint_names_no_acc_limit = { "joint_with_undefined_max_acc" };
-  // EXPECT_THROW(PilzJointTrajectoryController<DummySegmentImpl, DummyHardwareInterface>::getJointAccelerationLimits(
-  //                  nh, joint_names_no_acc_limit),
-  //              ros::InvalidParameterException);
+  std::vector<std::string> joint_names_no_acc_limit = { "joint_with_undefined_max_acc" };
+  EXPECT_THROW(runGetJointAccelerationLimits(nh, joint_names_no_acc_limit),
+               ros::InvalidParameterException);
 
-  // // testing behaviour if `has_acceleration_limits` is undefined
-  // std::vector<std::string> joint_names_has_acc_lim_undefined = { "joint_with_undefined_has_acc_lim" };
-  // EXPECT_THROW(PilzJointTrajectoryController<DummySegmentImpl, DummyHardwareInterface>::getJointAccelerationLimits(
-  //                  nh, joint_names_has_acc_lim_undefined),
-  //              ros::InvalidParameterException);
+  // testing behaviour if `has_acceleration_limits` is undefined
+  std::vector<std::string> joint_names_has_acc_lim_undefined = { "joint_with_undefined_has_acc_lim" };
+  EXPECT_THROW(runGetJointAccelerationLimits(nh, joint_names_has_acc_lim_undefined),
+               ros::InvalidParameterException);
 }
 
 /////////////////////////////////////
@@ -684,7 +688,6 @@ INSTANTIATE_TEST_CASE_P(MethodAndServiceCallback, PilzJointTrajectoryControllerI
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "unittest_pilz_joint_trajectory_controller");
-  ros::NodeHandle nh;
 
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
