@@ -170,7 +170,8 @@ bool checkIPConnection(const char* ip, const unsigned int port)
 
   FD_ZERO(&writeset);         // clear writeset all to zero
   FD_SET(sockfd, &writeset);  // set the sockfd filedescriptor to be affected in following select function
-  conresult = select(sockfd + 1, NULL, &writeset, NULL, &tv);  // wait if sockfd is ready for writing with tv timeout
+  conresult =
+      select(sockfd + 1, nullptr, &writeset, nullptr, &tv);  // wait if sockfd is ready for writing with tv timeout
   if (conresult <= 0)
   {
     /* Timeout or fail */
@@ -184,9 +185,8 @@ bool checkIPConnection(const char* ip, const unsigned int port)
     ::close(sockfd);
     std::this_thread::sleep_for(std::chrono::duration<double>(1));  // wait one second to grant a free port
     return true;
-  } 
+  }
   return false;
-  
 }
 
 }  // namespace prbt_hardware_support
