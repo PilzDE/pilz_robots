@@ -112,7 +112,7 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
 {
   bool res = JointTrajectoryController::init(hw, root_nh, controller_nh);
 
-  ros::NodeHandle limits_nh(controller_nh, "limits");
+  ros::NodeHandle limits_nh("/robot_description_planning");
   acceleration_joint_limits_ = getJointAccelerationLimits(limits_nh, JointTrajectoryController::joint_names_);
 
   using robot_model_loader::RobotModelLoader;
@@ -292,7 +292,7 @@ inline bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::isPla
   {
     const double& old_velocity = JointTrajectoryController::old_desired_state_.velocity.at(i);
     const double& new_velocity = JointTrajectoryController::desired_state_.velocity.at(i);
-    const double& acceleration = (new_velocity - old_velocity) / period.toSec();
+    const double& acceleration = (std::abs(new_velocity) - std::abs(old_velocity)) / period.toSec();
     if ((acceleration_joint_limits_.at(i)) && (acceleration > *acceleration_joint_limits_.at(i)))
     {
       ROS_ERROR_STREAM("Acceleration limit violated by joint "
