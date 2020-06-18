@@ -146,9 +146,16 @@ void LibModbusClient::close()
 bool checkIPConnection(const char* ip, const unsigned int port)
 {
   int conresult;
-  long result;
+  int optval;
   int sockfd;
+  socklen_t optlen = sizeof(optval);
+  long result;
   struct sockaddr_in serv_addr;
+  fd_set writeset;
+  struct timeval tv;
+
+  tv.tv_sec = 0;
+  tv.tv_usec = 100000;  // timout is 100ms
 
   sockfd = socket(AF_INET, SOCK_STREAM, 0);  // Create socket for connection testing purpose
   bzero((char*)&serv_addr, sizeof(serv_addr));
@@ -161,42 +168,25 @@ bool checkIPConnection(const char* ip, const unsigned int port)
   serv_addr.sin_addr.s_addr = inet_addr(ip);
   conresult = connect(sockfd, (const sockaddr*)&serv_addr, sizeof(serv_addr));
 
-  if (conresult < 0)
+  FD_ZERO(&writeset);         // clear writeset all to zero
+  FD_SET(sockfd, &writeset);  // set the sockfd filedescriptor to be affected in following select function
+  conresult = select(sockfd + 1, NULL, &writeset, NULL, &tv);  // wait if sockfd is ready for writing with tv timeout
+  if (conresult <= 0)
   {
-    if (errno == EINPROGRESS)
-    {
-      fd_set writeset;
-      int optval;
-      socklen_t optlen = sizeof(optval);
-      struct timeval tv;
-      tv.tv_sec = 0;
-      tv.tv_usec = 100000;  // timout is 100ms
-
-      FD_ZERO(&writeset);         // clear writeset all to zero
-      FD_SET(sockfd, &writeset);  // set the sockfd filedescriptor to be affected in following select function
-      conresult =
-          select(sockfd + 1, NULL, &writeset, NULL, &tv);  // wait if sockfd is ready for writing with tv timeout
-      if (conresult <= 0)
-      {
-        /* Timeout or fail */
-        return false;
-      }
-      conresult = getsockopt(sockfd, SOL_SOCKET, SO_ERROR, (void*)&optval,
-                             &optlen);        // get from socket api if any error is pending
-      if ((conresult == 0) && (optval == 0))  // if getsockopt was executed with success annd no error is returned from
-                                              // socket api
-      {
-        ::close(sockfd);
-        std::this_thread::sleep_for(std::chrono::duration<double>(1));  // wait one second to grant a free port
-        return true;
-      }
-    }
+    /* Timeout or fail */
     return false;
   }
-  ::close(sockfd);
-  std::this_thread::sleep_for(std::chrono::duration<double>(1));  // wait one second to grant a free port
-
-  return true;
+  conresult = getsockopt(sockfd, SOL_SOCKET, SO_ERROR, (void*)&optval,
+                         &optlen);        // get from socket api if any error is pending
+  if ((conresult == 0) && (optval == 0))  // if getsockopt was executed with success annd no error is returned from
+                                          // socket api
+  {
+    ::close(sockfd);
+    std::this_thread::sleep_for(std::chrono::duration<double>(1));  // wait one second to grant a free port
+    return true;
+  } 
+  return false;
+  
 }
 
 }  // namespace prbt_hardware_support
