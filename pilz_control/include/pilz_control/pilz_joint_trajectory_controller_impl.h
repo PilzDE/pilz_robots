@@ -304,7 +304,7 @@ inline bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::isPla
     {
       const double& old_velocity = JointTrajectoryController::old_desired_state_.velocity.at(i);
       const double& new_velocity = JointTrajectoryController::desired_state_.velocity.at(i);
-      const double& acceleration = calculateAcceleration(old_velocity, new_velocity, period);
+      const double& acceleration = calculateAcceleration(new_velocity, old_velocity, period);
       if (acceleration > acceleration_joint_limits_.at(i).value())
       {
         ROS_ERROR_STREAM_NAMED(JointTrajectoryController::name_,
