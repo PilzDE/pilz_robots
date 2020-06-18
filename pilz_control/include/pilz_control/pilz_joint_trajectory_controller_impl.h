@@ -54,7 +54,7 @@ template <class SegmentImpl, class HardwareInterface>
 void 
 PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::makeParamNameWithSuffix(std::string& param_name, const std::string joint_name, const std::string suffix)
 {
-  const std::string joint_limits_naming_prefix{ "/joint_limits/" };
+  const std::string joint_limits_naming_prefix{ "joint_limits/" };
   std::stringstream param_name_stream;
   param_name_stream << joint_limits_naming_prefix << joint_name << suffix;
   param_name = param_name_stream.str();
