@@ -127,6 +127,23 @@ public:
    */
   bool handleMonitorCartesianSpeedRequest(std_srvs::SetBool::Request& request, std_srvs::SetBool::Response& response);
 
+  /**
+   * @brief Get the Joint Acceleration Limits for each joint from the parameter server.
+   *
+   * If has_acceleration_limits is set to false acceleration limits will be set to 0.
+   *
+   * Function assumes parameter server naming prefix '/joint_limits/' for Joint Names.
+   *
+   * @param nh NodeHandle to access parameter server.
+   * @param joint_names Vector of Strings for all joint names to get the acceleration limits for.
+   * @return std::vector<boost::optional<double>> Requested acceleration limits as vector. Has the same length as param
+   * 'joint_names'.
+   *
+   * @throw InvalidParameterException Requested values not found on param server.
+   */
+  static std::vector<boost::optional<double>> getJointAccelerationLimits(const ros::NodeHandle& nh,
+                                                                         const std::vector<std::string> joint_names);
+
 protected:
   /**
    * @brief Called if new trajectory should be handled

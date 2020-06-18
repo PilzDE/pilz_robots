@@ -28,19 +28,32 @@ static constexpr double SPEED_LIMIT_NOT_ACTIVATED{ -1.0 };
 namespace ph = std::placeholders;
 
 /**
- * @brief Get the Joint Acceleration Limits for each joint from the parameter server.
+ * @brief Check if a trajectory is in execution at a given uptime of the controller.
  *
- * If has_acceleration_limits is set to false acceleration limits will be set to 0.
- *
- * Function assumes parameter server naming prefix '/joint_limits/' for Joint Names.
- *
- * @param nh NodeHandle to access parameter server.
- * @param joint_names Vector of Strings for all joint names to get the acceleration limits for.
- * @return std::vector<double> Requested acceleration limits as vector. Has the same length as param 'joint_names'.
- *
- * @throw InvalidParameterException Requested values not found on param server.
+ * A trajectory is considered to be in execution at a given time point,
+ * if the time point is included in the time interval of at least one segment of the trajectory,
+ * or if it lies inside the goal_time_tolerance of at least one segment.
  */
-std::vector<boost::optional<double>> getJointAccelerationLimits(const ros::NodeHandle& nh, const std::vector<std::string> joint_names)
+template <class Segment>
+bool isTrajectoryExecuted(const std::vector<TrajectoryPerJoint<Segment>>& traj, const ros::Time& curr_uptime)
+{
+  for (unsigned int joint_index = 0; joint_index < traj.size(); ++joint_index)
+  {
+    const auto& segment_it = findSegment(traj[joint_index], curr_uptime.toSec());
+    const auto& tolerances = segment_it->getTolerances();
+    if (segment_it != traj[joint_index].end() &&
+        curr_uptime.toSec() < segment_it->endTime() + tolerances.goal_time_tolerance)
+    {
+      return true;
+    }
+  }
+  return false;
+};
+
+template <class SegmentImpl, class HardwareInterface>
+std::vector<boost::optional<double>>
+PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::getJointAccelerationLimits(
+    const ros::NodeHandle& nh, const std::vector<std::string> joint_names)
 {
   const std::string joint_limits_naming_prefix{ "/joint_limits/" };
 
@@ -75,29 +88,6 @@ std::vector<boost::optional<double>> getJointAccelerationLimits(const ros::NodeH
   }
   return acc_limits;
 }
-
-/**
- * @brief Check if a trajectory is in execution at a given uptime of the controller.
- *
- * A trajectory is considered to be in execution at a given time point,
- * if the time point is included in the time interval of at least one segment of the trajectory,
- * or if it lies inside the goal_time_tolerance of at least one segment.
- */
-template <class Segment>
-bool isTrajectoryExecuted(const std::vector<TrajectoryPerJoint<Segment>>& traj, const ros::Time& curr_uptime)
-{
-  for (unsigned int joint_index = 0; joint_index < traj.size(); ++joint_index)
-  {
-    const auto& segment_it = findSegment(traj[joint_index], curr_uptime.toSec());
-    const auto& tolerances = segment_it->getTolerances();
-    if (segment_it != traj[joint_index].end() &&
-        curr_uptime.toSec() < segment_it->endTime() + tolerances.goal_time_tolerance)
-    {
-      return true;
-    }
-  }
-  return false;
-};
 
 template <class SegmentImpl, class HardwareInterface>
 PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::PilzJointTrajectoryController()
