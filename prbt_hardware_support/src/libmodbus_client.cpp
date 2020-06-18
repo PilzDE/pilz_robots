@@ -55,10 +55,13 @@ bool LibModbusClient::init(const char* ip, unsigned int port)
 
   if (modbus_connect(modbus_connection_) == -1)
   {
+    // LCOV_EXCL_START the following lines are hard to cover since the above checkIPConnection should prevent
+    // exactly this situation
     ROS_ERROR_STREAM_NAMED("LibModbusClient", "Could not establish modbus connection." << modbus_strerror(errno));
     modbus_free(modbus_connection_);
     modbus_connection_ = nullptr;
     return false;
+    // LCOV_EXCL_STOP
   }
 
   return true;
