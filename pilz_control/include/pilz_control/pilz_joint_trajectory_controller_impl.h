@@ -26,7 +26,11 @@ static constexpr double SPEED_LIMIT_ACTIVATED{ 0.25 };
 static constexpr double SPEED_LIMIT_NOT_ACTIVATED{ -1.0 };
 
 static const std::string LIMITS_NAMESPACE{ "limits" };
-static const std::string ROBOT_DESCRIPTION_PARAM_NAME{ "robot_description" };
+
+static const std::string ROBOT_DESCRIPTION_PARAM_NAME{ "/robot_description" };
+static const std::string HAS_ACCELERATION_LIMITS_PARAM_NAME{ "/has_acceleration_limits" };
+static const std::string MAX_ACCELERATION_PARAM_NAME{ "/max_acceleration" };
+
 static const std::string HOLD_SERVICE_NAME{ "hold" };
 static const std::string UNHOLD_SERVICE_NAME{ "unhold" };
 static const std::string IS_EXECUTING_SERVICE_NAME{ "is_executing" };
@@ -59,11 +63,10 @@ bool isTrajectoryExecuted(const std::vector<TrajectoryPerJoint<Segment>>& traj, 
 
 template <class SegmentImpl, class HardwareInterface>
 void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::makeParamNameWithSuffix(
-    std::string& param_name, const std::string joint_name, const std::string suffix)
+    std::string& param_name, const std::string& joint_name, const std::string& suffix)
 {
-  const std::string joint_limits_naming_prefix{ "/joint_limits/" };
   std::stringstream param_name_stream;
-  param_name_stream << joint_limits_naming_prefix << joint_name << suffix;
+  param_name_stream << joint_name << suffix;
   param_name = param_name_stream.str();
 }
 
@@ -77,30 +80,24 @@ PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::getJointAccelerat
   {
     bool has_acceleration_limits = false;
     std::string has_limits_param_name_to_read;
-    makeParamNameWithSuffix(has_limits_param_name_to_read, joint_names.at(i), "/has_acceleration_limits");
+    makeParamNameWithSuffix(has_limits_param_name_to_read, joint_names.at(i), HAS_ACCELERATION_LIMITS_PARAM_NAME);
     if (!nh.getParam(has_limits_param_name_to_read, has_acceleration_limits))
     {
-      throw ros::InvalidParameterException("Failed to get the has_acceleration_limits for " + joint_names.at(i) +
+      throw ros::InvalidParameterException("Failed to get the has_acceleration_limits flag for " + joint_names.at(i) +
                                            " under param name >" + has_limits_param_name_to_read + "<.");
     }
 
-    if (!has_acceleration_limits)
+    if (has_acceleration_limits)
     {
-      acc_limits.at(i) = boost::none;
-      continue;
-    }
-
-    std::string acc_limits_param_name_to_read{ "" };
-    makeParamNameWithSuffix(acc_limits_param_name_to_read, joint_names.at(i), "/max_acceleration");
-    double tmp_limit;
-    if (nh.getParam(acc_limits_param_name_to_read, tmp_limit))
-    {
+      std::string acc_limits_param_name_to_read;
+      makeParamNameWithSuffix(acc_limits_param_name_to_read, joint_names.at(i), MAX_ACCELERATION_PARAM_NAME);
+      double tmp_limit;
+      if (!nh.getParam(acc_limits_param_name_to_read, tmp_limit))
+      {
+        throw ros::InvalidParameterException("Failed to get the joint acceleration limit for " + joint_names.at(i) +
+                                             " under param name >" + acc_limits_param_name_to_read + "<.");
+      }
       acc_limits.at(i) = tmp_limit;
-    }
-    else
-    {
-      throw ros::InvalidParameterException("Failed to get the joint acceleration limit for " + joint_names.at(i) +
-                                           " under param name >" + acc_limits_param_name_to_read + "<.");
     }
   }
   return acc_limits;

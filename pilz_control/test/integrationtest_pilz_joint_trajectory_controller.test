@@ -19,7 +19,6 @@ limitations under the License.
   <arg name="controller_ns" default="controller_ns"/>
 
   <rosparam command="load" file="$(find pilz_control)/test/config/joint_names.yaml" />
-  <rosparam ns="robot_description_planning" command="load" file="$(find pilz_control)/test/config/joint_limits.yaml" />
 
   <!-- send urdf to param server -->
   <param name="controller_ns_string" value="$(arg controller_ns)"/>

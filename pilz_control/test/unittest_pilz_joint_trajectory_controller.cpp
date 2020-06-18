@@ -205,8 +205,8 @@ TEST_F(PilzJointTrajectoryControllerTest, testGetJointAccelerationLimits)
   EXPECT_EQ(joint_names.size(), acceleration_limits.size());
   EXPECT_TRUE(acceleration_limits.at(0));
   EXPECT_TRUE(acceleration_limits.at(1));
-  EXPECT_DOUBLE_EQ(*acceleration_limits.at(0), 3.49);
-  EXPECT_DOUBLE_EQ(*acceleration_limits.at(1), 3.49);  // as of pilz_control/test/config/joint_limits.yaml
+  EXPECT_DOUBLE_EQ(*acceleration_limits.at(0), 4.0);
+  EXPECT_DOUBLE_EQ(*acceleration_limits.at(1), 4.0);  // as of pilz_control/test/config/test_controller.yaml
 
   // testing behaviour if `has_acceleration_limits` is false
   std::vector<std::string> joint_names_has_acc_lim_false = { "joint_with_has_acc_lim_false" };

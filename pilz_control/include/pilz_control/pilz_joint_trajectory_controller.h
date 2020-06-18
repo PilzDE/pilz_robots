@@ -65,7 +65,7 @@ static bool isTrajectoryExecuted(const std::vector<TrajectoryPerJoint<Segment>>&
  */
 template <class SegmentImpl, class HardwareInterface>
 class PilzJointTrajectoryController
-    : public joint_trajectory_controller::JointTrajectoryController<SegmentImpl, HardwareInterface>
+  : public joint_trajectory_controller::JointTrajectoryController<SegmentImpl, HardwareInterface>
 {
 public:
   typedef joint_trajectory_controller::JointTrajectoryController<SegmentImpl, HardwareInterface>
@@ -129,12 +129,13 @@ public:
 
   /**
    * @brief Helper function to get paramter names to read
-   * 
+   *
    * @param param_name std::string This is where the param name will be written to.
    * @param joint_name std::sting Joint name as part of the param name.
    * @param suffix std::sting Suffix to be appended to the param name.
    */
-  static void makeParamNameWithSuffix(std::string& param_name, const std::string joint_name, const std::string suffix);
+  static void makeParamNameWithSuffix(std::string& param_name, const std::string& joint_name,
+                                      const std::string& suffix);
 
   /**
    * @brief Get the Joint Acceleration Limits for each joint from the parameter server.
