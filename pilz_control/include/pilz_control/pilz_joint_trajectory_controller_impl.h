@@ -38,6 +38,12 @@ static const std::string MONITOR_CARTESIAN_SPEED_SERVICE_NAME{ "monitor_cartesia
 
 namespace ph = std::placeholders;
 
+inline double calculateAcceleration(const double& current_velocity, const double& old_velocity,
+                                    const ros::Duration& delta_t)
+{
+  return (std::abs(current_velocity) - std::abs(old_velocity)) / delta_t.toSec();
+}
+
 /**
  * @brief Check if a trajectory is in execution at a given uptime of the controller.
  *
@@ -294,15 +300,20 @@ inline bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::isPla
 {
   for (unsigned int i = 0; i < JointTrajectoryController::getNumberOfJoints(); ++i)
   {
-    const double& old_velocity = JointTrajectoryController::old_desired_state_.velocity.at(i);
-    const double& new_velocity = JointTrajectoryController::desired_state_.velocity.at(i);
-    const double& acceleration = (std::abs(new_velocity) - std::abs(old_velocity)) / period.toSec();
-    if ((acceleration_joint_limits_.at(i)) && (acceleration > *acceleration_joint_limits_.at(i)))
+    if (acceleration_joint_limits_.at(i))
     {
-      ROS_ERROR_STREAM("Acceleration limit violated by joint "
-                       << JointTrajectoryController::joint_names_.at(i) << ". Desired acceleration: " << acceleration
-                       << "rad/s^2, limit: " << acceleration_joint_limits_.at(i) << "rad/s^2.");
-      return false;
+      const double& old_velocity = JointTrajectoryController::old_desired_state_.velocity.at(i);
+      const double& new_velocity = JointTrajectoryController::desired_state_.velocity.at(i);
+      const double& acceleration = calculateAcceleration(old_velocity, new_velocity, period);
+      if (acceleration > acceleration_joint_limits_.at(i).value())
+      {
+        ROS_ERROR_STREAM_NAMED(JointTrajectoryController::name_,
+                               "Acceleration limit violated by joint "
+                                   << JointTrajectoryController::joint_names_.at(i)
+                                   << ". Desired acceleration: " << acceleration
+                                   << "rad/s^2, limit: " << acceleration_joint_limits_.at(i) << "rad/s^2.");
+        return false;
+      }
     }
   }
   return true;

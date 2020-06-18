@@ -53,4 +53,4 @@ test_joint_trajectory_controller:
       joint_with_has_acc_lim_false:
         has_acceleration_limits: false
       joint_with_undefined_has_acc_lim:
-        dummy: []
+        max_acceleration: 4.0
