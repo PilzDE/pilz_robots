@@ -50,6 +50,10 @@ static const std::string IS_EXECUTING_SERVICE{ "/is_executing" };
 static const std::string TRAJECTORY_COMMAND_TOPIC{ "/command" };
 static const std::string CONTROLLER_JOINT_NAMES_PARAM{ "/controller_joint_names" };
 
+static const std::string JOINT_WITH_HAS_ACC_LIM_FALSE{ "joint_with_has_acc_lim_false" };
+static const std::string JOINT_WITH_UNDEFINED_MAX_ACC{ "joint_with_undefined_max_acc" };
+static const std::string JOINT_WITH_UNDEFINED_HAS_ACC_LIM{ "joint_with_undefined_has_acc_lim" };
+
 using namespace pilz_joint_trajectory_controller;
 
 using HWInterface = hardware_interface::PositionJointInterface;
@@ -58,7 +62,6 @@ using PJTCManager = PJTCManagerMock<Segment, HWInterface>;
 using RobotDriver = RobotDriverMock<PJTCManager>;
 using Controller = pilz_joint_trajectory_controller::PilzJointTrajectoryController<Segment, HWInterface>;
 using ControllerPtr = std::shared_ptr<Controller>;
-
 
 /**
  * @brief Dummy needed for testGetJointAccelerationLimits.
@@ -70,20 +73,20 @@ public:
   {
   };
   typedef typename Segment::Scalar Scalar;
-  typedef typename Segment::Time   Time;
+  typedef typename Segment::Time Time;
 };
 
 /**
  * @brief Dummy needed for testGetJointAccelerationLimits.
  */
-class DummyHardwareInterface: public hardware_interface::RobotHW
+class DummyHardwareInterface : public hardware_interface::RobotHW
 {
-  public:
-    struct MyResourceHandleType
-    {
-    };
-    typedef typename DummyHardwareInterface::MyResourceHandleType ResourceHandleType;
-    typedef typename hardware_interface::JointHandle JointHandle;
+public:
+  struct MyResourceHandleType
+  {
+  };
+  typedef typename DummyHardwareInterface::MyResourceHandleType ResourceHandleType;
+  typedef typename hardware_interface::JointHandle JointHandle;
 };
 
 /**
@@ -108,19 +111,21 @@ protected:
   TrajectoryActionClientWrapper action_client_{ CONTROLLER_NAMESPACE + TRAJECTORY_ACTION };
   ros::NodeHandle controller_nh_{ CONTROLLER_NAMESPACE };
   ros::AsyncSpinner spinner_{ 2 };
+  std::vector<std::string> controller_joint_names_;
 };
 
 void PilzJointTrajectoryControllerTest::SetUp()
 {
   spinner_.start();
   manager_ = robot_driver_.getManager();
+  controller_joint_names_ = std::vector<std::string>(JOINT_NAMES.begin(), JOINT_NAMES.end());
   setControllerParameters(CONTROLLER_NAMESPACE);
   startSimTime();
 }
 
 testing::AssertionResult PilzJointTrajectoryControllerTest::isControllerInHoldMode()
 {
-  GoalType goal{ generateSimpleGoal<RobotDriver>(&robot_driver_) };
+  GoalType goal{ generateAlternatingGoal<RobotDriver>(&robot_driver_) };
   action_client_.sendGoal(goal);
   if (!action_client_.waitForActionResult())
   {
@@ -136,7 +141,7 @@ testing::AssertionResult PilzJointTrajectoryControllerTest::isControllerInHoldMo
 
 testing::AssertionResult PilzJointTrajectoryControllerTest::isControllerInUnholdMode()
 {
-  GoalType goal{ generateSimpleGoal<RobotDriver>(&robot_driver_) };
+  GoalType goal{ generateAlternatingGoal<RobotDriver>(&robot_driver_) };
   action_client_.sendGoal(goal);
   if (!action_client_.waitForActionResult([this]() { robot_driver_.update(); }))
   {
@@ -150,7 +155,9 @@ testing::AssertionResult PilzJointTrajectoryControllerTest::isControllerInUnhold
   return testing::AssertionSuccess();
 }
 
-void PilzJointTrajectoryControllerTest::runGetJointAccelerationLimits(const ros::NodeHandle& nh, const std::vector<std::string>& joint_names){
+void PilzJointTrajectoryControllerTest::runGetJointAccelerationLimits(const ros::NodeHandle& nh,
+                                                                      const std::vector<std::string>& joint_names)
+{
   PilzJointTrajectoryController<DummySegmentImpl, DummyHardwareInterface>::getJointAccelerationLimits(nh, joint_names);
 }
 
@@ -158,9 +165,6 @@ void PilzJointTrajectoryControllerTest::runGetJointAccelerationLimits(const ros:
 //  Testing of Initialization   //
 //////////////////////////////////
 
-/**
- * @brief Test if test environemt is initialized successfully.
- */
 TEST_F(PilzJointTrajectoryControllerTest, testInitializiation)
 {
   ASSERT_TRUE(manager_->loadController()) << "Failed to initialize the controller.";
@@ -192,28 +196,33 @@ TEST_F(PilzJointTrajectoryControllerTest, testD0Destructor)
  */
 TEST_F(PilzJointTrajectoryControllerTest, testGetJointAccelerationLimits)
 {
-  // test setup
-  ros::NodeHandle nh{ "~" };
-  std::vector<std::string> joint_names;
-  ASSERT_TRUE(nh.getParam(CONTROLLER_JOINT_NAMES_PARAM, joint_names));
-  ASSERT_FALSE(joint_names.empty());
-
-  // test with existing acc limits
-  std::vector<boost::optional<double>> acceleration_limits =
-      PilzJointTrajectoryController<DummySegmentImpl, DummyHardwareInterface>::getJointAccelerationLimits(nh,
-                                                                                                          joint_names);
-  EXPECT_EQ(joint_names.size(), acceleration_limits.size());
+  ros::NodeHandle limits_nh(controller_nh_, LIMITS_NAMESPACE);
+  const std::vector<boost::optional<double>> acceleration_limits =
+      PilzJointTrajectoryController<DummySegmentImpl, DummyHardwareInterface>::getJointAccelerationLimits(
+          limits_nh, controller_joint_names_);
+  EXPECT_EQ(controller_joint_names_.size(), acceleration_limits.size());
   EXPECT_TRUE(acceleration_limits.at(0));
   EXPECT_TRUE(acceleration_limits.at(1));
-  EXPECT_DOUBLE_EQ(*acceleration_limits.at(0), 4.0);
-  EXPECT_DOUBLE_EQ(*acceleration_limits.at(1), 4.0);  // as of pilz_control/test/config/test_controller.yaml
+  EXPECT_DOUBLE_EQ(*acceleration_limits.at(0), MAX_JOINT_ACCELERATION);
+  EXPECT_DOUBLE_EQ(*acceleration_limits.at(1), MAX_JOINT_ACCELERATION);
+}
 
-  // testing behaviour if `has_acceleration_limits` is false
-  std::vector<std::string> joint_names_has_acc_lim_false = { "joint_with_has_acc_lim_false" };
-  std::vector<boost::optional<double>> acceleration_limits_has_acc_lim_false =
+/**
+ * @tests{Monitor_joint_accelerations,
+ *   Test if parameters for acceleration limits are omitted for joints which have no limit.
+ * }
+ */
+TEST_F(PilzJointTrajectoryControllerTest, testGetJointAccelerationLimitsHasNoLimit)
+{
+  ros::NodeHandle nh{ "~" };
+  std::stringstream full_param_name;
+  full_param_name << JOINT_WITH_HAS_ACC_LIM_FALSE << "/" << HAS_ACCELERATION_PARAMETER;
+  nh.setParam(full_param_name.str(), false);
+
+  const std::vector<boost::optional<double>> acceleration_limits_has_acc_lim_false =
       PilzJointTrajectoryController<DummySegmentImpl, DummyHardwareInterface>::getJointAccelerationLimits(
-          nh, joint_names_has_acc_lim_false);
-  EXPECT_EQ(joint_names_has_acc_lim_false.size(), acceleration_limits_has_acc_lim_false.size());
+          nh, { JOINT_WITH_HAS_ACC_LIM_FALSE });
+  EXPECT_EQ(1U, acceleration_limits_has_acc_lim_false.size());
   EXPECT_FALSE(acceleration_limits_has_acc_lim_false.at(0));
 }
 
@@ -222,19 +231,27 @@ TEST_F(PilzJointTrajectoryControllerTest, testGetJointAccelerationLimits)
  *   Test if correct errors are thrown if parameters can not be correctly read.
  * }
  */
-TEST_F(PilzJointTrajectoryControllerTest, testGetJointAccelerationLimitsException)
+TEST_F(PilzJointTrajectoryControllerTest, testGetJointAccelerationLimitUndefinedLimit)
 {
   ros::NodeHandle nh{ "~" };
+  std::stringstream full_param_name;
+  full_param_name << JOINT_WITH_UNDEFINED_MAX_ACC << "/" << HAS_ACCELERATION_PARAMETER;
+  nh.setParam(full_param_name.str(), true);
 
-  // testing behaviour if acc limit can not be read
-  std::vector<std::string> joint_names_no_acc_limit = { "joint_with_undefined_max_acc" };
-  EXPECT_THROW(runGetJointAccelerationLimits(nh, joint_names_no_acc_limit),
-               ros::InvalidParameterException);
+  EXPECT_THROW(runGetJointAccelerationLimits(nh, { JOINT_WITH_UNDEFINED_MAX_ACC }), ros::InvalidParameterException);
+}
 
-  // testing behaviour if `has_acceleration_limits` is undefined
-  std::vector<std::string> joint_names_has_acc_lim_undefined = { "joint_with_undefined_has_acc_lim" };
-  EXPECT_THROW(runGetJointAccelerationLimits(nh, joint_names_has_acc_lim_undefined),
-               ros::InvalidParameterException);
+/**
+ * @tests{Monitor_joint_accelerations,
+ *   Test if correct errors are thrown if parameters can not be correctly read.
+ * }
+ */
+TEST_F(PilzJointTrajectoryControllerTest, testGetJointAccelerationLimitUndefinedFlag)
+{
+  ros::NodeHandle nh{ "~" };
+  nh.setParam(JOINT_WITH_UNDEFINED_HAS_ACC_LIM, true);
+
+  EXPECT_THROW(runGetJointAccelerationLimits(nh, { JOINT_WITH_UNDEFINED_HAS_ACC_LIM }), ros::InvalidParameterException);
 }
 
 /////////////////////////////////////
@@ -412,7 +429,7 @@ TEST_F(PilzJointTrajectoryControllerTest, testHoldDuringGoalExecution)
 {
   ASSERT_TRUE(performFullControllerStartup(&robot_driver_));
 
-  GoalType goal{ generateSimpleGoal<RobotDriver>(&robot_driver_) };
+  GoalType goal{ generateAlternatingGoal<RobotDriver>(&robot_driver_) };
   action_client_.sendGoal(goal);
 
   EXPECT_TRUE(updateUntilRobotMotion<RobotDriver>(&robot_driver_));
@@ -438,7 +455,7 @@ TEST_F(PilzJointTrajectoryControllerTest, testGoalCancellingDuringHold)
 {
   ASSERT_TRUE(performFullControllerStartup(&robot_driver_));
 
-  GoalType goal{ generateSimpleGoal<RobotDriver>(&robot_driver_) };
+  GoalType goal{ generateAlternatingGoal<RobotDriver>(&robot_driver_) };
   action_client_.sendGoal(goal);
 
   EXPECT_TRUE(updateUntilRobotMotion<RobotDriver>(&robot_driver_));
@@ -469,29 +486,32 @@ TEST_F(PilzJointTrajectoryControllerTest, testTrajectoryWithTooHighAcceleration)
 {
   ASSERT_TRUE(performFullControllerStartup(&robot_driver_));
 
-  // unhold controller and record start pose;
-  std_srvs::TriggerRequest req;
-  std_srvs::TriggerResponse resp;
-  EXPECT_TRUE(manager_->triggerUnHold(req, resp));
-  EXPECT_TRUE(resp.success);
-  EXPECT_TRUE(isControllerInUnholdMode());
-
-  // Make sure, robot moves for slow motion
-  GoalType goal{ generateSimpleGoal<RobotDriver>(&robot_driver_, ros::Duration(DEFAULT_GOAL_DURATION_SEC)) };
+  // Make sure robot moves for slow motion
+  GoalType goal{ generateAlternatingGoal<RobotDriver>(&robot_driver_) };
   action_client_.sendGoal(goal);
-  progressInTime(ros::Duration(DEFAULT_GOAL_DURATION_SEC / 2));
-  EXPECT_TRUE(manager_->controller_->is_executing());
+
+  EXPECT_TRUE(updateUntilRobotMotion(&robot_driver_));
+  EXPECT_TRUE(updateUntilNoRobotMotion(&robot_driver_));
+
   action_client_.waitForActionResult();
-  EXPECT_TRUE(updateUntilNoRobotMotion<RobotDriver>(&robot_driver_));
+  EXPECT_EQ(action_client_.getResult()->error_code, control_msgs::FollowJointTrajectoryResult::SUCCESSFUL);
 
   // Now sending a quicker motion which should trigger the acceleration limit and not move the robot
-  goal = generateSimpleGoal<RobotDriver>(&robot_driver_, ros::Duration(DEFAULT_GOAL_DURATION_SEC), 1E4);
-  EXPECT_TRUE(updateUntilNoRobotMotion<RobotDriver>(&robot_driver_));
+  const auto start_position = robot_driver_.getJointPositions();
+
+  goal = generateAlternatingGoal(&robot_driver_, ros::Duration(DEFAULT_GOAL_DURATION_SEC), 1E4);
   action_client_.sendGoal(goal);
-  progressInTime(ros::Duration(DEFAULT_GOAL_DURATION_SEC / 2));
-  EXPECT_FALSE(manager_->controller_->is_executing());
-  action_client_.waitForActionResult();
-  EXPECT_TRUE(updateUntilNoRobotMotion<RobotDriver>(&robot_driver_));
+  action_client_.waitForActionResult([this]() { robot_driver_.update(); });
+  // the following fails due to https://github.com/ros-controls/ros_controllers/issues/174
+  // EXPECT_EQ(action_client_.getResult()->error_code, control_msgs::FollowJointTrajectoryResult::INVALID_GOAL);
+
+  const auto end_position = robot_driver_.getJointPositions();
+  ASSERT_EQ(end_position.size(), start_position.size()) << "Position vectors sizes mismatch.";
+  for (unsigned int i = 0; i < end_position.size(); ++i)
+  {
+    EXPECT_EQ(end_position[i], start_position[i])
+        << "Difference in position despite no movement should have been performed.";
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -609,7 +629,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testActionGoalExecution)
 {
   ASSERT_TRUE(performFullControllerStartup(&robot_driver_));
 
-  GoalType goal{ generateSimpleGoal<RobotDriver>(&robot_driver_) };
+  GoalType goal{ generateAlternatingGoal<RobotDriver>(&robot_driver_) };
   action_client_.sendGoal(goal);
 
   EXPECT_TRUE(updateUntilRobotMotion<RobotDriver>(&robot_driver_));
@@ -633,7 +653,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testTrajCommandExecution)
   ros::Publisher trajectory_command_publisher =
       nh.advertise<trajectory_msgs::JointTrajectory>(CONTROLLER_NAMESPACE + TRAJECTORY_COMMAND_TOPIC, 1);
 
-  GoalType goal{ generateSimpleGoal<RobotDriver>(&robot_driver_) };
+  GoalType goal{ generateAlternatingGoal<RobotDriver>(&robot_driver_) };
   trajectory_command_publisher.publish(goal.trajectory);
 
   EXPECT_TRUE(updateUntilRobotMotion<RobotDriver>(&robot_driver_));
@@ -653,7 +673,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStopTrajExecutionAtHold
 {
   ASSERT_TRUE(performFullControllerStartup(&robot_driver_));
 
-  GoalType goal{ generateSimpleGoal<RobotDriver>(&robot_driver_) };
+  GoalType goal{ generateAlternatingGoal<RobotDriver>(&robot_driver_) };
   action_client_.sendGoal(goal);
 
   EXPECT_TRUE(updateUntilRobotMotion<RobotDriver>(&robot_driver_));

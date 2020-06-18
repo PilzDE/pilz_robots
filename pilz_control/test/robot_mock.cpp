@@ -33,7 +33,7 @@ RobotMock::RobotMock()
   registerInterface(&pos_jnt_interface_);
 }
 
-std::array<JointData, NUM_JOINTS> RobotMock::read()
+std::array<JointData, NUM_JOINTS> RobotMock::read() const
 {
   return data_;
 }

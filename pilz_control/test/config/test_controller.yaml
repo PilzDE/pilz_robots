@@ -48,9 +48,3 @@ test_joint_trajectory_controller:
       shoulder_to_left_arm:
         has_acceleration_limits: true
         max_acceleration: 4.0
-      joint_with_undefined_max_acc:
-        has_acceleration_limits: true
-      joint_with_has_acc_lim_false:
-        has_acceleration_limits: false
-      joint_with_undefined_has_acc_lim:
-        max_acceleration: 4.0

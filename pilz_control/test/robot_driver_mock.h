@@ -44,7 +44,7 @@ public:
 
   bool isRobotMoving() const;
 
-  RobotMock getRobotMock();
+  std::vector<double> getJointPositions() const;
 
 private:
   RobotMock robot_;
@@ -78,9 +78,13 @@ bool RobotDriverMock<ControllerManager>::isRobotMoving() const
 }
 
 template <class ControllerManager>
-RobotMock RobotDriverMock<ControllerManager>::getRobotMock()
+std::vector<double> RobotDriverMock<ControllerManager>::getJointPositions() const
 {
-  return robot_;
+  const auto joint_data = robot_.read();
+  std::vector<double> positions;
+  std::transform(joint_data.begin(), joint_data.end(), std::back_inserter(positions),
+                 [](const JointData& data) { return data.pos; });
+  return positions;
 }
 
 }  // namespace pilz_joint_trajectory_controller_test

@@ -43,7 +43,7 @@ class RobotMock : public hardware_interface::RobotHW
 public:
   RobotMock();
 
-  std::array<JointData, NUM_JOINTS> read();
+  std::array<JointData, NUM_JOINTS> read() const;
   void write(const ros::Duration& period);
 
   bool isMoving(const double& eps = JOINT_VELOCITY_EPS) const;
