@@ -38,6 +38,13 @@ LibModbusClient::~LibModbusClient()
 
 bool LibModbusClient::init(const char* ip, unsigned int port)
 {
+  // The following check results from Ubuntu 18.04 using libmodbus 3.0.6 where a timeout cannot be set on
+  // modbus_connect.
+  // As a result trying to connect with to a wrong address could modbus_connect could get stuck for up to over 100
+  // seconds. The precheck lowers this risk by performing a quick connect to the given address.
+  //
+  // If you read this comment at a time where Ubuntu 18.04 is no longer relevant please remove this check and define a
+  // timeout for modbus_connect(). Thank you!
   if (!checkIPConnection(ip, port))
   {
     ROS_DEBUG_STREAM("Precheck for connection to " << ip << ":" << port << " failed.");
