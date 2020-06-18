@@ -186,7 +186,7 @@ static GoalType generateAlternatingGoal(RobotDriver* robot_driver,
   updateUntilNoRobotMotion<RobotDriver>(robot_driver);
 
   static double delta_sign{ 1.0 };
-  const double alternating_position_shift{ distance_scaling_factor * delta_sign * 1E-4 };
+  const double alternating_position_shift{ distance_scaling_factor * delta_sign * 1E-3 };
   delta_sign *= -1.0;
 
   const std::vector<double> joint_positions = robot_driver->getJointPositions();

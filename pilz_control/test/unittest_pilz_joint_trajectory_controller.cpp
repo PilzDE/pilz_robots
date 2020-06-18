@@ -499,7 +499,7 @@ TEST_F(PilzJointTrajectoryControllerTest, testTrajectoryWithTooHighAcceleration)
   // Now sending a quicker motion which should trigger the acceleration limit and not move the robot
   const auto start_position = robot_driver_.getJointPositions();
 
-  goal = generateAlternatingGoal(&robot_driver_, ros::Duration(DEFAULT_GOAL_DURATION_SEC), 1E4);
+  goal = generateAlternatingGoal(&robot_driver_, ros::Duration(DEFAULT_GOAL_DURATION_SEC), 1E3);
   action_client_.sendGoal(goal);
   action_client_.waitForActionResult([this]() { robot_driver_.update(); });
   // the following fails due to https://github.com/ros-controls/ros_controllers/issues/174
