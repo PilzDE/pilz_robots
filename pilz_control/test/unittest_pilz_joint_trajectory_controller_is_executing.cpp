@@ -42,8 +42,6 @@ static const std::string CONTROLLER_NAMESPACE{ "/controller_ns" };
 static const std::string TRAJECTORY_ACTION{ "/follow_joint_trajectory" };
 static const std::string TRAJECTORY_COMMAND_TOPIC{ "/command" };
 
-using namespace pilz_joint_trajectory_controller;
-
 using HWInterface = hardware_interface::PositionJointInterface;
 using Segment = trajectory_interface::QuinticSplineSegment<double>;
 using PJTCManager = PJTCManagerMock<Segment, HWInterface>;
@@ -236,3 +234,11 @@ INSTANTIATE_TEST_CASE_P(MethodAndServiceCallback, PilzJointTrajectoryControllerI
                         testing::Values(InvokeIsExecutingMethod, InvokeIsExecutingServiceCallback));
 
 }  // namespace pilz_joint_trajectory_controller_test
+
+int main(int argc, char** argv)
+{
+  ros::init(argc, argv, "unittest_pilz_joint_trajectory_controller_is_executing");
+
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

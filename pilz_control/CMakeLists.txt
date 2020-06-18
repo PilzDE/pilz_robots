@@ -145,11 +145,18 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest_gtest(unittest_pilz_joint_trajectory_controller
     test/unittest_pilz_joint_trajectory_controller.test
     test/unittest_pilz_joint_trajectory_controller.cpp
-    test/unittest_pilz_joint_trajectory_controller_is_executing.cpp
     test/robot_mock.cpp
     src/cartesian_speed_monitor.cpp
   )
   target_link_libraries(unittest_pilz_joint_trajectory_controller ${catkin_LIBRARIES})
+
+  add_rostest_gtest(unittest_pilz_joint_trajectory_controller_is_executing
+    test/unittest_pilz_joint_trajectory_controller_is_executing.test
+    test/unittest_pilz_joint_trajectory_controller_is_executing.cpp
+    test/robot_mock.cpp
+    src/cartesian_speed_monitor.cpp
+  )
+  target_link_libraries(unittest_pilz_joint_trajectory_controller_is_executing ${catkin_LIBRARIES})
 
   add_rostest_gtest(unittest_get_joint_acceleration_limits
     test/unittest_get_joint_acceleration_limits.test

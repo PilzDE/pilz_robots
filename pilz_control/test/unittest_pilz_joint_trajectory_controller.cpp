@@ -43,8 +43,6 @@ static const std::string HOLD_SERVICE{ "/hold" };
 static const std::string UNHOLD_SERVICE{ "/unhold" };
 static const std::string IS_EXECUTING_SERVICE{ "/is_executing" };
 
-using namespace pilz_joint_trajectory_controller;
-
 using HWInterface = hardware_interface::PositionJointInterface;
 using Segment = trajectory_interface::QuinticSplineSegment<double>;
 using PJTCManager = PJTCManagerMock<Segment, HWInterface>;
