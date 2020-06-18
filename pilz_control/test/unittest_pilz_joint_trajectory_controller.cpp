@@ -475,6 +475,7 @@ TEST_F(PilzJointTrajectoryControllerTest, testTrajectoryWithTooHighAcceleration)
   // Make sure, robot moves for slow motion
   GoalType goal{ generateSimpleGoal<RobotDriver>(&robot_driver_, ros::Duration(DEFAULT_GOAL_DURATION_SEC)) };
   action_client_.sendGoal(goal);
+  progressInTime(ros::Duration(DEFAULT_GOAL_DURATION_SEC / 2));
   EXPECT_TRUE(manager_->controller_->is_executing());
   action_client_.waitForActionResult();
   EXPECT_TRUE(updateUntilNoRobotMotion<RobotDriver>(&robot_driver_));
@@ -483,6 +484,7 @@ TEST_F(PilzJointTrajectoryControllerTest, testTrajectoryWithTooHighAcceleration)
   goal = generateSimpleGoal<RobotDriver>(&robot_driver_, ros::Duration(DEFAULT_GOAL_DURATION_SEC), 1E4);
   EXPECT_TRUE(updateUntilNoRobotMotion<RobotDriver>(&robot_driver_));
   action_client_.sendGoal(goal);
+  progressInTime(ros::Duration(DEFAULT_GOAL_DURATION_SEC / 2));
   EXPECT_FALSE(manager_->controller_->is_executing());
   action_client_.waitForActionResult();
   EXPECT_TRUE(updateUntilNoRobotMotion<RobotDriver>(&robot_driver_));

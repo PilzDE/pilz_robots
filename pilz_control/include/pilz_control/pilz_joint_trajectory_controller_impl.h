@@ -53,7 +53,7 @@ bool isTrajectoryExecuted(const std::vector<TrajectoryPerJoint<Segment>>& traj, 
 template <class SegmentImpl, class HardwareInterface>
 std::vector<boost::optional<double>>
 PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::getJointAccelerationLimits(
-    const ros::NodeHandle& nh, const std::vector<std::string> joint_names)
+    const ros::NodeHandle& nh, const std::vector<std::string>& joint_names)
 {
   const std::string joint_limits_naming_prefix{ "/joint_limits/" };
 

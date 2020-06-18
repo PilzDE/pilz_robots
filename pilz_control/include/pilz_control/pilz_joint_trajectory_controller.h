@@ -142,7 +142,7 @@ public:
    * @throw InvalidParameterException Requested values not found on param server.
    */
   static std::vector<boost::optional<double>> getJointAccelerationLimits(const ros::NodeHandle& nh,
-                                                                         const std::vector<std::string> joint_names);
+                                                                         const std::vector<std::string>& joint_names);
 
 protected:
   /**
