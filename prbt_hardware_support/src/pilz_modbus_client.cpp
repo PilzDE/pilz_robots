@@ -38,21 +38,22 @@ PilzModbusClient::PilzModbusClient(ros::NodeHandle& nh, const std::vector<unsign
 {
 }
 
-bool PilzModbusClient::init(const char* ip, unsigned int port, unsigned int retries, const ros::Duration& timeout)
+bool PilzModbusClient::init(const char* ip, unsigned int port, int retries, const ros::Duration& timeout)
 {
-  for (size_t retry_n = 0; retry_n < retries; ++retry_n)
+  size_t retry_n = 0;
+  while (ros::ok() && (retries == -1 || static_cast<int>(retry_n) < retries))
   {
+    ++retry_n;
+
     if (init(ip, port))
     {
       return true;
     }
 
-    ROS_ERROR_STREAM("Connection to " << ip << ":" << port << " failed. Try(" << retry_n + 1 << "/" << retries << ")");
+    ROS_WARN_STREAM_COND(retries == -1, "Connection to " << ip << ":" << port << " failed.");
+    ROS_WARN_STREAM_COND(retries != -1, "Connection to " << ip << ":" << port << " failed. Try(" << retry_n + 1 << "/"
+                                                         << retries << ")");
 
-    if (!ros::ok())
-    {
-      break;  // LCOV_EXCL_LINE Simple functionality but hard to test
-    }
     timeout.sleep();
   }
 
