@@ -20,6 +20,11 @@
 #include <thread>
 
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
+#include <pilz_testutils/async_test.h>
+#include <pilz_testutils/mock_appender.h>
+#include <pilz_testutils/logger_mock.h>
 
 #include <ros/ros.h>
 
@@ -31,6 +36,7 @@
 #include <trajectory_interface/quintic_spline_segment.h>
 
 #include <pilz_control/pilz_joint_trajectory_controller.h>
+#include <pilz_control/pilz_joint_trajectory_controller_impl.h>
 
 #include "pjtc_manager_mock.h"
 #include "pjtc_test_helper.h"
@@ -386,7 +392,8 @@ static testing::AssertionResult InvokeIsExecutingServiceCallback(const Controlle
  * @brief For testing both the isExecuting method and the is_executing service callback we use parameterized tests.
  */
 class PilzJointTrajectoryControllerIsExecutingTest : public testing::Test,
-                                                     public testing::WithParamInterface<InvokeIsExecuting>
+                                                     public testing::WithParamInterface<InvokeIsExecuting>,
+                                                     public testing::AsyncTest
 {
 protected:
   void SetUp() override;
@@ -486,6 +493,15 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testActionGoalExecution)
   EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
 }
 
+using pilz_testutils::IsINFO;
+using pilz_testutils::IsWARN;
+using ::testing::_;
+using ::testing::InSequence;
+static const std::string LOG_MSG_RECEIVED_EVENT_WARN{ "log_msg_received_warn" };
+static const std::string LOG_MSG_RECEIVED_EVENT_INFO{ "log_msg_received_info" };
+/**
+ * @brief Tests that the controller does not execute if a trajectory is sent via command interface.
+ */
 TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testTrajCommandExecution)
 {
   ASSERT_TRUE(performFullControllerStartup(&robot_driver_));
@@ -495,19 +511,22 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testTrajCommandExecution)
       nh.advertise<trajectory_msgs::JointTrajectory>(CONTROLLER_NAMESPACE + TRAJECTORY_COMMAND_TOPIC, 1);
 
   GoalType goal{ generateSimpleGoal() };
+
+  pilz_testutils::LoggerMock logger_mock_holder;
+  InSequence seq;
+  EXPECT_LOG(*logger_mock_holder, WARN,
+             pilz_joint_trajectory_controller::USER_NOTIFICATION_NOT_IMPLEMENTED_COMMAND_INTERFACE_WARN)
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(LOG_MSG_RECEIVED_EVENT_WARN));
+  EXPECT_LOG(*logger_mock_holder, INFO,
+             pilz_joint_trajectory_controller::USER_NOTIFICATION_NOT_IMPLEMENTED_COMMAND_INTERFACE_INFO)
+      .WillOnce(ACTION_OPEN_BARRIER_VOID(LOG_MSG_RECEIVED_EVENT_INFO));
+
   trajectory_command_publisher.publish(goal.trajectory);
 
-  EXPECT_TRUE(updateUntilRobotMotion<RobotDriver>(&robot_driver_));
-
-  bool is_executing_result;
-  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_TRUE(is_executing_result) << "Failed to detect trajectory command execution";
-
-  progressInTime(getGoalDuration(goal) + ros::Duration(DEFAULT_UPDATE_PERIOD_SEC));
-  robot_driver_.update();
-
-  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
+  ros::Duration observation_time = getGoalDuration(goal) + ros::Duration(DEFAULT_UPDATE_PERIOD_SEC);
+  EXPECT_FALSE(
+      updateUntilRobotMotion(&robot_driver_, std::chrono::milliseconds(observation_time.toNSec() * 1000000ll)));
+  BARRIER({ LOG_MSG_RECEIVED_EVENT_WARN, LOG_MSG_RECEIVED_EVENT_INFO });
 }
 
 TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStopTrajExecutionAtHold)

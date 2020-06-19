@@ -145,6 +145,8 @@ protected:
 
   void triggerMovementToHoldPosition();
 
+  void trajectoryCommandCB(const JointTrajectoryConstPtr& msg) override;
+
 private:
   /**
    * @brief Invoke cartesian speed monitoring and perform controlled stop in case of speed limit violation.
