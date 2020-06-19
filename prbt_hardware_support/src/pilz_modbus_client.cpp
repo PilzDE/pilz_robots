@@ -44,10 +44,13 @@ bool PilzModbusClient::init(const char* ip, unsigned int port, unsigned int retr
   {
     if (init(ip, port))
     {
+      // The following warning needs only to be shown to complete the warnings shown if this didn't work on the first
+      // try
+      ROS_WARN_STREAM_COND(retry_n > 1, "Connection to " << ip << ":" << port << " successful.");
       return true;
     }
 
-    ROS_ERROR_STREAM("Connection to " << ip << ":" << port << " failed. Try(" << retry_n + 1 << "/" << retries << ")");
+    ROS_WARN_STREAM("Connection to " << ip << ":" << port << " failed. Try(" << retry_n + 1 << "/" << retries << ")");
 
     if (!ros::ok())
     {
@@ -71,7 +74,7 @@ bool PilzModbusClient::init(const char* ip, unsigned int port)
 
   if (!modbus_client_->init(ip, port))
   {
-    ROS_ERROR("Init failed");
+    ROS_DEBUG("Init failed");
     state_ = State::not_initialized;
     return false;
   }
