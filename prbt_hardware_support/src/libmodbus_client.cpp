@@ -47,7 +47,8 @@ bool LibModbusClient::init(const char* ip, unsigned int port)
   // timeout for modbus_connect(). Thank you!
   if (!checkIPConnection(ip, port))
   {
-    ROS_DEBUG_STREAM("Precheck for connection to " << ip << ":" << port << " failed.");
+    ROS_ERROR_STREAM("Precheck for connection to " << ip << ":" << port << " failed. " << modbus_strerror(errno)
+                                                   << ".");
     return false;
   }
 
@@ -57,7 +58,8 @@ bool LibModbusClient::init(const char* ip, unsigned int port)
   {
     // LCOV_EXCL_START the following lines are hard to cover since the above checkIPConnection should prevent
     // exactly this situation
-    ROS_ERROR_STREAM_NAMED("LibModbusClient", "Could not establish modbus connection." << modbus_strerror(errno));
+    ROS_ERROR_STREAM_NAMED("LibModbusClient",
+                           "Could not establish modbus connection. " << modbus_strerror(errno) << ".");
     modbus_free(modbus_connection_);
     modbus_connection_ = nullptr;
     return false;
