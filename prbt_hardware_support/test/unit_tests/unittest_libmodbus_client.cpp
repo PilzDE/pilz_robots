@@ -335,7 +335,8 @@ TEST_F(LibModbusClientTest, checkIPConnection)
   LibModbusClient client;
   std::shared_ptr<PilzModbusServerMock> server(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
   server->startAsync(LOCALHOST, testPort());
-  EXPECT_TRUE(client.init(LOCALHOST, testPort()));  // Server present
+  EXPECT_TRUE(client.init(LOCALHOST, testPort()));  // Needed to make sure server is actually present. (Not optimal,
+                                                    // needs adaption inside the server mock)
 
   EXPECT_TRUE(checkIPConnection(LOCALHOST, testPort()));  // Server present ip+port correct
 
