@@ -344,6 +344,8 @@ TEST_F(LibModbusClientTest, checkIPConnection)
 
   EXPECT_FALSE(checkIPConnection("192.192.192.192", testPort()));  // Server present ip wrong port correct
 
+  unsigned int wrong_port = 4711;
+  ASSERT_NE(wrong_port, testPort());
   EXPECT_FALSE(checkIPConnection("192.192.192.192", 4711));  // Server present ip wrong port wrong
 
   shutdownModbusServer(server.get(), client);
