@@ -393,13 +393,13 @@ TEST_F(PilzJointTrajectoryControllerTest, testTrajectoryWithTooHighAcceleration)
   // Now sending a quicker motion which should trigger the acceleration limit and not move the robot
   const auto start_position = robot_driver_.getJointPositions();
 
-  goal = generateAlternatingGoal(&robot_driver_, ros::Duration(DEFAULT_GOAL_DURATION_SEC * 1E-3), 1E3);
+  goal = generateAlternatingGoal(&robot_driver_, ros::Duration(DEFAULT_GOAL_DURATION_SEC), 1E3);
   action_client_.sendGoal(goal);
   action_client_.waitForActionResult([this]() { robot_driver_.update(); });
-  EXPECT_FALSE(updateUntilRobotMotion(&robot_driver_));
   // the following fails due to https://github.com/ros-controls/ros_controllers/issues/174
   // EXPECT_EQ(action_client_.getResult()->error_code, control_msgs::FollowJointTrajectoryResult::INVALID_GOAL);
 
+  EXPECT_TRUE(updateUntilNoRobotMotion(&robot_driver_));
   const auto end_position = robot_driver_.getJointPositions();
   ASSERT_EQ(end_position.size(), start_position.size()) << "Position vectors sizes mismatch.";
   for (unsigned int i = 0; i < end_position.size(); ++i)
