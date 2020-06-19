@@ -304,8 +304,6 @@ TEST_F(LibModbusClientTest, testReadRegistersTerminatedServer)
 
 /**
  * @brief Tests that setting reponse timeout on the client will return the same timeout on getResponseTimeoutInMs
- *
- * @note To keep things simple the timeout behaviour is not timed and evaluated.
  */
 TEST_F(LibModbusClientTest, setResponseTimeout)
 {
@@ -318,6 +316,37 @@ TEST_F(LibModbusClientTest, setResponseTimeout)
   EXPECT_TRUE(client.init(LOCALHOST, testPort()));
   client.setResponseTimeoutInMs(timeout_ms);
   EXPECT_EQ(timeout_ms, client.getResponseTimeoutInMs());
+
+  shutdownModbusServer(server.get(), client);
+  client.close();
+}
+
+// /**
+//  * @brief Tests that the checkIPConnection function will respond properly on presense of a modbus server and also if
+//  it
+//  * misses.
+//  *
+//  * @note To keep things simple timeout and repeats are not altered.
+//  */
+TEST_F(LibModbusClientTest, checkIPConnection)
+{
+  EXPECT_FALSE(checkIPConnection(LOCALHOST, testPort()));  // No Server
+
+  LibModbusClient client;
+  std::shared_ptr<PilzModbusServerMock> server(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
+  server->startAsync(LOCALHOST, testPort());
+  EXPECT_TRUE(client.init(LOCALHOST, testPort()));  // Needed to make sure server is actually present. (Not optimal,
+                                                    // needs adaption inside the server mock)
+
+  EXPECT_TRUE(checkIPConnection(LOCALHOST, testPort()));  // Server present ip+port correct
+
+  EXPECT_FALSE(checkIPConnection(LOCALHOST, 4711));  // Server present ip correct port wrong
+
+  EXPECT_FALSE(checkIPConnection("192.192.192.192", testPort()));  // Server present ip wrong port correct
+
+  unsigned int wrong_port = 4711;
+  ASSERT_NE(wrong_port, testPort());
+  EXPECT_FALSE(checkIPConnection("192.192.192.192", 4711));  // Server present ip wrong port wrong
 
   shutdownModbusServer(server.get(), client);
   client.close();
