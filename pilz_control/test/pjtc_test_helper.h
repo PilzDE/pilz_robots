@@ -30,6 +30,8 @@
 
 #include <control_msgs/FollowJointTrajectoryActionGoal.h>
 
+#include <pilz_testutils/ros_not_ok_exception.h>
+
 #include "robot_mock.h"
 
 namespace pilz_joint_trajectory_controller_test
@@ -109,6 +111,7 @@ static ros::Duration getGoalDuration(const control_msgs::FollowJointTrajectoryGo
  * @param update_func Update function. If non-empty, the following is done periodically:
  * - Make progress in simulated ros::Time,
  * - Invoke update_func.
+ * @throws ROSNotOkException if ros::ok() returned false
  */
 static bool waitFor(const std::function<bool()>& is_condition_fulfilled, const std::chrono::milliseconds& timeout,
                     const UpdateFunc& update_func = UpdateFunc())
@@ -131,6 +134,12 @@ static bool waitFor(const std::function<bool()>& is_condition_fulfilled, const s
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_TIME_MSEC));
   } while (ros::ok());
+
+  if (!ros::ok())
+  {
+    throw pilz_testutils::ROSNotOkException("Expected ros::ok() to be true while waiting for some condition.");
+  }
+
   return false;
 }
 
@@ -185,8 +194,9 @@ static GoalType generateAlternatingGoal(RobotDriver* robot_driver,
 {
   updateUntilNoRobotMotion<RobotDriver>(robot_driver);
 
+  const double BASE_SIZE { 0.1 };
   static double delta_sign{ 1.0 };
-  const double alternating_position_shift{ distance_scaling_factor * delta_sign * 1E-3 };
+  const double alternating_position_shift{ BASE_SIZE * distance_scaling_factor * delta_sign };
   delta_sign *= -1.0;
 
   const std::vector<double> joint_positions = robot_driver->getJointPositions();

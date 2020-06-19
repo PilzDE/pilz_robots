@@ -4,8 +4,9 @@ Changelog for package pilz_control
 
 Forthcoming
 -----------
-* Add cartesian speed monitoring to pilz joint trajectory controller
-* Add joint acceleration limits to pilz joint trajectory controller
+* Add cartesian speed monitoring to PilzJointTrajectoryController
+* Add joint acceleration limits to PilzJointTrajectoryController
+* Deactivate command interface in PilzJointTrajectoryController
 * Contributors: Pilz GmbH and Co. KG
 
 0.5.16 (2020-05-15)

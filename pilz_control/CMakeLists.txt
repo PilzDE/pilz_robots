@@ -142,13 +142,13 @@ if(CATKIN_ENABLE_TESTING)
     ${catkin_LIBRARIES}
   )
 
-  add_rostest_gtest(unittest_pilz_joint_trajectory_controller
+  add_rostest_gmock(unittest_pilz_joint_trajectory_controller
     test/unittest_pilz_joint_trajectory_controller.test
     test/unittest_pilz_joint_trajectory_controller.cpp
     test/robot_mock.cpp
     src/cartesian_speed_monitor.cpp
   )
-  target_link_libraries(unittest_pilz_joint_trajectory_controller ${catkin_LIBRARIES})
+  target_link_libraries(unittest_pilz_joint_trajectory_controller ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES})
 
   add_rostest_gtest(unittest_pilz_joint_trajectory_controller_is_executing
     test/unittest_pilz_joint_trajectory_controller_is_executing.test

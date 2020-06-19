@@ -143,6 +143,9 @@ Contains a specialized version of `ros_controllers::JointTrajectoryController` w
 A controlled stop using a hold trajectory is performed thus stopping the manipulator without the mechanical stress of a hard brake.
 Further, the controller monitors cartesian speed and joint accelerations to fulfill the requirements of the selected operation mode.
 
+**Topic interface deprecated:**
+See [here](pilz_control/README.md)
+
 ## Package: prbt_hardware_support
 This package provides support for the Pilz hardware PNOZmulti and PSS4000. A configurable modbus connection is set up via
 `roslaunch prbt_hardware_support modbus_client.launch`. Particular features (detailed description [here](prbt_hardware_support/README.md)):

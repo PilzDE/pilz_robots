@@ -20,10 +20,18 @@
 #include <vector>
 
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
+#include <pilz_testutils/async_test.h>
+#include <pilz_testutils/mock_appender.h>
+#include <pilz_testutils/logger_mock.h>
 
 #include <ros/ros.h>
 
+#include <control_msgs/FollowJointTrajectoryAction.h>
+#include <trajectory_msgs/JointTrajectory.h>
 #include <std_srvs/Trigger.h>
+
 #include <hardware_interface/joint_command_interface.h>
 #include <trajectory_interface/quintic_spline_segment.h>
 
@@ -42,6 +50,9 @@ static const std::string TRAJECTORY_ACTION{ "/follow_joint_trajectory" };
 static const std::string HOLD_SERVICE{ "/hold" };
 static const std::string UNHOLD_SERVICE{ "/unhold" };
 static const std::string IS_EXECUTING_SERVICE{ "/is_executing" };
+static const std::string TRAJECTORY_COMMAND_TOPIC{ "/command" };
+
+using namespace pilz_joint_trajectory_controller;
 
 using HWInterface = hardware_interface::PositionJointInterface;
 using Segment = trajectory_interface::QuinticSplineSegment<double>;
@@ -69,6 +80,7 @@ protected:
   RobotDriver robot_driver_{ CONTROLLER_NAMESPACE };
   std::shared_ptr<PJTCManager> manager_;
   TrajectoryActionClientWrapper action_client_{ CONTROLLER_NAMESPACE + TRAJECTORY_ACTION };
+  ros::NodeHandle controller_nh_{ CONTROLLER_NAMESPACE };
   ros::AsyncSpinner spinner_{ 2 };
 };
 
@@ -381,9 +393,10 @@ TEST_F(PilzJointTrajectoryControllerTest, testTrajectoryWithTooHighAcceleration)
   // Now sending a quicker motion which should trigger the acceleration limit and not move the robot
   const auto start_position = robot_driver_.getJointPositions();
 
-  goal = generateAlternatingGoal(&robot_driver_, ros::Duration(DEFAULT_GOAL_DURATION_SEC), 1E3);
+  goal = generateAlternatingGoal(&robot_driver_, ros::Duration(DEFAULT_GOAL_DURATION_SEC * 1E-3), 1E3);
   action_client_.sendGoal(goal);
   action_client_.waitForActionResult([this]() { robot_driver_.update(); });
+  EXPECT_FALSE(updateUntilRobotMotion(&robot_driver_));
   // the following fails due to https://github.com/ros-controls/ros_controllers/issues/174
   // EXPECT_EQ(action_client_.getResult()->error_code, control_msgs::FollowJointTrajectoryResult::INVALID_GOAL);
 
