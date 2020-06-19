@@ -98,7 +98,7 @@ TEST_F(CartesianSpeedMonitorTest, testUnmatchedJointNames)
 }
 
 /**
- * @tests{Monitor_Speed_of_all_links_until_TCP,
+ * @tests{Monitor_speed_of_all_links_until_TCP,
  * Tests correct link speed for no motion.
  * }
  */
@@ -119,7 +119,7 @@ TEST_F(CartesianSpeedMonitorTest, testLinkSpeedNoMovement)
 }
 
 /**
- * @tests{Monitor_Speed_of_all_links_until_TCP,
+ * @tests{Monitor_speed_of_all_links_until_TCP,
  * Tests correct link speed moving a single joint.
  * }
  */
@@ -152,7 +152,7 @@ TEST_F(CartesianSpeedMonitorTest, testLinkSpeedMoveSingleJoint)
 }
 
 /**
- * @tests{Monitor_Speed_of_all_links_until_TCP,
+ * @tests{Monitor_speed_of_all_links_until_TCP,
  * Tests that link speed scales linearly in time.
  * }
  */
@@ -181,7 +181,7 @@ TEST_F(CartesianSpeedMonitorTest, testLinkSpeedLinearScalingInTime)
 }
 
 /**
- * @tests{Monitor_Speed_of_all_links_until_TCP,
+ * @tests{Monitor_speed_of_all_links_until_TCP,
  * Tests monitoring all links moving a single joint.
  * }
  */
@@ -209,7 +209,7 @@ TEST_F(CartesianSpeedMonitorTest, testBelowLimitMoveSingleJoint)
 }
 
 /**
- * @tests{Monitor_Speed_of_all_links_until_TCP,
+ * @tests{Monitor_speed_of_all_links_until_TCP,
  * Tests monitoring all links moving a single joint when the links are not in their default perpendicular position.
  * }
  */

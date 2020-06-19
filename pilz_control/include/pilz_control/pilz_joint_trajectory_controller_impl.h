@@ -27,6 +27,17 @@ namespace pilz_joint_trajectory_controller
 static constexpr double SPEED_LIMIT_ACTIVATED{ 0.25 };
 static constexpr double SPEED_LIMIT_NOT_ACTIVATED{ -1.0 };
 
+static const std::string LIMITS_NAMESPACE{ "limits" };
+
+static const std::string ROBOT_DESCRIPTION_PARAM_NAME{ "/robot_description" };
+static const std::string HAS_ACCELERATION_LIMITS_PARAM_NAME{ "/has_acceleration_limits" };
+static const std::string MAX_ACCELERATION_PARAM_NAME{ "/max_acceleration" };
+
+static const std::string HOLD_SERVICE_NAME{ "hold" };
+static const std::string UNHOLD_SERVICE_NAME{ "unhold" };
+static const std::string IS_EXECUTING_SERVICE_NAME{ "is_executing" };
+static const std::string MONITOR_CARTESIAN_SPEED_SERVICE_NAME{ "monitor_cartesian_speed" };
+
 static const std::string USER_NOTIFICATION_NOT_IMPLEMENTED_COMMAND_INTERFACE_WARN{
   "The topic interface of the original `joint_trajectory_controller` is deactivated. Please use the action interface "
   "to send goals, that allows monitoring and receiving notifications about cancelled goals. If nonetheless you need "
@@ -41,6 +52,12 @@ static const std::string USER_NOTIFICATION_NOT_IMPLEMENTED_COMMAND_INTERFACE_INF
 };
 
 namespace ph = std::placeholders;
+
+inline double calculateAcceleration(const double& current_velocity, const double& old_velocity,
+                                    const ros::Duration& delta_t)
+{
+  return (std::abs(current_velocity) - std::abs(old_velocity)) / delta_t.toSec();
+}
 
 /**
  * @brief Check if a trajectory is in execution at a given uptime of the controller.
@@ -66,6 +83,48 @@ bool isTrajectoryExecuted(const std::vector<TrajectoryPerJoint<Segment>>& traj, 
 };
 
 template <class SegmentImpl, class HardwareInterface>
+void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::makeParamNameWithSuffix(
+    std::string& param_name, const std::string& joint_name, const std::string& suffix)
+{
+  std::stringstream param_name_stream;
+  param_name_stream << joint_name << suffix;
+  param_name = param_name_stream.str();
+}
+
+template <class SegmentImpl, class HardwareInterface>
+std::vector<boost::optional<double>>
+PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::getJointAccelerationLimits(
+    const ros::NodeHandle& nh, const std::vector<std::string>& joint_names)
+{
+  std::vector<boost::optional<double>> acc_limits(joint_names.size());
+  for (unsigned int i = 0; i < joint_names.size(); ++i)
+  {
+    bool has_acceleration_limits = false;
+    std::string has_limits_param_name_to_read;
+    makeParamNameWithSuffix(has_limits_param_name_to_read, joint_names.at(i), HAS_ACCELERATION_LIMITS_PARAM_NAME);
+    if (!nh.getParam(has_limits_param_name_to_read, has_acceleration_limits))
+    {
+      throw ros::InvalidParameterException("Failed to get the has_acceleration_limits flag for " + joint_names.at(i) +
+                                           " under param name >" + has_limits_param_name_to_read + "<.");
+    }
+
+    if (has_acceleration_limits)
+    {
+      std::string acc_limits_param_name_to_read;
+      makeParamNameWithSuffix(acc_limits_param_name_to_read, joint_names.at(i), MAX_ACCELERATION_PARAM_NAME);
+      double tmp_limit;
+      if (!nh.getParam(acc_limits_param_name_to_read, tmp_limit))
+      {
+        throw ros::InvalidParameterException("Failed to get the joint acceleration limit for " + joint_names.at(i) +
+                                             " under param name >" + acc_limits_param_name_to_read + "<.");
+      }
+      acc_limits.at(i) = tmp_limit;
+    }
+  }
+  return acc_limits;
+}
+
+template <class SegmentImpl, class HardwareInterface>
 PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::PilzJointTrajectoryController()
 {
 }
@@ -78,8 +137,11 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
 {
   bool res = JointTrajectoryController::init(hw, root_nh, controller_nh);
 
+  ros::NodeHandle limits_nh(controller_nh, LIMITS_NAMESPACE);
+  acceleration_joint_limits_ = getJointAccelerationLimits(limits_nh, JointTrajectoryController::joint_names_);
+
   using robot_model_loader::RobotModelLoader;
-  robot_model_loader_ = std::make_shared<RobotModelLoader>("robot_description", false);
+  robot_model_loader_ = std::make_shared<RobotModelLoader>(ROBOT_DESCRIPTION_PARAM_NAME, false);
   auto kinematic_model = robot_model_loader_->getModel();
 
   using pilz_control::CartesianSpeedMonitor;
@@ -88,16 +150,16 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
   cartesian_speed_limit_ = SPEED_LIMIT_ACTIVATED;
 
   hold_position_service =
-      controller_nh.advertiseService("hold", &PilzJointTrajectoryController::handleHoldRequest, this);
+      controller_nh.advertiseService(HOLD_SERVICE_NAME, &PilzJointTrajectoryController::handleHoldRequest, this);
 
   unhold_position_service =
-      controller_nh.advertiseService("unhold", &PilzJointTrajectoryController::handleUnHoldRequest, this);
+      controller_nh.advertiseService(UNHOLD_SERVICE_NAME, &PilzJointTrajectoryController::handleUnHoldRequest, this);
 
-  is_executing_service_ =
-      controller_nh.advertiseService("is_executing", &PilzJointTrajectoryController::handleIsExecutingRequest, this);
+  is_executing_service_ = controller_nh.advertiseService(
+      IS_EXECUTING_SERVICE_NAME, &PilzJointTrajectoryController::handleIsExecutingRequest, this);
 
   monitor_cartesian_speed_service_ = controller_nh.advertiseService(
-      "monitor_cartesian_speed", &PilzJointTrajectoryController::handleMonitorCartesianSpeedRequest, this);
+      MONITOR_CARTESIAN_SPEED_SERVICE_NAME, &PilzJointTrajectoryController::handleMonitorCartesianSpeedRequest, this);
 
   stop_traj_builder_ = std::unique_ptr<joint_trajectory_controller::StopTrajectoryBuilder<SegmentImpl>>(
       new joint_trajectory_controller::StopTrajectoryBuilder<SegmentImpl>(
@@ -217,7 +279,7 @@ inline void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::updat
   {
     case TrajProcessingMode::unhold:
     {
-      if (!isPlannedCartesianVelocityOK(time_data.period) && mode_->stopEvent())
+      if (!isPlannedUpdateOK(time_data.period) && mode_->stopEvent())
       {
         stopMotion(time_data.uptime);
       }
@@ -238,6 +300,38 @@ inline void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::updat
       stopMotion(time_data.uptime);
       return;
   }  // LCOV_EXCL_STOP
+}
+
+template <class SegmentImpl, class HardwareInterface>
+inline bool
+PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::isPlannedUpdateOK(const ros::Duration& period) const
+{
+  return isPlannedJointAccelerationOK(period) && isPlannedCartesianVelocityOK(period);
+}
+
+template <class SegmentImpl, class HardwareInterface>
+inline bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::isPlannedJointAccelerationOK(
+    const ros::Duration& period) const
+{
+  for (unsigned int i = 0; i < JointTrajectoryController::getNumberOfJoints(); ++i)
+  {
+    if (acceleration_joint_limits_.at(i))
+    {
+      const double& old_velocity = JointTrajectoryController::old_desired_state_.velocity.at(i);
+      const double& new_velocity = JointTrajectoryController::desired_state_.velocity.at(i);
+      const double& acceleration = calculateAcceleration(new_velocity, old_velocity, period);
+      if (acceleration > acceleration_joint_limits_.at(i).value())
+      {
+        ROS_ERROR_STREAM_NAMED(JointTrajectoryController::name_,
+                               "Acceleration limit violated by joint "
+                                   << JointTrajectoryController::joint_names_.at(i)
+                                   << ". Desired acceleration: " << acceleration
+                                   << "rad/s^2, limit: " << acceleration_joint_limits_.at(i) << "rad/s^2.");
+        return false;
+      }
+    }
+  }
+  return true;
 }
 
 template <class SegmentImpl, class HardwareInterface>
