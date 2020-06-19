@@ -53,10 +53,23 @@ static const std::string USER_NOTIFICATION_NOT_IMPLEMENTED_COMMAND_INTERFACE_INF
 
 namespace ph = std::placeholders;
 
-inline double calculateAcceleration(const double& current_velocity, const double& old_velocity,
+/**
+ * @brief Calculate acceleration in direction of desired movement.
+ *
+ * @note If the direction of the movement changes (i.e. the velocities have different signs), we have a deceleration
+ * from @p old_desired_velocity to 0.0 and an acceleration from 0.0 to @p desired_velocity. In this case the
+ * deceleration part is neglected.
+ */
+inline double calculateAcceleration(const double& desired_velocity, const double& old_desired_velocity,
                                     const ros::Duration& delta_t)
 {
-  return (std::abs(current_velocity) - std::abs(old_velocity)) / delta_t.toSec();
+  if (desired_velocity > 0.0)
+  {
+    // neglect deceleration if old_desired_velocity < 0.0
+    return (desired_velocity - std::max(0.0, old_desired_velocity)) / delta_t.toSec();
+  }
+  // neglect deceleration if old_desired_velocity > 0.0
+  return (std::min(0.0, old_desired_velocity) - desired_velocity) / delta_t.toSec();
 }
 
 /**
