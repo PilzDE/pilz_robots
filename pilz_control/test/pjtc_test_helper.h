@@ -194,7 +194,7 @@ static GoalType generateAlternatingGoal(RobotDriver* robot_driver,
 {
   updateUntilNoRobotMotion<RobotDriver>(robot_driver);
 
-  const double BASE_SIZE { 0.1 };
+  const double BASE_SIZE{ 0.1 };
   static double delta_sign{ 1.0 };
   const double alternating_position_shift{ BASE_SIZE * distance_scaling_factor * delta_sign };
   delta_sign *= -1.0;

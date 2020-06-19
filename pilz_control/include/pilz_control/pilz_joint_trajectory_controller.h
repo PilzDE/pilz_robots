@@ -65,7 +65,7 @@ static bool isTrajectoryExecuted(const std::vector<TrajectoryPerJoint<Segment>>&
  */
 template <class SegmentImpl, class HardwareInterface>
 class PilzJointTrajectoryController
-  : public joint_trajectory_controller::JointTrajectoryController<SegmentImpl, HardwareInterface>
+    : public joint_trajectory_controller::JointTrajectoryController<SegmentImpl, HardwareInterface>
 {
 public:
   typedef joint_trajectory_controller::JointTrajectoryController<SegmentImpl, HardwareInterface>

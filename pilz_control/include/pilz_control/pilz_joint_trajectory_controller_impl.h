@@ -58,7 +58,7 @@ namespace ph = std::placeholders;
  *  and the time interval between them (`delta_t`)
  */
 inline double calculateAbsoluteAcceleration(const double& current_velocity, const double& old_velocity,
-                                    const ros::Duration& delta_t)
+                                            const ros::Duration& delta_t)
 {
   return (std::abs(current_velocity - old_velocity)) / delta_t.toSec();
 }
