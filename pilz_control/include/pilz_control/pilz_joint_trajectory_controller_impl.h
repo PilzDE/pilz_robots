@@ -394,7 +394,8 @@ inline void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::abort
   RealtimeGoalHandlePtr active_goal(JointTrajectoryController::rt_active_goal_);
   if (!active_goal)
   {
-    return;
+    return;  // LCOV_EXCL_LINE
+             // Since the command topic is deactivated it is impossible to violate a limit without an active goal
   }
   JointTrajectoryController::rt_active_goal_.reset();
   active_goal->gh_.setAborted();
