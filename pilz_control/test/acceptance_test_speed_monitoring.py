@@ -73,7 +73,8 @@ class MaxFrameSpeedWrapper():
 
 
 class AcceptancetestSpeedMonitoring(unittest.TestCase):
-    """ Prerequisites: Launch robot and joint_states_speed_observer.
+    """ Check if the controller successfully prevents a speed limit violation of the cartesian speed of the robot links.
+        Prerequisites: Launch robot and joint_states_speed_observer.
     """
 
     def setUp(self):
@@ -132,6 +133,10 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
         return _TEST_JOINT_LOW_SPEED / low_frame_speed * _SPEED_LIMIT
 
     def test_reduced_speed_mode(self):
+        """ Perform three movements with different velocities. One slightly below the speed limit, one slightly above
+            and one movement with maximal joint speed. In any case the cartesian speed limit should not be violated,
+            since we are in T1 mode.
+        """
         rospy.loginfo('Test speed monitoring in T1 mode')
 
         target_velocity = self._compute_target_velocity()
@@ -143,15 +148,22 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
         self._max_frame_speed.reset()
 
         self._perform_test_movement(1.1 * target_velocity)
-        self.assertGreater(_SPEED_LIMIT, self._max_frame_speed.get(), 'Speed limit of 0.25[m/s] was violated')
+        self.assertGreater(_SPEED_LIMIT, self._max_frame_speed.get(), 'Speed limit of 0.25[m/s] was violated.'
+                                                                      + ' The limit might be too sharp. Did the robot'
+                                                                      + ' perform a successful stop?')
 
         self._move_to_start_position()
         self._max_frame_speed.reset()
 
         self._perform_test_movement(_TEST_JOINT_SPEED_LIMIT)
-        self.assertGreater(_SPEED_LIMIT, self._max_frame_speed.get(), 'Speed limit of 0.25[m/s] was violated')
+        self.assertGreater(_SPEED_LIMIT, self._max_frame_speed.get(), 'Speed limit of 0.25[m/s] was violated'
+                                                                      + ' The limit might be too sharp. Did the robot'
+                                                                      + ' perform a successful stop?')
 
     def test_automatic_mode(self):
+        """ Perform a movement of the second joint with maximal joint speed. This results in a movement above
+            the cartesian speed limit. Since we are in AUTO mode, the movement should not be interrupted.
+        """
         rospy.loginfo('Test speed monitoring in AUTO mode')
 
         self._perform_test_movement(_TEST_JOINT_SPEED_LIMIT)
