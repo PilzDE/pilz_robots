@@ -18,18 +18,19 @@ import unittest
 import rospy
 import threading
 from rospy.exceptions import ROSException
+
+from actionlib_msgs.msg import GoalStatus
 from std_srvs.srv import Trigger, TriggerRequest, SetBool, SetBoolRequest
-from control_msgs.msg import *
+from control_msgs.msg import JointTrajectoryControllerState, FollowJointTrajectoryResult
 from trajectory_msgs.msg import JointTrajectoryPoint
 
-import actionlib
-from actionlib_msgs.msg import *
+from controller_state_observer import ControllerStateObserver
+from holding_mode_service_wrapper import HoldingModeServiceWrapper
+from trajectory_dispatcher import TrajectoryDispatcher
 
 PACKAGE_NAME = 'pilz_control'
 CONTROLLER_NS_PARAM_NAME = 'controller_ns_string'
 JOINT_NAMES = ['shoulder_to_right_arm', 'shoulder_to_left_arm']
-HOLD_SERVICE_NAME = '/test_joint_trajectory_controller/hold'
-UNHOLD_SERVICE_NAME = '/test_joint_trajectory_controller/unhold'
 IS_EXECUTING_SERVICE_NAME = '/test_joint_trajectory_controller/is_executing'
 CARTESIAN_SPEED_SERVICE_NAME = '/test_joint_trajectory_controller/monitor_cartesian_speed'
 ACTION_NAME = '/test_joint_trajectory_controller/follow_joint_trajectory'
@@ -42,8 +43,11 @@ MAX_DECELERATION = 7.85
 
 # Default goal position of the test trajectory
 DEFAULT_GOAL_POSITION = [0.1, 0]
+DEFAULT_GOAL_DURATION_S = 5
+DEFAULT_GOAL_POSITION_DELTA = .1
 
-controller_ns = rospy.get_param(CONTROLLER_NS_PARAM_NAME)
+CONTROLLER_NS = rospy.get_param(CONTROLLER_NS_PARAM_NAME)
+CONTROLLER_NAME = 'test_joint_trajectory_controller'
 
 
 class ObservationException(Exception):
@@ -55,19 +59,9 @@ class MovementObserver:
     """Class that subscribes to the robot mock state to observe the movement.
 
     Enables to run blocking observations until a condition has been fulfilled or a timeout passed
-    :note Current implementation assumes that the robot mock only has one joint.
-
     """
     def __init__(self):
-        self._actual_position = None
-        self._actual_velocity = None
-        self._last_time_stamp = 0.0
-        self._controller_state_delta_t = None
-        self._controller_state_lock = threading.Lock()
-
-        state_topic_name = controller_ns + STATE_TOPIC_NAME
-        self._subscriber = rospy.Subscriber(state_topic_name, JointTrajectoryControllerState,
-                                            self.controller_state_callback)
+        self._state_observer = ControllerStateObserver(CONTROLLER_NS, CONTROLLER_NAME)
 
         self._stop_observer_thread_lock = threading.Lock()
         self._stop_observer_thread = None
@@ -75,18 +69,8 @@ class MovementObserver:
         self._stop_trajectory_ok_lock = threading.Lock()
         self._stop_trajectory_ok = False
 
-    def controller_state_callback(self, data):
-        with self._controller_state_lock:
-            self._actual_position = data.actual.positions
-            self._actual_velocity = data.actual.velocities
-            self._controller_state_delta_t = data.header.stamp.to_sec() - self._last_time_stamp
-            self._last_time_stamp = data.header.stamp.to_sec()
-
     def _is_position_threshold_reached(self, position_threshold):
-        with self._controller_state_lock:
-            if self._actual_position is None:
-                return False
-            current_pos = list(self._actual_position)
+        current_pos = self._state_observer.get_actual_position()
 
         for i in range(len(position_threshold)):
             if current_pos[i] < position_threshold[i]:
@@ -94,16 +78,16 @@ class MovementObserver:
         return True
 
     @staticmethod
-    def _is_deceleration_limit_violated(actual_velocity, old_velocity, delta_t, max_deceleration):
-        for i in range(len(actual_velocity)):
-            if ((old_velocity[i] - actual_velocity[i]) * delta_t) > max_deceleration:
+    def _is_deceleration_limit_violated(actual_deceleration, max_deceleration):
+        for val in actual_deceleration:
+            if val > max_deceleration:
                 return True
         return False
 
     @staticmethod
     def _is_stop_motion_finished(actual_velocity):
-        for i in range(len(actual_velocity)):
-            if abs(actual_velocity[i]) != 0.0:
+        for val in actual_velocity:
+            if abs(val) != 0.0:
                 return False
         return True
 
@@ -135,28 +119,17 @@ class MovementObserver:
                 rospy.logerr('Stop lasted too long: ' + str(stop_duration) + ' seconds.')
                 return
 
-            # Obtain local of actual velocity
-            with self._controller_state_lock:
-                # Noting to be done if no actual_velocity was observed
-                if self._actual_velocity is None:
-                    continue
-                actual_velocity = list(self._actual_velocity)
-
+            actual_velocity = self._state_observer.get_actual_velocity()
             if self._is_stop_motion_finished(actual_velocity):
                 with self._stop_trajectory_ok_lock:
                     self._stop_trajectory_ok = True
                 return
 
-            old_velocity = actual_velocity
-
             r.sleep()
 
             # Check for abrupt stop
-            with self._controller_state_lock:
-                limit_violated = self._is_deceleration_limit_violated(self._actual_velocity,
-                                                                      old_velocity,
-                                                                      self._controller_state_delta_t,
-                                                                      max_deceleration)
+            actual_deceleration = -self._state_observer.get_actual_acceleration()
+            limit_violated = self._is_deceleration_limit_violated(actual_deceleration, max_deceleration)
             if limit_violated:
                 with self._stop_trajectory_ok_lock:
                     self._stop_trajectory_ok = False
@@ -181,49 +154,13 @@ class MovementObserver:
         with self._stop_trajectory_ok_lock:
             return self._stop_trajectory_ok
 
-
-class TrajectoryDispatcher:
-    """A wrapper around the SimpleActionClient for dispatching trajectories."""
-    def __init__(self):
-        action_name = controller_ns + ACTION_NAME
-        self._client = actionlib.SimpleActionClient(action_name, FollowJointTrajectoryAction)
-
-        timeout = rospy.Duration(WAIT_FOR_SERVICE_TIMEOUT_S)
-        self._client.wait_for_server(timeout)
-
-    def dispatch_trajectory(self, goal_position, time_from_start):
-        """Sends a simple JointTrajectory to the action client.
-
-        :param goal_position: The only position in the send trajectory
-        :param time_from_start: The time of the only position to be achieved (Starting at 0)
-        """
-        point = JointTrajectoryPoint()
-        point.positions = goal_position
-        point.time_from_start = rospy.Duration(time_from_start)
-
-        goal = FollowJointTrajectoryGoal()
-        goal.trajectory.header.stamp = rospy.Time.now()
-        goal.trajectory.points = [point]
-        goal.trajectory.joint_names = JOINT_NAMES
-
-        self._client.send_goal(goal)
-
-    def wait_for_result(self):
-        """Wait until the result of the trajectory execution is received."""
-        self._client.wait_for_result()
-        return self._client.get_result()
-
-    def get_last_state(self):
-        """Get the state of the last send trajectory
-
-        :return: see http://docs.ros.org/melodic/api/actionlib_msgs/html/msg/GoalStatus.html
-        """
-        return self._client.get_state()
+    def get_actual_position(self):
+        return self._state_observer.get_actual_position()
 
 
 class SetMonitoredCartesianSpeed:
     def __init__(self):
-        service_name = controller_ns + CARTESIAN_SPEED_SERVICE_NAME
+        service_name = CONTROLLER_NS + CARTESIAN_SPEED_SERVICE_NAME
         rospy.wait_for_service(service_name, WAIT_FOR_SERVICE_TIMEOUT_S)
         self._set_catesian_speed_srv = rospy.ServiceProxy(service_name, SetBool)
 
@@ -243,7 +180,7 @@ class SetMonitoredCartesianSpeed:
 class IsExecutingServiceWrapper:
     """Wrapper for the service querying if the controller is executing."""
     def __init__(self):
-        is_executing_service_name = controller_ns + IS_EXECUTING_SERVICE_NAME
+        is_executing_service_name = CONTROLLER_NS + IS_EXECUTING_SERVICE_NAME
         rospy.wait_for_service(is_executing_service_name, WAIT_FOR_SERVICE_TIMEOUT_S)
         self._is_executing_srv = rospy.ServiceProxy(is_executing_service_name, Trigger)
 
@@ -254,45 +191,13 @@ class IsExecutingServiceWrapper:
         return resp.success
 
 
-class StopServiceWrapper:
-    """Abstraction around the service call to switch the controller between DEFAULT and HOLDING mode."""
-    def __init__(self):
-        hold_service_name = controller_ns + HOLD_SERVICE_NAME
-        rospy.wait_for_service(hold_service_name, WAIT_FOR_SERVICE_TIMEOUT_S)
-        self._hold_srv = rospy.ServiceProxy(hold_service_name, Trigger)
-
-        unhold_service_name = controller_ns + UNHOLD_SERVICE_NAME
-        rospy.wait_for_service(unhold_service_name, WAIT_FOR_SERVICE_TIMEOUT_S)
-        self._unhold_srv = rospy.ServiceProxy(unhold_service_name, Trigger)
-
-    def request_default_mode(self):
-        """Switch into DEFAULT mode by sending the respective request.
-
-        :return: True if service request was handled successful, False otherwise.
-        """
-        req = TriggerRequest()
-        resp = self._unhold_srv(req)
-
-        return resp.success
-
-    def request_holding_mode(self):
-        """Switch into HOLDING mode by sending the respective request.
-
-        :return: True if service request was handled successful, False otherwise
-        """
-        req = TriggerRequest()
-        resp = self._hold_srv(req)
-
-        return resp.success
-
-
 class TestPilzJointTrajectoryController(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(TestPilzJointTrajectoryController, self).__init__(*args, **kwargs)
 
-        self._trajectory_dispatcher = TrajectoryDispatcher()
+        self._trajectory_dispatcher = TrajectoryDispatcher(CONTROLLER_NS, CONTROLLER_NAME)
         self._monitored_cartesian_speed_srv = SetMonitoredCartesianSpeed()
-        self._hold_srv = StopServiceWrapper()
+        self._hold_srv = HoldingModeServiceWrapper(CONTROLLER_NS, CONTROLLER_NAME)
 
     def setUp(self):
         self.assertTrue(self._turn_off_speed_monitoring(), 'Could not turn off speed monitoring')
@@ -302,7 +207,7 @@ class TestPilzJointTrajectoryController(unittest.TestCase):
         return self._wait_for_motion_result(expected_error_code)
 
     def _start_motion(self, position, duration):
-        self._trajectory_dispatcher.dispatch_trajectory(goal_position=position, time_from_start=duration)
+        self._trajectory_dispatcher.dispatch_single_point_trajectory(goal_position=position, time_from_start=duration)
 
     def _wait_for_motion_result(self, expected_error_code=FollowJointTrajectoryResult.SUCCESSFUL):
         result = self._trajectory_dispatcher.wait_for_result()
@@ -325,21 +230,23 @@ class TestPilzJointTrajectoryController(unittest.TestCase):
             rospy.sleep(STOP_DURATION_UPPER_BOUND_S)
         self.assertTrue(self._hold_srv.request_default_mode(), 'Switch to default mode failed')
 
-        self.assertTrue(self._move_to(position=DEFAULT_GOAL_POSITION, duration=0.5),
+        self.assertTrue(self._move_to(position=DEFAULT_GOAL_POSITION, duration=DEFAULT_GOAL_DURATION_S),
                         "Motion failed although controller should be in 'unhold' mode")
 
     def test_hold_during_motion(self):
         """Activate hold mode while robot is moving and evaluate executed stop."""
         is_executing_srv = IsExecutingServiceWrapper()
+        motion_observer = MovementObserver()
+        start_pose = motion_observer.get_actual_position()
+        rospy.loginfo("start_pose: " + str(start_pose))
 
         new_pos = list(DEFAULT_GOAL_POSITION)
-        new_pos[0] += 0.1
+        new_pos[0] += DEFAULT_GOAL_POSITION_DELTA
 
-        self._start_motion(position=new_pos, duration=5)
+        self._start_motion(position=new_pos, duration=DEFAULT_GOAL_DURATION_S)
 
         # Wait for movement to commence
-        motion_observer = MovementObserver()
-        motion_observer.observe_until_position_greater([0.11, 0.0], 3)
+        motion_observer.observe_until_position_greater(start_pose, DEFAULT_GOAL_DURATION_S / 2.)
         self.assertTrue(is_executing_srv.call(), "Controller is not executing")
         # Make sure robot stops (not abruptly)
         motion_observer.start_stop_observation()
@@ -355,18 +262,19 @@ class TestPilzJointTrajectoryController(unittest.TestCase):
     def test_speed_monitoring(self):
         """Tests if controller detects Cartesian speed limit violation and switches to hold mode."""
         self.assertTrue(self._turn_on_speed_monitoring(), "Could not turn on speed monitoring")
+        motion_observer = MovementObserver()
 
         # Test speed monitoring for all joints
         for i in range(len(JOINT_NAMES)):
             far_away_position = list(DEFAULT_GOAL_POSITION)
-            far_away_position[i] += 0.4
+            far_away_position[i] += DEFAULT_GOAL_POSITION_DELTA
 
             self.assertTrue(self._hold_srv.request_default_mode(), "Switch to default mode failed")
 
-            self.assertTrue(self._move_to(position=DEFAULT_GOAL_POSITION, duration=0.5),
+            self.assertTrue(self._move_to(position=DEFAULT_GOAL_POSITION, duration=DEFAULT_GOAL_DURATION_S),
                             "Motion to default position failed")
 
-            move_result = self._move_to(position=far_away_position, duration=0.1)
+            move_result = self._move_to(position=far_away_position, duration=DEFAULT_GOAL_DURATION_S / 3.)
             # Unfortunately, the goal returns SUCCESSFUL as error_code, in case the motion
             # is cancelled. Therefore, the following check is commented out.
             # self.assertFalse(move_result, "Cartesian speed monitor did not detect speed limit violation")
@@ -378,7 +286,7 @@ class TestPilzJointTrajectoryController(unittest.TestCase):
             motion_observer.start_stop_observation()
             self.assertTrue(motion_observer.wait_for_end_of_stop_observation(), "Stop trajectory incorrect")
 
-            self.assertTrue(self._move_to(position=far_away_position, duration=0.5,
+            self.assertTrue(self._move_to(position=far_away_position, duration=DEFAULT_GOAL_DURATION_S,
                                           expected_error_code=FollowJointTrajectoryResult.INVALID_GOAL),
                             "Controller did not block motion execution although controller should be in 'hold' mode")
 
@@ -387,7 +295,7 @@ class TestPilzJointTrajectoryController(unittest.TestCase):
                 rospy.sleep(STOP_DURATION_UPPER_BOUND_S)
             self.assertTrue(self._hold_srv.request_default_mode(), "Switch to 'unhold' mode failed")
 
-            self.assertTrue(self._move_to(position=far_away_position, duration=0.5),
+            self.assertTrue(self._move_to(position=far_away_position, duration=DEFAULT_GOAL_DURATION_S),
                             "Controller did not allow motion execution, although controller should be in 'unhold' mode")
 
 

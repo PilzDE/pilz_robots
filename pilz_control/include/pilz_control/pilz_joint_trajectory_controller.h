@@ -17,12 +17,16 @@
 #ifndef PILZ_CONTROL_PILZ_JOINT_TRAJECTORY_CONTROLLER_H
 #define PILZ_CONTROL_PILZ_JOINT_TRAJECTORY_CONTROLLER_H
 
-#include <mutex>
-#include <memory>
 #include <atomic>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <vector>
 
 #include <std_srvs/Trigger.h>
 #include <std_srvs/SetBool.h>
+
+#include <boost/optional/optional_io.hpp>
 
 #include <joint_trajectory_controller/joint_trajectory_controller.h>
 #include <joint_trajectory_controller/stop_trajectory_builder.h>
@@ -123,6 +127,33 @@ public:
    */
   bool handleMonitorCartesianSpeedRequest(std_srvs::SetBool::Request& request, std_srvs::SetBool::Response& response);
 
+  /**
+   * @brief Helper function to get paramter names to read
+   *
+   * @param param_name std::string This is where the param name will be written to.
+   * @param joint_name std::sting Joint name as part of the param name.
+   * @param suffix std::sting Suffix to be appended to the param name.
+   */
+  static void makeParamNameWithSuffix(std::string& param_name, const std::string& joint_name,
+                                      const std::string& suffix);
+
+  /**
+   * @brief Get the Joint Acceleration Limits for each joint from the parameter server.
+   *
+   * If has_acceleration_limits is set to false acceleration limits will be set to 0.
+   *
+   * Function assumes parameter server naming prefix '/joint_limits/' for Joint Names.
+   *
+   * @param nh NodeHandle to access parameter server.
+   * @param joint_names Vector of Strings for all joint names to get the acceleration limits for.
+   * @return std::vector<boost::optional<double>> Requested acceleration limits as vector. Has the same length as param
+   * 'joint_names'.
+   *
+   * @throw InvalidParameterException Requested values not found on param server.
+   */
+  static std::vector<boost::optional<double>> getJointAccelerationLimits(const ros::NodeHandle& nh,
+                                                                         const std::vector<std::string>& joint_names);
+
 protected:
   /**
    * @brief Called if new trajectory should be handled
@@ -163,6 +194,24 @@ private:
                                 const typename JointTrajectoryController::TimeData& time_data) override;
 
   /**
+   * @brief Check if planned update fullfilles all requirements on trajectory execution.
+   *
+   * @param period The time passed since the last update.
+   *
+   * @returns True if update can be performed, otherwise false.
+   */
+  bool isPlannedUpdateOK(const ros::Duration& period) const;
+
+  /**
+   * @brief Check acceleration limit. Ensure that trajectories are smooth enough.
+   *
+   * @param period The time passed since the last update.
+   *
+   * @returns False if one or more joints violate the acceleration limit, otherwise true.
+   */
+  bool isPlannedJointAccelerationOK(const ros::Duration& period) const;
+
+  /**
    * @brief Trigger cartesian speed monitoring using the current and the desired joint states.
    *
    * @param period The time passed since the last update.
@@ -193,7 +242,6 @@ private:
   void abortActiveGoal();
 
 private:
-private:
   ros::ServiceServer hold_position_service;
   ros::ServiceServer unhold_position_service;
   ros::ServiceServer is_executing_service_;
@@ -219,6 +267,9 @@ private:
 
   //! The currently max allowed speed for each frame on the Cartesian trajectory.
   std::atomic<double> cartesian_speed_limit_{ 0.0 };
+
+  //! The max allowed acceleration for each joint.
+  std::vector<boost::optional<double>> acceleration_joint_limits_;
 
   /**
    * @brief Used for loading a RobotModel for the CartesianSpeedMonitor.

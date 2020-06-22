@@ -5,6 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   canopen_chain_node
   pilz_utils
   roscpp
+  roslint
   sensor_msgs
 )
 
@@ -132,6 +133,11 @@ if(CATKIN_ENABLE_TESTING)
 
   find_package(roslaunch REQUIRED)
   roslaunch_add_file_check(launch)
+
+  roslint_python(
+    test/acceptance_tests/acceptance_test_joint_limits.py
+  )
+  roslint_add_test()
 
   # to run: catkin_make -DENABLE_COVERAGE_TESTING=ON package_name_coverage (adding -j1 recommended)
   if(ENABLE_COVERAGE_TESTING)

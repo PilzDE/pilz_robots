@@ -150,13 +150,31 @@ if(CATKIN_ENABLE_TESTING)
   )
   target_link_libraries(unittest_pilz_joint_trajectory_controller ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES})
 
+  add_rostest_gtest(unittest_pilz_joint_trajectory_controller_is_executing
+    test/unittest_pilz_joint_trajectory_controller_is_executing.test
+    test/unittest_pilz_joint_trajectory_controller_is_executing.cpp
+    test/robot_mock.cpp
+    src/cartesian_speed_monitor.cpp
+  )
+  target_link_libraries(unittest_pilz_joint_trajectory_controller_is_executing ${catkin_LIBRARIES})
+
+  add_rostest_gtest(unittest_get_joint_acceleration_limits
+    test/unittest_get_joint_acceleration_limits.test
+    test/unittest_get_joint_acceleration_limits.cpp
+  )
+  target_link_libraries(unittest_get_joint_acceleration_limits ${catkin_LIBRARIES})
+
   add_rostest(test/integrationtest_pilz_joint_trajectory_controller.test
     DEPENDENCIES ${PROJECT_NAME} robot_mock
   )
 
   roslint_python(
     test/acceptance_test_speed_monitoring.py
+    test/acceptance_test_acceleration_limit.py
     test/integrationtest_pilz_joint_trajectory_controller.py
+    test/controller_state_observer.py
+    test/holding_mode_service_wrapper.py
+    test/trajectory_dispatcher.py
   )
   roslint_add_test()
 

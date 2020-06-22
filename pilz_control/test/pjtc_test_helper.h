@@ -39,10 +39,14 @@ namespace pilz_joint_trajectory_controller_test
 static const std::string STOP_TRAJECTORY_DURATION_PARAMETER{ "stop_trajectory_duration" };
 static const std::string GOAL_TIME_TOLERANCE_PARAMETER{ "constraints/goal_time" };
 static const std::string JOINTS_PARAMETER{ "joints" };
+static const std::string JOINT_LIMITS_NAMESPACE{ "limits" };
+static const std::string HAS_ACCELERATION_PARAMETER{ "has_acceleration_limits" };
+static const std::string MAX_ACCELERATION_PARAMETER{ "max_acceleration" };
 
 static constexpr double DEFAULT_GOAL_DURATION_SEC{ 1.0 };
 static constexpr double STOP_TRAJECTORY_DURATION_SEC{ 0.2 };
 static constexpr double GOAL_TIME_TOLERANCE_SEC{ 0.01 };
+static constexpr double MAX_JOINT_ACCELERATION{ 5.0 };
 
 static constexpr double TIME_SIMULATION_START_SEC{ 0.1 };
 static constexpr double DEFAULT_UPDATE_PERIOD_SEC{ 0.008 };
@@ -81,31 +85,22 @@ static void setControllerParameters(const std::string& controller_ns)
   controller_nh_.setParam(JOINTS_PARAMETER, joint_names);
   controller_nh_.setParam(STOP_TRAJECTORY_DURATION_PARAMETER, STOP_TRAJECTORY_DURATION_SEC);
   controller_nh_.setParam(GOAL_TIME_TOLERANCE_PARAMETER, GOAL_TIME_TOLERANCE_SEC);
+
+  ros::NodeHandle limits_nh(controller_nh_, JOINT_LIMITS_NAMESPACE);
+  for (const auto& joint_name : joint_names)
+  {
+    std::stringstream has_acceleration_full_name;
+    has_acceleration_full_name << joint_name << "/" << HAS_ACCELERATION_PARAMETER;
+    limits_nh.setParam(has_acceleration_full_name.str(), true);
+    std::stringstream max_acceleration_full_name;
+    max_acceleration_full_name << joint_name << "/" << MAX_ACCELERATION_PARAMETER;
+    limits_nh.setParam(max_acceleration_full_name.str(), MAX_JOINT_ACCELERATION);
+  }
 }
 
 static ros::Duration getGoalDuration(const control_msgs::FollowJointTrajectoryGoal& goal)
 {
   return goal.trajectory.points.back().time_from_start;
-}
-
-/**
- * @brief Cycle through three joint positions in order to always get a movement even if the previous goal failed.
- */
-static GoalType generateSimpleGoal(const ros::Duration& goal_duration = ros::Duration(DEFAULT_GOAL_DURATION_SEC))
-{
-  static unsigned int position_index{ 0 };
-  const std::vector<double> alternating_positions{ 0.5, -0.25, -0.5 };
-  position_index = (++position_index) % alternating_positions.size();
-
-  std::vector<std::string> joint_names(JOINT_NAMES.begin(), JOINT_NAMES.end());
-
-  GoalType goal;
-  goal.trajectory.joint_names = joint_names;
-  goal.trajectory.points.resize(1);
-  goal.trajectory.points[0].time_from_start = goal_duration;
-  goal.trajectory.points[0].positions = { alternating_positions[position_index], 0.0 };
-
-  return goal;
 }
 
 /**
@@ -161,6 +156,49 @@ static bool updateUntilRobotMotion(RobotDriver* robot_driver,
 {
   return waitFor([robot_driver]() { return robot_driver->isRobotMoving(); }, movement_timeout,
                  [robot_driver]() { robot_driver->update(); });
+}
+
+template <class RobotDriver>
+static bool updateUntilNoRobotMotion(RobotDriver* robot_driver,
+                                     const std::chrono::milliseconds movement_timeout = MOVEMENT_TIMEOUT)
+{
+  return waitFor([robot_driver]() { return !robot_driver->isRobotMoving(); }, movement_timeout,
+                 [robot_driver]() { robot_driver->update(); });
+}
+
+static GoalType generateSimpleGoal(const double& first_joint_position, const ros::Duration& goal_duration)
+{
+  std::vector<std::string> joint_names(JOINT_NAMES.begin(), JOINT_NAMES.end());
+
+  GoalType goal;
+  goal.trajectory.joint_names = joint_names;
+  goal.trajectory.points.resize(1);
+  goal.trajectory.points[0].time_from_start = goal_duration;
+  goal.trajectory.points[0].positions.resize(joint_names.size());
+  goal.trajectory.points[0].positions.at(0) = first_joint_position;
+
+  return goal;
+}
+
+/**
+ * @brief Using this function to generate goals, the direction of the robot movements is alternating.
+ *
+ * @note Two position deltas with opposite signs are added to the current position of the robot, to always move
+ * relatively and judge the size and speed of motion correctly.
+ */
+template <class RobotDriver>
+static GoalType generateAlternatingGoal(RobotDriver* robot_driver,
+                                        const ros::Duration& goal_duration = ros::Duration(DEFAULT_GOAL_DURATION_SEC),
+                                        const float distance_scaling_factor = 1)
+{
+  updateUntilNoRobotMotion<RobotDriver>(robot_driver);
+
+  static double delta_sign{ 1.0 };
+  const double alternating_position_shift{ distance_scaling_factor * delta_sign * 1E-3 };
+  delta_sign *= -1.0;
+
+  const std::vector<double> joint_positions = robot_driver->getJointPositions();
+  return generateSimpleGoal(alternating_position_shift + joint_positions.at(0), goal_duration);
 }
 
 /**

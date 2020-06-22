@@ -35,7 +35,7 @@ limitations under the License.
   ```
   2. Execute `rosrun pilz_control acceptance_test_speed_monitoring.py`.
   3. Perform movements via RViz with velocity scales `0.1` and `1.0`.
-  4. Switch into AUTO mode. Make sure the drives are enabled again by pressing the acknowledge button and execute `rosrun pilz_control acceptance_test_speed_monitoring.py auto`.
+  4. Switch into AUTO mode. Make sure the drives are enabled again by pressing RESET and execute `rosrun pilz_control acceptance_test_speed_monitoring.py auto`.
   5. Perform movements via RViz with velocity scale `1.0`.
   6. Switch back into T1 mode. Make sure the drives are enabled again by pressing the acknowledge button and execute `rosrun pilz_control acceptance_test_speed_monitoring.py`.
   7. Perform movements via RViz with velocity scales `0.1` and `1.0`.
