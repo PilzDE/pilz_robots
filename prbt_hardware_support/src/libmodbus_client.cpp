@@ -187,6 +187,7 @@ bool checkIPConnection(const char* ip, const unsigned int port)
   if (conresult <= 0)
   {
     /* Timeout or fail */
+    errno = ECONNREFUSED;
     return false;
   }
   conresult = getsockopt(sockfd, SOL_SOCKET, SO_ERROR, (void*)&optval,
@@ -198,6 +199,7 @@ bool checkIPConnection(const char* ip, const unsigned int port)
     std::this_thread::sleep_for(std::chrono::duration<double>(1));  // wait one second to grant a free port
     return true;
   }
+  errno = ECONNREFUSED;
   return false;
 }
 
