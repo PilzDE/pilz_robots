@@ -86,7 +86,7 @@ class ControllerStateObserver:
 
     def reset_max_acceleration(self):
         with self._controller_state_lock:
-            self._max_acceleration = []
+            self._max_acceleration = [0.0] * len(self._max_acceleration)
 
     def wait_for_position_reached(self, position):
         rate = rospy.Rate(self.SLEEP_RATE_HZ)
