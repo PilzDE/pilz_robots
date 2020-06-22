@@ -17,18 +17,13 @@
 
 #include <gtest/gtest.h>
 
-#include <thread>
-#include <chrono>
-#include <vector>
 #include <numeric>
-
 #include <modbus/modbus.h>
 
 #include <prbt_hardware_support/libmodbus_client.h>
 #include <prbt_hardware_support/modbus_socket_connection_check.h>
 #include <prbt_hardware_support/pilz_modbus_server_mock.h>
 #include <prbt_hardware_support/pilz_modbus_exceptions.h>
-
 #include <prbt_hardware_support/client_tests_common.h>
 
 namespace modbus_socket_connection_check_test
