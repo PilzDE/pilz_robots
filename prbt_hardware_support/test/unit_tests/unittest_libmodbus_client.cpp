@@ -323,8 +323,7 @@ TEST_F(LibModbusClientTest, setResponseTimeout)
 
 // /**
 //  * @brief Tests that the checkIPConnection function will respond properly on presense of a modbus server and also if
-//  it
-//  * misses.
+//  * it misses.
 //  *
 //  * @note To keep things simple timeout and repeats are not altered.
 //  */
