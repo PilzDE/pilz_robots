@@ -113,8 +113,7 @@ int main(int argc, char** argv)
   ROS_DEBUG_STREAM("Modbus read topic: \"" << modbus_read_topic_name << "\"");
   ROS_DEBUG_STREAM("Modbus write service: \"" << modbus_write_service_name << "\"");
 
-  bool res = modbus_client.init(ip.c_str(), static_cast<unsigned int>(port),
-                                modbus_connection_retries,
+  bool res = modbus_client.init(ip.c_str(), static_cast<unsigned int>(port), modbus_connection_retries,
                                 ros::Duration(modbus_connection_retry_timeout_s));
 
   ROS_DEBUG_STREAM("Connection with modbus server " << ip << ":" << port << " established");
