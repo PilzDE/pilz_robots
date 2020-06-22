@@ -148,17 +148,17 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
         self._max_frame_speed.reset()
 
         self._perform_test_movement(1.1 * target_velocity)
-        self.assertGreater(_SPEED_LIMIT, self._max_frame_speed.get(), 'Speed limit of 0.25[m/s] was violated.'
-                                                                      + ' The limit might be too sharp. Did the robot'
-                                                                      + ' perform a successful stop?')
+        self.assertGreater(_SPEED_LIMIT, self._max_frame_speed.get(), 'Speed limit of 0.25[m/s] was violated.' +
+                                                                      ' The limit might be too sharp. Did the robot' +
+                                                                      ' perform a successful stop?')
 
         self._move_to_start_position()
         self._max_frame_speed.reset()
 
         self._perform_test_movement(_TEST_JOINT_SPEED_LIMIT)
-        self.assertGreater(_SPEED_LIMIT, self._max_frame_speed.get(), 'Speed limit of 0.25[m/s] was violated'
-                                                                      + ' The limit might be too sharp. Did the robot'
-                                                                      + ' perform a successful stop?')
+        self.assertGreater(_SPEED_LIMIT, self._max_frame_speed.get(), 'Speed limit of 0.25[m/s] was violated' +
+                                                                      ' The limit might be too sharp. Did the robot' +
+                                                                      ' perform a successful stop?')
 
     def test_automatic_mode(self):
         """ Perform a movement of the second joint with maximal joint speed. This results in a movement above
