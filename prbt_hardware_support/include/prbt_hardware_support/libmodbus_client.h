@@ -62,16 +62,6 @@ private:
   modbus_t* modbus_connection_{ nullptr };
 };
 
-/**
- * @brief Test the ip connection by connecting to the modbus server
- *
- * @param ip of the modbus server
- * @param port of the modbus server
- * @return true if the connection to the server succeeded
- * @return false if the connection to the server failed
- */
-bool checkIPConnection(const char* ip, const unsigned int port);
-
 }  // namespace prbt_hardware_support
 
 #endif  // LIBMODBUS_CLIENT_H
