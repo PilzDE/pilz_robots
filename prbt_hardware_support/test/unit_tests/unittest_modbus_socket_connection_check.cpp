@@ -38,7 +38,6 @@ static std::vector<unsigned int> PORTS_FOR_TEST(END_PORT - START_PORT);
 
 constexpr unsigned int DEFAULT_REGISTER_SIZE{ 514 };
 constexpr unsigned int DEFAULT_WRITE_IDX{ 512 };
-constexpr unsigned int DEFAULT_READ_IDX{ 77 };
 
 class ModbusSocketConnectionTest : public testing::Test
 {
