@@ -124,7 +124,7 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
             At the end of this function the robot moves to the start position.
         """
         rospy.loginfo('Determine target velocity for reaching the speed limit')
-        self._max_frame_speed.reset(smooth_factor=0.5)
+        self._max_frame_speed.reset(smooth_factor=0.1)
         self._perform_test_movement(_TEST_JOINT_LOW_SPEED)
         low_frame_speed = self._max_frame_speed.get()
 
