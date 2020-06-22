@@ -84,7 +84,7 @@ class AcceptanceTestJointLimits(unittest.TestCase):
         msg = JointState()
         positions = []
         try:
-            msg = rospy.wait_for_message(_JOINT_STATES_TOPIC_NAME, JointState, timeout =_WAIT_FOR_MESSAGE_TIMEOUT_SEC)
+            msg = rospy.wait_for_message(_JOINT_STATES_TOPIC_NAME, JointState, timeout=_WAIT_FOR_MESSAGE_TIMEOUT_SEC)
         except rospy.ROSException:
             self.fail('Could not retrieve message from topic ' + _JOINT_STATES_TOPIC_NAME)
 
@@ -122,8 +122,8 @@ class AcceptanceTestJointLimits(unittest.TestCase):
             self._execute_trajectory(self.home_positions)
 
     def _execute_trajectory(self, positions):
-        """ Execute a single point trajectory given through joint positions (in the order given by self.joint_names). Return true on success and
-            false otherwise.
+        """ Execute a single point trajectory given through joint positions (in the order given by self.joint_names).
+            Return true on success and false otherwise.
         """
         self.assertEqual(len(positions), len(self.joint_names))
 
@@ -135,11 +135,13 @@ class AcceptanceTestJointLimits(unittest.TestCase):
             distance = abs(positions[i] - current_positions[i])
             durations.append(distance/self.joint_velocity_limits[i])
 
-        duration = max(durations)/_VELOCITY_SCALE
+        # we cannot assume constant velocity, so multiply by a factor of 2 to compensate for acceleration/deceleration
+        duration = 2*max(durations)/_VELOCITY_SCALE
 
         # construct goal
         traj_point = JointTrajectoryPoint()
         traj_point.positions = positions
+        traj_point.velocities = [0.0]*len(positions)
         traj_point.time_from_start = rospy.Duration(duration)
 
         traj = JointTrajectory()
