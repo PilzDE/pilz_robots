@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2018 Pilz GmbH & Co. KG
+Copyright (c) 2020 Pilz GmbH & Co. KG
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,17 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-
 <launch>
   <arg name="debug" default="false"/>
-
+  
   <param name="robot_description" textfile="$(find pilz_control)/test/urdf/robot_mock.urdf"/>
   <param name="robot_description_semantic" textfile="$(find pilz_control)/test/urdf/robot_mock.srdf"/>
 
-  <test unless="$(arg debug)" pkg="pilz_control" type="unittest_pilz_joint_trajectory_controller"
-        test-name="unittest_pilz_joint_trajectory_controller">
+  <test unless="$(arg debug)" pkg="pilz_control" type="unittest_pilz_joint_trajectory_controller_is_executing"
+        test-name="unittest_pilz_joint_trajectory_controller_is_executing">
   </test>
-  <test if="$(arg debug)" pkg="pilz_control" type="unittest_pilz_joint_trajectory_controller"
-        test-name="unittest_pilz_joint_trajectory_controller" launch-prefix="xterm -e gdb -args">
+  <test if="$(arg debug)" pkg="pilz_control" type="unittest_pilz_joint_trajectory_controller_is_executing"
+        test-name="unittest_pilz_joint_trajectory_controller_is_executing" launch-prefix="xterm -e gdb -args">
   </test>
 </launch>
