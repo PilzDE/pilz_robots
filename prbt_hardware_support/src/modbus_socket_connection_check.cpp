@@ -23,7 +23,6 @@
 #include <fcntl.h>
 #include <prbt_hardware_support/modbus_socket_connection_check.h>
 
-
 namespace prbt_hardware_support
 {
 bool checkIPConnection(const char* ip, const unsigned int port)

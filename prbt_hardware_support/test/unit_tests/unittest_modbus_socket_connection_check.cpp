@@ -114,7 +114,7 @@ TEST_F(ModbusSocketConnectionTest, checkIPConnectionTest)
   client.close();
 }
 
-}  // namespace unittest_modbus_socket_connection_check
+}  // namespace modbus_socket_connection_check_test
 
 int main(int argc, char* argv[])
 {
