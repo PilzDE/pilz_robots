@@ -167,7 +167,7 @@ bool checkIPConnection(const char* ip, const unsigned int port)
   struct timeval tv;
 
   tv.tv_sec = 1;
-  tv.tv_usec = 0;  // timout is 100ms
+  tv.tv_usec = 0;  // timout is 1s
 
   sockfd = socket(AF_INET, SOCK_STREAM, 0);  // Create socket for connection testing purpose
   bzero((char*)&serv_addr, sizeof(serv_addr));
