@@ -53,9 +53,14 @@ bool PilzModbusClient::init(const char* ip, unsigned int port, int retries, cons
       return true;
     }
 
-    ROS_WARN_STREAM_COND(retries == -1, "Connection to " << ip << ":" << port << " failed.");
-    ROS_WARN_STREAM_COND(retries != -1, "Connection to " << ip << ":" << port << " failed. Try(" << retry_n + 1 << "/"
-                                                         << retries << ")");
+    ROS_WARN_STREAM_COND(retries == -1, "Connection to "
+                                            << ip << ":" << port
+                                            << " failed. Make sure that your cables are connected properly and that "
+                                               "you have set the correct ip address and port.");
+    ROS_WARN_STREAM_COND(retries != -1, "Connection to "
+                                            << ip << ":" << port << " failed. Try(" << retry_n << "/" << retries
+                                            << "). Make sure that your cables are connected properly and that "
+                                               "you have set the correct ip address and port.");
     timeout.sleep();
   }
 
