@@ -39,6 +39,9 @@ SLEEP_UNHOLD_FAILURE_S = 3
 
 
 class AcceptancetestAccelerationLimit(unittest.TestCase):
+    """ Test if limiting the acceleration by the controller works. Especially check if a failing stop trajectory in
+        case of huge velocity jumps in linearly interpolated trajectories is prevented.
+    """
 
     def setUp(self):
         param_name = CONTROLLER_NS + JOINT_NAMES_PARAMETER
@@ -54,6 +57,17 @@ class AcceptancetestAccelerationLimit(unittest.TestCase):
         self._target_position = [0.0]*len(self._joint_names)
         self._target_position[TEST_JOINT_INDEX] = TEST_JOINT_TARGET_POSITION
 
+        rospy.loginfo('!!! BE CAREFUL. ROBOT MIGHT CRASH. !!!')
+        rospy.sleep(3.0)
+
+        rospy.loginfo('First move to start position...')
+        self._unhold_controller()
+        self._trajectory_dispatcher.dispatch_single_point_continuous_trajectory(self._start_position)
+        self._trajectory_dispatcher.wait_for_result()
+
+        actual_positions = self._robot_observer.get_actual_position()
+        self.assertAlmostEqual(actual_positions[TEST_JOINT_INDEX], TEST_JOINT_START_POSITION,
+                               msg='Robot did not reach start position', delta=0.01)
         self._unhold_controller()
 
     def _unhold_controller(self):
@@ -62,13 +76,9 @@ class AcceptancetestAccelerationLimit(unittest.TestCase):
             self.assertTrue(self._holding_mode_srv.request_default_mode(), 'Unable to unhold controller')
 
     def test_critical_discontinuous_movement(self):
-        rospy.loginfo('!!! BE CAREFUL. ROBOT MIGHT CRASH. !!!')
-        rospy.sleep(3.0)
-
-        rospy.loginfo('First move to start position...')
-        self._trajectory_dispatcher.dispatch_single_point_continuous_trajectory(self._start_position)
-        self._trajectory_dispatcher.wait_for_result()
-        self._unhold_controller()
+        """ Send a trajectory goal to the controller that will result in discontinuous velocities.
+            The very small time distance results in a huge velocity jump. The robot should not even start to move.
+        """
         self._trajectory_dispatcher.dispatch_single_point_trajectory(self._target_position, time_from_start=0.02)
         self._trajectory_dispatcher.wait_for_result()
 
@@ -77,13 +87,10 @@ class AcceptancetestAccelerationLimit(unittest.TestCase):
                                msg='Robot did not stand still as expected', delta=0.01)
 
     def test_critical_continuous_movement(self):
-        rospy.loginfo('!!! BE CAREFUL. ROBOT MIGHT CRASH. !!!')
-        rospy.sleep(3.0)
-
-        rospy.loginfo('First move to start position...')
-        self._trajectory_dispatcher.dispatch_single_point_continuous_trajectory(self._start_position)
-        self._trajectory_dispatcher.wait_for_result()
-        self._unhold_controller()
+        """ Send a trajectory goal to the controller that will result in continuous velocities.
+            The very small time distance results in a huge acceleration.
+            Assert that the acceleration limit is not violated.
+        """
         self._robot_observer.reset_max_acceleration()
         self._trajectory_dispatcher.dispatch_single_point_continuous_trajectory(self._target_position,
                                                                                 time_from_start=0.02)

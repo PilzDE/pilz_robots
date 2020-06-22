@@ -15,7 +15,7 @@ limitations under the License.
 
 -->
 
-# Acceptance Test Speed Monitoring using the real robot
+# Acceptance Test Acceleration Limit using the real robot
 
 ## Prerequisites
   - Properly connect and startup the robot and power cabinet containing the PSS4000.
