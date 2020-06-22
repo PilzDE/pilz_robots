@@ -4,7 +4,7 @@ Changelog for package pilz_testutils
 
 Forthcoming
 -----------
-* add JointStatePublisherMock
+* Add JointStatePublisherMock
 * Add LoggerMock
 * Contributors: Pilz GmbH and Co. KG
 

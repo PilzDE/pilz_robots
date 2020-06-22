@@ -5,6 +5,8 @@ Changelog for package prbt_hardware_support
 Forthcoming
 -----------
 * Infinite modbus connection retries
+* Improved modbus error messages
+* New modbus api
 * Refactor components to use Cartesian speed monitor functionality in controller
 * Contributors: Pilz GmbH and Co. KG
 
