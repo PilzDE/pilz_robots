@@ -33,14 +33,9 @@ using namespace prbt_hardware_support;
 // Each testcase should have its own port in order to avoid conflicts between them
 constexpr unsigned int START_PORT{ 20600 };
 constexpr unsigned int END_PORT{ 20700 };
-static unsigned int ACTIVE_PORT_IDX{ 0 };
-static std::vector<unsigned int> PORTS_FOR_TEST(END_PORT - START_PORT);
-
 constexpr unsigned int DEFAULT_REGISTER_SIZE{ 514 };
 constexpr unsigned int DEFAULT_WRITE_IDX{ 512 };
 constexpr unsigned int WRONG_PORT = 4711;
-
-LibModbusClient client;
 
 class ModbusSocketConnectionTest : public testing::Test
 {
@@ -51,7 +46,13 @@ public:
 protected:
   void shutdownModbusServer(PilzModbusServerMock* server, LibModbusClient& client);
   static unsigned int testPort();
+  LibModbusClient client;
+  static unsigned int ACTIVE_PORT_IDX;
+  static std::vector<unsigned int> PORTS_FOR_TEST;
 };
+
+unsigned int ModbusSocketConnectionTest::ACTIVE_PORT_IDX = 0;
+std::vector<unsigned int> ModbusSocketConnectionTest::PORTS_FOR_TEST = std::vector<unsigned int> (END_PORT - START_PORT);
 
 void ModbusSocketConnectionTest::TearDown()
 {
