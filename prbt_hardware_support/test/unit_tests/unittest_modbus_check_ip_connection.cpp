@@ -57,6 +57,7 @@ void ModbusSocketConnectionTest::TearDown()
 {
   // Use next port on next test
   ACTIVE_PORT_IDX++;
+  client.close();
 }
 
 unsigned int ModbusSocketConnectionTest::testPort()
@@ -85,7 +86,6 @@ void ModbusSocketConnectionTest::shutdownModbusServer(PilzModbusServerMock* serv
   }
 
   server->terminate();
-  client.close();
 }
 
 /**
