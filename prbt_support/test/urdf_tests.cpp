@@ -136,7 +136,9 @@ TEST_P(URDFKinematicsTest, forwardKinematics)
     double error_norm = (transform.translation() - pos_exp).norm();
     EXPECT_NEAR(error_norm, 0, DELTA) << "TestPosition \"" << name << "\" failed\n"
                                       << "\t Joints: ["
-                                      << Eigen::VectorXd::Map(joints.data(), joints.size()).transpose() << "]\n"
+                                      << Eigen::VectorXd::Map(joints.data(), static_cast<long>(joints.size()))
+                                             .transpose()
+                                      << "]\n"
                                       << "\t Expected position [" << pos_exp.transpose() << "]\n"
                                       << "\t Real position [" << transform.translation().transpose() << "]";
   }

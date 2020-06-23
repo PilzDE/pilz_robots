@@ -1,1 +1,1 @@
-controller_joint_names: [joint1]
+controller_joint_names: [shoulder_to_right_arm, shoulder_to_left_arm]

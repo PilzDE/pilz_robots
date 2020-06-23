@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>prbt_hardware_support</name>
-  <version>0.5.16</version>
+  <version>0.5.17</version>
   <description>Control hardware functions of the PRBT manipulator like RUN_PERMITTED for Stop1 functionality.</description>
 
   <maintainer email="a.gutenkunst@pilz.de">Alexander Gutenkunst</maintainer>
@@ -39,6 +39,7 @@
   <run_depend>std_srvs</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>pilz_msgs</run_depend>
+  <run_depend>rosservice</run_depend>
 
   <!-- Test dependencies -->
   <test_depend>rostest</test_depend>

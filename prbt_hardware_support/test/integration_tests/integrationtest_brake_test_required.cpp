@@ -44,18 +44,20 @@
 #include <prbt_hardware_support/WriteModbusRegister.h>
 
 #include <prbt_hardware_support/ros_test_helper.h>
+#include <prbt_hardware_support/modbus_api_definitions.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
 
 #include <pilz_testutils/async_test.h>
 
 namespace prbt_hardware_support
 {
+using namespace modbus_api::v3;
+
 using ::testing::_;
 using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 
-static constexpr uint16_t MODBUS_API_VERSION_VALUE{ 2 };
 static const std::string SERVICE_BRAKETEST_REQUIRED = "/prbt/brake_test_required";
 static const std::string MODBUS_SERVICE_NAME{ "/pilz_modbus_client_node/modbus_write" };
 
@@ -161,7 +163,7 @@ TEST_F(BrakeTestRequiredIntegrationTest, testBrakeTestAnnouncement)
   ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST));
   unsigned int const braketest_register = api_spec.getRegisterDefinition(modbus_api_spec::BRAKETEST_REQUEST);
 
-  modbus_server.setHoldingRegister({ { braketest_register, 1 }, { version_register, MODBUS_API_VERSION_VALUE } });
+  modbus_server.setHoldingRegister({ { braketest_register, 1 }, { version_register, MODBUS_API_VERSION_REQUIRED } });
 
   ros::ServiceClient is_brake_test_required_client =
       nh_.serviceClient<pilz_msgs::IsBrakeTestRequired>(SERVICE_BRAKETEST_REQUIRED);

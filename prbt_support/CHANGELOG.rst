@@ -2,6 +2,11 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.17 (2020-06-22)
+-------------------
+* Redirect start of fake_speed_override_node to separate launch file
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.16 (2020-05-15)
 -------------------
 * Fix include_directories for prbt_support tests (#390)

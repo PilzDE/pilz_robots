@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2019 Pilz GmbH & Co. KG
+Copyright (c) 2020 Pilz GmbH & Co. KG
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
@@ -16,10 +16,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <launch>
-  <arg name="frequency" default="20" />
 
-  <node required="true" ns="prbt" name="speed_observer_node" pkg="prbt_hardware_support"
-        type="speed_observer_node" output="screen" >
-    <param name="observation_frequency" value="$(arg frequency)" />
-  </node>
+<arg name="debug" default="false"/>
+
+<node name="operation_mode_setup_executor_node" pkg="prbt_hardware_support" type="operation_mode_setup_executor_node"/>
+
+<test unless="$(arg debug)" test-name="integrationtest_operation_mode_setup" pkg="prbt_hardware_support"
+      type="integrationtest_operation_mode_setup"/>
+
+<test if="$(arg debug)" test-name="integrationtest_operation_mode_setup" pkg="prbt_hardware_support"
+      type="integrationtest_operation_mode_setup" launch-prefix="xterm -e gdb -args"/>
+
 </launch>

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>pilz_control</name>
-  <version>0.5.16</version>
+  <version>0.5.17</version>
   <description>
   This package provides a specialized joint_trajectory_controller that can be moved into holding state via service call.
   No further trajectories will be accepted/followed in this state.
@@ -28,10 +28,18 @@
   <depend>std_srvs</depend>
   <depend>controller_manager</depend>
   <depend>controller_interface</depend> <!-- Needed for the plugin export -->
-  <depend>pilz_utils</depend>
+  <depend>moveit_core</depend>
+  <depend>moveit_ros_planning</depend>
+  <depend>pilz_msgs</depend>
 
   <test_depend>rostest</test_depend>
+  <test_depend>rosunit</test_depend>
   <test_depend>code_coverage</test_depend>
+  <test_depend>geometry_msgs</test_depend>
+  <test_depend>tf2</test_depend>
+  <test_depend>tf2_geometry_msgs</test_depend>
+  <test_depend>pilz_utils</test_depend>
+  <test_depend>pilz_testutils</test_depend>
 
   <export>
     <controller_interface plugin="${prefix}/pilz_control_plugins.xml"/>

@@ -19,13 +19,13 @@
 #include <sstream>
 #include <algorithm>
 
+#include <prbt_hardware_support/modbus_api_definitions.h>
 #include <prbt_hardware_support/modbus_msg_brake_test_wrapper.h>
 #include <prbt_hardware_support/modbus_adapter_brake_test_exception.h>
 
 namespace prbt_hardware_support
 {
-static constexpr unsigned int MODBUS_API_VERSION_REQUIRED{ 2 };
-static constexpr unsigned int BRAKE_TEST_PERFORMED{ 1 };
+using namespace modbus_api::v3;
 
 ModbusAdapterBrakeTest::ModbusAdapterBrakeTest(TWriteModbusRegister&& write_modbus_register_func,
                                                const ModbusApiSpec& read_api_spec, const ModbusApiSpec& write_api_spec)
@@ -122,8 +122,11 @@ bool ModbusAdapterBrakeTest::sendBrakeTestResult(SendBrakeTestResult::Request& r
   }
 
   RegCont reg_cont(reg_block_size_, 0);
-  // Note: The FS controller needs a positive edge, so we first reset the
-  // registers by sending 0s.
+  // Note: The FS controller needs a positive edge, so we first reset the registers
+  reg_cont.at(reg_idx_cont_.at(modbus_api_spec::BRAKETEST_PERFORMED) - reg_start_idx_) =
+      MODBUS_BRAKE_TEST_NOT_PERFORMED;
+  reg_cont.at(reg_idx_cont_.at(modbus_api_spec::BRAKETEST_RESULT) - reg_start_idx_) = MODBUS_BRAKE_TEST_NOT_PASSED;
+
   if (!write_modbus_register_func_(reg_start_idx_, reg_cont))
   {
     res.error_msg = "Resetting of modus registers failed";
@@ -131,8 +134,11 @@ bool ModbusAdapterBrakeTest::sendBrakeTestResult(SendBrakeTestResult::Request& r
     return true;
   }
 
-  reg_cont.at(reg_idx_cont_.at(modbus_api_spec::BRAKETEST_PERFORMED) - reg_start_idx_) = BRAKE_TEST_PERFORMED;
-  reg_cont.at(reg_idx_cont_.at(modbus_api_spec::BRAKETEST_RESULT) - reg_start_idx_) = req.result;
+  reg_cont.at(reg_idx_cont_.at(modbus_api_spec::BRAKETEST_PERFORMED) - reg_start_idx_) = MODBUS_BRAKE_TEST_PERFORMED;
+  if (req.result)
+  {
+    reg_cont.at(reg_idx_cont_.at(modbus_api_spec::BRAKETEST_RESULT) - reg_start_idx_) = MODBUS_BRAKE_TEST_PASSED;
+  }
   if (!write_modbus_register_func_(reg_start_idx_, reg_cont))
   {
     res.error_msg = "Sending of brake test result to FS control failed";

@@ -21,9 +21,10 @@
 
 #include <pilz_msgs/BrakeTest.h>
 
+#include <pilz_testutils/joint_state_publisher_mock.h>
+
 #include <prbt_hardware_support/WriteModbusRegister.h>
 #include <prbt_hardware_support/canopen_chain_node_mock.h>
-#include <prbt_hardware_support/joint_states_publisher_mock.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/pilz_manipulator_mock.h>
 #include <prbt_hardware_support/pilz_modbus_server_mock.h>
@@ -35,8 +36,8 @@ static const std::string CONTROLLER_HOLD_MODE_SERVICE_NAME{ "/prbt/manipulator_j
 static const std::string CONTROLLER_UNHOLD_MODE_SERVICE_NAME{ "/prbt/manipulator_joint_trajectory_controller/unhold" };
 
 static constexpr double WAIT_FOR_BRAKE_TEST_SERVICE_TIMEOUT_S{ 5.0 };
-static constexpr uint16_t MODBUS_BRAKE_TEST_PREPARE_VALUE{ 0 };
-static constexpr uint16_t MODBUS_BRAKE_TEST_EXPECTED_VALUE{ 1 };
+static constexpr uint16_t MODBUS_BRAKE_TEST_PREPARE_VALUE{ 1 };
+static constexpr uint16_t MODBUS_BRAKE_TEST_EXPECTED_VALUE{ 2 };
 
 namespace prbt_hardware_support
 {
@@ -109,8 +110,8 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
    **********/
   CANOpenChainNodeMock canopen_mock;
 
-  JointStatesPublisherMock joint_states_pub;
-  joint_states_pub.startAsync();
+  pilz_testutils::JointStatePublisherMock joint_states_pub;
+  joint_states_pub.startPublishingAsync();
 
   ManipulatorMock manipulator;
   manipulator.advertiseHoldService(nh, CONTROLLER_HOLD_MODE_SERVICE_NAME);
@@ -137,6 +138,7 @@ TEST(IntegrationtestExecuteBrakeTest, testBrakeTestService)
   /**********
    * Step 6 *
    **********/
+  joint_states_pub.stopPublishing();
   modbus_server.terminate();
   modbus_server_thread.join();
 }

@@ -1,0 +1,60 @@
+/*
+ * Copyright (c) 2020 Pilz GmbH & Co. KG
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/** @page Spec
+ *
+ *  @tableofcontents
+ *  @section system_specification System Specification
+ *  @brief System Specification
+ *
+ *  @subsection ISO-10218-1
+ *
+ *
+ *
+ * @subsubsection controller_hold Controller Hold
+ *
+ * @definereq{no_execution_during_hold}
+ *  - While the controller is holded, it rejects all new trajectories.
+ *
+ * @definereq{start_holding}
+ *  - Holding the controller can be triggered by calling the hold service.
+ *  - The start phase of holding consists of
+ *    aborting the current trajectory and executing a Stop1 trajectory.
+ *
+ * @definereq{hold_at_controller_start}
+ *  - Holding the controller is triggered upon controller start.
+ *
+ * @definereq{end_holding}
+ *  - Unholding the controller can be triggered by calling the unhold service.
+ *  - Unholding the controller is blocked as long as the start phase of holding is running.
+ *  - Unholding the controller can only be successful once the controller is started.
+ *
+ *
+ *
+ * @subsubsection speed_monitoring Speed Monitoring
+ *
+ * @definereq{Monitor_speed_of_all_links_until_TCP}
+ *  - The system monitors all links of the robot (including the TCP, but not the end effector)
+ *    in order to determine their translational speed.
+ *
+ * @definereq{Monitor_joint_accelerations}
+ *  - The system monitors all joints of the robot and measures their angular accelerations.
+ *
+ * @definereq{Stop1_on_violation_of_speed_limit}
+ *  - If the cartesian speed exceeds 250 mm/s or the joint accelerations exceed their limits,
+ *    the controller is holded (\ref controller_hold).
+ */

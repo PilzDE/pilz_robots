@@ -29,7 +29,7 @@
 #include <prbt_hardware_support/modbus_topic_definitions.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
 
-static constexpr int32_t MODBUS_CONNECTION_RETRIES_DEFAULT{ 10 };
+static constexpr int32_t MODBUS_CONNECTION_RETRIES_DEFAULT{ -1 };
 static constexpr double MODBUS_CONNECTION_RETRY_TIMEOUT_S_DEFAULT{ 1.0 };
 static constexpr int MODBUS_RESPONSE_TIMEOUT_MS{ 20 };
 
@@ -113,8 +113,7 @@ int main(int argc, char** argv)
   ROS_DEBUG_STREAM("Modbus read topic: \"" << modbus_read_topic_name << "\"");
   ROS_DEBUG_STREAM("Modbus write service: \"" << modbus_write_service_name << "\"");
 
-  bool res = modbus_client.init(ip.c_str(), static_cast<unsigned int>(port),
-                                static_cast<unsigned int>(modbus_connection_retries),
+  bool res = modbus_client.init(ip.c_str(), static_cast<unsigned int>(port), modbus_connection_retries,
                                 ros::Duration(modbus_connection_retry_timeout_s));
 
   ROS_DEBUG_STREAM("Connection with modbus server " << ip << ":" << port << " established");
@@ -122,7 +121,11 @@ int main(int argc, char** argv)
   // LCOV_EXCL_START inside this main ignored, tested multiple times in the unittest
   if (!res)
   {
-    ROS_ERROR_STREAM("Connection to modbus server " << ip << ":" << port << " could not be established");
+    ROS_ERROR_STREAM("Could not establish modbus connection with: "
+                     << ip << ":" << port
+                     << ". Make sure that your cables are connected properly and that "
+                        "you have set the correct ip address and port.");
+
     return EXIT_FAILURE;
   }
 

@@ -48,6 +48,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   <!-- Operation Mode -->
   <include if="$(arg has_operation_mode_support)"
            file="$(find prbt_hardware_support)/launch/operation_mode.launch" />
-  <node unless="$(arg has_operation_mode_support)"
-        pkg="prbt_hardware_support" name="fake_speed_override_node" type="fake_speed_override_node"/>
+  <include unless="$(arg has_operation_mode_support)"
+           file="$(find prbt_hardware_support)/launch/fake_operation_mode_setup.launch" />
 </launch>

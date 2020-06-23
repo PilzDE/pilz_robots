@@ -15,13 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <boost/optional.hpp>
+
 #include <prbt_hardware_support/operation_mode_setup_executor.h>
 
 namespace prbt_hardware_support
 {
-OperationModeSetupExecutor::OperationModeSetupExecutor(const double& speed_limit_t1, const double& speed_limit_auto,
-                                                       const SetSpeedLimitFunc& set_speed_limit_func)
-  : speed_limit_t1_(speed_limit_t1), speed_limit_auto_(speed_limit_auto), set_speed_limit_func_(set_speed_limit_func)
+OperationModeSetupExecutor::OperationModeSetupExecutor(const MonitorCartesianSpeedFunc& monitor_cartesian_speed_func)
+  : monitor_cartesian_speed_func_(monitor_cartesian_speed_func)
 {
 }
 
@@ -34,15 +35,15 @@ void OperationModeSetupExecutor::updateOperationMode(const OperationModes& opera
   }
   time_stamp_last_op_mode_ = operation_mode.time_stamp;
 
-  double speed_limit{ 0 };
+  boost::optional<bool> monitor_cartesian_speed{ boost::none };
   switch (operation_mode.value)
   {
     case OperationModes::T1:
-      speed_limit = speed_limit_t1_;
+      monitor_cartesian_speed = true;
       speed_override_ = 0.1;
       break;
     case OperationModes::AUTO:
-      speed_limit = speed_limit_auto_;
+      monitor_cartesian_speed = false;
       speed_override_ = 1.0;
       break;
     default:
@@ -50,9 +51,9 @@ void OperationModeSetupExecutor::updateOperationMode(const OperationModes& opera
       break;
   }
 
-  if (set_speed_limit_func_)
+  if (monitor_cartesian_speed && monitor_cartesian_speed_func_)
   {
-    set_speed_limit_func_(speed_limit);
+    monitor_cartesian_speed_func_(monitor_cartesian_speed.get());
   }
 }
 

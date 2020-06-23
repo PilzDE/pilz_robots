@@ -56,7 +56,8 @@ using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::SetArgReferee;
 
-static constexpr uint16_t MODBUS_API_VERSION_VALUE{ 2 };
+using namespace modbus_api::v3;
+
 static const std::string RECOVER_SERVICE_NAME{ "recover" };
 static const std::string HALT_SERVICE_NAME{ "halt" };
 static const std::string HOLD_SERVICE_NAME{ "hold" };
@@ -192,8 +193,8 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
   ASSERT_TRUE(api_spec.hasRegisterDefinition(modbus_api_spec::RUN_PERMITTED));
   unsigned int run_permitted_register = api_spec.getRegisterDefinition(modbus_api_spec::RUN_PERMITTED);
 
-  modbus_server.setHoldingRegister({ { version_register, MODBUS_API_VERSION_VALUE },
-                                     { run_permitted_register, modbus_api::v2::MODBUS_RUN_PERMITTED_CLEAR_VALUE } });
+  modbus_server.setHoldingRegister(
+      { { version_register, MODBUS_API_VERSION_REQUIRED }, { run_permitted_register, MODBUS_RUN_PERMITTED_TRUE } });
 
   /**********
    * Step 2 *
@@ -212,7 +213,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
         .WillOnce(Invoke(std::bind(&Stop1IntegrationTest::serviceCallStub, this, "halt_callback", res_exp, _1, _2)));
   }
 
-  modbus_server.setHoldingRegister({ { run_permitted_register, modbus_api::v2::MODBUS_RUN_PERMITTED_ACTIVE_VALUE } });
+  modbus_server.setHoldingRegister({ { run_permitted_register, MODBUS_RUN_PERMITTED_FALSE } });
 
   /**********
    * Step 3 *
@@ -231,7 +232,7 @@ TEST_F(Stop1IntegrationTest, testServiceCallbacks)
         .WillOnce(Invoke(std::bind(&Stop1IntegrationTest::serviceCallStub, this, "unhold_callback", res_exp, _1, _2)));
   }
 
-  modbus_server.setHoldingRegister({ { run_permitted_register, modbus_api::v2::MODBUS_RUN_PERMITTED_CLEAR_VALUE } });
+  modbus_server.setHoldingRegister({ { run_permitted_register, MODBUS_RUN_PERMITTED_TRUE } });
 
   /**********
    * Step 4 *

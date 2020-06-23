@@ -2,6 +2,12 @@
 Changelog for package pilz_testutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.17 (2020-06-22)
+-------------------
+* Add JointStatePublisherMock
+* Add LoggerMock
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.16 (2020-05-15)
 -------------------
 * Update and apply clang-format (#387)

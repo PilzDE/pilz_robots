@@ -14,87 +14,40 @@
  * limitations under the License.
  */
 
-#include <hardware_interface/robot_hw.h>
-#include <hardware_interface/joint_command_interface.h>
-#include <controller_manager/controller_manager.h>
+#include <sstream>
 
-static const std::string CONTROLLER_NS_PARAM_NAME{ "controller_ns_string" };
-static const std::string JOINT_NAME{ "joint1" };
+#include "robot_mock.h"
 
-/**
- * @brief The RobotMock used by the integrationtest of the pilz_joint_trajectory_controller
- * Registers a single JointStateHandle with the interface to allow interaction with the controller_manager
- */
-class RobotMock : public hardware_interface::RobotHW
+RobotMock::RobotMock()
 {
-public:
-  RobotMock()
+  for (unsigned int i = 0; i < NUM_JOINTS; ++i)
   {
-    // register joint interface
-    pos_ = new double();
-    vel_ = new double();
-    eff_ = new double();
-    hardware_interface::JointStateHandle jnt_state_handle{ JOINT_NAME, pos_, vel_, eff_ };
-    cmd_ = new double();
-    hardware_interface::JointHandle jnt_handle{ jnt_state_handle, cmd_ };
-
-    pos_jnt_interface.registerHandle(jnt_handle);
-
-    registerInterface(&pos_jnt_interface);
+    std::ostringstream os;
+    os << JOINT_NAMES.at(i);
+    hardware_interface::JointStateHandle jnt_state_handle{ os.str(), &(data_.at(i).pos), &(data_.at(i).vel),
+                                                           &(data_.at(i).eff) };
+    hardware_interface::JointHandle jnt_handle{ jnt_state_handle, &(data_.at(i).cmd) };
+    pos_jnt_interface_.registerHandle(jnt_handle);
   }
 
-  void read()
-  {
-  }
+  registerInterface(&pos_jnt_interface_);
+}
 
-  void write()
-  {
-    *vel_ = (*cmd_ - *pos_) / getPeriod().toSec();
-    *pos_ = *cmd_;
-  }
-
-  ros::Time getTime() const
-  {
-    return ros::Time::now();
-  }
-
-  ros::Duration getPeriod() const
-  {
-    return ros::Duration(0.01);
-  }
-
-private:
-  double* pos_;
-  double* vel_;
-  double* eff_;
-  double* cmd_;
-  hardware_interface::PositionJointInterface pos_jnt_interface;
-};
-
-// Runs as node
-int main(int argc, char** argv)
+std::array<JointData, NUM_JOINTS> RobotMock::read() const
 {
-  ros::init(argc, argv, "robot_mock");
+  return data_;
+}
 
-  std::string controller_ns;
-  ros::param::get(CONTROLLER_NS_PARAM_NAME, controller_ns);
-  ros::NodeHandle nh{ controller_ns };
-
-  RobotMock robot;
-  controller_manager::ControllerManager cm(&robot, nh);
-
-  ros::Rate rate(1.0 / robot.getPeriod().toSec());
-  ros::AsyncSpinner spinner(1);
-  spinner.start();
-
-  while (ros::ok())
+void RobotMock::write(const ros::Duration& period)
+{
+  for (unsigned int i = 0; i < NUM_JOINTS; ++i)
   {
-    robot.read();
-    cm.update(robot.getTime(), robot.getPeriod());
-    robot.write();
-    rate.sleep();
+    data_.at(i).vel = (data_.at(i).cmd - data_.at(i).pos) / period.toSec();
+    data_.at(i).pos = data_.at(i).cmd;
   }
-  spinner.stop();
+}
 
-  return 0;
+bool RobotMock::isMoving(const double& eps) const
+{
+  return std::any_of(data_.begin(), data_.end(), [eps](const JointData& data) { return std::abs(data.vel) > eps; });
 }

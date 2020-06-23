@@ -1,0 +1,8 @@
+monitored_link_names:
+  [prbt_link_1,
+   prbt_link_2,
+   prbt_link_3,
+   prbt_link_4,
+   prbt_link_5,
+   prbt_flange,
+   prbt_tcp]
