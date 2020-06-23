@@ -49,10 +49,12 @@ protected:
   LibModbusClient client;
   static unsigned int ACTIVE_PORT_IDX;
   static std::vector<unsigned int> PORTS_FOR_TEST;
+  static std::shared_ptr<PilzModbusServerMock> server;
 };
 
 unsigned int ModbusSocketConnectionTest::ACTIVE_PORT_IDX = 0;
 std::vector<unsigned int> ModbusSocketConnectionTest::PORTS_FOR_TEST = std::vector<unsigned int> (END_PORT - START_PORT);
+std::shared_ptr<PilzModbusServerMock> ModbusSocketConnectionTest::server;
 
 void ModbusSocketConnectionTest::TearDown()
 {
@@ -97,7 +99,7 @@ void ModbusSocketConnectionTest::shutdownModbusServer(PilzModbusServerMock* serv
  */
 TEST_F(ModbusSocketConnectionTest, checkIPConnectionServerPresentIpPortCorrect)
 {
-  std::shared_ptr<PilzModbusServerMock> server(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
+  server.reset(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
   server->startAsync(LOCALHOST, testPort());
 
   // Needed to make sure server is actually present. (Not optimal,
@@ -116,7 +118,7 @@ TEST_F(ModbusSocketConnectionTest, checkIPConnectionServerPresentIpPortCorrect)
  */
 TEST_F(ModbusSocketConnectionTest, checkIPConnectionPortWrong)
 {
-  std::shared_ptr<PilzModbusServerMock> server(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
+  server.reset(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
   server->startAsync(LOCALHOST, testPort());
 
   // Needed to make sure server is actually present. (Not optimal,
@@ -135,7 +137,7 @@ TEST_F(ModbusSocketConnectionTest, checkIPConnectionPortWrong)
  */
 TEST_F(ModbusSocketConnectionTest, checkIPConnectionIpWrong)
 {
-  std::shared_ptr<PilzModbusServerMock> server(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
+  server.reset(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
   server->startAsync(LOCALHOST, testPort());
 
   // Needed to make sure server is actually present. (Not optimal,
@@ -153,7 +155,7 @@ TEST_F(ModbusSocketConnectionTest, checkIPConnectionIpWrong)
  */
 TEST_F(ModbusSocketConnectionTest, checkIPConnectionIpWrongPortWrong)
 {
-  std::shared_ptr<PilzModbusServerMock> server(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
+  server.reset(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
   server->startAsync(LOCALHOST, testPort());
 
   // Needed to make sure server is actually present. (Not optimal,
