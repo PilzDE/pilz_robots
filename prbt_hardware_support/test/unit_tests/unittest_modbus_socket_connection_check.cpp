@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Pilz GmbH & Co. KG
+ * Copyright (c) 2020 Pilz GmbH & Co. KG
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -83,32 +83,74 @@ void ModbusSocketConnectionTest::shutdownModbusServer(PilzModbusServerMock* serv
   server->terminate();
 }
 
-// /**
-//  * @brief Tests that the checkIPConnection function will respond properly on presense of a modbus server and also if
-//  * it misses.
-//  *
-//  * @note To keep things simple timeout and repeats are not altered.
-//  */
-TEST_F(ModbusSocketConnectionTest, checkIPConnectionTest)
+/**
+ * @brief Tests that the checkIPConnection function will respond properly on presense of a modbus server and also if
+ * it misses.
+ *
+ * @note To keep things simple timeout and repeats are not altered.
+ */
+TEST_F(ModbusSocketConnectionTest, checkIPConnectionServerPresentIpPortCorrect)
 {
-  EXPECT_FALSE(checkIPConnection(LOCALHOST, testPort()));  // No Server
-
-  LibModbusClient client;
+  EXPECT_FALSE(checkIPConnection(LOCALHOST, testPort())) << "No Server";
   std::shared_ptr<PilzModbusServerMock> server(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
   server->startAsync(LOCALHOST, testPort());
-  EXPECT_TRUE(client.init(LOCALHOST, testPort()));  // Needed to make sure server is actually present. (Not optimal,
-                                                    // needs adaption inside the server mock)
+  LibModbusClient client;
+  // Needed to make sure server is actually present. (Not optimal,
+  // needs adaption inside the server mock)
+  EXPECT_TRUE(client.init(LOCALHOST, testPort())) << "Server not present";
 
-  EXPECT_TRUE(checkIPConnection(LOCALHOST, testPort()));  // Server present ip+port correct
+  EXPECT_TRUE(checkIPConnection(LOCALHOST, testPort())) << "Server present ip+port correct, TRUE expected";
+  shutdownModbusServer(server.get(), client);
+  client.close();
+}
 
-  EXPECT_FALSE(checkIPConnection(LOCALHOST, 4711));  // Server present ip correct port wrong
+TEST_F(ModbusSocketConnectionTest, checkIPConnectionPortWrong)
+{
+  EXPECT_FALSE(checkIPConnection(LOCALHOST, testPort())) << "No Server";
+  std::shared_ptr<PilzModbusServerMock> server(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
+  server->startAsync(LOCALHOST, testPort());
+  LibModbusClient client;
 
-  EXPECT_FALSE(checkIPConnection("192.192.192.192", testPort()));  // Server present ip wrong port correct
+  // Needed to make sure server is actually present. (Not optimal,
+  // needs adaption inside the server mock)
+  EXPECT_TRUE(client.init(LOCALHOST, testPort())) << "Server not present";
+  unsigned int wrong_port = 4711;
+  EXPECT_FALSE(checkIPConnection(LOCALHOST, wrong_port)) << "Server present ip correct port wrong, FALSE expected";
+  shutdownModbusServer(server.get(), client);
+  client.close();
+}
 
+TEST_F(ModbusSocketConnectionTest, checkIPConnectionIpWrong)
+{
+  EXPECT_FALSE(checkIPConnection(LOCALHOST, testPort())) << "No Server";
+
+  std::shared_ptr<PilzModbusServerMock> server(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
+  server->startAsync(LOCALHOST, testPort());
+  LibModbusClient client;
+
+  // Needed to make sure server is actually present. (Not optimal,
+  // needs adaption inside the server mock)
+  EXPECT_TRUE(client.init(LOCALHOST, testPort())) << "Server not present";
+  EXPECT_FALSE(checkIPConnection("192.192.192.192", testPort())) << "Server present ip wrong port correct";
+  shutdownModbusServer(server.get(), client);
+  client.close();
+}
+
+TEST_F(ModbusSocketConnectionTest, checkIPConnectionIpWrongPortWrong)
+{
+  EXPECT_FALSE(checkIPConnection(LOCALHOST, testPort())) << "No Server";
+
+  std::shared_ptr<PilzModbusServerMock> server(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
+  server->startAsync(LOCALHOST, testPort());
+  LibModbusClient client;
+
+  // Needed to make sure server is actually present. (Not optimal,
+  // needs adaption inside the server mock)
+  EXPECT_TRUE(client.init(LOCALHOST, testPort())) << "Server not present";
   unsigned int wrong_port = 4711;
   ASSERT_NE(wrong_port, testPort());
-  EXPECT_FALSE(checkIPConnection("192.192.192.192", wrong_port));  // Server present ip wrong port wrong
-
+  EXPECT_FALSE(checkIPConnection("192.192.192.192", wrong_port))
+      << "Server present ip wrong port wrong, FALSE expected";
   shutdownModbusServer(server.get(), client);
   client.close();
 }
