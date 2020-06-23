@@ -31,8 +31,8 @@ namespace modbus_socket_connection_check_test
 using namespace prbt_hardware_support;
 
 // Each testcase should have its own port in order to avoid conflicts between them
-constexpr unsigned int START_PORT{ 20500 };
-constexpr unsigned int END_PORT{ 20600 };
+constexpr unsigned int START_PORT{ 20600 };
+constexpr unsigned int END_PORT{ 20700 };
 static unsigned int ACTIVE_PORT_IDX{ 0 };
 static std::vector<unsigned int> PORTS_FOR_TEST(END_PORT - START_PORT);
 
