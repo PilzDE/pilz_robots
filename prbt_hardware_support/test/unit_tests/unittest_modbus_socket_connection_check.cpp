@@ -107,7 +107,7 @@ TEST_F(ModbusSocketConnectionTest, checkIPConnectionTest)
 
   unsigned int wrong_port = 4711;
   ASSERT_NE(wrong_port, testPort());
-  EXPECT_FALSE(checkIPConnection("192.192.192.192", 4711));  // Server present ip wrong port wrong
+  EXPECT_FALSE(checkIPConnection("192.192.192.192", wrong_port));  // Server present ip wrong port wrong
 
   shutdownModbusServer(server.get(), client);
   client.close();
