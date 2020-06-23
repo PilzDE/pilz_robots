@@ -38,10 +38,13 @@ PilzModbusClient::PilzModbusClient(ros::NodeHandle& nh, const std::vector<unsign
 {
 }
 
-bool PilzModbusClient::init(const char* ip, unsigned int port, unsigned int retries, const ros::Duration& timeout)
+bool PilzModbusClient::init(const char* ip, unsigned int port, int retries, const ros::Duration& timeout)
 {
-  for (size_t retry_n = 0; retry_n < retries; ++retry_n)
+  size_t retry_n = 0;
+  while (ros::ok() && (retries == -1 || static_cast<int>(retry_n) < retries))
   {
+    ++retry_n;
+
     if (init(ip, port))
     {
       // The following warning needs only to be shown to complete the warnings shown if this didn't work on the first
@@ -50,12 +53,14 @@ bool PilzModbusClient::init(const char* ip, unsigned int port, unsigned int retr
       return true;
     }
 
-    ROS_WARN_STREAM("Connection to " << ip << ":" << port << " failed. Try(" << retry_n + 1 << "/" << retries << ")");
-
-    if (!ros::ok())
-    {
-      break;  // LCOV_EXCL_LINE Simple functionality but hard to test
-    }
+    ROS_WARN_STREAM_COND(retries == -1, "Connection to "
+                                            << ip << ":" << port
+                                            << " failed. Make sure that your cables are connected properly and that "
+                                               "you have set the correct ip address and port.");
+    ROS_WARN_STREAM_COND(retries != -1, "Connection to "
+                                            << ip << ":" << port << " failed. Try(" << retry_n << "/" << retries
+                                            << "). Make sure that your cables are connected properly and that "
+                                               "you have set the correct ip address and port.");
     timeout.sleep();
   }
 
