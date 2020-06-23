@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Pilz GmbH & Co. KG
+ * Copyright (c) 2020 Pilz GmbH & Co. KG
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -28,7 +28,15 @@ namespace prbt_hardware_support
  * @return true if the connection to the server succeeded
  * @return false if the connection to the server failed
  */
-bool checkIPConnection(const char* ip, const unsigned int port);
+bool checkIPConnection(const char* ip, const unsigned int& port);
+
+/**
+ * @brief Initializes a sockaddr_in with given port
+ *
+ * @param port the sockaddr_in will be initialized with
+ * @return initialized sockaddr_in
+ */
+struct sockaddr_in init_sockaddr_in(const unsigned int& port);
 
 }  // namespace prbt_hardware_support
 
