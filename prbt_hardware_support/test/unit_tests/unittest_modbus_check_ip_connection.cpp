@@ -53,7 +53,7 @@ protected:
 };
 
 unsigned int ModbusSocketConnectionTest::ACTIVE_PORT_IDX = 0;
-std::vector<unsigned int> ModbusSocketConnectionTest::PORTS_FOR_TEST = std::vector<unsigned int> (END_PORT - START_PORT);
+std::vector<unsigned int> ModbusSocketConnectionTest::PORTS_FOR_TEST = std::vector<unsigned int>(END_PORT - START_PORT);
 std::shared_ptr<PilzModbusServerMock> ModbusSocketConnectionTest::server;
 
 void ModbusSocketConnectionTest::TearDown()
