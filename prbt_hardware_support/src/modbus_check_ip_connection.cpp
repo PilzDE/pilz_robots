@@ -21,7 +21,7 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <prbt_hardware_support/modbus_socket_connection_check.h>
+#include <prbt_hardware_support/modbus_check_ip_connection.h>
 
 namespace prbt_hardware_support
 {
