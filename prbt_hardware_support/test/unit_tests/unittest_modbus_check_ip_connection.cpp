@@ -47,43 +47,44 @@ public:
 protected:
   void shutdownModbusServer(PilzModbusServerMock* server, LibModbusClient& client);
   static unsigned int testPort();
-  LibModbusClient client;
-  static unsigned int ACTIVE_PORT_IDX;
-  static std::vector<unsigned int> PORTS_FOR_TEST;
-  static std::shared_ptr<PilzModbusServerMock> server;
+  LibModbusClient client_;
+  static unsigned int ACTIVE_PORT_IDX_;
+  static std::vector<unsigned int> PORTS_FOR_TEST_;
+  static std::shared_ptr<PilzModbusServerMock> server_;
 };
 
-unsigned int ModbusSocketConnectionTest::ACTIVE_PORT_IDX = 0;
-std::vector<unsigned int> ModbusSocketConnectionTest::PORTS_FOR_TEST = std::vector<unsigned int>(END_PORT - START_PORT);
-std::shared_ptr<PilzModbusServerMock> ModbusSocketConnectionTest::server;
-
-void ModbusSocketConnectionTest::TearDown()
-{
-  // Use next port on next test
-  ACTIVE_PORT_IDX++;
-  shutdownModbusServer(server.get(), client);
-  client.close();
-}
+unsigned int ModbusSocketConnectionTest::ACTIVE_PORT_IDX_ = 0;
+std::vector<unsigned int> ModbusSocketConnectionTest::PORTS_FOR_TEST_ =
+    std::vector<unsigned int>(END_PORT - START_PORT);
+std::shared_ptr<PilzModbusServerMock> ModbusSocketConnectionTest::server_;
 
 void ModbusSocketConnectionTest::SetUp()
 {
   EXPECT_FALSE(checkIPConnection(LOCALHOST, testPort())) << "No Server";
-  server.reset(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
-  server->startAsync(LOCALHOST, testPort());
+  server_.reset(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
+  server_->startAsync(LOCALHOST, testPort());
 
   // Needed to make sure server is actually present. (Not optimal,
   // needs adaption inside the server mock)
-  EXPECT_TRUE(client.init(LOCALHOST, testPort())) << "Server not present";
+  EXPECT_TRUE(client_.init(LOCALHOST, testPort())) << "Server not present";
+}
+
+void ModbusSocketConnectionTest::TearDown()
+{
+  // Use next port on next test
+  ACTIVE_PORT_IDX_++;
+  shutdownModbusServer(server_.get(), client_);
+  client_.close();
 }
 
 unsigned int ModbusSocketConnectionTest::testPort()
 {
-  return PORTS_FOR_TEST.at(ACTIVE_PORT_IDX % PORTS_FOR_TEST.size());
+  return PORTS_FOR_TEST_.at(ACTIVE_PORT_IDX_ % PORTS_FOR_TEST_.size());
 }
 
 void ModbusSocketConnectionTest::SetUpTestCase()  // NOLINT
 {
-  std::iota(PORTS_FOR_TEST.begin(), PORTS_FOR_TEST.end(), START_PORT);
+  std::iota(PORTS_FOR_TEST_.begin(), PORTS_FOR_TEST_.end(), START_PORT);
 }
 
 void ModbusSocketConnectionTest::shutdownModbusServer(PilzModbusServerMock* server, LibModbusClient& client)
