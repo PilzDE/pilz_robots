@@ -41,6 +41,7 @@ class ModbusSocketConnectionTest : public testing::Test
 {
 public:
   static void SetUpTestCase();  // NOLINT
+  void SetUp() override;
   void TearDown() override;
 
 protected:
@@ -60,7 +61,19 @@ void ModbusSocketConnectionTest::TearDown()
 {
   // Use next port on next test
   ACTIVE_PORT_IDX++;
+  shutdownModbusServer(server.get(), client);
   client.close();
+}
+
+void ModbusSocketConnectionTest::SetUp()
+{
+  EXPECT_FALSE(checkIPConnection(LOCALHOST, testPort())) << "No Server";
+  server.reset(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
+  server->startAsync(LOCALHOST, testPort());
+
+  // Needed to make sure server is actually present. (Not optimal,
+  // needs adaption inside the server mock)
+  EXPECT_TRUE(client.init(LOCALHOST, testPort())) << "Server not present";
 }
 
 unsigned int ModbusSocketConnectionTest::testPort()
@@ -71,7 +84,6 @@ unsigned int ModbusSocketConnectionTest::testPort()
 void ModbusSocketConnectionTest::SetUpTestCase()  // NOLINT
 {
   std::iota(PORTS_FOR_TEST.begin(), PORTS_FOR_TEST.end(), START_PORT);
-  EXPECT_FALSE(checkIPConnection(LOCALHOST, testPort())) << "No Server";
 }
 
 void ModbusSocketConnectionTest::shutdownModbusServer(PilzModbusServerMock* server, LibModbusClient& client)
@@ -99,15 +111,7 @@ void ModbusSocketConnectionTest::shutdownModbusServer(PilzModbusServerMock* serv
  */
 TEST_F(ModbusSocketConnectionTest, checkIPConnectionServerPresentIpPortCorrect)
 {
-  server.reset(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
-  server->startAsync(LOCALHOST, testPort());
-
-  // Needed to make sure server is actually present. (Not optimal,
-  // needs adaption inside the server mock)
-  EXPECT_TRUE(client.init(LOCALHOST, testPort())) << "Server not present";
-
   EXPECT_TRUE(checkIPConnection(LOCALHOST, testPort())) << "Server present ip+port correct, TRUE expected";
-  shutdownModbusServer(server.get(), client);
 }
 
 /**
@@ -118,15 +122,7 @@ TEST_F(ModbusSocketConnectionTest, checkIPConnectionServerPresentIpPortCorrect)
  */
 TEST_F(ModbusSocketConnectionTest, checkIPConnectionPortWrong)
 {
-  server.reset(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
-  server->startAsync(LOCALHOST, testPort());
-
-  // Needed to make sure server is actually present. (Not optimal,
-  // needs adaption inside the server mock)
-  EXPECT_TRUE(client.init(LOCALHOST, testPort())) << "Server not present";
-
   EXPECT_FALSE(checkIPConnection(LOCALHOST, WRONG_PORT)) << "Server present ip correct port wrong, FALSE expected";
-  shutdownModbusServer(server.get(), client);
 }
 
 /**
@@ -137,14 +133,7 @@ TEST_F(ModbusSocketConnectionTest, checkIPConnectionPortWrong)
  */
 TEST_F(ModbusSocketConnectionTest, checkIPConnectionIpWrong)
 {
-  server.reset(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
-  server->startAsync(LOCALHOST, testPort());
-
-  // Needed to make sure server is actually present. (Not optimal,
-  // needs adaption inside the server mock)
-  EXPECT_TRUE(client.init(LOCALHOST, testPort())) << "Server not present";
   EXPECT_FALSE(checkIPConnection("192.192.192.192", testPort())) << "Server present ip wrong port correct";
-  shutdownModbusServer(server.get(), client);
 }
 
 /**
@@ -155,17 +144,9 @@ TEST_F(ModbusSocketConnectionTest, checkIPConnectionIpWrong)
  */
 TEST_F(ModbusSocketConnectionTest, checkIPConnectionIpWrongPortWrong)
 {
-  server.reset(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
-  server->startAsync(LOCALHOST, testPort());
-
-  // Needed to make sure server is actually present. (Not optimal,
-  // needs adaption inside the server mock)
-  EXPECT_TRUE(client.init(LOCALHOST, testPort())) << "Server not present";
-
   ASSERT_NE(WRONG_PORT, testPort());
   EXPECT_FALSE(checkIPConnection("192.192.192.192", WRONG_PORT))
       << "Server present ip wrong port wrong, FALSE expected";
-  shutdownModbusServer(server.get(), client);
 }
 
 }  // namespace modbus_socket_connection_check_test
