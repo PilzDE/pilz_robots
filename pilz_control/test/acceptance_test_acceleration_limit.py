@@ -24,10 +24,11 @@ from controller_state_observer import ControllerStateObserver
 from holding_mode_service_wrapper import HoldingModeServiceWrapper
 from trajectory_dispatcher import TrajectoryDispatcher
 
-# Change the following two lines if you run a different robot
-CONTROLLER_NS = '/prbt'
-CONTROLLER_NAME = 'manipulator_joint_trajectory_controller'
+DEFAULT_CONTROLLER_NS = '/prbt'
+DEFAULT_CONTROLLER_NAME = 'manipulator_joint_trajectory_controller'
 
+CONTROLLER_NS_PARAMETER = '/controller_ns_string'
+CONTROLLER_NAME_PARAMTER = '/controller_name_string'
 JOINT_NAMES_PARAMETER = '/joint_names'
 
 TEST_JOINT_INDEX = 1
@@ -44,13 +45,16 @@ class AcceptancetestAccelerationLimit(unittest.TestCase):
     """
 
     def setUp(self):
-        param_name = CONTROLLER_NS + JOINT_NAMES_PARAMETER
+        controller_ns = rospy.get_param(CONTROLLER_NS_PARAMETER, DEFAULT_CONTROLLER_NS)
+        controller_name = rospy.get_param(CONTROLLER_NAME_PARAMTER, DEFAULT_CONTROLLER_NAME)
+
+        param_name = controller_ns + JOINT_NAMES_PARAMETER
         self.assertTrue(rospy.has_param(param_name))
         self._joint_names = rospy.get_param(param_name)
 
-        self._trajectory_dispatcher = TrajectoryDispatcher(CONTROLLER_NS, CONTROLLER_NAME)
-        self._holding_mode_srv = HoldingModeServiceWrapper(CONTROLLER_NS, CONTROLLER_NAME)
-        self._robot_observer = ControllerStateObserver(CONTROLLER_NS, CONTROLLER_NAME)
+        self._trajectory_dispatcher = TrajectoryDispatcher(controller_ns, controller_name)
+        self._holding_mode_srv = HoldingModeServiceWrapper(controller_ns, controller_name)
+        self._robot_observer = ControllerStateObserver(controller_ns, controller_name)
 
         self._start_position = [0.0]*len(self._joint_names)
         self._start_position[TEST_JOINT_INDEX] = TEST_JOINT_START_POSITION
