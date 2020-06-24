@@ -63,12 +63,12 @@ private:
 };
 
 /**
- * @brief Test the ip connection by connecting to the modbus server
+ * @brief Test the ip connection by connecting to the modbus server. May become obsolete if libmodbus v3.1.6 or later
+ * versions is used. This has to be tested in the future.
  *
  * @param ip of the modbus server
  * @param port of the modbus server
- * @return true if the connection to the server succeeded
- * @return false if the connection to the server failed
+ * @return true if the connection to the server succeeded else false
  */
 bool checkIPConnection(const char* ip, const unsigned int port);
 
