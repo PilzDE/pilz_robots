@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-#include <chrono>
-#include <functional>
-#include <future>
+#include <memory>
+#include <string>
 #include <thread>
+#include <vector>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -28,7 +28,6 @@
 
 #include <ros/ros.h>
 
-#include <control_msgs/FollowJointTrajectoryAction.h>
 #include <trajectory_msgs/JointTrajectory.h>
 #include <std_srvs/Trigger.h>
 
@@ -52,8 +51,6 @@ static const std::string UNHOLD_SERVICE{ "/unhold" };
 static const std::string IS_EXECUTING_SERVICE{ "/is_executing" };
 static const std::string TRAJECTORY_COMMAND_TOPIC{ "/command" };
 
-using namespace pilz_joint_trajectory_controller;
-
 using HWInterface = hardware_interface::PositionJointInterface;
 using Segment = trajectory_interface::QuinticSplineSegment<double>;
 using PJTCManager = PJTCManagerMock<Segment, HWInterface>;
@@ -68,7 +65,7 @@ using ControllerPtr = std::shared_ptr<Controller>;
  *
  * @note ros::Time is set to use simulated time.
  */
-class PilzJointTrajectoryControllerTest : public testing::Test
+class PilzJointTrajectoryControllerTest : public testing::Test, public testing::AsyncTest
 {
 protected:
   void SetUp() override;
@@ -80,7 +77,6 @@ protected:
   RobotDriver robot_driver_{ CONTROLLER_NAMESPACE };
   std::shared_ptr<PJTCManager> manager_;
   TrajectoryActionClientWrapper action_client_{ CONTROLLER_NAMESPACE + TRAJECTORY_ACTION };
-  ros::NodeHandle controller_nh_{ CONTROLLER_NAMESPACE };
   ros::AsyncSpinner spinner_{ 2 };
 };
 
@@ -94,7 +90,7 @@ void PilzJointTrajectoryControllerTest::SetUp()
 
 testing::AssertionResult PilzJointTrajectoryControllerTest::isControllerInHoldMode()
 {
-  GoalType goal{ generateSimpleGoal() };
+  GoalType goal{ generateAlternatingGoal<RobotDriver>(&robot_driver_) };
   action_client_.sendGoal(goal);
   if (!action_client_.waitForActionResult())
   {
@@ -110,7 +106,7 @@ testing::AssertionResult PilzJointTrajectoryControllerTest::isControllerInHoldMo
 
 testing::AssertionResult PilzJointTrajectoryControllerTest::isControllerInUnholdMode()
 {
-  GoalType goal{ generateSimpleGoal() };
+  GoalType goal{ generateAlternatingGoal<RobotDriver>(&robot_driver_) };
   action_client_.sendGoal(goal);
   if (!action_client_.waitForActionResult([this]() { robot_driver_.update(); }))
   {
@@ -124,18 +120,9 @@ testing::AssertionResult PilzJointTrajectoryControllerTest::isControllerInUnhold
   return testing::AssertionSuccess();
 }
 
-///////////////////////////////////////
-//    The actual tests start here    //
-///////////////////////////////////////
-
-/**
- * @brief Test increases function coverage by ensuring that all Dtor variants are called.
- */
-TEST_F(PilzJointTrajectoryControllerTest, testD0Destructor)
-{
-  ControllerPtr controller{ new Controller() };
-  SUCCEED();
-}
+//////////////////////////////////
+//  Testing of Initialization   //
+//////////////////////////////////
 
 TEST_F(PilzJointTrajectoryControllerTest, testInitializiation)
 {
@@ -147,6 +134,19 @@ TEST_F(PilzJointTrajectoryControllerTest, testInitializiation)
 
   EXPECT_TRUE(action_client_.waitForActionServer());
 }
+
+/**
+ * @brief Test increases function coverage by ensuring that all Dtor variants are called.
+ */
+TEST_F(PilzJointTrajectoryControllerTest, testD0Destructor)
+{
+  ControllerPtr controller{ new Controller() };
+  SUCCEED();
+}
+
+/////////////////////////////////////
+//    Testing of hold and unhold   //
+/////////////////////////////////////
 
 /**
  * @tests{end_holding,
@@ -269,6 +269,10 @@ TEST_F(PilzJointTrajectoryControllerTest, testDoubleUnholdSuccess)
   EXPECT_TRUE(manager_->triggerUnHold(req, resp));
   EXPECT_TRUE(resp.success);
   EXPECT_TRUE(isControllerInUnholdMode());
+
+  EXPECT_TRUE(manager_->triggerUnHold(req, resp));
+  EXPECT_TRUE(resp.success);
+  EXPECT_TRUE(isControllerInUnholdMode());
 }
 
 /**
@@ -315,7 +319,7 @@ TEST_F(PilzJointTrajectoryControllerTest, testHoldDuringGoalExecution)
 {
   ASSERT_TRUE(performFullControllerStartup(&robot_driver_));
 
-  GoalType goal{ generateSimpleGoal() };
+  GoalType goal{ generateAlternatingGoal<RobotDriver>(&robot_driver_) };
   action_client_.sendGoal(goal);
 
   EXPECT_TRUE(updateUntilRobotMotion<RobotDriver>(&robot_driver_));
@@ -341,7 +345,7 @@ TEST_F(PilzJointTrajectoryControllerTest, testGoalCancellingDuringHold)
 {
   ASSERT_TRUE(performFullControllerStartup(&robot_driver_));
 
-  GoalType goal{ generateSimpleGoal() };
+  GoalType goal{ generateAlternatingGoal<RobotDriver>(&robot_driver_) };
   action_client_.sendGoal(goal);
 
   EXPECT_TRUE(updateUntilRobotMotion<RobotDriver>(&robot_driver_));
@@ -361,138 +365,6 @@ TEST_F(PilzJointTrajectoryControllerTest, testGoalCancellingDuringHold)
   EXPECT_TRUE(isControllerInHoldMode());
 }
 
-//////////////////////////////////////////////////////////////////////////
-//    Parameterized tests for the "is-executing-check" functionality    //
-//////////////////////////////////////////////////////////////////////////
-
-//! The return value indicates if the call was successful (in case of a service callback), the actual result
-//! of the is-executing-check is assigned (via reference) to the second argument.
-using InvokeIsExecuting = std::function<testing::AssertionResult(const ControllerPtr&, bool&)>;
-
-static testing::AssertionResult InvokeIsExecutingMethod(const ControllerPtr& controller, bool& result)
-{
-  result = controller->is_executing();
-  return testing::AssertionSuccess();
-}
-
-static testing::AssertionResult InvokeIsExecutingServiceCallback(const ControllerPtr& controller, bool& result)
-{
-  std_srvs::TriggerRequest req;
-  std_srvs::TriggerResponse resp;
-  if (!controller->handleIsExecutingRequest(req, resp))
-  {
-    return testing::AssertionFailure() << "Callback of is_executing returned false unexpectedly.";
-  }
-
-  result = resp.success;
-  return testing::AssertionSuccess();
-}
-
-/**
- * @brief For testing both the isExecuting method and the is_executing service callback we use parameterized tests.
- */
-class PilzJointTrajectoryControllerIsExecutingTest : public testing::Test,
-                                                     public testing::WithParamInterface<InvokeIsExecuting>,
-                                                     public testing::AsyncTest
-{
-protected:
-  void SetUp() override;
-
-  testing::AssertionResult invokeIsExecuting(bool& result);
-
-protected:
-  RobotDriver robot_driver_{ CONTROLLER_NAMESPACE };
-  std::shared_ptr<PJTCManager> manager_;
-  TrajectoryActionClientWrapper action_client_{ CONTROLLER_NAMESPACE + TRAJECTORY_ACTION };
-  ros::NodeHandle controller_nh_{ CONTROLLER_NAMESPACE };
-  ros::AsyncSpinner spinner_{ 2 };
-};
-
-void PilzJointTrajectoryControllerIsExecutingTest::SetUp()
-{
-  spinner_.start();
-  manager_ = robot_driver_.getManager();
-  setControllerParameters(CONTROLLER_NAMESPACE);
-  startSimTime();
-}
-
-testing::AssertionResult PilzJointTrajectoryControllerIsExecutingTest::invokeIsExecuting(bool& result)
-{
-  auto invoke_is_executing{ GetParam() };
-  return invoke_is_executing(manager_->controller_, result);
-}
-
-TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testNotStarted)
-{
-  ASSERT_TRUE(manager_->loadController()) << "Failed to initialize the controller.";
-
-  bool is_executing_result;
-  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
-}
-
-/**
- * @brief Check that a fake start (simply setting state to RUNNING) doesn't trigger that is_executing() returns true.
- *
- * Increases line coverage.
- */
-TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testFakeStart)
-{
-  ASSERT_TRUE(manager_->loadController()) << "Failed to initialize the controller.";
-
-  manager_->controller_->state_ = Controller::RUNNING;
-  bool is_executing_result;
-  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
-}
-
-TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStopTrajExecutionAtStart)
-{
-  ASSERT_TRUE(manager_->loadController()) << "Failed to initialize the controller.";
-
-  manager_->startController();
-
-  bool is_executing_result;
-  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_TRUE(is_executing_result) << "Failed to detect stop trajectory execution at start.";
-
-  ros::Duration stop_duration{ STOP_TRAJECTORY_DURATION_SEC + 2 * DEFAULT_UPDATE_PERIOD_SEC };
-  progressInTime(stop_duration);
-  robot_driver_.update();
-
-  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
-}
-
-TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testNotExecutingAfterUnhold)
-{
-  ASSERT_TRUE(performFullControllerStartup(&robot_driver_));
-
-  bool is_executing_result;
-  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
-}
-
-TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testActionGoalExecution)
-{
-  ASSERT_TRUE(performFullControllerStartup(&robot_driver_));
-
-  GoalType goal{ generateSimpleGoal() };
-  action_client_.sendGoal(goal);
-
-  EXPECT_TRUE(updateUntilRobotMotion<RobotDriver>(&robot_driver_));
-
-  bool is_executing_result;
-  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_TRUE(is_executing_result) << "Failed to detect action goal execution";
-
-  progressInTime(getGoalDuration(goal) + ros::Duration(DEFAULT_UPDATE_PERIOD_SEC));
-  robot_driver_.update();
-
-  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
-}
-
 using pilz_testutils::IsINFO;
 using pilz_testutils::IsWARN;
 using ::testing::_;
@@ -502,7 +374,7 @@ static const std::string LOG_MSG_RECEIVED_EVENT_INFO{ "log_msg_received_info" };
 /**
  * @brief Tests that the controller does not execute if a trajectory is sent via command interface.
  */
-TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testTrajCommandExecution)
+TEST_F(PilzJointTrajectoryControllerTest, testTrajCommandExecution)
 {
   ASSERT_TRUE(performFullControllerStartup(&robot_driver_));
 
@@ -510,7 +382,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testTrajCommandExecution)
   ros::Publisher trajectory_command_publisher =
       nh.advertise<trajectory_msgs::JointTrajectory>(CONTROLLER_NAMESPACE + TRAJECTORY_COMMAND_TOPIC, 1);
 
-  GoalType goal{ generateSimpleGoal() };
+  GoalType goal{ generateAlternatingGoal(&robot_driver_) };
 
   pilz_testutils::LoggerMock logger_mock_holder;
   InSequence seq;
@@ -529,39 +401,44 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testTrajCommandExecution)
   BARRIER({ LOG_MSG_RECEIVED_EVENT_WARN, LOG_MSG_RECEIVED_EVENT_INFO });
 }
 
-TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStopTrajExecutionAtHold)
+/////////////////////////////////////////////////////////////////////////////////////////////
+//    Testing the correct handling of trajectories that violate the acceleration limits    //
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief Send a trajectory that has too high acceleration and make sure controller does not execute it.
+ */
+TEST_F(PilzJointTrajectoryControllerTest, testTrajectoryWithTooHighAcceleration)
 {
   ASSERT_TRUE(performFullControllerStartup(&robot_driver_));
 
-  GoalType goal{ generateSimpleGoal() };
+  // Make sure robot moves for slow motion
+  GoalType goal{ generateAlternatingGoal<RobotDriver>(&robot_driver_) };
   action_client_.sendGoal(goal);
 
-  EXPECT_TRUE(updateUntilRobotMotion<RobotDriver>(&robot_driver_));
+  EXPECT_TRUE(updateUntilRobotMotion(&robot_driver_));
+  EXPECT_TRUE(updateUntilNoRobotMotion(&robot_driver_));
 
-  std_srvs::TriggerRequest req;
-  std_srvs::TriggerResponse resp;
-  // run async such that stop trajectory can be executed in the meantime
-  std::future<bool> hold_future = manager_->triggerHoldAsync(req, resp);
+  action_client_.waitForActionResult();
+  EXPECT_EQ(action_client_.getResult()->error_code, control_msgs::FollowJointTrajectoryResult::SUCCESSFUL);
 
-  EXPECT_TRUE(action_client_.waitForActionResult());
+  // Now sending a quicker motion which should trigger the acceleration limit and not move the robot
+  const auto start_position = robot_driver_.getJointPositions();
+
+  goal = generateAlternatingGoal(&robot_driver_, ros::Duration(DEFAULT_GOAL_DURATION_SEC), 1E3);
+  action_client_.sendGoal(goal);
+  action_client_.waitForActionResult([this]() { robot_driver_.update(); });
   // the following fails due to https://github.com/ros-controls/ros_controllers/issues/174
   // EXPECT_EQ(action_client_.getResult()->error_code, control_msgs::FollowJointTrajectoryResult::INVALID_GOAL);
 
-  robot_driver_.update();
-
-  bool is_executing_result;
-  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_TRUE(is_executing_result) << "Failed to detect stop trajectory execution";
-
-  EXPECT_TRUE(updateUntilHoldMode<RobotDriver>(&robot_driver_, hold_future));
-  EXPECT_TRUE(resp.success);
-
-  EXPECT_TRUE(invokeIsExecuting(is_executing_result));
-  EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
+  const auto end_position = robot_driver_.getJointPositions();
+  ASSERT_EQ(end_position.size(), start_position.size()) << "Position vectors sizes mismatch.";
+  for (unsigned int i = 0; i < end_position.size(); ++i)
+  {
+    EXPECT_EQ(end_position[i], start_position[i])
+        << "Difference in position despite no movement should have been performed.";
+  }
 }
-
-INSTANTIATE_TEST_CASE_P(MethodAndServiceCallback, PilzJointTrajectoryControllerIsExecutingTest,
-                        testing::Values(InvokeIsExecutingMethod, InvokeIsExecutingServiceCallback));
 
 }  // namespace pilz_joint_trajectory_controller_test
 

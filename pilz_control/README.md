@@ -12,6 +12,8 @@ The controller can perform a speed monitoring of the robot links in cartesian sp
 
 The speed monitoring is activated by default.
 
+Additionally the controller limits the joint acceleration of the performed trajectories. In the file [joint_limits.yaml](https://github.com/PilzDE/pilz_robots/blob/melodic-devel/prbt_support/config/manipulator_controller.yaml) these limits can be adjusted.
+
 # ROS API
 ## Advertised service
 - `is_executing` (std_srvs/Trigger)

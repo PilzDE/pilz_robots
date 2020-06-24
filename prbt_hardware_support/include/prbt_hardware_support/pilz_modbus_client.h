@@ -69,11 +69,11 @@ public:
    * @brief Tries to connect to a modbus server.
    * @param ip
    * @param port
-   * @param retries Number of retries getting a connection to the server
+   * @param retries Number of retries getting a connection to the server. Set -1 for infinite retries.
    * @param timeout_ms between retries
    * @return True if a connection is established, false otherwise.
    */
-  bool init(const char* ip, unsigned int port, unsigned int retries, const ros::Duration& timeout_ms);
+  bool init(const char* ip, unsigned int port, int retries, const ros::Duration& timeout_ms);
 
   /**
    * @brief Publishes the register values as messages.

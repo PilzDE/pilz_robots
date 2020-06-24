@@ -35,8 +35,9 @@ RobotMock::RobotMock()
   registerInterface(&jnt_state_interface_);
 }
 
-void RobotMock::read()
+std::array<JointData, NUM_JOINTS> RobotMock::read() const
 {
+  return data_;
 }
 
 void RobotMock::write(const ros::Duration& period)

@@ -1,6 +1,6 @@
 <package format="2">
   <name>prbt_support</name>
-  <version>0.5.16</version>
+  <version>0.5.17</version>
   <description> Mechanical, kinematic and visual description
   of the Pilz light weight arm PRBT. </description>
 
@@ -21,6 +21,7 @@
 
   <build_depend>canopen_chain_node</build_depend>
   <build_depend>pilz_utils</build_depend>
+  <build_depend>roslint</build_depend>
   <build_depend>sensor_msgs</build_depend>
 
   <exec_depend>canopen_motor_node</exec_depend>
