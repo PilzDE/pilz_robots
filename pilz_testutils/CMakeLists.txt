@@ -11,6 +11,7 @@ add_definitions(-Werror)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   pilz_utils
+  sensor_msgs
 )
 
 ###################################
