@@ -1,0 +1,189 @@
+\documentclass{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[left=2.9cm, right=2.9cm, top=3cm, bottom=2cm]{geometry}
+\usepackage{graphicx}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{22.06.2020}
+\lhead{Pilz GmbH \& Co. KG}
+\cfoot{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\begin{document}
+\title{Cartesian Velocity Limitation}
+\author{Pilz GmbH \& Co. KG}
+\date{22.06.2020}
+
+\maketitle
+
+\begin{abstract}
+  \noindent This article describes the techniques used to limit the cartesian velocity of the robot links via the \verb!PilzJointTrajectoryController! (PJTC). The PJTC inherits from the \verb!JointTrajectoryController! (JTC) and so far added a \emph{hold}-functionality for blocking the execution when no acknowledgement is given.
+\end{abstract}
+
+
+\section{Introduction to the JointTrajectoryController (JTC)}
+This is a brief explanation of the main concepts of the JTC which are needed in order to understand the implementation of the cartesian velocity limitation.
+
+The JTC keeps a \emph{trajectory}, which he tries to execute.
+\begin{verbatim}
+  curr_trajectory[]  // joint trajectory for joint1, joint2, ...
+\end{verbatim}
+Each joint trajectory is divided into segments representing the trajectory on (usually) chronological time-intervals (see Figure \ref{fig:spline}). On each segment the trajectory is determined by an interpolation routine. It depends on the information the JTC gets from the caller, whether the interpolation is of $1$st order (linear), $3$-rd order (cubical) or $5$-th order (quintic).
+
+\begin{figure}
+\centering
+\includegraphics[width=0.6\textwidth]{figures/spline_plot.png}
+\caption{Joint trajectory with $4$ segments.}
+\label{fig:spline}
+\end{figure}
+
+Additionally the JTC keeps a \emph{desired state} end a \emph{current state} of the robot, which is represented by its joints.
+\begin{verbatim}
+  desired_state:
+  - position[]      // desired position of joint1, joint2, ...
+  - velocity[]      // desired velocity of joint1, joint2, ...
+  - acceleration[]  // ...
+  current_state:
+  - position[]
+  - velocity[]
+  - acceleration[]
+\end{verbatim}
+The desired state represents a point on the trajectory and is obtained by interpolating on the currently active segment. The current state is given through the actual position of the robot. Usually the current state lags behind the desired state due to the delay in the communication with the robot hardware (see Figure \ref{fig:desired_current}). The states are updated via the JTC method \verb!update()! which is triggered periodically by a controller manager. The procedure is as follows:
+\begin{enumerate}
+\item Update current state: read from hardware interface,
+\item Update desired state: sample trajectory at current time,
+\item\label{enu:update_checks} Check path tolerances, etc.
+\item Update hardware interface: command the desired state (or more advanced controller techniques).
+\end{enumerate}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.8\textwidth]{figures/desired_current_plot.png}
+\caption{Current state lags behind the desired state.}
+\label{fig:desired_current}
+\end{figure}
+
+\subsection{Notation}
+Let us denote $t_i$ the time of the $i$-th update and $\Delta t_{\mathrm{period}}=t_i-t_{i-1}$ the update period. Let us denote
+\begin{equation}
+\hat{U}(t)=\left(\begin{array}{c}\hat{p}(t)\\\hat{v}(t)\\\hat{a}(t)\end{array}\right)\in\mathbb{R}^{3N}
+\end{equation}
+the desired state at time $t$ with position $\hat{p}(t)\in\mathbb{R}^N$, velocity $\hat{v}(t)\in\mathbb{R}^N$ and acceleration $\hat{a}(t)\in\mathbb{R}^N$ and
+\begin{equation}
+U(t)=\left(\begin{array}{c}p(t)\\v(t)\\a(t)\end{array}\right)\in\mathbb{R}^{3N}
+\end{equation}
+the current state at time $t$, respectively. Here, $N$ is the number of joints.
+
+We also introduce the robot links $l_1, \dots, l_M$, where $M$ denotes the number of robot links and a mapping $T_{j}:\mathbb{R}^N\to\mathbb{R}^3$, which maps a joint position to the translation from the robot base to link $l_j$: $p\mapsto T_{j}p$.
+
+
+\section{Implementation of the Velocity Limitation}
+The crucial concepts used in the Implementation of the velocity limitation in the PJTC are the \emph{Cartesian Speed Monitoring} (Section \ref{sec:cartesian_speed_monitoring}), the \emph{Stop Trajectory} (Section \ref{sec:the_stop_trajectory}) and the \emph{Acceleration Limitation in Joint Space} (Section \ref{sec:acceleration_limitation_in_joint_space}).
+
+\subsection{Cartesian Speed Monitoring}\label{sec:cartesian_speed_monitoring}
+The \verb!CartesianSpeedMonitor! is used by the PJTC to check the desired state before it gets written to the hardware interface. So this check was added to step \ref{enu:update_checks} of the update routine.
+
+At the $i$-th update the cartesian velocity of link $l_j$ is approximated by the following formula (using the desired position):
+\begin{equation}
+  w_{j}^{(i)} = \frac{\left\|\operatorname{T}_{j}\hat{p}(t_i)-\operatorname{T}_{j}\hat{p}(t_{i-1})\right\|_{2}}{\Delta t_{\mathrm{period}}}.
+\end{equation}
+This makes sense since our robot is commanded by position values. In case one of the computed velocities is above the velocity limit, a stop trajectory is triggered (see Section \ref{sec:the_stop_trajectory}).
+
+This approach tries to prevent the desired state from violating the limit such that the same holds for the current state. A ``reacting'' approach, which checks the current (actual) state of the robot has proven not sufficient due to the delay in the communication with the hardware (see Figure \ref{fig:react_on_current}).
+
+\begin{figure}
+\centering
+\includegraphics[width=0.6\textwidth]{figures/react_on_current_plot.png}
+\caption{Limit violation cannot be prevented by monitoring the current state.}
+\label{fig:react_on_current}
+\end{figure}
+
+\subsection{The Stop Trajectory}\label{sec:the_stop_trajectory}
+
+A controlled stop of the robot is accomplished by replacing the currently held trajectory with a stop trajectory. The stop trajectory consists of a single segment which is computed from the given start state $S_{\mathrm{stop}}$, the start time $t_{\mathrm{stop}}$ and the stop duration $\Delta t_{\mathrm{stop}}$. The stop duration $\Delta t_{\mathrm{stop}}$ is a pre-defined constant that is given through the controller configuration.
+\begin{itemize}
+\item[\bf Q:] {\bf How to choose $S_{\mathrm{stop}}$ and $t_{\mathrm{stop}}$ whilst maintaining a continuous movement?}
+\end{itemize}
+Suppose we are running the $i$-th update and a stop is triggered. The desired state $\hat{U}(t_i)$ is not commanded to the hardware yet. So the overall movement will be continuous if the stop trajectory is attached to the desired state of the last update:
+\begin{eqnarray}
+S_{\mathrm{stop}} &:=& \hat{U}(t_{i-1}), \label{eq:stop_choice}\\
+t_{\mathrm{stop}} &:=& t_{i-1}.
+\end{eqnarray}
+This is visualized in Figure \ref{fig:stop_trajectory}.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.6\textwidth]{figures/stop_trajectory_plot.png}
+\caption{Stop trajectory starting at $t=0.4$ for stop triggered at $t=0.41$ with $\Delta t_{\mathrm{period}}=0.01$ and $\Delta t_{\mathrm{stop}}=0.2$.}
+\label{fig:stop_trajectory}
+\end{figure}
+
+\subsection{When and Why the Stopping Failes}\label{sec:why_the_stopping_failes}
+
+For a simple demonstration of the problem, we assume a robot with a single joint, i.e. $N=1$ and a distance of $r=1.0$ to the outmost link $l_M$. In this setting the joint velocity is equal to the cartesian velocity of link $l_m$. For the approximated cartesian velocity we get:
+\begin{eqnarray}
+w_M^{(i)} &\approx& \frac{|\hat{p}(t_i)-\hat{p}(t_{i-1})|}{\Delta t_{\mathrm{period}}} > w_{M-1}^{(i)} > \dots > w_1^{(i)}. \label{eq:differential_quotient}
+\end{eqnarray}
+
+Now we regard a trajectory with linear interpolation on the segments, see Figure \ref{fig:stop_failure} on the left. This trajectory is continuous in the position, but not in the velocity. The velocity is constant on each trajectory segment, so it ``jumps'' in between, see Figure \ref{fig:stop_failure} on the right.
+
+However, the approximated cartesian velocity is much lower in one update after the jump ($t=0.46$). These approximated values better reflect the actual resulting movement of the robot. So in Figure \ref{fig:stop_failure} the violation of the cartesian velocity limit happens at $t=0.47$ despite the desired joint velocity already reached $\hat{v}=2.0$ at $t=0.46$. The result is a stop trajectory which begins at $\hat{v}=2.0$.
+
+In this setting the velocity limit can be exeeded arbitrarily through the stop trajectory. We can conclude that the choice \eqref{eq:stop_choice} is not well suited for trajectories with linearly interpolated segments.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.49\textwidth]{figures/stop_failure_position_plot.png}
+\includegraphics[width=0.49\textwidth]{figures/stop_failure_velocity_plot.png}
+\caption{Linearly interpolated trajectory starts at $t=0.455$. The desired joint velocity is updated at time $t=0.46$ to a value of $\hat{v}=2.0$ which would violate the cartesian velocity limit. However when the velocity is approximated from the desired joint positions at $t=0.46$ and $t=0.45$, it is much lower.}
+\label{fig:stop_failure}
+\end{figure}
+
+\subsection{Acceleration Limitation in Joint Space}\label{sec:acceleration_limitation_in_joint_space}
+The acceleration limitation in joint space is a workaround in order to finally prevent a violation of the cartesian velocity limit in a reliable way.
+
+We consider a (joint-wise) approximation to the acceleration in the desired joint trajectory as follows (we assume $\hat{v}(t_i), \hat{v}(t_{i-1})>0$):
+\begin{eqnarray}
+\tilde{a}^{(i)} &:=& \frac{\hat{v}(t_i)-\hat{v}(t_{i-1})}{\Delta t_{\mathrm{period}}}
+\end{eqnarray}
+It holds $\tilde{a}^{(i)}>0$ if the joint accelerates and $\tilde{a}^{(i)}<0$ if the joint decelerates. By introducing an upper limit for $\tilde{a}^{(i)}$ the magnitude of jumps like the one depicted in Figure \ref{fig:stop_failure} can be controlled. This allows to prevent a violation of the cartesian velocity limit by introducing a lower surrogate limit.
+
+\appendix
+
+\section{Derivation of \eqref{eq:differential_quotient}}
+
+The movement of a robot with a single rotational axis can be expressed in $2$ dimensions. Let the origin be $\left(\begin{array}{c}0\\0\end{array}\right)$. The rotational matrix is given by
+\begin{eqnarray}
+R(p) &:=& \left(\begin{array}{rr}\cos(p)&-\sin(p)\\ \sin(p)&\cos(p)\end{array}\right).
+\end{eqnarray}
+Without loss of generality we assume that for joint position $p_0=0$ the translation to link $l_M$ is $T_Mp_0=\left(\begin{array}{c}1\\0\end{array}\right)$ (remember $r=1.0$). Then for arbitrary $p$ we get:
+\begin{eqnarray}
+T_Mp &:=& R(p)\left(\begin{array}{c}1\\0\end{array}\right) = \left(\begin{array}{c}\cos(p)\\ \sin(p)\end{array}\right)
+\end{eqnarray}
+and therefore:
+\begin{eqnarray}
+  \|T_Mp-T_M(p+\delta)\|_2^2 &:=& \left\|\left(\begin{array}{r}\cos(p)-\cos(p+\delta)\\ \sin(p)-\sin(p+\delta)\end{array}\right)\right\|_2^2\\
+  &=& (\cos(p)-\cos(p+\delta))^2+(\sin(p)-\sin(p+\delta))^2\\
+  &=& \cos^2(p)+\sin^2(p)+\cos^2(p+\delta)+\sin^2(p+\delta)-2\cos(p)\cos(p+\delta)\\
+  && \phantom{\cos^2(p)+\sin^2(p)+\cos^2(p+\delta)+\sin^2(p+\delta)}-2\sin(p)\sin(p+\delta)\\
+  &=& 1+1-2\cos(p)\cos(p+\delta)-2\sin(p)\sin(p+\delta).
+\end{eqnarray}
+Now using $\sin(x)\sin(y)=\frac{1}{2}(\cos(x-y)-\cos(x+y))$ and $\cos(x)\cos(y)=\frac{1}{2}(\cos(x-y)+\cos(x+y))$, we get
+\begin{eqnarray}
+\|T_Mp-T_M(p+\delta)\|_2^2  &=& 2-\cos(\delta)-\cos(2p+\delta)-\cos(\delta)+\cos(2p+\delta)\\
+  &=& 2-2\cos(\delta).
+\end{eqnarray}
+We conclude $\|T_Mp-T_M(p+\delta)\|_2=\sqrt{2-2\cos(\delta)}\approx|\delta|$ for $\delta<1$ and
+\begin{eqnarray}
+  w_M^{(i)} &=& \frac{\|T_Mp-T_M(p+\delta)\|_2}{\Delta t_{\mathrm{period}}}\\
+  &\approx& \frac{|\delta|}{\Delta t_{\mathrm{period}}} = \frac{|p-(p+\delta)|}{\Delta t_{\mathrm{period}}},
+\end{eqnarray}
+which is exactly \eqref{eq:differential_quotient}.\qed
+
+\end{document}
