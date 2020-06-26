@@ -30,14 +30,6 @@ namespace prbt_hardware_support
  */
 bool checkIPConnection(const char* ip, const unsigned int& port);
 
-/**
- * @brief Initializes a sockaddr_in with given port
- *
- * @param port the sockaddr_in will be initialized with
- * @return initialized sockaddr_in
- */
-struct sockaddr_in init_sockaddr_in(const unsigned int& port);
-
 }  // namespace prbt_hardware_support
 
 #endif  // MODBUS_SOCKET_CONNECTION_CHECK_H
