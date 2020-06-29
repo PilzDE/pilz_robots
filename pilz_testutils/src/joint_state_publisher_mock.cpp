@@ -15,20 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <mutex>
-#include <string>
-#include <thread>
-#include <vector>
-
-#include <gmock/gmock.h>
-
-#include <ros/ros.h>
-
-#include <sensor_msgs/JointState.h>
+#include <pilz_testutils/joint_state_publisher_mock.h>
 
 #include <pilz_utils/get_param.h>
-
-#include <pilz_testutils/joint_state_publisher_mock.h>
 
 namespace pilz_testutils
 {
