@@ -37,7 +37,7 @@ constexpr unsigned int DEFAULT_REGISTER_SIZE{ 514 };
 constexpr unsigned int DEFAULT_WRITE_IDX{ 512 };
 constexpr unsigned int WRONG_PORT = 4711;
 
-class ModbusSocketConnectionTest : public testing::Test
+class ModbusConnectionCheckTestsuite : public testing::Test
 {
 public:
   static void SetUpTestCase();  // NOLINT
@@ -46,22 +46,26 @@ public:
 
 protected:
   void shutdownModbusServer(PilzModbusServerMock* server, LibModbusClient& client);
+
+protected:
   static unsigned int testPort();
+
+protected:
   LibModbusClient client_;
+  std::unique_ptr<PilzModbusServerMock> server_{ new PilzModbusServerMock(DEFAULT_REGISTER_SIZE) };
+
+protected:
   static unsigned int ACTIVE_PORT_IDX_;
   static std::vector<unsigned int> PORTS_FOR_TEST_;
-  static std::shared_ptr<PilzModbusServerMock> server_;
 };
 
-unsigned int ModbusSocketConnectionTest::ACTIVE_PORT_IDX_ = 0;
-std::vector<unsigned int> ModbusSocketConnectionTest::PORTS_FOR_TEST_ =
+unsigned int ModbusConnectionCheckTestsuite::ACTIVE_PORT_IDX_ = 0;
+std::vector<unsigned int> ModbusConnectionCheckTestsuite::PORTS_FOR_TEST_ =
     std::vector<unsigned int>(END_PORT - START_PORT);
-std::shared_ptr<PilzModbusServerMock> ModbusSocketConnectionTest::server_;
 
-void ModbusSocketConnectionTest::SetUp()
+void ModbusConnectionCheckTestsuite::SetUp()
 {
   EXPECT_FALSE(checkIPConnection(LOCALHOST, testPort())) << "No Server";
-  server_.reset(new PilzModbusServerMock(DEFAULT_REGISTER_SIZE));
   server_->startAsync(LOCALHOST, testPort());
 
   // Needed to make sure server is actually present. (Not optimal,
@@ -69,7 +73,7 @@ void ModbusSocketConnectionTest::SetUp()
   EXPECT_TRUE(client_.init(LOCALHOST, testPort())) << "Server not present";
 }
 
-void ModbusSocketConnectionTest::TearDown()
+void ModbusConnectionCheckTestsuite::TearDown()
 {
   // Use next port on next test
   ACTIVE_PORT_IDX_++;
@@ -77,17 +81,17 @@ void ModbusSocketConnectionTest::TearDown()
   client_.close();
 }
 
-unsigned int ModbusSocketConnectionTest::testPort()
+unsigned int ModbusConnectionCheckTestsuite::testPort()
 {
   return PORTS_FOR_TEST_.at(ACTIVE_PORT_IDX_ % PORTS_FOR_TEST_.size());
 }
 
-void ModbusSocketConnectionTest::SetUpTestCase()  // NOLINT
+void ModbusConnectionCheckTestsuite::SetUpTestCase()  // NOLINT
 {
   std::iota(PORTS_FOR_TEST_.begin(), PORTS_FOR_TEST_.end(), START_PORT);
 }
 
-void ModbusSocketConnectionTest::shutdownModbusServer(PilzModbusServerMock* server, LibModbusClient& client)
+void ModbusConnectionCheckTestsuite::shutdownModbusServer(PilzModbusServerMock* server, LibModbusClient& client)
 {
   server->setTerminateFlag();
   RegCont reg_to_write_by_client{ 1 };
@@ -104,50 +108,27 @@ void ModbusSocketConnectionTest::shutdownModbusServer(PilzModbusServerMock* serv
   server->terminate();
 }
 
-/**
- * @brief Tests that the checkIPConnection function will respond properly on presense of a modbus server and also if
- * it misses. Server is present and IP and port are correct here.
- *
- * @note To keep things simple timeout and repeats are not altered.
- */
-TEST_F(ModbusSocketConnectionTest, checkIPConnectionServerPresentIpPortCorrect)
+TEST_F(ModbusConnectionCheckTestsuite, testReactionToCorrectConnection)
 {
-  EXPECT_TRUE(checkIPConnection(LOCALHOST, testPort())) << "Server present ip+port correct, TRUE expected";
+  EXPECT_TRUE(checkIPConnection(LOCALHOST, testPort()))
+      << "Incorrect reaction to proper connection (ip address and port number correct).";
 }
 
-/**
- * @brief Tests that the checkIPConnection function will respond properly on presense of a modbus server and also if
- * it misses. Port is wrong here.
- *
- * @note To keep things simple timeout and repeats are not altered.
- */
-TEST_F(ModbusSocketConnectionTest, checkIPConnectionPortWrong)
+TEST_F(ModbusConnectionCheckTestsuite, testReactionToIncorrectPort)
 {
-  EXPECT_FALSE(checkIPConnection(LOCALHOST, WRONG_PORT)) << "Server present ip correct port wrong, FALSE expected";
+  EXPECT_FALSE(checkIPConnection(LOCALHOST, WRONG_PORT)) << "Incorrect reaction to incorrect port number.";
 }
 
-/**
- * @brief Tests that the checkIPConnection function will respond properly on presense of a modbus server and also if
- * it misses. IP is wrong here.
- *
- * @note To keep things simple timeout and repeats are not altered.
- */
-TEST_F(ModbusSocketConnectionTest, checkIPConnectionIpWrong)
+TEST_F(ModbusConnectionCheckTestsuite, testReactionToIncorrectIP)
 {
-  EXPECT_FALSE(checkIPConnection("192.192.192.192", testPort())) << "Server present ip wrong port correct";
+  EXPECT_FALSE(checkIPConnection("192.192.192.192", testPort())) << "Incorrect reaction to incorrect ip address.";
 }
 
-/**
- * @brief Tests that the checkIPConnection function will respond properly on presense of a modbus server and also if
- * it misses. IP and port are wrong here.
- *
- * @note To keep things simple timeout and repeats are not altered.
- */
-TEST_F(ModbusSocketConnectionTest, checkIPConnectionIpWrongPortWrong)
+TEST_F(ModbusConnectionCheckTestsuite, testReactionToIncorrectPortAndIncorrectIP)
 {
   ASSERT_NE(WRONG_PORT, testPort());
   EXPECT_FALSE(checkIPConnection("192.192.192.192", WRONG_PORT))
-      << "Server present ip wrong port wrong, FALSE expected";
+      << "Incorrect reaction to incorrect port number and ip address.";
 }
 
 }  // namespace modbus_socket_connection_check_test
