@@ -71,17 +71,17 @@ bool hasSocketPendingErrors(const int& sockfd)
 bool checkIPConnection(const char* ip, const unsigned int& port)
 {
   const int sockfd{ socket(AF_INET, SOCK_STREAM, 0) };
-  setConnectionToNonBlocking(sockfd);
-
   const sockaddr_in serv_addr{ initSockAddrIn(ip, port) };
+
+  setConnectionToNonBlocking(sockfd);
   connect(sockfd, (const sockaddr*)&serv_addr, sizeof(serv_addr));
 
-  const bool ret_val{ isSocketReadyForWriteOp(sockfd) && !hasSocketPendingErrors(sockfd) };
+  const bool connection_ok{ isSocketReadyForWriteOp(sockfd) && !hasSocketPendingErrors(sockfd) };
 
   close(sockfd);
   std::this_thread::sleep_for(std::chrono::duration<double>(1));
 
-  return ret_val;
+  return connection_ok;
 }
 
 }  // namespace prbt_hardware_support
