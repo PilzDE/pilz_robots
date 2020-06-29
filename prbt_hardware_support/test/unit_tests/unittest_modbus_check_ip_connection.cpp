@@ -111,24 +111,24 @@ void ModbusConnectionCheckTestsuite::shutdownModbusServer(PilzModbusServerMock* 
 TEST_F(ModbusConnectionCheckTestsuite, testReactionToCorrectConnection)
 {
   EXPECT_TRUE(checkIPConnection(LOCALHOST, testPort()))
-      << "Incorrect reaction to proper connection (ip address and port number correct).";
+      << "Unexpected reaction to proper connection (ip address and port number correct).";
 }
 
 TEST_F(ModbusConnectionCheckTestsuite, testReactionToIncorrectPort)
 {
-  EXPECT_FALSE(checkIPConnection(LOCALHOST, WRONG_PORT)) << "Incorrect reaction to incorrect port number.";
+  EXPECT_FALSE(checkIPConnection(LOCALHOST, WRONG_PORT)) << "Unexpected reaction to incorrect port number.";
 }
 
 TEST_F(ModbusConnectionCheckTestsuite, testReactionToIncorrectIP)
 {
-  EXPECT_FALSE(checkIPConnection("192.192.192.192", testPort())) << "Incorrect reaction to incorrect ip address.";
+  EXPECT_FALSE(checkIPConnection("192.192.192.192", testPort())) << "Unexpected reaction to incorrect ip address.";
 }
 
 TEST_F(ModbusConnectionCheckTestsuite, testReactionToIncorrectPortAndIncorrectIP)
 {
   ASSERT_NE(WRONG_PORT, testPort());
   EXPECT_FALSE(checkIPConnection("192.192.192.192", WRONG_PORT))
-      << "Incorrect reaction to incorrect port number and ip address.";
+      << "Unexpected reaction to incorrect port number and ip address.";
 }
 
 }  // namespace modbus_socket_connection_check_test
