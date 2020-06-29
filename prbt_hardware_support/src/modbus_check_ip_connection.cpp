@@ -79,6 +79,7 @@ bool checkIPConnection(const char* ip, const unsigned int& port)
   const bool connection_ok{ isSocketReadyForWriteOp(sockfd) && !hasSocketPendingErrors(sockfd) };
 
   close(sockfd);
+  // wait one second to grant a free port
   std::this_thread::sleep_for(std::chrono::duration<double>(1));
 
   return connection_ok;
