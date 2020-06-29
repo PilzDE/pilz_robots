@@ -228,16 +228,18 @@ private:
   void stopMotion(const ros::Time& curr_uptime);
 
   /**
-   * @brief This function basically does what it's base class counterpart
-   * JointTrajectoryController::preemptActiveGoal() does.
-   * However, in contrast to JointTrajectoryController::preemptActiveGoal(), this function
-   * only triggers the cancelling of the active goal. The actual execution of the
-   * cancelling is left to a separate thread.
-   *
-   * @note In contrast to JointTrajectoryController::preemptActiveGoal() this function
-   * is real-time safe.
+   * TODO: We should rather only trigger the cancelling of the active goal. The actual execution should be moved to a
+   * separate thread. See realtime_tools::RealtimeServerGoalHandle and
+   * https://github.com/ros-controls/ros_controllers/issues/174.
    */
-  void triggerCancellingOfActiveGoal();
+  void cancelActiveGoal();
+
+  /**
+   * TODO: We should rather only trigger the aborting of the active goal. The actual execution should be moved to a
+   * separate thread. See realtime_tools::RealtimeServerGoalHandle and
+   * https://github.com/ros-controls/ros_controllers/issues/174.
+   */
+  void abortActiveGoal();
 
 private:
   ros::ServiceServer hold_position_service;
