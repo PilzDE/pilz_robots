@@ -212,7 +212,7 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::handleHoldRe
   HoldModeListener listener;
   if (mode_->stopEvent(&listener))
   {
-    triggerCancellingOfActiveGoal();
+    cancelActiveGoal();
     triggerMovementToHoldPosition();
   }
 
@@ -359,7 +359,7 @@ inline bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::isPla
 template <class SegmentImpl, class HardwareInterface>
 void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::stopMotion(const ros::Time& curr_uptime)
 {
-  triggerCancellingOfActiveGoal();
+  abortActiveGoal();
 
   stop_traj_builder_->setStartTime(JointTrajectoryController::old_time_data_.uptime.toSec())
       ->buildTrajectory(stop_traj_velocity_violation_.get());
@@ -370,7 +370,7 @@ void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::stopMotion(c
 }
 
 template <class SegmentImpl, class HardwareInterface>
-inline void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::triggerCancellingOfActiveGoal()
+inline void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::cancelActiveGoal()
 {
   RealtimeGoalHandlePtr active_goal(JointTrajectoryController::rt_active_goal_);
   if (!active_goal)
@@ -384,6 +384,26 @@ inline void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::trigg
   //      control_msgs::FollowJointTrajectoryResult::PATH_TOLERANCE_VIOLATED;
   //      active_goal->setCanceled(active_goal->preallocated_result_);
   // Unfortunately this does not work because sometimes the goal does not seems to get cancelled.
+  // It has to be investigated why! -> Probably a threading problem. See also:
+  // https://github.com/ros-controls/ros_controllers/issues/174
+}
+
+template <class SegmentImpl, class HardwareInterface>
+inline void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::abortActiveGoal()
+{
+  RealtimeGoalHandlePtr active_goal(JointTrajectoryController::rt_active_goal_);
+  if (!active_goal)
+  {
+    return;  // LCOV_EXCL_LINE
+             // Since the command topic is deactivated it is impossible to violate a limit without an active goal
+  }
+  JointTrajectoryController::rt_active_goal_.reset();
+  active_goal->gh_.setAborted();
+  // TODO: Instead of the line above, I actually want to do this:
+  //      active_goal->preallocated_result_->error_code =
+  //      control_msgs::FollowJointTrajectoryResult::INVALID_GOAL;
+  //      active_goal->setAborted(active_goal->preallocated_result_);
+  // Unfortunately this does not work because sometimes the goal does not seems to get aborted.
   // It has to be investigated why! -> Probably a threading problem. See also:
   // https://github.com/ros-controls/ros_controllers/issues/174
 }
