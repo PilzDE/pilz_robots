@@ -22,11 +22,8 @@
 #include <errno.h>
 #include <limits>
 #include <thread>
-#include <chrono>
-#include <stdexcept>
-#include <arpa/inet.h>
-#include <fcntl.h>
 #include <prbt_hardware_support/libmodbus_client.h>
+#include <prbt_hardware_support/modbus_check_ip_connection.h>
 #include <prbt_hardware_support/pilz_modbus_exceptions.h>
 
 namespace prbt_hardware_support
@@ -153,54 +150,6 @@ void LibModbusClient::close()
     modbus_free(modbus_connection_);
     modbus_connection_ = nullptr;
   }
-}
-
-bool checkIPConnection(const char* ip, const unsigned int port)
-{
-  int conresult;
-  int optval;
-  int sockfd;
-  socklen_t optlen = sizeof(optval);
-  long result;
-  struct sockaddr_in serv_addr;
-  fd_set writeset;
-  struct timeval tv;
-
-  tv.tv_sec = 1;
-  tv.tv_usec = 0;  // timout is 100ms
-
-  sockfd = socket(AF_INET, SOCK_STREAM, 0);  // Create socket for connection testing purpose
-  bzero((char*)&serv_addr, sizeof(serv_addr));
-  serv_addr.sin_family = AF_INET;
-  serv_addr.sin_port = htons((short unsigned int)port);
-
-  result = fcntl(sockfd, F_GETFL, NULL);
-  result |= O_NONBLOCK;
-  fcntl(sockfd, F_SETFL, result);  // set connection to non blocking, no timeout
-  serv_addr.sin_addr.s_addr = inet_addr(ip);
-  conresult = connect(sockfd, (const sockaddr*)&serv_addr, sizeof(serv_addr));
-
-  FD_ZERO(&writeset);         // clear writeset all to zero
-  FD_SET(sockfd, &writeset);  // set the sockfd filedescriptor to be affected in following select function
-  conresult =
-      select(sockfd + 1, nullptr, &writeset, nullptr, &tv);  // wait if sockfd is ready for writing with tv timeout
-  if (conresult <= 0)
-  {
-    /* Timeout or fail */
-    errno = ECONNREFUSED;
-    return false;
-  }
-  conresult = getsockopt(sockfd, SOL_SOCKET, SO_ERROR, (void*)&optval,
-                         &optlen);        // get from socket api if any error is pending
-  if ((conresult == 0) && (optval == 0))  // if getsockopt was executed with success annd no error is returned from
-                                          // socket api
-  {
-    ::close(sockfd);
-    std::this_thread::sleep_for(std::chrono::duration<double>(1));  // wait one second to grant a free port
-    return true;
-  }
-  errno = ECONNREFUSED;
-  return false;
 }
 
 }  // namespace prbt_hardware_support
