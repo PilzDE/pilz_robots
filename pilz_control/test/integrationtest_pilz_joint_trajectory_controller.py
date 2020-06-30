@@ -279,7 +279,7 @@ class TestPilzJointTrajectoryController(unittest.TestCase):
             # is cancelled. Therefore, the following check is commented out.
             # self.assertFalse(move_result, "Cartesian speed monitor did not detect speed limit violation")
 
-            self.assertEqual(GoalStatus.PREEMPTED, self._trajectory_dispatcher.get_last_state(),
+            self.assertEqual(GoalStatus.ABORTED, self._trajectory_dispatcher.get_last_state(),
                              'Goal was not preempted.')
             motion_observer = MovementObserver()
             # Make sure robot stops (not abruptly)
