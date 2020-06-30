@@ -20,8 +20,6 @@
 #include <mutex>
 #include <condition_variable>
 
-#include <gtest/gtest.h>
-
 namespace testing
 {
 /**

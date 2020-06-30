@@ -21,8 +21,6 @@
 #include <functional>
 #include <string>
 
-#include <gmock/gmock.h>
-
 namespace pilz_testutils
 {
 /**
