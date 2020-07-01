@@ -16,8 +16,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
 <launch>
+  <arg name="robot_name" default="prbt" />
 
-  <rosparam ns="prbt" command="load" file="$(find pilz_control)/test/config/prbt_monitored_links.yaml" />
+  <rosparam command="load" file="$(find pilz_control)/test/config/$(arg robot_name)_monitored_links.yaml" />
 
   <node pkg="pilz_control" type="joint_states_speed_observer" name="joint_states_speed_observer" output="screen" />
 </launch>
