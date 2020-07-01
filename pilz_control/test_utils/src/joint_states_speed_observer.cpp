@@ -38,7 +38,7 @@ namespace pilz_control
 static const std::string ROBOT_DESCRIPTION_PARAMETER{ "robot_description" };
 static const std::string JOINT_STATES_TOPIC_NAME{ "joint_states" };
 static const std::string MAX_FRAME_SPEED_TOPIC_NAME{ "max_frame_speed" };
-static const std::string MONITORED_LINK_NAMES_PARAMETER{ "/prbt/monitored_link_names" };
+static const std::string MONITORED_LINK_NAMES_PARAMETER{ "monitored_link_names" };
 
 JointStatesSpeedObserver::JointStatesSpeedObserver(const ros::NodeHandle& nh) : nh_(nh)
 {
