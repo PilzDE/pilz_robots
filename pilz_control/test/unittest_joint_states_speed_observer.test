@@ -23,9 +23,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   <param name="robot_description" textfile="$(find pilz_control)/test/urdf/robot_mock.urdf"/>
   <param name="robot_description_semantic" textfile="$(find pilz_control)/test/urdf/robot_mock.srdf"/>
 
-  <rosparam ns="prbt" command="load" file="$(find pilz_control)/test/config/robot_mock_monitored_links.yaml" />
-
-  <node pkg="pilz_control" type="joint_states_speed_observer" name="joint_states_speed_observer" output="screen"/>
+  <include file="$(find pilz_control)/test_utils/launch/joint_states_speed_observer.launch">
+      <arg name="robot_name" value="robot_mock" />
+  </include>
 
   <test unless="$(arg debug)" test-name="unittest_joint_states_speed_observer" pkg="pilz_control"
         type="unittest_joint_states_speed_observer" />

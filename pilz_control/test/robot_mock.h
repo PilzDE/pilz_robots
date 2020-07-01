@@ -21,6 +21,7 @@
 
 #include <hardware_interface/robot_hw.h>
 #include <hardware_interface/joint_command_interface.h>
+#include <hardware_interface/joint_state_interface.h>
 
 constexpr unsigned int NUM_JOINTS{ 2 };
 constexpr std::array<const char*, NUM_JOINTS> JOINT_NAMES = { "shoulder_to_right_arm", "shoulder_to_left_arm" };
@@ -51,6 +52,7 @@ public:
 private:
   std::array<JointData, NUM_JOINTS> data_{ JointData(), JointData() };
   hardware_interface::PositionJointInterface pos_jnt_interface_;
+  hardware_interface::JointStateInterface jnt_state_interface_;
 };
 
 #endif  // PILZ_CONTROL_ROBOT_MOCK_H
