@@ -50,7 +50,7 @@ static const std::string BARRIER_MAX_FRAME_SPEED{ "BARRIER_MAX_FRAME_SPEED" };
 static constexpr unsigned int MAX_FRAME_SPEED_QUEUE_SIZE{ 1 };
 static constexpr int BARRIER_MAX_FRAME_SPEED_TIMEOUT_MS{ 2000 };
 
-static constexpr double RIGHT_ARM_RADIUS{ 0.275 };
+static constexpr double RIGHT_ARM_RADIUS{ 0.25 };
 static constexpr double FRAME_SPEED_COMPUTATION_TOLERANCE{ 0.01 };
 
 class MaxFrameSpeedSubscriberMock

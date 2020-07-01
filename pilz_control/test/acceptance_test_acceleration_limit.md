@@ -42,3 +42,14 @@ limitations under the License.
   1. All tests pass
   2. All tests pass
   3. Movement is executed without errors.
+
+## Running the Test Without Real Hardware
+
+  This can be useful but is not sufficient for the acceptance of the feature. The `robot_mock` that is used here does not represent the PRBT in any way. Simply replace the `roslaunch`-command by
+  ```
+  roslaunch pilz_control robot_mock.launch
+  ```
+  and proceed as described above. In order to simulate switching into AUTO mode, you can call
+  ```
+  rosservice call /controller_ns/test_joint_trajectory_controller/monitor_cartesian_speed "data: false"
+  ```
