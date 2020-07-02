@@ -115,7 +115,7 @@ if(CATKIN_ENABLE_TESTING)
       src/system_info_exception.cpp
   )
   target_link_libraries(unittest_system_info
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+    ${catkin_LIBRARIES}
   )
   #----------------------------------------
 

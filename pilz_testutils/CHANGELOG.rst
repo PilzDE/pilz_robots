@@ -2,6 +2,11 @@
 Changelog for package pilz_testutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Make AsyncTest header-only
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.17 (2020-06-22)
 -------------------
 * Add JointStatePublisherMock
