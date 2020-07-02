@@ -2,8 +2,8 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.18 (2020-07-02)
+-------------------
 * Make AsyncTest header-only
 * Move modbus connection checker function in separate file
 * Contributors: Pilz GmbH and Co. KG
