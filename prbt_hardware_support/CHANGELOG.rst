@@ -2,6 +2,12 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Make AsyncTest header-only
+* Move modbus connection checker function in separate file
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.17 (2020-06-22)
 -------------------
 * Infinite modbus connection retries
