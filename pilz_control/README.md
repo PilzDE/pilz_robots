@@ -14,6 +14,8 @@ The speed monitoring is activated by default.
 
 Additionally the controller limits the joint acceleration of the performed trajectories. In the file [manipulator_controller.yaml](https://github.com/PilzDE/pilz_robots/blob/melodic-devel/prbt_support/config/manipulator_controller.yaml) these limits can be adjusted.
 
+A detailed explanation of the speed monitoring is available [here](doc/CartesianVelocityLimitation.md).
+
 # ROS API
 ## Advertised service
 - `is_executing` (std_srvs/Trigger)
