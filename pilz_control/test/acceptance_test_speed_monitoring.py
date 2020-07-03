@@ -148,7 +148,7 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
         speed_limit_upper_bound = _SPEED_LIMIT + _SPEED_LIMIT_TOLERANCE
 
         self._perform_test_movement(0.9 * target_velocity)
-        self.assertGreater(speed_limit_upper_bound, self._max_frame_speed.get(), 
+        self.assertGreater(speed_limit_upper_bound, self._max_frame_speed.get(),
                            'Speed limit of 0.25[m/s] was violated')
 
         self._move_to_start_position()
