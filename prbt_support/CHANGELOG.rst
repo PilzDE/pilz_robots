@@ -2,6 +2,11 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.18 (2020-07-02)
+-------------------
+* Make AsyncTest header-only
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.17 (2020-06-22)
 -------------------
 * Redirect start of fake_speed_override_node to separate launch file
