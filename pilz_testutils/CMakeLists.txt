@@ -52,7 +52,6 @@ include_directories(
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
-  src/async_test.cpp
   src/joint_state_publisher_mock.cpp
 )
 

@@ -2,6 +2,9 @@
 Changelog for package pilz_utils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.18 (2020-07-02)
+-------------------
+
 0.5.17 (2020-06-22)
 -------------------
 * Remove extended ROS sleep function
