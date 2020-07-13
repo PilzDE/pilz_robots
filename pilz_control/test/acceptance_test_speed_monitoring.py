@@ -24,14 +24,16 @@ from controller_state_observer import ControllerStateObserver
 from holding_mode_service_wrapper import HoldingModeServiceWrapper
 from trajectory_dispatcher import TrajectoryDispatcher
 
-# Change the following two lines if you run a different robot
-CONTROLLER_NS = '/prbt'
-CONTROLLER_NAME = 'manipulator_joint_trajectory_controller'
+_DEFAULT_CONTROLLER_NS = '/prbt'
+_DEFAULT_CONTROLLER_NAME = 'manipulator_joint_trajectory_controller'
 
+_CONTROLLER_NS_PARAMETER = '/controller_ns_string'
+_CONTROLLER_NAME_PARAMTER = '/controller_name_string'
 _JOINT_NAMES_PARAMETER = '/joint_names'
 _MAX_FRAME_SPEED_TOPIC_NAME = '/max_frame_speed'
 
 _SPEED_LIMIT = 0.25
+_SPEED_LIMIT_TOLERANCE = 0.02
 _VEL_SCALE_DEFAULT = 0.5
 _LONG_TRAJ_CMD_DURATION = 10.0
 _FRAME_SPEED_TOLERANCE = 0.001
@@ -78,7 +80,10 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
     """
 
     def setUp(self):
-        param_name = CONTROLLER_NS + _JOINT_NAMES_PARAMETER
+        controller_ns = rospy.get_param(_CONTROLLER_NS_PARAMETER, _DEFAULT_CONTROLLER_NS)
+        controller_name = rospy.get_param(_CONTROLLER_NAME_PARAMTER, _DEFAULT_CONTROLLER_NAME)
+
+        param_name = controller_ns + _JOINT_NAMES_PARAMETER
         self.assertTrue(rospy.has_param(param_name))
         self._joint_names = rospy.get_param(param_name)
 
@@ -86,9 +91,9 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
 
         self._max_frame_speed = MaxFrameSpeedWrapper()
         # The observer can be used to ensure that trajectory goals are reached in order to have a clean test setup.
-        self._robot_observer = ControllerStateObserver(CONTROLLER_NS, CONTROLLER_NAME)
-        self._trajectory_dispatcher = TrajectoryDispatcher(CONTROLLER_NS, CONTROLLER_NAME)
-        self._holding_mode_srv = HoldingModeServiceWrapper(CONTROLLER_NS, CONTROLLER_NAME)
+        self._robot_observer = ControllerStateObserver(controller_ns, controller_name)
+        self._trajectory_dispatcher = TrajectoryDispatcher(controller_ns, controller_name)
+        self._holding_mode_srv = HoldingModeServiceWrapper(controller_ns, controller_name)
 
         self._move_to_start_position()
         self._max_frame_speed.reset()
@@ -140,25 +145,27 @@ class AcceptancetestSpeedMonitoring(unittest.TestCase):
         rospy.loginfo('Test speed monitoring in T1 mode')
 
         target_velocity = self._compute_target_velocity()
+        speed_limit_upper_bound = _SPEED_LIMIT + _SPEED_LIMIT_TOLERANCE
 
         self._perform_test_movement(0.9 * target_velocity)
-        self.assertGreater(_SPEED_LIMIT, self._max_frame_speed.get(), 'Speed limit of 0.25[m/s] was violated')
+        self.assertGreater(speed_limit_upper_bound, self._max_frame_speed.get(),
+                           'Speed limit of 0.25[m/s] was violated')
 
         self._move_to_start_position()
         self._max_frame_speed.reset()
 
         self._perform_test_movement(1.1 * target_velocity)
-        self.assertGreater(_SPEED_LIMIT, self._max_frame_speed.get(), 'Speed limit of 0.25[m/s] was violated.' +
-                                                                      ' The limit might be too sharp. Did the robot' +
-                                                                      ' perform a successful stop?')
+        self.assertGreater(speed_limit_upper_bound, self._max_frame_speed.get(),
+                           'Speed limit of 0.25[m/s] was violated. The limit might be too sharp. Did the robot' +
+                           ' perform a successful stop?')
 
         self._move_to_start_position()
         self._max_frame_speed.reset()
 
         self._perform_test_movement(_TEST_JOINT_SPEED_LIMIT)
-        self.assertGreater(_SPEED_LIMIT, self._max_frame_speed.get(), 'Speed limit of 0.25[m/s] was violated' +
-                                                                      ' The limit might be too sharp. Did the robot' +
-                                                                      ' perform a successful stop?')
+        self.assertGreater(speed_limit_upper_bound, self._max_frame_speed.get(),
+                           'Speed limit of 0.25[m/s] was violated. The limit might be too sharp. Did the robot' +
+                           ' perform a successful stop?')
 
     def test_automatic_mode(self):
         """ Perform a movement of the second joint with maximal joint speed. This results in a movement above

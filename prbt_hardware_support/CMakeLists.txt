@@ -167,6 +167,7 @@ add_executable(
   src/pilz_modbus_client_node.cpp
   src/pilz_modbus_client.cpp
   src/libmodbus_client.cpp
+  src/modbus_check_ip_connection.cpp
   src/modbus_msg_in_builder.cpp
 )
 add_dependencies(pilz_modbus_client_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${PROJECT_NAME}_generate_messages_cpp)
@@ -228,8 +229,20 @@ if(CATKIN_ENABLE_TESTING)
       test/unit_tests/unittest_libmodbus_client.cpp
       test/unit_tests/pilz_modbus_server_mock.cpp
       src/libmodbus_client.cpp
+      src/modbus_check_ip_connection.cpp
   )
   target_link_libraries(unittest_libmodbus_client
+    ${catkin_LIBRARIES}
+    modbus
+  )
+  
+  catkin_add_gtest(unittest_modbus_check_ip_connection
+      test/unit_tests/unittest_modbus_check_ip_connection.cpp
+      test/unit_tests/pilz_modbus_server_mock.cpp
+      src/modbus_check_ip_connection.cpp
+      src/libmodbus_client.cpp
+  )
+  target_link_libraries(unittest_modbus_check_ip_connection
     ${catkin_LIBRARIES}
     modbus
   )
@@ -262,7 +275,7 @@ if(CATKIN_ENABLE_TESTING)
       src/modbus_msg_in_builder.cpp
   )
   target_link_libraries(unittest_pilz_modbus_client
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+    ${catkin_LIBRARIES}
   )
   add_dependencies(unittest_pilz_modbus_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
@@ -273,7 +286,7 @@ if(CATKIN_ENABLE_TESTING)
     src/modbus_msg_in_builder.cpp
   )
   target_link_libraries(unittest_modbus_adapter_brake_test
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+    ${catkin_LIBRARIES}
   )
   add_dependencies(unittest_modbus_adapter_brake_test ${catkin_EXPORTED_TARGETS})
   #----------------------------------
@@ -287,7 +300,7 @@ if(CATKIN_ENABLE_TESTING)
     src/modbus_msg_in_builder.cpp
   )
   target_link_libraries(unittest_modbus_adapter_operation_mode
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+    ${catkin_LIBRARIES}
   )
   add_dependencies(unittest_modbus_adapter_operation_mode ${${PROJECT_NAME}_EXPORTED_TARGETS})
   #----------------------------------
@@ -298,8 +311,7 @@ if(CATKIN_ENABLE_TESTING)
     test/unit_tests/unittest_brake_test_utils.cpp
   )
   target_link_libraries(unittest_brake_test_utils
-    ${catkin_LIBRARIES}
-    ${pilz_testutils_LIBRARIES}
+    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
   )
   #----------------------------------
 
@@ -331,7 +343,7 @@ if(CATKIN_ENABLE_TESTING)
     test/unit_tests/unittest_stop1_executor.cpp
   )
   target_link_libraries(unittest_stop1_executor
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+    ${catkin_LIBRARIES}
   )
   #----------------------------------
 
@@ -352,9 +364,10 @@ if(CATKIN_ENABLE_TESTING)
      test/integration_tests/integrationtest_stop1.cpp
      test/unit_tests/pilz_modbus_server_mock.cpp
      src/libmodbus_client.cpp
+     src/modbus_check_ip_connection.cpp
   )
   target_link_libraries(integrationtest_stop1
-    ${catkin_LIBRARIES} ${${PROJECT_NAME}_LIBRARIES} ${pilz_testutils_LIBRARIES}
+    ${catkin_LIBRARIES} ${${PROJECT_NAME}_LIBRARIES}
     modbus
   )
   add_dependencies(integrationtest_stop1
@@ -391,9 +404,10 @@ if(CATKIN_ENABLE_TESTING)
     test/integration_tests/integrationtest_brake_test_required.cpp
     test/unit_tests/pilz_modbus_server_mock.cpp
     src/libmodbus_client.cpp
+    src/modbus_check_ip_connection.cpp
   )
   target_link_libraries(integrationtest_brake_test_required
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+    ${catkin_LIBRARIES}
     modbus
   )
   add_dependencies(integrationtest_brake_test_required
@@ -409,9 +423,10 @@ if(CATKIN_ENABLE_TESTING)
     test/integration_tests/integrationtest_operation_mode.cpp
     test/unit_tests/pilz_modbus_server_mock.cpp
     src/libmodbus_client.cpp
+    src/modbus_check_ip_connection.cpp
   )
   target_link_libraries(integrationtest_operation_mode
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+    ${catkin_LIBRARIES}
     modbus
   )
   add_dependencies(integrationtest_operation_mode
@@ -427,7 +442,7 @@ if(CATKIN_ENABLE_TESTING)
     test/integration_tests/integrationtest_operation_mode_setup.cpp
   )
   target_link_libraries(integrationtest_operation_mode_setup
-    ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
+    ${catkin_LIBRARIES}
   )
   add_dependencies(integrationtest_operation_mode_setup
     modbus_adapter_operation_mode_node
@@ -443,6 +458,7 @@ if(CATKIN_ENABLE_TESTING)
     test/unit_tests/pilz_modbus_server_mock.cpp
     test/unit_tests/canopen_chain_node_mock.cpp
     src/libmodbus_client.cpp
+    src/modbus_check_ip_connection.cpp
   )
   target_link_libraries(integrationtest_execute_brake_test
     ${catkin_LIBRARIES} ${pilz_testutils_LIBRARIES}
@@ -505,7 +521,6 @@ if(CATKIN_ENABLE_TESTING)
   )
   target_link_libraries(unittest_disable_speed_monitoring
     ${catkin_LIBRARIES}
-    ${pilz_testutils_LIBRARIES}
   )
   add_dependencies(unittest_disable_speed_monitoring
     fake_speed_override_node

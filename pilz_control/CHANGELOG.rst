@@ -2,6 +2,14 @@
 Changelog for package pilz_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.18 (2020-07-02)
+-------------------
+* Make AsyncTest header-only
+* Extends robot mock
+* Fixes result of follow_joint_trajectory action
+* Rename triggerCancellingOfActiveGoal() -> cancelActiveGoal()
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.17 (2020-06-22)
 -------------------
 * Add cartesian speed monitoring to pilz joint trajectory controller

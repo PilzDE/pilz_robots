@@ -19,8 +19,13 @@
 
 #include <mutex>
 #include <condition_variable>
+#include <algorithm>
+#include <chrono>
+#include <string>
 
-#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
+#include <ros/ros.h>
 
 namespace testing
 {
@@ -109,6 +114,63 @@ protected:
     return true;                                                                                                       \
   })
 #define ACTION_OPEN_BARRIER_VOID(str) ::testing::InvokeWithoutArgs([this](void) { this->triggerClearEvent(str); })
+
+inline void AsyncTest::triggerClearEvent(const std::string& event)
+{
+  std::lock_guard<std::mutex> lk(m_);
+
+  if (clear_events_.empty())
+  {
+    ROS_DEBUG_NAMED("Test", "Clearing Barricade[%s]", event.c_str());
+    waitlist_.insert(event);
+  }
+  else if (clear_events_.erase(event) < 1)
+  {
+    ROS_WARN_STREAM("Triggered event " << event << " despite not waiting for it.");
+  }
+  cv_.notify_one();
+}
+
+inline bool AsyncTest::barricade(const std::string& clear_event, const int timeout_ms)
+{
+  return barricade({ clear_event }, timeout_ms);
+}
+
+inline bool AsyncTest::barricade(std::initializer_list<std::string> clear_events, const int timeout_ms)
+{
+  std::unique_lock<std::mutex> lk(m_);
+
+  std::stringstream events_stringstream;
+  for (const auto& event : clear_events)
+  {
+    events_stringstream << event << ", ";
+  }
+  ROS_DEBUG_NAMED("Test", "Adding Barricade[%s]", events_stringstream.str().c_str());
+
+  std::copy_if(clear_events.begin(), clear_events.end(), std::inserter(clear_events_, clear_events_.end()),
+               [this](std::string event) { return this->waitlist_.count(event) == 0; });
+  waitlist_.clear();
+
+  auto end_time_point = std::chrono::system_clock::now() + std::chrono::milliseconds(timeout_ms);
+
+  while (!clear_events_.empty())
+  {
+    if (timeout_ms < 0)
+    {
+      cv_.wait(lk);
+    }
+    else
+    {
+      std::cv_status status = cv_.wait_for(lk, end_time_point - std::chrono::system_clock::now());
+      if (status == std::cv_status::timeout)
+      {
+        return clear_events_.empty();
+      }
+    }
+  }
+  return true;
+}
+
 }  // namespace testing
 
 #endif  // ASYNC_TEST_H
