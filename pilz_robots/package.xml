@@ -24,6 +24,7 @@
   <exec_depend>prbt_moveit_config</exec_depend>
   <exec_depend>pilz_control</exec_depend>
   <exec_depend>prbt_hardware_support</exec_depend>
+  <exec_depend>pilz_status_indicator_rqt</exec_depend>
 
   <export>
     <metapackage/>
