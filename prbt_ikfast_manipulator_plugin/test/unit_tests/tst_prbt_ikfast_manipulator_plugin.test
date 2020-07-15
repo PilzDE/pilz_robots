@@ -1,9 +1,28 @@
 <launch>
   <arg name="debug" default="false"/>
 
-  <include file="$(find prbt_moveit_config)/launch/planning_context.launch">
-    <arg name="load_robot_description" value="true"/>
-  </include>
+  <!-- LOAD PARAMETERS REQUIRED FOR T-->
+
+
+  <!-- Load universal robot description format (URDF) -->
+  <param name="robot_description"
+          command="$(find xacro)/xacro --inorder $(find prbt_support)/urdf/prbt.xacro"/>
+
+  <!-- The semantic description that corresponds to the URDF -->
+  <param name="robot_description_semantic" command="$(find xacro)/xacro --inorder
+          $(find prbt_support)/config/prbt.srdf.xacro" />
+
+  <!-- Load updated joint limits (override information from URDF) -->
+  <group ns="robot_description_planning">
+    <rosparam command="load" file="$(find prbt_support)/config/joint_limits.yaml"/>
+  </group>
+
+  <!-- Load default settings for kinematics; these settings are overridden by settings in a node's namespace -->
+  <group ns="robot_description_kinematics">
+    <rosparam command="load" file="$(find prbt_support)/config/kinematics.yaml"/>
+  </group>
+
+
 
   <test unless="$(arg debug)" pkg="prbt_ikfast_manipulator_plugin" type="unittest_prbt_ikfast_manipulator_plugin" test-name="unittest_prbt_ikfast_manipulator_plugin">
     <param name="tip_link" value="prbt_flange" />

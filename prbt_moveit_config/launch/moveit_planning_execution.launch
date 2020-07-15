@@ -25,7 +25,7 @@ limitations under the License.
            controller_joint_names: [joint_1, joint_2, ... joint_N]
        - Update with joint names for your robot (in order expected by rbt controller)
        - and uncomment the following line: -->
-  <rosparam command="load" file="$(find prbt_moveit_config)/config/joint_names.yaml"/>
+  <rosparam command="load" file="$(find prbt_support)/config/joint_names.yaml"/>
 
   <!-- the "sim" argument controls whether we connect to a Simulated or Real robot -->
   <arg name="sim" default="true" />
