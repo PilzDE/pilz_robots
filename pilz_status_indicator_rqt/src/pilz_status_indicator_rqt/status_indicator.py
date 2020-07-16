@@ -40,6 +40,13 @@ class PilzStatusIndicatorRqt(Plugin):
         self.setObjectName('PilzStatusIndicatorRqt')
         self._widget = PilzStatusIndicatorWidget(context.serial_number())
 
+        # Hide currently unsupported elements
+        self._widget.labelHW.hide()
+        self._widget.labelHW_.hide()
+        self._widget.labelROS.hide()
+        self._widget.labelROS_.hide()
+        self._widget.barSpeed.hide()
+
         # Set initial widget state
         self._widget.set_ROS_status(False)
         self._widget.set_HW_status(False)
