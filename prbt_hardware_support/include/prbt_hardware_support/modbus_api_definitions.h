@@ -26,7 +26,7 @@ namespace modbus_api
 {
 namespace v3
 {
-static constexpr uint16_t MODBUS_API_VERSION_REQUIRED{ 3 };
+static constexpr uint16_t MODBUS_API_VERSION_REQUIRED{ 2 };
 
 static constexpr uint16_t MODBUS_BRAKE_TEST_PASSED{ 2 };
 static constexpr uint16_t MODBUS_BRAKE_TEST_NOT_PASSED{ 1 };
