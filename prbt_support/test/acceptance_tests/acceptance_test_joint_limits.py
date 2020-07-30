@@ -217,13 +217,13 @@ class AcceptanceTestJointLimits(unittest.TestCase):
         lower_positions = [0] * len(self.joint_names)
         lower_positions[index] = -(radians(limit) + _JOINT_LIMIT_OVERSTEP)
 
-        self.assertFalse(self._execute_trajectory(lower_positions))
+        self._execute_trajectory(lower_positions) # Controller does not abort trajectory
         self._check_joint_limits()
 
         upper_positions = [0] * len(self.joint_names)
         upper_positions[index] = radians(limit) + _JOINT_LIMIT_OVERSTEP
 
-        self.assertFalse(self._execute_trajectory(upper_positions))
+        self._execute_trajectory(upper_positions) # Controller does not abort trajectory
         self._check_joint_limits()
 
         self._drive_home()
