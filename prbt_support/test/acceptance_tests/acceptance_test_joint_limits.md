@@ -17,12 +17,12 @@ limitations under the License.
 # Acceptance Test Joint Limits using the real robot
 
 ## Prerequisites
-  - Properly connect and startup the robot. Make sure an emergency stop is within reach.
+  - Properly connect and startup the robot. Make sure an emergency stop is within reach and the operation mode is T1.
   - Note that the robot will try to move exactly to the limits of each joint. Make sure that collisions are avoided or
     skip the test for certain joints.
 
 ## Starting the joint limit acceptance tests
-  - Run `roslaunch prbt_support robot.launch`. Once the startup is complete press the acknowledge button.
+  - Run `roslaunch prbt_support robot.launch`. Once the startup is complete press the enabling switch.
   - Run `rosrun prbt_support acceptance_test_joint_limits.py`.
   - Please note: Each test must be confirmed before it is executed. Confirm by entering `y` or `n` to skip test.
 
