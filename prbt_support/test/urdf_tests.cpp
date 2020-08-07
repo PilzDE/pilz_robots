@@ -69,6 +69,8 @@ protected:
 protected:
   // ros stuff
   ros::NodeHandle ph_{ "~" };
+  // The following call to RobotModelLoader will throw an error message about not not finding srdf,
+  // but it works just fine with just urdf.
   robot_model::RobotModelConstPtr robot_model_{ robot_model_loader::RobotModelLoader(GetParam(), false).getModel() };
 
   // parameters
