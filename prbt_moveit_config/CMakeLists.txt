@@ -41,11 +41,11 @@ if (CATKIN_ENABLE_TESTING)
     endif()
   endif()
 
-  add_rostest_gtest(unittest_prbt_ikfast_manipulator_plugin
-    test/tst_prbt_ikfast_manipulator_plugin.test
-    test/tst_prbt_ikfast_manipulator_plugin.cpp
+  add_rostest_gtest(integrationtest_prbt_ikfast_manipulator_plugin
+    test/integrationtest_prbt_ikfast_manipulator_plugin.test
+    test/integrationtest_prbt_ikfast_manipulator_plugin.cpp
   )
-  target_link_libraries(unittest_prbt_ikfast_manipulator_plugin
+  target_link_libraries(integrationtest_prbt_ikfast_manipulator_plugin
     ${catkin_LIBRARIES}
     ${moveit_ros_planning_LIBRARIES}
   )
