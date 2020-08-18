@@ -23,18 +23,45 @@ install(FILES
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
+if(CATKIN_ENABLE_TESTING AND ENABLE_COVERAGE_TESTING)
+  find_package(code_coverage REQUIRED)
+  # Add compiler flags for coverage instrumentation before defining any targets
+  APPEND_COVERAGE_COMPILER_FLAGS()
+endif()
+
 #############
 ## Testing ##
 #############
 
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
+  find_package(ros_pytest REQUIRED)
 
-  catkin_add_nosetests(test/unit_tests/status_indicator_unit_test.py)
-  catkin_add_nosetests(test/unit_tests/status_indicator_widget_unit_test.py)
+  file(GLOB unittest_scripts "test/unit_tests/*.py")
 
-  # To generate coverage run:
-  #     python-coverage run -a --source src test/unit_tests/status_indicator_unit_test.py && \
-  #     python-coverage run -a --source src test/unit_tests/status_indicator_widget_unit_test.py && \
-  #     python-coverage html && see htmlcov/index.html
+  if(ENABLE_COVERAGE_TESTING)
+    foreach(file ${unittest_scripts})
+      add_pytests(${file} OPTIONS "--cov --cov-append")
+    endforeach()
+  else()
+    foreach(file ${unittest_scripts})
+      add_pytests(${file})
+    endforeach()
+  endif()
+
+  # needs https://github.com/machinekoder/ros_pytest/pull/3
+  #if(ENABLE_COVERAGE_TESTING)
+  #  add_pytests(test/unit_tests OPTIONS "--cov --cov-append")
+  #else()
+  #  add_pytests(test/unit_tests)
+  #endif()
+
+  # run: catkin_make -DENABLE_COVERAGE_TESTING=ON pilz_status_indicator_rqt_coverage -j1
+  if(ENABLE_COVERAGE_TESTING)
+    set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*")
+    add_code_coverage(
+      NAME ${PROJECT_NAME}_coverage
+      DEPENDENCIES tests
+    )
+  endif()
 endif()

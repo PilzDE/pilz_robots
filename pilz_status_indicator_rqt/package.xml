@@ -29,6 +29,9 @@
   <test_depend>rostest</test_depend>
   <test_depend>python-mock</test_depend>
   <test_depend>rosunit</test_depend>
+  <test_depend>ros_pytest</test_depend>
+  <test_depend>code_coverage</test_depend>
+  <test_depend>python-pytest-cov</test_depend> <!--Workaround, could be dependency of ros_pytest in the future-->
 
   <export>
     <rqt_gui plugin="${prefix}/plugin.xml"/>
