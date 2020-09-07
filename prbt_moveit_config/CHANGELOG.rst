@@ -2,6 +2,11 @@
 Changelog for package prbt_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Move ikfast plugin test to prbt_moveit_config (#450)
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.18 (2020-07-02)
 -------------------
 

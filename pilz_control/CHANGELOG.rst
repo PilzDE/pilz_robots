@@ -2,6 +2,11 @@
 Changelog for package pilz_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add tolerance to speed-limit acceptance-test (#436)
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.18 (2020-07-02)
 -------------------
 * Make AsyncTest header-only

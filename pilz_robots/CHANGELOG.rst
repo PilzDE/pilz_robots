@@ -2,6 +2,11 @@
 Changelog for package pilz_robots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add pilz_status_indicator_rqt to meta-package (#421)
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.18 (2020-07-02)
 -------------------
 

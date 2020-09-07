@@ -2,6 +2,13 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Enhance safety interface launchfiles
+* Use arguments of top-level launch file in modbus_client.launch
+* Remove unncessary launch arg
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.18 (2020-07-02)
 -------------------
 * Make AsyncTest header-only
