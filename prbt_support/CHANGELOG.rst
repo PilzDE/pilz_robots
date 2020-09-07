@@ -2,8 +2,8 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.19 (2020-09-07)
+-------------------
 * Reduce planning context to urdf model in urdf_tests.test (#451)
 * Increase acceleration limits. (#442)
 * Contributors: Pilz GmbH and Co. KG

@@ -2,8 +2,8 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.19 (2020-09-07)
+-------------------
 * Enhance safety interface launchfiles
 * Use arguments of top-level launch file in modbus_client.launch
 * Remove unncessary launch arg

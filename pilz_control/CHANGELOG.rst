@@ -2,8 +2,8 @@
 Changelog for package pilz_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.19 (2020-09-07)
+-------------------
 * Add tolerance to speed-limit acceptance-test (#436)
 * Contributors: Pilz GmbH and Co. KG
 
