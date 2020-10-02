@@ -33,7 +33,7 @@ These acceptance tests check that the real robot system reacts to RUN_PERMITTED 
   1. The robot starts properly and is moveable via Rviz.
   2. The robot cannot be moved.
   3. A "Click" indicates the reenabling of the drives. The robot can be moved.
-  4. Upon the release of the button the robot stops smoothly.
+  4. Upon the release of the button the robot stops smoothly without any errors on the console.
 
 ## 2. Starting without acknowledge button beeing pressed
 ### Test Sequence
