@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <package format="2">
   <name>prbt_ikfast_manipulator_plugin</name>
-  <version>0.5.18</version>
+  <version>0.5.19</version>
   <description>The prbt_ikfast_manipulator_plugin package</description>
   <maintainer email="a.gutenkunst@pilz.de">Alexander Gutenkunst</maintainer>
   <maintainer email="c.henkel@pilz.de">Christian Henkel</maintainer>
@@ -26,9 +26,4 @@
   <exec_depend>pluginlib</exec_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>tf2_kdl</exec_depend>
-  <!-- Test dependencies -->
-  <test_depend>moveit_ros_planning</test_depend>
-  <test_depend>rostest</test_depend>
-  <test_depend>rosunit</test_depend>
-  <test_depend>code_coverage</test_depend>
 </package>

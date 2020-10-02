@@ -19,6 +19,14 @@
     <group name="manipulator">
       <chain base_link="${prefix}base_link" tip_link="${prefix}flange" />
     </group>
+    <group_state name="all-zeros" group="manipulator">
+        <joint name="${prefix}joint_1" value="0" />
+        <joint name="${prefix}joint_2" value="0" />
+        <joint name="${prefix}joint_3" value="0" />
+        <joint name="${prefix}joint_4" value="0" />
+        <joint name="${prefix}joint_5" value="0" />
+        <joint name="${prefix}joint_6" value="0" />
+    </group_state>
     <!--
     DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come
     into collision with any other link in the robot. This tag disables collision checking between a specified
