@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 These acceptance tests check that the real robot system reacts to RUN_PERMITTED messages accordingly.
 
 ## Prerequisites for each test
-  - Properly connect and startup the robot and power cabinet containing the PNoz-Multi.
+  - Properly connect and startup the robot and power cabinet containing the PSS4000.
     Make sure an emergency stop is within reach.
 
 ## 1. Starting while acknowledge button is pressed
@@ -27,24 +27,24 @@ These acceptance tests check that the real robot system reacts to RUN_PERMITTED 
   1. Press the acknowledge button. Make sure the green light on the power cabinet is on.
      Run `roslaunch prbt_moveit_config moveit_planning_execution.launch sim:=False pipeline:=pilz_command_planner`
   2. Release the acknowledge button. Try to move the robot.
-  3. Press the acknowledge button. Make sure the green light on the power cabinet is on.
+  3. Press the acknowledge button. Make sure the green light on the power cabinet is on and try to move the robot.
   4. Using Rviz perform a long motion during which you release the acknowledge button.
 ### Expected Results
   1. The robot starts properly and is moveable via Rviz.
   2. The robot cannot be moved.
   3. A "Click" indicates the reenabling of the drives. The robot can be moved.
-  4. Upon the release of the button the robot stops smoothly.
+  4. Upon the release of the button the robot stops smoothly without any errors on the console.
 
 ## 2. Starting without acknowledge button beeing pressed
 ### Test Sequence
   1. Do not press the acknowledge button.
-     Run `roslaunch prbt_moveit_config moveit_planning_execution.launch sim:=False pipeline:=pilz_command_planner`
-     After a about 10 seconds press the acknowledge button.
-  2. Try to move the Robot via Rviz.
+     Run `roslaunch prbt_moveit_config moveit_planning_execution.launch sim:=False pipeline:=pilz_command_planner`.
+     Try to move the robot.
+  2. Press the acknowledge button. Again try to move the robot.
 
 ### Expected Results
-  1. A "Click" indicates the enabling of the drives.
-  2. The robot can be moved.
+  1. The robot cannot be moved.
+  2. A "Click" indicates the enabling of the drives and the robot is moveable via Rviz.
 
 ## 3. Loosing ethernet connection during motion
 ### Test Sequence

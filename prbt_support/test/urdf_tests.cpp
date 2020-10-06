@@ -69,10 +69,12 @@ protected:
 protected:
   // ros stuff
   ros::NodeHandle ph_{ "~" };
-  robot_model::RobotModelConstPtr robot_model_{ robot_model_loader::RobotModelLoader(GetParam()).getModel() };
+  // The following call to RobotModelLoader will throw an error message about not not finding srdf,
+  // but it works just fine with just urdf.
+  robot_model::RobotModelConstPtr robot_model_{ robot_model_loader::RobotModelLoader(GetParam(), false).getModel() };
 
   // parameters
-  std::string group_name_, tip_link_name_;
+  std::string tip_link_name_;
 
   // test data
   std::vector<TestDataPoint> testDataSet_;
@@ -81,7 +83,6 @@ protected:
 void URDFKinematicsTest::SetUp()
 {
   // get necessary parameters
-  ASSERT_TRUE(ph_.getParam(ARM_GROUP_NAME, group_name_));
   ASSERT_TRUE(ph_.getParam(ARM_GROUP_TIP_LINK_NAME, tip_link_name_));
 
   // Fill the testdata
@@ -127,8 +128,7 @@ TEST_P(URDFKinematicsTest, forwardKinematics)
     Eigen::Vector3d pos_exp = getPos(test_data);
 
     // get frame transform
-    rstate.setJointGroupPositions(group_name_, joints);
-    // rstate.setVariablePositions(joints);
+    rstate.setVariablePositions(joints);
     rstate.update();
     Eigen::Affine3d transform = rstate.getFrameTransform(tip_link_name_);
 
