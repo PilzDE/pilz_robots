@@ -31,6 +31,7 @@ _JOINT_STATES_TOPIC_NAME = '/joint_states'
 _WAIT_FOR_MESSAGE_TIMEOUT_SEC = 1
 
 # Use axis ranges from data sheet: https://www.pilz.com/download/open/PRBT_6_Operat_Manual_1004685-EN-02.pdf (page 19)
+_JOINT_NAMES = ['prbt_joint_1', 'prbt_joint_2', 'prbt_joint_3', 'prbt_joint_4', 'prbt_joint_5', 'prbt_joint_6']
 _JOINT_LIMITS_DEGREE = {
     'prbt_joint_1': 170,
     'prbt_joint_2': 145,
@@ -42,7 +43,12 @@ _JOINT_LIMITS_DEGREE = {
 _JOINT_POSITIONS_TOLERANCE = 0.001
 _VELOCITY_SCALE = 0.2
 _JOINT_LIMIT_OVERSTEP = 0.1
-_SELF_COLLISION_JOINT_NAME = 'prbt_joint_5'
+_COLLISION_JOINT_NAMES = [
+                          # Collision if mounted on a table
+                          'prbt_joint_2', \
+                          # Self-Collision if gripper is mounted
+                          'prbt_joint_5'  \
+                          ]
 
 
 class AcceptanceTestJointLimits(unittest.TestCase):
@@ -56,7 +62,7 @@ class AcceptanceTestJointLimits(unittest.TestCase):
         if not self.client.wait_for_server(timeout=rospy.Duration(_ACTION_SERVER_TIMEOUT_SEC)):
             self.fail('Timed out waiting for action server ' + _CONTROLLER_ACTION_NAME)
 
-        self.joint_names = sorted(_JOINT_LIMITS_DEGREE.keys())
+        self.joint_names = _JOINT_NAMES
         self.home_positions = [0] * len(self.joint_names)
 
         # read joint limits from urdf
@@ -232,7 +238,7 @@ class AcceptanceTestJointLimits(unittest.TestCase):
         """ Perform all reaching tests. Before each test ask the user if he wants to skip it.
         """
         for name in self.joint_names:
-            if not name == _SELF_COLLISION_JOINT_NAME:
+            if name not in _COLLISION_JOINT_NAMES:
                 if self._ask_for_permission('joint_limit_reaching_test for ' + name):
                     self._joint_limit_reaching_test(name)
 
@@ -240,7 +246,7 @@ class AcceptanceTestJointLimits(unittest.TestCase):
         """ Perform all overstepping tests. Before each test ask the user if he wants to skip it.
         """
         for name in self.joint_names:
-            if not name == _SELF_COLLISION_JOINT_NAME:
+            if name not in _COLLISION_JOINT_NAMES:
                 if self._ask_for_permission('joint_limit_overstepping_test for ' + name):
                     self._joint_limit_overstepping_test(name)
 
