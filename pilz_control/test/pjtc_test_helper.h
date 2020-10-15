@@ -30,8 +30,6 @@
 
 #include <control_msgs/FollowJointTrajectoryActionGoal.h>
 
-#include <pilz_testutils/ros_not_ok_exception.h>
-
 #include "robot_mock.h"
 
 namespace pilz_joint_trajectory_controller_test
