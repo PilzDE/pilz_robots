@@ -21,8 +21,8 @@
 
   <!-- MoveGroup capabilities to load, append sequence capability -->
   <param name="capabilities" value="$(arg capabilities)
-                                    pilz_industrial_motion_planner/MoveGroupSequenceAction
-                                    pilz_industrial_motion_planner/MoveGroupSequenceService
+                                    pilz_trajectory_generation/MoveGroupSequenceAction
+                                    pilz_trajectory_generation/MoveGroupSequenceService
                                    " />
   <param name="disable_capabilities" value="$(arg disable_capabilities)" />
 </launch>
