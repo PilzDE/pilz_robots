@@ -60,7 +60,7 @@ public:
 };
 
 #define GENERATE_LOGMESSAGE_MATCHER_P(level)                                                                           \
-  MATCHER_P(Is##level, msg, "")                                                                                        \
+  MATCHER_P(Is##level, msg, std::string(#level " \"") + msg + "\"")                                                    \
   {                                                                                                                    \
     return arg->getLevel()->toInt() == log4cxx::Level::level##_INT && std::string(msg) == arg->getMessage();           \
   }
@@ -74,5 +74,13 @@ GENERATE_LOGMESSAGE_MATCHER_P(FATAL)
 #define EXPECT_LOG(logger, level, msg) EXPECT_CALL(logger, append(Is##level(msg), ::testing::_))
 
 }  // namespace pilz_testutils
+
+namespace log4cxx::spi
+{
+void PrintTo(const LoggingEventPtr& logging_event, std::ostream* os)
+{
+  *os << logging_event->getLevel()->toString() << " \"" << logging_event->getMessage() << "\"";
+}
+}  // namespace log4cxx::spi
 
 #endif  // MOCK_APPENDER_H
