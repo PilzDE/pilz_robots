@@ -137,7 +137,7 @@ ModbusAdapterBrakeTest::getMaxRegisterIdx(const TRegIdxCont& reg_idx_cont)
                           })
       ->second;
 }
-// LCVO EXCL_STOP
+// LCOV_EXCL_STOP
 
 inline unsigned long
 ModbusAdapterBrakeTest::getRegisterBlockSize(const ModbusAdapterBrakeTest::TRegIdxCont& reg_idx_cont)

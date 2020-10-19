@@ -2,6 +2,12 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.19 (2020-09-07)
+-------------------
+* Reduce planning context to urdf model in urdf_tests.test (#451)
+* Increase acceleration limits. (#442)
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.18 (2020-07-02)
 -------------------
 * Make AsyncTest header-only

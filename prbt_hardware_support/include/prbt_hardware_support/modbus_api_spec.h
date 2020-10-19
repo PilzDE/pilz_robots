@@ -151,7 +151,7 @@ public:
     auto it = std::min_element(
         register_mapping_.begin(), register_mapping_.end(),
         [](const RegisterMappingEntry& a, const RegisterMappingEntry& b) { return a.second < b.second; });
-    // LCVO EXCL_STOP
+    // LCOV_EXCL_STOP
     return it->second;
   }
 
@@ -169,7 +169,7 @@ public:
     auto it = std::max_element(
         register_mapping_.begin(), register_mapping_.end(),
         [](const RegisterMappingEntry& a, const RegisterMappingEntry& b) { return a.second < b.second; });
-    // LCVO EXCL_STOP
+    // LCOV_EXCL_STOP
     return it->second;
   }
 

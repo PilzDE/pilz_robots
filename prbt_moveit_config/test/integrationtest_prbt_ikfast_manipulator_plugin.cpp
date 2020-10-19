@@ -10,27 +10,27 @@ typedef std::vector<double> Vec1D;
 typedef std::vector<Vec1D> Vec2D;
 typedef pluginlib::ClassLoader<kinematics::KinematicsBase> KinematicsLoader;
 
-static const std::string MOVEIT_CORE_PACKAGE {"moveit_core"};
-static const std::string KINEMATICS_BASE_CLASS {"kinematics::KinematicsBase"};
+static const std::string MOVEIT_CORE_PACKAGE{ "moveit_core" };
+static const std::string KINEMATICS_BASE_CLASS{ "kinematics::KinematicsBase" };
 
-static const std::string PLUGIN_NAME_PARAM {"ik_plugin_name"};
-static const std::string GROUP_PARAM {"group"};
-static const std::string TIP_LINK_PARAM {"tip_link"};
-static const std::string ROOT_LINK_PARAM {"root_link"};
-static const std::string JOINT_NAMES_PARAM {"joint_names"};
-static const std::string ROBOT_DESCRIPTION_PARAM {"robot_description"};
+static const std::string PLUGIN_NAME_PARAM{ "ik_plugin_name" };
+static const std::string GROUP_PARAM{ "group" };
+static const std::string TIP_LINK_PARAM{ "tip_link" };
+static const std::string ROOT_LINK_PARAM{ "root_link" };
+static const std::string JOINT_NAMES_PARAM{ "joint_names" };
+static const std::string ROBOT_DESCRIPTION_PARAM{ "robot_description" };
 
-static constexpr double DEFAULT_SEARCH_DISCRETIZATION {0.01};
-static constexpr unsigned int NUM_JOINTS {6};
-static constexpr double IKFAST_TOLERANCE {0.001};
+static constexpr double DEFAULT_SEARCH_DISCRETIZATION{ 0.01 };
+static constexpr unsigned int NUM_JOINTS{ 6 };
+static constexpr double IKFAST_TOLERANCE{ 0.001 };
 
-static constexpr double L1 {0.3500}; // Height of first connector
-static constexpr double L2 {0.3070}; // Height of second connector
+static constexpr double L1{ 0.3500 };  // Height of first connector
+static constexpr double L2{ 0.3070 };  // Height of second connector
 
 /**
  * @brief Overload ostream operator for double vectors.
  */
-std::ostream& operator<< (std::ostream &os, const Vec1D &vec)
+std::ostream& operator<<(std::ostream& os, const Vec1D& vec)
 {
   os << "(";
   if (!vec.empty())
@@ -49,14 +49,11 @@ std::ostream& operator<< (std::ostream &os, const Vec1D &vec)
 /**
  * @brief Overload ostream operator for robot poses.
  */
-std::ostream& operator<< (std::ostream &os, const geometry_msgs::Pose &pose)
+std::ostream& operator<<(std::ostream& os, const geometry_msgs::Pose& pose)
 {
-  os << "position: x=" << double(pose.position.x)
-     << ", y=" << double(pose.position.y)
-     << ", z=" << double(pose.position.z)
-     << ", orientation: x=" << double(pose.orientation.x)
-     << ", y=" << double(pose.orientation.y)
-     << ", z=" << double(pose.orientation.z)
+  os << "position: x=" << double(pose.position.x) << ", y=" << double(pose.position.y)
+     << ", z=" << double(pose.position.z) << ", orientation: x=" << double(pose.orientation.x)
+     << ", y=" << double(pose.orientation.y) << ", z=" << double(pose.orientation.z)
      << ", w=" << double(pose.orientation.w);
   return os;
 }
@@ -66,7 +63,7 @@ std::ostream& operator<< (std::ostream &os, const geometry_msgs::Pose &pose)
  */
 double singularPoseJointFormula(double joint1)
 {
-  return ( asin( L1 / L2 * sin(joint1) ) + joint1 );
+  return (asin(L1 / L2 * sin(joint1)) + joint1);
 }
 
 /**
@@ -90,8 +87,8 @@ protected:
   boost::shared_ptr<kinematics::KinematicsBase> solver_;
 
 private:
-  ros::NodeHandle ph_ {"~"};
-  KinematicsLoader loader_ {MOVEIT_CORE_PACKAGE, KINEMATICS_BASE_CLASS};
+  ros::NodeHandle ph_{ "~" };
+  KinematicsLoader loader_{ MOVEIT_CORE_PACKAGE, KINEMATICS_BASE_CLASS };
 };
 
 void PrbtIKFastPluginTest::SetUp()
@@ -105,27 +102,24 @@ void PrbtIKFastPluginTest::SetUp()
   {
     solver_ = loader_.createInstance(plugin_name);
   }
-  catch (pluginlib::PluginlibException &e)
+  catch (pluginlib::PluginlibException& e)
   {
     FAIL() << "Failed to load plugin: " << e.what();
   }
 
   // initialize plugin
-  EXPECT_TRUE(ph_.getParam(GROUP_PARAM, group_name_))
-      << "The parameter " << GROUP_PARAM << " was not found.";
-  EXPECT_TRUE(ph_.getParam(TIP_LINK_PARAM, tip_link_))
-      << "The parameter " << TIP_LINK_PARAM << " was not found.";
-  EXPECT_TRUE(ph_.getParam(ROOT_LINK_PARAM, root_link_))
-      << "The parameter " << ROOT_LINK_PARAM << " was not round.";
+  EXPECT_TRUE(ph_.getParam(GROUP_PARAM, group_name_)) << "The parameter " << GROUP_PARAM << " was not found.";
+  EXPECT_TRUE(ph_.getParam(TIP_LINK_PARAM, tip_link_)) << "The parameter " << TIP_LINK_PARAM << " was not found.";
+  EXPECT_TRUE(ph_.getParam(ROOT_LINK_PARAM, root_link_)) << "The parameter " << ROOT_LINK_PARAM << " was not round.";
   EXPECT_TRUE(ph_.getParam(JOINT_NAMES_PARAM, joint_names_))
       << "The parameter " << JOINT_NAMES_PARAM << " was not found.";
 
-  std::vector<std::string> tip_links {tip_link_};
+  std::vector<std::string> tip_links{ tip_link_ };
   robot_model_loader::RobotModelLoader robot_model_loader(ROBOT_DESCRIPTION_PARAM, false);
   const robot_model::RobotModelPtr& robot_model = robot_model_loader.getModel();
 
-  ASSERT_TRUE( solver_->initialize(*robot_model, group_name_, root_link_, tip_links,
-                                   DEFAULT_SEARCH_DISCRETIZATION) ) << "Failed to initialize plugin.";
+  ASSERT_TRUE(solver_->initialize(*robot_model, group_name_, root_link_, tip_links, DEFAULT_SEARCH_DISCRETIZATION))
+      << "Failed to initialize plugin.";
 }
 
 void PrbtIKFastPluginTest::TearDown()
@@ -154,22 +148,22 @@ TEST_F(PrbtIKFastPluginTest, testSingularities)
   // + Step 1 +
   // ++++++++++
 
-  std::vector<std::string> link_names { {solver_->getTipFrame()} };
+  std::vector<std::string> link_names{ { solver_->getTipFrame() } };
   Vec1D seed;
   seed.resize(NUM_JOINTS, 0.);
 
   Vec2D joints_test_set;
-  joints_test_set.push_back(Vec1D { {0.0, 0.0, 0.0, 0.0, 0.0, 0.0} });
-  joints_test_set.push_back(Vec1D { {0.0, 0.0, 0.0, 1.0, 0.0, 0.0} });
-  joints_test_set.push_back(Vec1D { {0.0, 0.0, 0.0, 0.0, -1.0, 0.0} });
-  joints_test_set.push_back(Vec1D { {0.0, 0.0, 0.0, 0.0, 1.0, 1.0} });
+  joints_test_set.push_back(Vec1D{ { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } });
+  joints_test_set.push_back(Vec1D{ { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0 } });
+  joints_test_set.push_back(Vec1D{ { 0.0, 0.0, 0.0, 0.0, -1.0, 0.0 } });
+  joints_test_set.push_back(Vec1D{ { 0.0, 0.0, 0.0, 0.0, 1.0, 1.0 } });
 
-  double j1 { 1.0 };
-  double j2 { singularPoseJointFormula(j1) };
-  joints_test_set.push_back(Vec1D { {0.0, j1, j2, 0.0, 0.0, 0.0} });
-  joints_test_set.push_back(Vec1D { {0.0, j1, j2, -1.0, 0.0, 0.0} });
-  joints_test_set.push_back(Vec1D { {0.0, j1, j2, 0.0, 1.0, 0.0} });
-  joints_test_set.push_back(Vec1D { {0.0, j1, j2, 0.0, 1.0, -1.0} });
+  double j1{ 1.0 };
+  double j2{ singularPoseJointFormula(j1) };
+  joints_test_set.push_back(Vec1D{ { 0.0, j1, j2, 0.0, 0.0, 0.0 } });
+  joints_test_set.push_back(Vec1D{ { 0.0, j1, j2, -1.0, 0.0, 0.0 } });
+  joints_test_set.push_back(Vec1D{ { 0.0, j1, j2, 0.0, 1.0, 0.0 } });
+  joints_test_set.push_back(Vec1D{ { 0.0, j1, j2, 0.0, 1.0, -1.0 } });
 
   // Same procedure for all joint vectors
   for (Vec1D joints : joints_test_set)
@@ -181,8 +175,7 @@ TEST_F(PrbtIKFastPluginTest, testSingularities)
     // ++++++++++
 
     std::vector<geometry_msgs::Pose> poses;
-    ASSERT_TRUE( solver_->getPositionFK(link_names, joints, poses) )
-        << "Failed to compute forward kinematics.";
+    ASSERT_TRUE(solver_->getPositionFK(link_names, joints, poses)) << "Failed to compute forward kinematics.";
     EXPECT_EQ(1u, poses.size());
     ROS_INFO_STREAM("Obtain pose: " << poses.at(0));
 
@@ -195,11 +188,10 @@ TEST_F(PrbtIKFastPluginTest, testSingularities)
     kinematics::KinematicsQueryOptions options;
 
     ros::Time generation_begin = ros::Time::now();
-    EXPECT_TRUE( solver_->getPositionIK(poses, seed, solutions, result, options) )
+    EXPECT_TRUE(solver_->getPositionIK(poses, seed, solutions, result, options))
         << "Failed to solve inverse kinematics.";
     double duration_ms = (ros::Time::now() - generation_begin).toSec() * 1000;
     ROS_DEBUG_STREAM("Ik solve took " << duration_ms << " ms");
-
 
     ROS_INFO_STREAM("Received " << solutions.size() << " solutions to IK problem.");
     EXPECT_GT(solutions.size(), 0u);
@@ -208,12 +200,12 @@ TEST_F(PrbtIKFastPluginTest, testSingularities)
     // + Step 4 +
     // ++++++++++
 
-    bool found_expected_solution {false};
+    bool found_expected_solution{ false };
     for (Vec1D sol : solutions)
     {
       EXPECT_EQ(sol.size(), NUM_JOINTS);
 
-      double diff {0.0};
+      double diff{ 0.0 };
       for (unsigned int j = 0; j < NUM_JOINTS; j++)
       {
         diff += pow(sol[j] - joints[j], 2);

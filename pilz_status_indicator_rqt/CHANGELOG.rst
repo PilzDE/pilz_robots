@@ -2,6 +2,11 @@
 Changelog for package pilz_status_indicator_rqt
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.19 (2020-09-07)
+-------------------
+* Hide currently unsupported ui elements
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.18 (2020-07-02)
 -------------------
 

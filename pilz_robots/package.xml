@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>pilz_robots</name>
-  <version>0.5.18</version>
+  <version>0.5.19</version>
   <description>The metapackage</description>
 
   <url type="website">http://ros.org/wiki/pilz_robots</url>
@@ -24,6 +24,7 @@
   <exec_depend>prbt_moveit_config</exec_depend>
   <exec_depend>pilz_control</exec_depend>
   <exec_depend>prbt_hardware_support</exec_depend>
+  <exec_depend>pilz_status_indicator_rqt</exec_depend>
 
   <export>
     <metapackage/>
