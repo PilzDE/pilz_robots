@@ -23,7 +23,6 @@
 #include <gmock/gmock.h>
 
 #include <pilz_testutils/async_test.h>
-#include <pilz_testutils/mock_appender.h>
 #include <pilz_testutils/logger_mock.h>
 
 #include <ros/ros.h>
