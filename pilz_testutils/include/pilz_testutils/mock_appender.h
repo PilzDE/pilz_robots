@@ -43,17 +43,23 @@ public:
   }
 
 public:
-  MOCK_METHOD2(append, void(const log4cxx::spi::LoggingEventPtr&, log4cxx::helpers::Pool&));
+  // Indirection via "internal_append" needed to avoid "override" warning message from compiler
+  void append(const log4cxx::spi::LoggingEventPtr& a, log4cxx::helpers::Pool& b) override
+  {
+    internal_append(a, b);
+  }
+
+  MOCK_METHOD2(internal_append, void(const log4cxx::spi::LoggingEventPtr&, log4cxx::helpers::Pool&));
 
   log4cxx::LogString getName() const override
   {
     return "MockAppender";
   }
 
-  virtual void close()
+  void close() override
   {
   }
-  virtual bool requiresLayout() const
+  bool requiresLayout() const override
   {
     return false;
   }
@@ -71,7 +77,7 @@ GENERATE_LOGMESSAGE_MATCHER_P(WARN)
 GENERATE_LOGMESSAGE_MATCHER_P(ERROR)
 GENERATE_LOGMESSAGE_MATCHER_P(FATAL)
 
-#define EXPECT_LOG(logger, level, msg) EXPECT_CALL(logger, append(Is##level(msg), ::testing::_))
+#define EXPECT_LOG(logger, level, msg) EXPECT_CALL(logger, internal_append(Is##level(msg), ::testing::_))
 
 }  // namespace pilz_testutils
 
