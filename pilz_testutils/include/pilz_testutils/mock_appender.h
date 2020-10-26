@@ -17,7 +17,8 @@
 #ifndef MOCK_APPENDER_H
 #define MOCK_APPENDER_H
 
-#include <gmock/gmock.h>
+#include <stdexcept>
+#include <functional>
 
 #include <ros/console.h>
 #include "ros/console_impl.h"
@@ -38,18 +39,24 @@ namespace pilz_testutils
 class MockAppender : public log4cxx::AppenderSkeleton
 {
 public:
-  ~MockAppender()
+  using AppendCallback = std::function<void(const log4cxx::spi::LoggingEventPtr& a, log4cxx::helpers::Pool& b)>;
+
+  MockAppender(const AppendCallback& append_cb) : append_cb_(append_cb)
   {
+    if (!append_cb)
+    {
+      throw std::invalid_argument("Append callback must not be null");
+    }
   }
 
 public:
-  // Indirection via "internal_append" needed to avoid "override" warning message from compiler
+  ~MockAppender() = default;
+
+public:
   void append(const log4cxx::spi::LoggingEventPtr& a, log4cxx::helpers::Pool& b) override
   {
-    internal_append(a, b);
+    append_cb_(a, b);
   }
-
-  MOCK_METHOD2(internal_append, void(const log4cxx::spi::LoggingEventPtr&, log4cxx::helpers::Pool&));
 
   log4cxx::LogString getName() const override
   {
@@ -63,21 +70,10 @@ public:
   {
     return false;
   }
+
+private:
+  AppendCallback append_cb_;
 };
-
-#define GENERATE_LOGMESSAGE_MATCHER_P(level)                                                                           \
-  MATCHER_P(Is##level, msg, "")                                                                                        \
-  {                                                                                                                    \
-    return arg->getLevel()->toInt() == log4cxx::Level::level##_INT && std::string(msg) == arg->getMessage();           \
-  }
-
-GENERATE_LOGMESSAGE_MATCHER_P(DEBUG)
-GENERATE_LOGMESSAGE_MATCHER_P(INFO)
-GENERATE_LOGMESSAGE_MATCHER_P(WARN)
-GENERATE_LOGMESSAGE_MATCHER_P(ERROR)
-GENERATE_LOGMESSAGE_MATCHER_P(FATAL)
-
-#define EXPECT_LOG(logger, level, msg) EXPECT_CALL(logger, internal_append(Is##level(msg), ::testing::_))
 
 }  // namespace pilz_testutils
 
