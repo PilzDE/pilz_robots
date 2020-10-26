@@ -20,10 +20,15 @@
 
 #include <log4cxx/logger.h>
 
+#include <gmock/gmock.h>
+
 #include <pilz_testutils/mock_appender.h>
 
 namespace pilz_testutils
 {
+using std::placeholders::_1;
+using std::placeholders::_2;
+
 /**
  * @brief Class to be used in tests with logging checks.
  *
@@ -53,10 +58,12 @@ namespace pilz_testutils
  *
  * const std::string LOG_MSG_RECEIVED_EVENT{ "logger_called_event" };
  *
- * pilz_testutils::LoggerMock ros_log_mock;
+ * StrictMock<pilz_testutils::LoggerMock> ros_log_mock;
  *
- * EXPECT_LOG(*mock_logger, WARN, "Your warning text")
+ * EXPECT_WARN_LOG(mock_logger, "Your warning text")
  *            .WillOnce(ACTION_OPEN_BARRIER_VOID(LOG_MSG_RECEIVED_EVENT));
+ *
+ * EXPECT_ARBITRARY_LOG(ros_log_mock).Times(AnyNumber()); // Ensure that arbitrary other logs can occur
  *
  * function_causing_async_warning();
  *
@@ -70,15 +77,19 @@ public:
   LoggerMock(const std::string& logger_name = ROSCONSOLE_ROOT_LOGGER_NAME);
   ~LoggerMock();
 
+  //! @deprecated DO NOT USE ANYMORE!, this function solely exist to ensure compatibility with old code
+  //! not yet adapted.
+  LoggerMock& operator*();
+
 public:
-  MockAppender& operator*();
+  MOCK_METHOD2(appendLogMsg, void(const log4cxx::spi::LoggingEventPtr&, log4cxx::helpers::Pool&));
 
 private:
   log4cxx::LoggerPtr ros_root_logger_;
   // Note:
   // The ROS root logger takes control over the life time management of the LoggerMock!
   // We only keep a pointer to allow tests make use of the mocked functions of the LoggerMock.
-  MockAppender* mock_appender_{ new MockAppender() };
+  MockAppender* mock_appender_{ new MockAppender(std::bind(&LoggerMock::appendLogMsg, this, _1, _2)) };
 };
 
 inline LoggerMock::LoggerMock(const std::string& logger_name)
@@ -92,10 +103,36 @@ inline LoggerMock::~LoggerMock()
   ros_root_logger_->removeAppender(mock_appender_);
 }
 
-inline MockAppender& LoggerMock::operator*()
+inline LoggerMock& LoggerMock::operator*()
 {
-  return *mock_appender_;
+  return *this;
 }
+
+// clang-format off
+#define GENERATE_LOGMESSAGE_MATCHER_P(level)\
+  MATCHER_P(Is##level, msg, "")\
+  {\
+    return arg->getLevel()->toInt() == log4cxx::Level::level##_INT && std::string(msg) == arg->getMessage();\
+  }
+
+GENERATE_LOGMESSAGE_MATCHER_P(DEBUG)
+GENERATE_LOGMESSAGE_MATCHER_P(INFO)
+GENERATE_LOGMESSAGE_MATCHER_P(WARN)
+GENERATE_LOGMESSAGE_MATCHER_P(ERROR)
+GENERATE_LOGMESSAGE_MATCHER_P(FATAL)
+
+//! @deprecated DO NOT USE ANYMORE!, this function solely exist to ensure compatibility with old code
+//! not yet adapted.
+#define EXPECT_LOG(logger, level, msg) EXPECT_CALL(logger, appendLogMsg(Is##level(msg), ::testing::_))
+
+#define EXPECT_DEBUG_LOG(logger, msg)   EXPECT_CALL(logger, appendLogMsg(IsDEBUG(msg),  ::testing::_))
+#define EXPECT_INFO_LOG(logger, msg)    EXPECT_CALL(logger, appendLogMsg(IsINFO(msg),   ::testing::_))
+#define EXPECT_WARN_LOG(logger, msg)    EXPECT_CALL(logger, appendLogMsg(IsWARN(msg),   ::testing::_))
+#define EXPECT_ERROR_LOG(logger, msg)   EXPECT_CALL(logger, appendLogMsg(IsERROR(msg),  ::testing::_))
+#define EXPECT_FATAL_LOG(logger, msg)   EXPECT_CALL(logger, appendLogMsg(IsFATAL(msg),  ::testing::_))
+
+#define EXPECT_ARBITRARY_LOG(logger)    EXPECT_CALL(logger, appendLogMsg(::testing::_,  ::testing::_))
+// clang-format on
 
 }  // namespace pilz_testutils
 
