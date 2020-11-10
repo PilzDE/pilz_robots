@@ -25,4 +25,5 @@
   <test_depend>rosunit</test_depend>
   <test_depend>cmake_modules</test_depend>
   <test_depend>code_coverage</test_depend>
+  <test_depend>std_srvs</test_depend>
 </package>

@@ -62,6 +62,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
 #############
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
+  find_package(std_srvs REQUIRED)
 
   if(ENABLE_COVERAGE_TESTING)
     find_package(code_coverage REQUIRED)
