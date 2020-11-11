@@ -204,7 +204,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testStopTrajExecutionAtHold
   EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";
 }
 
-INSTANTIATE_TEST_CASE_P(MethodAndServiceCallback, PilzJointTrajectoryControllerIsExecutingTest,
+INSTANTIATE_TEST_SUITE_P(MethodAndServiceCallback, PilzJointTrajectoryControllerIsExecutingTest,
                         testing::Values(InvokeIsExecutingMethod, InvokeIsExecutingServiceCallback));
 
 }  // namespace pilz_joint_trajectory_controller_test
