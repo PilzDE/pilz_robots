@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
-      - uses: 'ros-industrial/industral_ci@master'
+      - uses: 'ros-industrial/industrial_ci@master'
         env:
           ROS_REPO: testing
           ROS_DISTRO: melodic
