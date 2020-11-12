@@ -52,5 +52,6 @@ jobs:
           ADDITIONAL_DEBS: git
           CATKIN_LINT: false
           NOT_TEST_BUILD: true
+          PARALLEL_TESTS: true
           AFTER_SCRIPT: 'git clone --depth=1 --branch master https://github.com/PilzDE/industrial_ci_addons.git /industrial_ci_addons && source /industrial_ci_addons/check_coverage.sh && check_coverage pilz_control pilz_utils prbt_hardware_support'
           CMAKE_ARGS: '-DENABLE_COVERAGE_TESTING=ON -DCMAKE_BUILD_TYPE=Debug'
