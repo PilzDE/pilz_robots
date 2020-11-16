@@ -1,9 +1,6 @@
 name: CI prerelease
 
-on:
-  push:
-    branches:
-      - 'release/*'
+on: pull_request
 
 jobs:
   prerelease:
