@@ -1,0 +1,57 @@
+name: CI
+
+on: [push, pull_request]
+
+env:
+  ADDITIONAL_DEBS: "clang-tidy libclang-dev"
+  CATKIN_LINT: true
+  CMAKE_ARGS: "-DCATKIN_ENABLE_CLANG_TIDY=true"
+
+jobs:
+  build_test_main:
+    name: "Build + Test with Main Repo (http://packages.ros.org/ros/ubuntu)"
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+      - uses: 'ros-industrial/industrial_ci@master'
+        env:
+          ROS_REPO: main
+          ROS_DISTRO: melodic
+    continue-on-error: true
+
+  build_test_testing:
+    name: "Build + Test with Testing Repo (http://packages.ros.org/ros-testing/ubuntu)"
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+      - uses: 'ros-industrial/industrial_ci@master'
+        env:
+          ROS_REPO: testing
+          ROS_DISTRO: melodic
+
+  clang-format:
+    name: "Build + Test with clang format with Testing Repo of melodic (http://packages.ros.org/ros-testing/ubuntu)"
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+      - uses: 'ros-industrial/industrial_ci@master'
+        env:
+          ROS_REPO: testing
+          ROS_DISTRO: melodic
+          CLANG_FORMAT_CHECK: file
+
+  coverage:
+    name: "Check coverage with Testing Repo of melodic (http://packages.ros.org/ros-testing/ubuntu)"
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+      - uses: 'ros-industrial/industrial_ci@master'
+        env:
+          ROS_REPO: testing
+          ROS_DISTRO: melodic
+          ADDITIONAL_DEBS: git
+          CATKIN_LINT: false
+          NOT_TEST_BUILD: true
+          PARALLEL_TESTS: true
+          AFTER_SCRIPT: 'git clone --depth=1 --branch master https://github.com/PilzDE/industrial_ci_addons.git /industrial_ci_addons && source /industrial_ci_addons/check_coverage.sh && check_coverage pilz_control pilz_utils prbt_hardware_support'
+          CMAKE_ARGS: '-DENABLE_COVERAGE_TESTING=ON -DCMAKE_BUILD_TYPE=Debug'
