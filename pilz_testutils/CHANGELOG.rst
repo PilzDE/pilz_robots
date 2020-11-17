@@ -2,6 +2,15 @@
 Changelog for package pilz_testutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix include own header before system (#466)
+* Better log output on mismatches (#462)
+* Remove ROSNotOKException (#458)
+* Fix compiler errors in MockAppender (#464)
+* Fix wrong include for logger mock (#461)
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.19 (2020-09-07)
 -------------------
 
