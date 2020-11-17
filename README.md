@@ -108,15 +108,15 @@ iface can0 can static
 2. Run `roslaunch prbt_moveit_config moveit_planning_execution.launch sim:=false pipeline:=ompl`
 3. Use the moveit Motion Planning rviz plugin to plan and execute (see simulation section; set `Velocity Scaling` to 0.1 first)
 
-Instead of OMPL use the trapezoidal motion planners of Pilz for executing industrial robot commands like PTP, LIN, etc. For this install the
-package [trapezoidal_trajectory_generation](http://wiki.ros.org/trapezoidal_trajectory_generation):
+Instead of OMPL use the industrial motion planners of Pilz for executing industrial robot commands like PTP, LIN, etc. For this install the
+package [pilz_industrial_motion_planner](http://wiki.ros.org/pilz_industrial_motion_planner):
 ```
-sudo apt install ros-kinetic-trapezoidal-trajectory-generation
+sudo apt install ros-kinetic-pilz-industrial-motion-planner
 or
-sudo apt install ros-melodic-trapezoidal-trajectory-generation
+sudo apt install ros-melodic-pilz-industrial-motion-planner
 ```
 
-then replace the pipeline in the above command by `pipeline:=trapezoidal_command_planner`.
+then replace the pipeline in the above command by `pipeline:=pilz_industrial_motion_planner`.
 
 ### Adjust expert parameters
 If you've created an application package with your own launch file as described in the
