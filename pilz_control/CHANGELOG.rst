@@ -2,6 +2,12 @@
 Changelog for package pilz_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.20 (2020-11-17)
+-------------------
+* Remove ROSNotOKException (#458)
+* Fix wrong include for logger mock (#461)
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.19 (2020-09-07)
 -------------------
 * Add tolerance to speed-limit acceptance-test (#436)

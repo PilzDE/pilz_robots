@@ -2,6 +2,9 @@
 Changelog for package pilz_robots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.20 (2020-11-17)
+-------------------
+
 0.5.19 (2020-09-07)
 -------------------
 * add pilz_status_indicator_rqt to meta-package (#421)

@@ -2,6 +2,11 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.20 (2020-11-17)
+-------------------
+* Fix acceptancetest_joint_limits (#448)
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.19 (2020-09-07)
 -------------------
 * Reduce planning context to urdf model in urdf_tests.test (#451)

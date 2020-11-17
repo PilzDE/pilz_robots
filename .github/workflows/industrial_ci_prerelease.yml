@@ -1,0 +1,15 @@
+name: CI prerelease
+
+on: pull_request
+
+jobs:
+  prerelease:
+    name: "Build + Test with package dependencies with Testing Repo of melodic (http://packages.ros.org/ros-testing/ubuntu)"
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+      - uses: 'ros-industrial/industrial_ci@master'
+        env:
+          PRERELEASE: true
+          ROS_REPO: testing
+          ROS_DISTRO: melodic

@@ -20,7 +20,7 @@
 
 #include <log4cxx/logger.h>
 
-#include <pilz_testutils/mock_appender.h>
+#include "pilz_testutils/mock_appender.h"
 
 namespace pilz_testutils
 {
