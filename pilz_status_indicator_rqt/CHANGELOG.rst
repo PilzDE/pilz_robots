@@ -2,8 +2,8 @@
 Changelog for package pilz_status_indicator_rqt
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.20 (2020-11-17)
+-------------------
 * Update package.xml for python 3
 * Contributors: Pilz GmbH and Co. KG
 

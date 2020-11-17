@@ -2,8 +2,8 @@
 Changelog for package pilz_testutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.20 (2020-11-17)
+-------------------
 * Fix include own header before system (#466)
 * Better log output on mismatches (#462)
 * Remove ROSNotOKException (#458)

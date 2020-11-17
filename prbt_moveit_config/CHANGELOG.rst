@@ -2,8 +2,8 @@
 Changelog for package prbt_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.20 (2020-11-17)
+-------------------
 * Add named pose all-zeros (#455)
 * Contributors: Pilz GmbH and Co. KG
 

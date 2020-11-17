@@ -2,8 +2,8 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.20 (2020-11-17)
+-------------------
 * Fix catkin_lint errors (#459)
 * Update acceptancetest_stop1.md (#447)
 * Contributors: Pilz GmbH and Co. KG
