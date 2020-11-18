@@ -22,6 +22,8 @@
 
 #include <ros/ros.h>
 
+#include <pilz_msgs/OperationModes.h>
+
 #include <prbt_hardware_support/adapter_operation_mode.h>
 #include <prbt_hardware_support/modbus_msg_operation_mode_wrapper.h>
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
@@ -55,7 +57,7 @@ private:
   void modbusMsgCallback(const ModbusMsgInStampedConstPtr& msg_raw);
 
 private:
-  static OperationModes createUnknownOperationMode();
+  static pilz_msgs::OperationModes createUnknownOperationMode();
 
 private:
   const ModbusApiSpec api_spec_;

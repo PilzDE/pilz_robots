@@ -22,8 +22,8 @@
 
 #include <ros/ros.h>
 
-#include <prbt_hardware_support/GetOperationMode.h>
-#include <prbt_hardware_support/OperationModes.h>
+#include <pilz_msgs/GetOperationMode.h>
+#include <pilz_msgs/OperationModes.h>
 
 namespace prbt_hardware_support
 {
@@ -40,7 +40,7 @@ protected:
   /**
    * @brief Stores the operation mode and publishes it, if it has changed.
    */
-  void updateOperationMode(const OperationModes& mode);
+  void updateOperationMode(const pilz_msgs::OperationModes& mode);
 
 private:
   /**
@@ -48,11 +48,11 @@ private:
    */
   void initOperationModeService();
 
-  bool getOperationMode(GetOperationMode::Request& req, GetOperationMode::Response& res);
+  bool getOperationMode(pilz_msgs::GetOperationMode::Request& req, pilz_msgs::GetOperationMode::Response& res);
 
 private:
   //! Store the current operation mode according to OperationModes.msg
-  OperationModes op_mode_;
+  pilz_msgs::OperationModes op_mode_;
 
   //! Protects read/write of the operation mode
   std::mutex op_mode_mutex_;

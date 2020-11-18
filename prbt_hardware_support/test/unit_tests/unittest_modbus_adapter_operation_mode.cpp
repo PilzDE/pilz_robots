@@ -20,12 +20,13 @@
 #include <algorithm>
 #include <memory>
 
+#include <pilz_msgs/OperationModes.h>
+
 #include <pilz_testutils/async_test.h>
 
 #include <prbt_hardware_support/modbus_api_definitions.h>
 #include <prbt_hardware_support/modbus_adapter_operation_mode.h>
 #include <prbt_hardware_support/modbus_topic_definitions.h>
-#include <prbt_hardware_support/OperationModes.h>
 #include <prbt_hardware_support/register_container.h>
 #include <prbt_hardware_support/modbus_msg_in_builder.h>
 
@@ -55,7 +56,7 @@ public:
    */
   void initialize();
 
-  MOCK_METHOD1(callback, void(const OperationModesConstPtr& msg));
+  MOCK_METHOD1(callback, void(const pilz_msgs::OperationModesConstPtr& msg));
 
 protected:
   ros::NodeHandle nh_;
@@ -83,6 +84,10 @@ public:
   ~ModbusAdapterOperationModeTest() override;
 
 protected:
+  using GetOperationMode = pilz_msgs::GetOperationMode;
+  using OperationModes = pilz_msgs::OperationModes;
+
+protected:
   ros::AsyncSpinner spinner_{ 2 };
   ros::NodeHandle nh_;
   std::shared_ptr<ModbusAdapterOperationMode> adapter_operation_mode_;
@@ -101,7 +106,7 @@ ModbusAdapterOperationModeTest::ModbusAdapterOperationModeTest()
 
   adapter_operation_mode_.reset(new ModbusAdapterOperationMode(nh_, TEST_API_SPEC));
   modbus_topic_pub_ = nh_.advertise<ModbusMsgInStamped>(TOPIC_MODBUS_READ, DEFAULT_QUEUE_SIZE_MODBUS);
-  operation_mode_client_ = nh_.serviceClient<prbt_hardware_support::GetOperationMode>(SERVICE_NAME_OPERATION_MODE);
+  operation_mode_client_ = nh_.serviceClient<GetOperationMode>(SERVICE_NAME_OPERATION_MODE);
 
   spinner_.start();
 }
