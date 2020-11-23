@@ -26,7 +26,7 @@ OperationModeSetupExecutor::OperationModeSetupExecutor(const MonitorCartesianSpe
 {
 }
 
-void OperationModeSetupExecutor::updateOperationMode(const OperationModes& operation_mode)
+void OperationModeSetupExecutor::updateOperationMode(const pilz_msgs::OperationModes& operation_mode)
 {
   ROS_DEBUG("updateOperationMode: %d", operation_mode.value);
   if (operation_mode.time_stamp <= time_stamp_last_op_mode_)
@@ -38,11 +38,11 @@ void OperationModeSetupExecutor::updateOperationMode(const OperationModes& opera
   boost::optional<bool> monitor_cartesian_speed{ boost::none };
   switch (operation_mode.value)
   {
-    case OperationModes::T1:
+    case pilz_msgs::OperationModes::T1:
       monitor_cartesian_speed = true;
       speed_override_ = 0.1;
       break;
-    case OperationModes::AUTO:
+    case pilz_msgs::OperationModes::AUTO:
       monitor_cartesian_speed = false;
       speed_override_ = 1.0;
       break;

@@ -19,11 +19,11 @@
 #define GET_OPERATION_MODE_FUNC_DECL_H
 
 #include <functional>
-#include <prbt_hardware_support/OperationModes.h>
+#include <pilz_msgs/OperationModes.h>
 
 namespace prbt_hardware_support
 {
-using GetOpModeFunc = std::function<OperationModes()>;
+using GetOpModeFunc = std::function<pilz_msgs::OperationModes()>;
 }
 
 #endif  // GET_OPERATION_MODE_FUNC_DECL_H

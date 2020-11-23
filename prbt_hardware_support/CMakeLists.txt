@@ -33,14 +33,12 @@ add_message_files(
   BrakeTestErrorCodes.msg
   ModbusMsgInStamped.msg
   ModbusRegisterBlock.msg
-  OperationModes.msg
 )
 
 # action generation
 add_service_files(
   FILES
   BrakeTest.srv
-  GetOperationMode.srv
   SendBrakeTestResult.srv
   WriteModbusRegister.srv
 )
@@ -546,10 +544,6 @@ if(CATKIN_ENABLE_TESTING)
                           "*/WriteModbusRegister.h"
                           "*/WriteModbusRegisterRequest.h"
                           "*/WriteModbusRegisterResponse.h"
-                          "*/GetOperationMode.h"
-                          "*/GetOperationModeRequest.h"
-                          "*/GetOperationModeResponse.h"
-                          "*/OperationModes.h"
                           "*/SendBrakeTestResult.h"
                           "*/SendBrakeTestResultRequest.h"
                           "*/SendBrakeTestResultResponse.h"

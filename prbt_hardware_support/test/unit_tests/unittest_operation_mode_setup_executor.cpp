@@ -25,8 +25,8 @@
 #include <std_srvs/SetBool.h>
 
 #include <pilz_msgs/GetSpeedOverride.h>
+#include <pilz_msgs/OperationModes.h>
 
-#include <prbt_hardware_support/OperationModes.h>
 #include <prbt_hardware_support/operation_mode_setup_executor.h>
 #include <prbt_hardware_support/operation_mode_setup_executor_node_service_calls.h>
 
@@ -39,6 +39,8 @@ using ::testing::DoAll;
 using ::testing::Le;
 using ::testing::Return;
 using ::testing::SetArgReferee;
+
+using pilz_msgs::OperationModes;
 
 class OperationModeSetupExecutorTest : public ::testing::Test
 {
@@ -254,7 +256,7 @@ TEST_F(OperationModeSetupExecutorTest, testMonitorCartesianSpeedSrvFailure)
 
 class OperationModeSetupExecutorTestSpeedOverride
   : public OperationModeSetupExecutorTest,
-    public ::testing::WithParamInterface<std::pair<OperationModes::_value_type, double>>
+    public ::testing::WithParamInterface<std::pair<pilz_msgs::OperationModes::_value_type, double>>
 {
   OperationModes::_value_type getMode()
   {

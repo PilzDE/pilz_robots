@@ -17,8 +17,9 @@
 #ifndef MODBUS_MSG_OPERATION_MODE_WRAPPER_H
 #define MODBUS_MSG_OPERATION_MODE_WRAPPER_H
 
+#include <pilz_msgs/OperationModes.h>
+
 #include <prbt_hardware_support/ModbusMsgInStamped.h>
-#include <prbt_hardware_support/OperationModes.h>
 #include <prbt_hardware_support/modbus_api_definitions.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
 #include <prbt_hardware_support/modbus_msg_wrapper.h>
@@ -57,7 +58,7 @@ public:
   /**
    * @returns the operation mode and the corresponding time stamp.
    */
-  OperationModes getTimeStampedOperationMode() const;
+  pilz_msgs::OperationModes getTimeStampedOperationMode() const;
 
 private:
   /**
@@ -84,21 +85,21 @@ inline int8_t ModbusMsgOperationModeWrapper::getOperationMode() const
   switch (getRegister(getApiSpec().getRegisterDefinition(modbus_api_spec::OPERATION_MODE)))
   {
     case MODBUS_OPERATION_MODE_NONE:
-      return OperationModes::UNKNOWN;
+      return pilz_msgs::OperationModes::UNKNOWN;
     case MODBUS_OPERATION_MODE_T1:
-      return OperationModes::T1;
+      return pilz_msgs::OperationModes::T1;
     case MODBUS_OPERATION_MODE_T2:
-      return OperationModes::T2;
+      return pilz_msgs::OperationModes::T2;
     case MODBUS_OPERATION_MODE_AUTO:
-      return OperationModes::AUTO;
+      return pilz_msgs::OperationModes::AUTO;
     default:
-      return OperationModes::UNKNOWN;
+      return pilz_msgs::OperationModes::UNKNOWN;
   }
 }
 
-inline OperationModes ModbusMsgOperationModeWrapper::getTimeStampedOperationMode() const
+inline pilz_msgs::OperationModes ModbusMsgOperationModeWrapper::getTimeStampedOperationMode() const
 {
-  OperationModes op_mode;
+  pilz_msgs::OperationModes op_mode;
   op_mode.time_stamp = getTimeStamp();
   op_mode.value = getOperationMode();
   return op_mode;
