@@ -2,8 +2,8 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.21 (2020-11-23)
+-------------------
 * Move OperationMode msg and GetOperationMode srv to pilz_msgs
 * Contributors: Pilz GmbH and Co. KG
 
