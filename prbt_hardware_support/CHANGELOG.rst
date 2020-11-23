@@ -2,6 +2,11 @@
 Changelog for package prbt_hardware_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Move OperationMode msg and GetOperationMode srv to pilz_msgs
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.20 (2020-11-17)
 -------------------
 * Fix catkin_lint errors (#459)

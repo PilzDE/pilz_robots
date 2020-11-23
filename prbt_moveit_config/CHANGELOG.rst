@@ -2,6 +2,11 @@
 Changelog for package prbt_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Move capabilities arguments into planning pipeline
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.20 (2020-11-17)
 -------------------
 * Add named pose all-zeros (#455)

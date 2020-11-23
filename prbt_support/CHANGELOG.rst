@@ -2,6 +2,9 @@
 Changelog for package prbt_support
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.5.20 (2020-11-17)
 -------------------
 * Fix acceptancetest_joint_limits (#448)

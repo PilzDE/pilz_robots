@@ -2,6 +2,9 @@
 Changelog for package pilz_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.5.20 (2020-11-17)
 -------------------
 * Remove ROSNotOKException (#458)
