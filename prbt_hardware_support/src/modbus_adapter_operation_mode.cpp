@@ -36,11 +36,11 @@ ModbusAdapterOperationMode::ModbusAdapterOperationMode(ros::NodeHandle& nh, cons
 {
 }
 
-OperationModes ModbusAdapterOperationMode::createUnknownOperationMode()
+pilz_msgs::OperationModes ModbusAdapterOperationMode::createUnknownOperationMode()
 {
-  OperationModes op_mode;
+  pilz_msgs::OperationModes op_mode;
   op_mode.time_stamp = ros::Time::now();
-  op_mode.value = OperationModes::UNKNOWN;
+  op_mode.value = pilz_msgs::OperationModes::UNKNOWN;
   return op_mode;
 }
 

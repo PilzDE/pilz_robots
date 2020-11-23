@@ -23,8 +23,8 @@
 #include <ros/ros.h>
 
 #include <pilz_msgs/GetSpeedOverride.h>
+#include <pilz_msgs/OperationModes.h>
 
-#include <prbt_hardware_support/OperationModes.h>
 #include <prbt_hardware_support/monitor_cartesian_speed_func_decl.h>
 #include <prbt_hardware_support/get_operation_mode_func_decl.h>
 
@@ -48,7 +48,7 @@ public:
   /**
    * @brief Function to be called whenever a new operation mode is set.
    */
-  void updateOperationMode(const OperationModes& operation_mode);
+  void updateOperationMode(const pilz_msgs::OperationModes& operation_mode);
 
   bool getSpeedOverride(pilz_msgs::GetSpeedOverride::Request& /*req*/, pilz_msgs::GetSpeedOverride::Response& response);
 

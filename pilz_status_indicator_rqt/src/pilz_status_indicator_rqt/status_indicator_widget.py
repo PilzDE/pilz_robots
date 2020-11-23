@@ -18,7 +18,7 @@ import os
 
 import rospkg
 import rospy
-from prbt_hardware_support.msg import OperationModes
+from pilz_msgs.msg import OperationModes
 from python_qt_binding import loadUi
 from python_qt_binding.QtGui import QPixmap
 from python_qt_binding.QtWidgets import QWidget
@@ -82,7 +82,7 @@ class PilzStatusIndicatorWidget(QWidget):
         both the shown image and the text beneath it.
 
         :param mode: The mode to be set of type
-                     `prbt_hardware_support.msg.OperationModes`.
+                     `pilz_msgs.msg.OperationModes`.
         :param _qpixmap_class: (Internal use only)"""
         if mode == OperationModes.AUTO:
             icon_name = 'auto'

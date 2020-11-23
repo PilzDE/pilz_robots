@@ -18,7 +18,7 @@ import unittest
 
 import rospy
 from mock import ANY, MagicMock, Mock, call, patch
-from prbt_hardware_support.msg import OperationModes
+from pilz_msgs.msg import OperationModes
 from python_qt_binding.QtCore import QObject
 from qt_gui.plugin import Plugin
 from std_msgs.msg import Bool, Float64

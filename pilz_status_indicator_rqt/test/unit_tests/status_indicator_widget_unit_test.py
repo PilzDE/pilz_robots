@@ -21,7 +21,7 @@ import unittest
 import rospkg
 import rospy
 from mock import ANY, MagicMock, create_autospec
-from prbt_hardware_support.msg import OperationModes
+from pilz_msgs.msg import OperationModes
 from PyQt5.QtGui import QPixmap
 from python_qt_binding.QtWidgets import QApplication, QMainWindow
 

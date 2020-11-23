@@ -24,10 +24,11 @@
 #include <ros/ros.h>
 #include <modbus/modbus.h>
 
+#include <pilz_msgs/OperationModes.h>
+
 #include <pilz_testutils/async_test.h>
 
 #include <prbt_hardware_support/pilz_modbus_server_mock.h>
-#include <prbt_hardware_support/OperationModes.h>
 #include <prbt_hardware_support/ros_test_helper.h>
 #include <prbt_hardware_support/modbus_api_definitions.h>
 #include <prbt_hardware_support/modbus_api_spec.h>
@@ -52,7 +53,7 @@ public:
    */
   void initialize();
 
-  MOCK_METHOD1(callback, void(const OperationModesConstPtr& msg));
+  MOCK_METHOD1(callback, void(const pilz_msgs::OperationModesConstPtr& msg));
 
 protected:
   ros::NodeHandle nh_;
@@ -71,6 +72,9 @@ void OperationModeSubscriberMock::initialize()
  */
 class OperationModeIntegrationTest : public testing::Test, public testing::AsyncTest
 {
+protected:
+  using OperationModes = pilz_msgs::OperationModes;
+
 protected:
   ros::NodeHandle nh_;
   ros::NodeHandle nh_priv_{ "~" };
