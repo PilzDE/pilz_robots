@@ -222,7 +222,7 @@ The ``ModbusAdapterOperationModeNode`` publishes the active operation mode
 on the topic `/prbt/operation_mode` everytime it changes and offers 
 the `/get_operation_mode` service for accessing the active operation mode.
 
-Use `rosmsg show prbt_hardware_support/OperationModes` to see the definition 
+Use `rosmsg show pilz_msgs/OperationModes` to see the definition
 of each value.
 
 ## OperationModeSetupExecutorNode

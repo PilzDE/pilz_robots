@@ -18,7 +18,7 @@ import random
 
 import rospy
 from numpy import arange
-from prbt_hardware_support.msg import OperationModes
+from pilz_msgs.msg import OperationModes
 from std_msgs.msg import Bool, Float64
 
 from pilz_status_indicator_rqt.status_indicator import (TOPIC_STATE_HW,

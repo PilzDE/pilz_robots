@@ -21,12 +21,13 @@
 
 #include <std_srvs/SetBool.h>
 
+#include <pilz_msgs/GetOperationMode.h>
+
 #include <pilz_utils/get_param.h>
 #include <pilz_utils/wait_for_service.h>
 
 #include <prbt_hardware_support/operation_mode_setup_executor.h>
 #include <prbt_hardware_support/monitor_cartesian_speed_func_decl.h>
-#include <prbt_hardware_support/GetOperationMode.h>
 #include <prbt_hardware_support/get_operation_mode_func_decl.h>
 #include <prbt_hardware_support/operation_mode_setup_executor_node_service_calls.h>
 

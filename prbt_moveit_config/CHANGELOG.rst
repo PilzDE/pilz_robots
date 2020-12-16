@@ -2,6 +2,16 @@
 Changelog for package prbt_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.21 (2020-11-23)
+-------------------
+* Move capabilities arguments into planning pipeline
+* Contributors: Pilz GmbH and Co. KG
+
+0.5.20 (2020-11-17)
+-------------------
+* Add named pose all-zeros (#455)
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.19 (2020-09-07)
 -------------------
 * Move ikfast plugin test to prbt_moveit_config (#450)

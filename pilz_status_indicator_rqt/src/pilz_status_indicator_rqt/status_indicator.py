@@ -19,7 +19,7 @@ import os
 import rospy
 from pilz_status_indicator_rqt.status_indicator_widget import \
     PilzStatusIndicatorWidget
-from prbt_hardware_support.msg import OperationModes
+from pilz_msgs.msg import OperationModes
 from qt_gui.plugin import Plugin
 from std_msgs.msg import Bool, Float64
 

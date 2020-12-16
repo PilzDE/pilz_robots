@@ -28,7 +28,7 @@
 
 #include <pilz_testutils/async_test.h>
 
-#include <prbt_hardware_support/OperationModes.h>
+#include <pilz_msgs/OperationModes.h>
 #include <prbt_hardware_support/ros_test_helper.h>
 
 namespace prbt_hardware_support
@@ -60,8 +60,9 @@ struct TestData
   const double expected_speed_override;
 };
 
-static constexpr TestData OP_MODE_T1_TEST_DATA{ OperationModes::T1, true, EXPECTED_SPEED_OVERRIDE_T1 };
-static constexpr TestData OP_MODE_AUTO_TEST_DATA{ OperationModes::AUTO, false, EXPECTED_SPEED_OVERRIDE_AUTO };
+static constexpr TestData OP_MODE_T1_TEST_DATA{ pilz_msgs::OperationModes::T1, true, EXPECTED_SPEED_OVERRIDE_T1 };
+static constexpr TestData OP_MODE_AUTO_TEST_DATA{ pilz_msgs::OperationModes::AUTO, false,
+                                                  EXPECTED_SPEED_OVERRIDE_AUTO };
 
 //! @brief Provides the monitor_cartesian_speed service.
 class ControllerMock
@@ -94,7 +95,7 @@ public:
   void SetUp() override;
 
 protected:
-  using OperationModes = prbt_hardware_support::OperationModes;
+  using OperationModes = pilz_msgs::OperationModes;
   using GetSpeedOverride = pilz_msgs::GetSpeedOverride;
 
 protected:

@@ -2,6 +2,12 @@
 Changelog for package prbt_ikfast_manipulator_plugin
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.21 (2020-11-23)
+-------------------
+
+0.5.20 (2020-11-17)
+-------------------
+
 0.5.19 (2020-09-07)
 -------------------
 * Move ikfast plugin test to prbt_moveit_config (#450)

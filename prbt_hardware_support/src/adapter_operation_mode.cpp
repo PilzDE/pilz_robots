@@ -27,10 +27,10 @@ static constexpr int DEFAULT_QUEUE_SIZE{ 10 };
 AdapterOperationMode::AdapterOperationMode(ros::NodeHandle& nh) : nh_(nh)
 {
   op_mode_.time_stamp = ros::Time::now();
-  op_mode_.value = OperationModes::UNKNOWN;
+  op_mode_.value = pilz_msgs::OperationModes::UNKNOWN;
 
-  operation_mode_pub_ = nh_.advertise<OperationModes>(TOPIC_OPERATION_MODE, DEFAULT_QUEUE_SIZE,
-                                                      true);  // latched publisher
+  operation_mode_pub_ = nh_.advertise<pilz_msgs::OperationModes>(TOPIC_OPERATION_MODE, DEFAULT_QUEUE_SIZE,
+                                                                 true);  // latched publisher
   // publish initial operation mode before first switch
   operation_mode_pub_.publish(op_mode_);
 
@@ -43,7 +43,7 @@ void AdapterOperationMode::initOperationModeService()
       nh_.advertiseService(SERVICE_NAME_GET_OPERATION_MODE, &AdapterOperationMode::getOperationMode, this);
 }
 
-void AdapterOperationMode::updateOperationMode(const OperationModes& new_op_mode)
+void AdapterOperationMode::updateOperationMode(const pilz_msgs::OperationModes& new_op_mode)
 {
   std::unique_lock<std::mutex> lock(op_mode_mutex_);
   const int8_t last_op_mode_value{ op_mode_.value };
@@ -58,7 +58,8 @@ void AdapterOperationMode::updateOperationMode(const OperationModes& new_op_mode
   }
 }
 
-bool AdapterOperationMode::getOperationMode(GetOperationMode::Request& /*req*/, GetOperationMode::Response& res)
+bool AdapterOperationMode::getOperationMode(pilz_msgs::GetOperationMode::Request& /*req*/,
+                                            pilz_msgs::GetOperationMode::Response& res)
 {
   std::lock_guard<std::mutex> lock(op_mode_mutex_);
   res.mode = op_mode_;
