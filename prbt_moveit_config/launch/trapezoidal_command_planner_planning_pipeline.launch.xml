@@ -1,7 +1,7 @@
 <launch>
 
   <!-- Pilz Command Planner Plugin for MoveIt! -->
-  <arg name="planning_plugin" value="trapezoidal::CommandPlanner" />
+  <arg name="planning_plugin" value="pilz_industrial_motion_planner::CommandPlanner" />
 
   <!-- The request adapters (plugins) used when planning.
        ORDER MATTERS -->
