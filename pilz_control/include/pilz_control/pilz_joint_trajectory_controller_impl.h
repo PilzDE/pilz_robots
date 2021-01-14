@@ -290,16 +290,14 @@ inline void PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::updat
 {
   switch (mode_->getCurrentMode())
   {
-    case TrajProcessingMode::unhold:
-    {
+    case TrajProcessingMode::unhold: {
       if (!isPlannedUpdateOK(time_data.period) && mode_->stopEvent())
       {
         stopMotion(time_data.uptime);
       }
       return;
     }
-    case TrajProcessingMode::stopping:
-    {
+    case TrajProcessingMode::stopping: {
       // By construction of the stop trajectory we can exclude that the execution starts in the future
       if (!isTrajectoryExecuted<typename JointTrajectoryController::Segment>(curr_traj, time_data.uptime))
       {

@@ -299,7 +299,7 @@ TEST_P(OperationModeSetupExecutorTestSpeedOverrideNice, testSpeedOverride)
 INSTANTIATE_TEST_CASE_P(SpeedOverrideModeTests, OperationModeSetupExecutorTestSpeedOverrideNice,
                         ::testing::Values(std::pair<OperationModes::_value_type, double>(OperationModes::UNKNOWN, 0.0),
                                           std::pair<OperationModes::_value_type, double>(OperationModes::T1, 0.1),
-                                          std::pair<OperationModes::_value_type, double>(OperationModes::AUTO, 1.0)) );
+                                          std::pair<OperationModes::_value_type, double>(OperationModes::AUTO, 1.0)));
 
 }  // namespace operation_mode_setup_executor_tests
 
