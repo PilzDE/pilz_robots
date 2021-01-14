@@ -4,7 +4,7 @@ Changelog for package prbt_hardware_support
 
 Forthcoming
 -----------
-* changing references from pilz_command_planner to pilz_industrial_command_planner
+* changing references from pilz_command_planner to pilz_industrial_motion_planner
 
 0.5.21 (2020-11-23)
 -------------------
