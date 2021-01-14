@@ -186,7 +186,7 @@ bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::init(Hardwar
 template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::is_executing()
 {
-  if (JointTrajectoryController::state_ != JointTrajectoryController::RUNNING)
+  if (JointTrajectoryController::state_ != JointTrajectoryController::ControllerState::RUNNING)
   {
     return false;
   }
@@ -228,7 +228,7 @@ template <class SegmentImpl, class HardwareInterface>
 bool PilzJointTrajectoryController<SegmentImpl, HardwareInterface>::handleUnHoldRequest(
     std_srvs::TriggerRequest&, std_srvs::TriggerResponse& response)
 {
-  if (JointTrajectoryController::state_ == JointTrajectoryController::RUNNING && mode_->startEvent())
+  if (JointTrajectoryController::state_ == JointTrajectoryController::ControllerState::RUNNING && mode_->startEvent())
   {
     response.message = "Unhold mode (default mode) active";
     response.success = true;

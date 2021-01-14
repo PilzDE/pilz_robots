@@ -120,7 +120,7 @@ TEST_P(PilzJointTrajectoryControllerIsExecutingTest, testFakeStart)
 {
   ASSERT_TRUE(manager_->loadController()) << "Failed to initialize the controller.";
 
-  manager_->controller_->state_ = Controller::RUNNING;
+  manager_->controller_->state_ = controller_interface::ControllerBase::ControllerState::RUNNING;
   bool is_executing_result;
   EXPECT_TRUE(invokeIsExecuting(is_executing_result));
   EXPECT_FALSE(is_executing_result) << "There should be no execution to detect";

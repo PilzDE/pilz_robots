@@ -502,7 +502,7 @@ TEST_F(PilzModbusClientTests, testWritingOfHoldingRegister)
                                               expected_write_reg, REGISTER_FIRST_IDX_TEST,
                                               static_cast<int>(expected_read_reg.size())))
       .Times(1)
-      .WillOnce(DoAll(ACTION_OPEN_BARRIER_VOID("writeHoldingRegister"), Return(expected_read_reg)));
+      .WillOnce(testing::DoAll(ACTION_OPEN_BARRIER_VOID("writeHoldingRegister"), Return(expected_read_reg)));
 
   EXPECT_CALL(*this, modbus_read_cb(_)).Times(AnyNumber());
 

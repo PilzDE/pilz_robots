@@ -168,7 +168,7 @@ TEST_P(OperationModeSetupTest, testSpeedMonitoringActivation)
 }
 
 INSTANTIATE_TEST_CASE_P(TestActivationOfSpeedMonitoring, OperationModeSetupTest,
-                        testing::Values(OP_MODE_AUTO_TEST_DATA, OP_MODE_T1_TEST_DATA), );
+                        testing::Values(OP_MODE_AUTO_TEST_DATA, OP_MODE_T1_TEST_DATA));
 
 }  // namespace prbt_hardware_support
 

@@ -86,7 +86,7 @@ bool PJTCManagerMock<SegmentImpl, HWInterface>::loadController()
   controller_.reset(new Controller());
   if (controller_->init(hardware_->get<HWInterface>(), nh_, controller_nh))
   {
-    controller_->state_ = controller_->INITIALIZED;
+    controller_->state_ = controller_interface::ControllerBase::ControllerState::INITIALIZED;
     return true;
   }
   return false;
@@ -97,7 +97,7 @@ void PJTCManagerMock<SegmentImpl, HWInterface>::startController()
 {
   ros::Time current_time{ ros::Time::now() };
   controller_->starting(current_time);
-  controller_->state_ = controller_->RUNNING;
+  controller_->state_ = controller_interface::ControllerBase::ControllerState::RUNNING;
   last_update_time_ = current_time;
 }
 
