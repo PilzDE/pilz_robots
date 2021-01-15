@@ -120,7 +120,7 @@ RegCont LibModbusClient::writeReadHoldingRegister(const int write_addr, const Re
   }
   RegCont read_reg(static_cast<RegCont::size_type>(read_nb));
 
-  if (static_cast<int>(write_reg.size()) > std::numeric_limits<int>::max())
+  if (write_reg.size() > static_cast<unsigned int>(std::numeric_limits<int>::max()))
   {
     throw std::invalid_argument("Argument \"write_reg\" must not exceed max value of type \"int\"");
   }
