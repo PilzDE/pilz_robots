@@ -167,8 +167,8 @@ TEST_P(OperationModeSetupTest, testSpeedMonitoringActivation)
   EXPECT_TRUE(isSpeedOverrideEqualTo(test_data.expected_speed_override));
 }
 
-INSTANTIATE_TEST_CASE_P(TestActivationOfSpeedMonitoring, OperationModeSetupTest,
-                        testing::Values(OP_MODE_AUTO_TEST_DATA, OP_MODE_T1_TEST_DATA));
+INSTANTIATE_TEST_SUITE_P(TestActivationOfSpeedMonitoring, OperationModeSetupTest,
+                         testing::Values(OP_MODE_AUTO_TEST_DATA, OP_MODE_T1_TEST_DATA));
 
 }  // namespace prbt_hardware_support
 

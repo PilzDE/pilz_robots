@@ -52,7 +52,7 @@ static ::testing::AssertionResult compareJointStateMessages(const JointStateCons
     return ::testing::AssertionFailure() << "Joint numbers in joint state messages do not match.";
   }
   if (!std::equal(msg1->name.begin(), msg1->name.end(), msg2->name.begin(),
-                  [](std::string name1, std::string name2) { return name1 == name2; }))
+                  [](const std::string& name1, const std::string& name2) { return name1 == name2; }))
   {
     return ::testing::AssertionFailure() << "Joint names in joint state messages do not match.";
   }
