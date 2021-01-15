@@ -10,45 +10,45 @@ env:
 jobs:
   build_test_main:
     name: "Build + Test with Main Repo (http://packages.ros.org/ros/ubuntu)"
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v1
       - uses: 'ros-industrial/industrial_ci@master'
         env:
           ROS_REPO: main
-          ROS_DISTRO: melodic
+          ROS_DISTRO: noetic
     continue-on-error: true
 
   build_test_testing:
     name: "Build + Test with Testing Repo (http://packages.ros.org/ros-testing/ubuntu)"
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v1
       - uses: 'ros-industrial/industrial_ci@master'
         env:
           ROS_REPO: testing
-          ROS_DISTRO: melodic
+          ROS_DISTRO: noetic
 
   clang-format:
-    name: "Build + Test with clang format with Testing Repo of melodic (http://packages.ros.org/ros-testing/ubuntu)"
-    runs-on: ubuntu-18.04
+    name: "Build + Test with clang format with Testing Repo of noetic (http://packages.ros.org/ros-testing/ubuntu)"
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v1
       - uses: 'ros-industrial/industrial_ci@master'
         env:
           ROS_REPO: testing
-          ROS_DISTRO: melodic
+          ROS_DISTRO: noetic
           CLANG_FORMAT_CHECK: file
 
   coverage:
-    name: "Check coverage with Testing Repo of melodic (http://packages.ros.org/ros-testing/ubuntu)"
-    runs-on: ubuntu-18.04
+    name: "Check coverage with Testing Repo of noetic (http://packages.ros.org/ros-testing/ubuntu)"
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v1
       - uses: 'ros-industrial/industrial_ci@master'
         env:
           ROS_REPO: testing
-          ROS_DISTRO: melodic
+          ROS_DISTRO: noetic
           ADDITIONAL_DEBS: git
           CATKIN_LINT: false
           NOT_TEST_BUILD: true
