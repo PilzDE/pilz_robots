@@ -216,7 +216,7 @@ TEST_F(SystemInfoTests, testServiceResponseFalse)
 {
   EXPECT_CALL(*this, executeGetObject(_, _))
       .Times(1)
-      .WillRepeatedly(testing::Invoke([](GetObject::Request&, GetObject::Response& res) {
+      .WillRepeatedly(testing::Invoke([](GetObject::Request& /*unused*/, GetObject::Response& res) {
         res.success = false;
         return true;
       }));
@@ -233,7 +233,8 @@ TEST_F(SystemInfoTests, testServiceFail)
 {
   EXPECT_CALL(*this, executeGetObject(_, _))
       .Times(1)
-      .WillRepeatedly(testing::Invoke([](GetObject::Request&, GetObject::Response&) { return false; }));
+      .WillRepeatedly(
+          testing::Invoke([](GetObject::Request& /*unused*/, GetObject::Response& /*unused*/) { return false; }));
 
   ros::NodeHandle nh{ "~" };
   SystemInfo info{ nh };
