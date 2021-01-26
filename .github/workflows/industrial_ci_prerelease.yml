@@ -1,4 +1,4 @@
-name: CI prerelease
+name: CI-Noetic-Prerelease
 
 on: pull_request
 

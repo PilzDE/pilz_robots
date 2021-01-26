@@ -1,4 +1,4 @@
-name: CI
+name: CI-Noetic
 
 on: [push, pull_request]
 
