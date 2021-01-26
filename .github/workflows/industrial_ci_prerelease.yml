@@ -1,4 +1,4 @@
-name: CI prerelease
+name: CI-Melodic-Prerelease
 
 on: pull_request
 
