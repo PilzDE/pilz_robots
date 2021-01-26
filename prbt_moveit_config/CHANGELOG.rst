@@ -4,7 +4,9 @@ Changelog for package prbt_moveit_config
 
 Forthcoming
 -----------
-* changing references from pilz_command_planner to pilz_industrial_motion_planner
+* Prepare first-time noetic release
+* Change references from pilz_command_planner to pilz_industrial_motion_planner
+* Contributors: Pilz GmbH and Co. KG
 
 0.5.21 (2020-11-23)
 -------------------
