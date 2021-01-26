@@ -62,7 +62,7 @@ generate_dynamic_reconfigure_options(
 ###################################
 catkin_package(
   INCLUDE_DIRS include
-  CATKIN_DEPENDS message_runtime std_msgs std_srvs sensor_msgs
+  CATKIN_DEPENDS roscpp message_runtime std_msgs std_srvs sensor_msgs
 )
 
 ################
