@@ -77,7 +77,7 @@ class AcceptanceTestJointLimits(unittest.TestCase):
         self.assertTrue(all(self.joint_velocity_limits))
 
     def _ask_for_permission(self, test_name):
-        s = raw_input('Perform ' + test_name + ' [(y)es, (n)o]?: ')
+        s = input('Perform ' + test_name + ' [(y)es, (n)o]?: ')
         if(s == "n"):
             print('\n\nSkip ' + test_name + '\n___TEST-END___\n')
             return 0
