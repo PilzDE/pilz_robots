@@ -26,7 +26,7 @@ limitations under the License.
 
   1. Press the acknowledge button. Make sure the green light on the robot is on and switch into T1 mode (if not active yet). Run
   ```
-  roslaunch prbt_moveit_config moveit_planning_execution.launch sim:=False pipeline:=pilz_command_planner
+  roslaunch prbt_moveit_config moveit_planning_execution.launch sim:=False pipeline:=pilz_industrial_motion_planner
   ```
   and execute
   ```
