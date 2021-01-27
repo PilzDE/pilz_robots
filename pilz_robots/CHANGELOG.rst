@@ -2,6 +2,11 @@
 Changelog for package pilz_robots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Prepare first-time noetic release
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.21 (2020-11-23)
 -------------------
 

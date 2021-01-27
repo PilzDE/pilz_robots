@@ -2,6 +2,11 @@
 Changelog for package pilz_status_indicator_rqt
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Prepare first-time noetic release
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.21 (2020-11-23)
 -------------------
 * Update references to OperationMode msg and GetOperationMode srv (moved to pilz_msgs)
