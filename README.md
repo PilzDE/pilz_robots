@@ -16,15 +16,17 @@ sudo apt install ros-melodic-pilz-robots
 
 ### Build Status
 
-|   | Kinetic | Melodic |
-| ----| --------|-------- |
-| Travis  | [![Build Status](https://travis-ci.org/PilzDE/pilz_robots.svg?branch=kinetic-devel)](https://travis-ci.org/PilzDE/pilz_robots) | [![Build Status](https://travis-ci.org/PilzDE/pilz_robots.svg?branch=melodic-devel)](https://travis-ci.org/PilzDE/pilz_robots) |
-| Buildfarm src | [![buildfarm](http://build.ros.org/buildStatus/icon?job=Ksrc_uX__pilz_robots__ubuntu_xenial__source)](http://build.ros.org/view/Ksrc_uX/job/Ksrc_uX__pilz_robots__ubuntu_xenial__source/) | [![buildfarm](http://build.ros.org/buildStatus/icon?job=Msrc_uB__pilz_robots__ubuntu_bionic__source)](http://build.ros.org/view/Msrc_uB/job/Msrc_uB__pilz_robots__ubuntu_bionic__source/) |
-| Buildfarm bin | [![buildfarm](http://build.ros.org/buildStatus/icon?job=Kbin_uX64__pilz_robots__ubuntu_xenial_amd64__binary)](http://build.ros.org/view/Kbin_uX64/job/Kbin_uX64__pilz_robots__ubuntu_xenial_amd64__binary/) | [![buildfarm](http://build.ros.org/buildStatus/icon?job=Mbin_uB64__pilz_robots__ubuntu_bionic_amd64__binary)](http://build.ros.org/view/Mbin_uB64/job/Mbin_uB64__pilz_robots__ubuntu_bionic_amd64__binary/)|
+|   | Kinetic | Melodic | Noetic
+| ----| --------|-------- |-------- |
+| Travis/Github CI  | [![Build Status](https://travis-ci.org/PilzDE/pilz_robots.svg?branch=kinetic-devel)](https://travis-ci.org/PilzDE/pilz_robots) | [![CI-Melodic](https://github.com/PilzDE/pilz_robots/workflows/CI-Melodic/badge.svg?event=push)](https://github.com/PilzDE/pilz_robots/actions?query=event%3Apush+workflow%3ACI-Melodic+branch%3Amelodic-devel) | [![CI-Noetic](https://github.com/PilzDE/pilz_robots/workflows/CI-Noetic/badge.svg?event=push)](https://github.com/PilzDE/pilz_robots/actions?query=event%3Apush+workflow%3ACI-Noetic+branch%3Anoetic-devel) |
+| Buildfarm src | [![buildfarm](http://build.ros.org/buildStatus/icon?job=Ksrc_uX__pilz_robots__ubuntu_xenial__source)](http://build.ros.org/view/Ksrc_uX/job/Ksrc_uX__pilz_robots__ubuntu_xenial__source/) | [![buildfarm](http://build.ros.org/buildStatus/icon?job=Msrc_uB__pilz_robots__ubuntu_bionic__source)](http://build.ros.org/view/Msrc_uB/job/Msrc_uB__pilz_robots__ubuntu_bionic__source/) | coming soon |
+| Buildfarm bin | [![buildfarm](http://build.ros.org/buildStatus/icon?job=Kbin_uX64__pilz_robots__ubuntu_xenial_amd64__binary)](http://build.ros.org/view/Kbin_uX64/job/Kbin_uX64__pilz_robots__ubuntu_xenial_amd64__binary/) | [![buildfarm](http://build.ros.org/buildStatus/icon?job=Mbin_uB64__pilz_robots__ubuntu_bionic_amd64__binary)](http://build.ros.org/view/Mbin_uB64/job/Mbin_uB64__pilz_robots__ubuntu_bionic_amd64__binary/)| coming soon |
+
 
 #### Branching model
-`melodic-devel` is considered to be the active development branch.
-Relevant changes are cherry-picked into `kinetic-devel` on a case-by-case basis.
+`noetic-devel` is considered to be the active development branch.
+Relevant changes are cherry-picked into `melodic-devel` or `kinetic-devel` on a case-by-case basis.
+
 
 ### Supported hardware versions
 PRBT firmware version 1.1.0
