@@ -25,7 +25,7 @@
 
 constexpr unsigned int NUM_JOINTS{ 2 };
 constexpr std::array<const char*, NUM_JOINTS> JOINT_NAMES = { "shoulder_to_right_arm", "shoulder_to_left_arm" };
-constexpr double JOINT_VELOCITY_EPS{ 0.001 };
+constexpr double JOINT_VELOCITY_EPS{ 0.0001 };
 
 struct JointData
 {
