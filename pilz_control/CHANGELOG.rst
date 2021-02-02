@@ -2,6 +2,11 @@
 Changelog for package pilz_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix unittest of PilzJointTrajectoryController
+* Contributors: Pilz GmbH and Co. KG
+
 0.5.21 (2020-11-23)
 -------------------
 
