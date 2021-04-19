@@ -4,7 +4,10 @@ Changelog for package pilz_status_indicator_rqt
 
 Forthcoming
 -----------
-* Prepare first-time noetic release
+* Ports the driver to noetic. Includes moveing the trajectory planner to moveit
+  * changes the references of the pilz_command_planner to the pilz_industrial_command_planner in moveit
+  * fixes compatibility with ubuntu 20, noetic and colcon
+  * changes CI to noetic and ubuntu 20
 * Contributors: Pilz GmbH and Co. KG
 
 0.5.21 (2020-11-23)

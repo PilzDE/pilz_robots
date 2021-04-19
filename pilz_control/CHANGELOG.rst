@@ -4,7 +4,10 @@ Changelog for package pilz_control
 
 Forthcoming
 -----------
-* Prepare first-time noetic release
+* Ports the driver to noetic. Includes moveing the trajectory planner to moveit
+  * changes the references of the pilz_command_planner to the pilz_industrial_command_planner in moveit
+  * fixes compatibility with ubuntu 20, noetic and colcon
+  * changes CI to noetic and ubuntu 20
 * Fix update routine in unittest of PilzJointTrajectoryController
 * Contributors: Pilz GmbH and Co. KG
 

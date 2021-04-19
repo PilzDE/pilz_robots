@@ -4,7 +4,13 @@ Changelog for package pilz_robots
 
 Forthcoming
 -----------
-* Prepare first-time noetic release
+* Adds adapted branching model & ci badge (`#476 <https://github.com/PilzDE/pilz_robots/issues/476>`_)
+  * Adapt README.md for noetic
+  * Replace old Travis CI badges with Github CI
+* Ports the driver to noetic. Includes moveing the trajectory planner to moveit
+  * changes the references of the pilz_command_planner to the pilz_industrial_command_planner in moveit
+  * fixes compatibility with ubuntu 20, noetic and colcon
+  * changes CI to noetic and ubuntu 20
 * Contributors: Pilz GmbH and Co. KG
 
 0.5.21 (2020-11-23)
