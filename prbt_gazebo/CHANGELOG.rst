@@ -2,8 +2,8 @@
 Changelog for package prbt_gazebo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.0 (2021-04-19)
+------------------
 * Ports the driver to noetic. Includes moveing the trajectory planner to moveit
   * changes the references of the pilz_command_planner to the pilz_industrial_command_planner in moveit
   * fixes compatibility with ubuntu 20, noetic and colcon

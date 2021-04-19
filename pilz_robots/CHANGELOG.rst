@@ -2,8 +2,8 @@
 Changelog for package pilz_robots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.6.0 (2021-04-19)
+------------------
 * Adds adapted branching model & ci badge (`#476 <https://github.com/PilzDE/pilz_robots/issues/476>`_)
   * Adapt README.md for noetic
   * Replace old Travis CI badges with Github CI
