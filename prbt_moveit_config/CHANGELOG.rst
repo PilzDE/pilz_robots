@@ -2,6 +2,10 @@
 Changelog for package prbt_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* changing references from pilz_command_planner to pilz_industrial_motion_planner
+
 0.5.21 (2020-11-23)
 -------------------
 * Move capabilities arguments into planning pipeline

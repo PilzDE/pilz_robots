@@ -24,7 +24,7 @@ These acceptance tests check that the real robot system reacts to a BrakeTest se
 
 ### Test Sequence
   1. Press the acknowledge button. Make sure the green light on the power cabinet is on.
-  Run `roslaunch prbt_moveit_config moveit_planning_execution.launch sim:=False pipeline:=pilz_command_planner gripper:=pg70`
+  Run `roslaunch prbt_moveit_config moveit_planning_execution.launch sim:=False pipeline:=pilz_industrial_motion_planner gripper:=pg70`
   2. Run `rosservice call /prbt/brake_test_required`
   3. Run `rosservice call /prbt/execute_braketest`
   4. Try to perform a robot motion via Rviz during the braketest execution

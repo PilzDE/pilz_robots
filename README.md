@@ -9,9 +9,7 @@ The meta package for the PILZ manipulator PRBT 6. Here you can find documentatio
 ### Installation
 To use the packages, you can install prebuilt packages with
 ```
-sudo apt install ros-kinetic-pilz-robots
-or
-sudo apt install ros-melodic-pilz-robots
+sudo apt install ros-$ROS_DISTRO-pilz-robots
 ```
 
 ### Build Status
@@ -110,15 +108,14 @@ iface can0 can static
 2. Run `roslaunch prbt_moveit_config moveit_planning_execution.launch sim:=false pipeline:=ompl`
 3. Use the moveit Motion Planning rviz plugin to plan and execute (see simulation section; set `Velocity Scaling` to 0.1 first)
 
-Instead of OMPL use the motion planners of Pilz for executing industrial robot commands like PTP, LIN, etc. For this install the
-package [pilz_trajectory_generation](http://wiki.ros.org/pilz_trajectory_generation):
+Instead of OMPL use the industrial motion planners of Pilz for executing industrial robot commands like PTP, LIN, etc. For this install the
+package [pilz_industrial_motion_planner](http://wiki.ros.org/pilz_industrial_motion_planner):
 ```
-sudo apt install ros-kinetic-pilz-trajectory-generation
-or
-sudo apt install ros-melodic-pilz-trajectory-generation
+sudo apt install ros-$ROS_DISTRO-pilz-industrial-motion-planner
 ```
+and replace the pipeline in the above command by `pipeline:=pilz_industrial_motion_planner`.
 
-then replace the pipeline in the above command by `pipeline:=pilz_command_planner`.
+(If you are still running ROS Kinetic please follow the instructions [here](https://github.com/PilzDE/pilz_robots/blob/kinetic-devel/README.md)).
 
 ### Adjust expert parameters
 If you've created an application package with your own launch file as described in the
@@ -129,9 +126,7 @@ See the comments in the [pilz_tutorials package](https://github.com/PilzDE/pilz_
 ### Running the prbt with a gripper
 Currently only the Schunk pg70 is supported. To run it, first install the package:
 ```
-sudo apt install ros-kinetic-prbt-pg70-support
-or
-sudo apt install ros-melodic-prbt-pg70-support
+sudo apt install ros-$ROS_DISTRO-prbt-pg70-support
 ```
 
 then start the robot like before but with the `gripper:=pg70` set. Both simulation and real robot work.
