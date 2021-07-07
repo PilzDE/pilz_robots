@@ -12,7 +12,7 @@
   <arg name="safety_hw" default="pss4000"/>
   <arg name="read_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_read_api_spec_$(arg safety_hw).yaml" />
   <arg name="write_api_spec_file" default="$(find prbt_hardware_support)/config/modbus_write_api_spec_$(arg safety_hw).yaml" />
-  <arg name="modbus_server_ip" default="$(eval '192.168.0.10' if safety_hw=='pss4000' else '169.254.60.1')" />
+  <arg name="modbus_server_ip" default="$(eval '169.254.60.9' if safety_hw=='pss4000' else '169.254.60.1')" />
 
   <!-- Options to enable and disable different hardware aspects -->
   <!-- These arguments have no effect if iso10218_support is false -->
