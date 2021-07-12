@@ -2,8 +2,8 @@
 Changelog for package prbt_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.22 (2021-07-12)
+-------------------
 * Updating references to pilz_industrial_motion_planner
 * Contributors: Pilz GmbH and Co. KG
 
