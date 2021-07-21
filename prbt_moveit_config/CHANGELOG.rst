@@ -2,8 +2,8 @@
 Changelog for package prbt_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.5.23 (2021-07-21)
+-------------------
 * Allow usage of deprecated pilz_command_planner
 * Contributors: Pilz GmbH and Co. KG
 
