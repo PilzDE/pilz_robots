@@ -2,6 +2,9 @@
 Changelog for package pilz_status_indicator_rqt
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.5.22 (2021-07-12)
 -------------------
 
