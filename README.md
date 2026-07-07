@@ -1,3 +1,14 @@
+# ⚠️ End of Life (EOL) Notice
+
+> **ROS 1 has reached End of Life (EOL). This repository is no longer maintained.**
+
+### What this means
+- ❌ No new features will be developed.
+- ❌ No bug fixes will be provided.
+- ❌ No security updates will be released.
+- ⚠️ Use at your own risk.
+
+
 [![PILZ](prbt_support/img/pilz-logo.png)](https://www.pilz.com)
 # PILZ robot manipulator module PRBT 6 in ROS
 
